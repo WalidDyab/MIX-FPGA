@@ -43,6 +43,9 @@ tools/_dl/
 *.vcd
 *.fst
 
+# NexysVHDL build workspaces (isolated staging, GHDL libraries, logs)
+.nexysvhdl/
+
 # Saved copies of build outputs kept only for local comparison
 **/_compare/
 notes/**/build1/
@@ -69,6 +72,7 @@ __pycache__/
 # Node / future application build artifacts
 node_modules/
 dist/
+*.tsbuildinfo
 out/
 coverage/
 *.vsix

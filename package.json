@@ -1,0 +1,27 @@
+{
+  "name": "nexysvhdl",
+  "version": "0.3.0-dev",
+  "description": "Cross-platform VHDL-first FPGA workflow for the Digilent Nexys A7-100T (in development).",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "commonjs",
+  "main": "dist/core/index.js",
+  "types": "dist/core/index.d.ts",
+  "bin": {
+    "nexysvhdl": "dist/cli/main.js"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test --test-reporter=spec \"dist/tests/**/*.test.js\"",
+    "cli": "node dist/cli/main.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "typescript": "^7.0.2"
+  }
+}

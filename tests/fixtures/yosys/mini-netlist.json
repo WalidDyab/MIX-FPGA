@@ -1,0 +1,24 @@
+{
+  "_comment": "SYNTHETIC fixture for countPrimitives(): a top instantiating a user submodule twice. Not real FPGA data.",
+  "modules": {
+    "FDRE": { "attributes": { "blackbox": "00000000000000000000000000000001" }, "cells": {} },
+    "CARRY4": { "attributes": { "blackbox": "00000000000000000000000000000001" }, "cells": {} },
+    "sub": {
+      "attributes": {},
+      "cells": {
+        "ff0": { "type": "FDRE" },
+        "ff1": { "type": "FDRE" },
+        "c0": { "type": "CARRY4" }
+      }
+    },
+    "top": {
+      "attributes": { "top": "00000000000000000000000000000001" },
+      "cells": {
+        "u0": { "type": "sub" },
+        "u1": { "type": "sub" },
+        "ib": { "type": "IBUF" },
+        "ob": { "type": "OBUF" }
+      }
+    }
+  }
+}

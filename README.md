@@ -1,3 +1,42 @@
 # NexysVHDL
 
-Workspace for developing a cross-platform (Windows / Apple-silicon macOS) VHDL-first FPGA workflow for teaching, targeting the Digilent Nexys A7-100T (XC7A100T-1CSG324C) via GHDL and Apio/openXC7.
+NexysVHDL is an **in-development** cross-platform VHDL workflow targeting the Digilent Nexys A7-100T (XC7A100T-1CSG324C). It is not ready for student use yet.
+
+**Current development stage:** Phase 3 — workflow core.
+
+Target platforms:
+- Windows x64
+- Apple-silicon macOS
+
+Validated backend technologies (Phases 1–2, on real hardware):
+- GHDL (VHDL-2008 analysis, simulation, synthesis to Verilog)
+- Apio / openXC7
+- Yosys
+- nextpnr-xilinx
+- Project X-Ray
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `core/` | Platform-neutral TypeScript workflow core |
+| `platform/` | Windows / macOS adapters (placeholders until Phase 3B) |
+| `cli/` | `nexysvhdl` command-line interface |
+| `boards/` | Board definitions (data) |
+| `toolchains/` | Tested tool-version manifests (data) |
+| `examples/` | Example student projects |
+| `tests/` | Unit tests (`node:test`) |
+| `docs/` | Architecture, plans, ADRs, phase engineering records |
+| `experiments/`, `notes/` | Phase 1–2 experiments and raw logs |
+
+## Development
+
+Requires Node.js 20.12 or newer.
+
+```sh
+npm install
+npm test                    # build + unit tests (no FPGA tools or board needed)
+node dist/cli/main.js doctor
+```
+
+See [docs/architecture.md](docs/architecture.md) and [docs/phase3-plan.md](docs/phase3-plan.md).

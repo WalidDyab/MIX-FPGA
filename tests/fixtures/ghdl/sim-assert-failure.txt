@@ -1,0 +1,6 @@
+tb.vhd:4:3:@0ms:(assertion error): boom
+tb.vhd:5:3:@0ms:(report note): hello
+tb.vhd:7:3:@5ns:(assertion failure): fatal
+ghdl:error: assertion failed
+  instance: /tb/P0
+ghdl:error: simulation failed

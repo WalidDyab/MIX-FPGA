@@ -1,0 +1,369 @@
+nextpnr-xilinx --chipdb C:\Users\user\.apio\packages\openxc7\chipdb\xc7a100tcsg324.bin --xdc nexys-a7-100t.xdc --json _build\default\hardware.json --fasm _build\default\hardware.fasm --report _build\default\hardware.pnr
+Propagating clock constraints...
+    derived 100.0 MHz for net '$auto$clkbufmap.cc:262:execute$1751' (through IBUF '$iopadmap$top.clk100mhz')
+    derived 100.0 MHz for net '$iopadmap$clk100mhz' (through BUFG '$auto$clkbufmap.cc:261:execute$1750')
+Packing constants..
+Inserting IO buffers..
+    IO port 'btnc' driven by IBUF '$iopadmap$top.btnc'
+    IO port 'clk100mhz' driven by IBUF '$iopadmap$top.clk100mhz'
+    IO port 'led0' driven by OBUF '$iopadmap$top.led0'
+    Constraining 'btnc' to site 'IOB_X0Y82'
+    Tile 'LIOB33_X0Y81'
+    Constraining 'clk100mhz' to site 'IOB_X1Y126'
+    Tile 'RIOB33_X57Y125'
+    Constraining 'led0' to site 'IOB_X0Y114'
+    Tile 'LIOB33_X0Y113'
+Generating input buffer for '$iopadmap$top.btnc'
+Generating input buffer for '$iopadmap$top.clk100mhz'
+Generating output buffer for '$iopadmap$top.led0'
+    Created 3 PAD cells from:
+             3x PAD
+Preparing clocking...
+Packing constants..
+Packing cfg...
+Packing PLLs...
+Packing Gigabit Transceivers..
+Packing global buffers...
+    Constrained BUFGCTRL '$auto$clkbufmap.cc:261:execute$1750' to bel 'BUFGCTRL_X0Y16/BUFGCTRL' based on dedicated routing
+Packing MUX[789]s..
+Packing carries (atomic CARRY4)..
+   Packed 7 CARRY4 cells into 1 chains (atomic).
+router2 PRECYINIT fix: 7 CARRY4 cells, 8 constant carry pins disconnected
+Packing LUTs..
+    Created 56 SLICE_LUTX cells from:
+            56x LUT1
+Packing DRAM..
+   Transformed 0 tied-low DRAM address inputs to be tied-high
+Packing BRAM..
+Packing DSPs..
+Packing flipflops..
+    Created 27 SLICE_FFX cells from:
+            27x FDRE
+    local-const FF control: disconnected 0 SR(=GND) + 27 CE(=VCC) pins from global nets
+Constrained 0 LUTFF pairs.
+Annotating ports with timing budgets for target frequency 12.00 MHz
+Checksum: 0xe6891ed6
+Device utilisation:
+	          SLICE_LUTX:    56/126800     0%
+	           SLICE_FFX:    27/126800     0%
+	              CARRY4:     7/15850     0%
+	          PSEUDO_GND:     1/30932     0%
+	          PSEUDO_VCC:     1/30932     0%
+	               HARD0:     0/ 2376     0%
+	            RAMB18E1:     0/  270     0%
+	            FIFO18E1:     0/  135     0%
+	        RAMBFIFO36E1:     0/  135     0%
+	            RAMB36E1:     0/  135     0%
+	             DSP48E1:     0/  240     0%
+	                 PAD:     3/  630     0%
+	       IOB33M_OUTBUF:     0/  144     0%
+	       IOB33S_OUTBUF:     0/  144     0%
+	        IOB33_OUTBUF:     1/  300     0%
+	     IOB33M_INBUF_EN:     0/  144     0%
+	     IOB33S_INBUF_EN:     0/  144     0%
+	      IOB33_INBUF_EN:     2/  300     0%
+	IOB33M_TERM_OVERRIDE:     0/  144     0%
+	IOB33S_TERM_OVERRIDE:     0/  144     0%
+	 IOB33_TERM_OVERRIDE:     0/  300     0%
+	       PULL_OR_KEEP1:     0/  588     0%
+	            IDELAYE2:     0/  300     0%
+	        OLOGICE3_TFF:     0/  300     0%
+	      OLOGICE3_OUTFF:     0/  300     0%
+	       OLOGICE3_MISR:     0/  300     0%
+	           OSERDESE2:     0/  300     0%
+	        ILOGICE3_IFF:     0/  300     0%
+	ILOGICE3_ZHOLD_DELAY:     0/  300     0%
+	           ISERDESE2:     0/  300     0%
+	                BUFR:     0/   24     0%
+	               BUFIO:     0/   24     0%
+	          IDELAYCTRL:     0/    6     0%
+	            BUFGCTRL:     1/   32     3%
+	            PCIE_2_1:     0/    1     0%
+	               BSCAN:     0/    4     0%
+	                BUFG:     0/   32     0%
+	              BUFHCE:     0/   96     0%
+	            DCIRESET:     0/    1     0%
+	            DNA_PORT:     0/    1     0%
+	           EFUSE_USR:     0/    1     0%
+	           FRAME_ECC:     0/    1     0%
+	       GTPE2_CHANNEL:     0/    8     0%
+	        GTPE2_COMMON:     0/    2     0%
+	         IBUFDS_GTE2:     0/    4     0%
+	                ICAP:     0/    2     0%
+	            INVERTER:     0/  144     0%
+	          MMCME2_ADV:     0/    6     0%
+	        OLOGICE2_TFF:     0/  300     0%
+	      OLOGICE2_OUTFF:     0/  300     0%
+	           PLLE2_ADV:     0/    6     0%
+	           SELMUX2_1:     0/48750     0%
+	             STARTUP:     0/    1     0%
+	          USR_ACCESS:     0/    1     0%
+	              BUFFER:     0/   42     0%
+	        ILOGICE2_IFF:     0/  300     0%
+	       OLOGICE2_MISR:     0/  300     0%
+HeAP congestion knobs: beta=0.400 spread_scale=2,1 alpha=0.080
+Placed 7 cells based on constraints.
+Creating initial analytic placement for 1 cells, random placement wirelen = 265.
+    at initial placer iter 0, wirelen = 199
+    at initial placer iter 1, wirelen = 199
+    at initial placer iter 2, wirelen = 199
+    at initial placer iter 3, wirelen = 199
+Running main analytical placer.
+    at iteration #1, type CARRY4: wirelen solved = 211, spread = 211, legal = 251; time = 0.01s
+HeAP Placer Time: 0.09s
+  of which solving equations: 0.00s
+  of which spreading cells: 0.00s
+  of which strict legalisation: 0.00s
+Running simulated annealing placer for refinement.
+  at iteration #1: temp = 0.000000, timing cost = 4, wirelen = 251
+  at iteration #2: temp = 0.000000, timing cost = 4, wirelen = 251 
+SA placement time 0.00s
+Max frequency for clock '$iopadmap$clk100mhz': 188.82 MHz (PASS at 100.00 MHz)
+Slack histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+[  4704,   4942) |** 
+[  4942,   5180) |* 
+[  5180,   5418) |** 
+[  5418,   5656) |** 
+[  5656,   5894) | 
+[  5894,   6132) |*** 
+[  6132,   6370) |* 
+[  6370,   6608) | 
+[  6608,   6846) |*** 
+[  6846,   7084) |* 
+[  7084,   7322) |* 
+[  7322,   7560) |** 
+[  7560,   7798) |* 
+[  7798,   8036) |** 
+[  8036,   8274) |** 
+[  8274,   8512) | 
+[  8512,   8750) | 
+[  8750,   8988) |** 
+[  8988,   9226) |* 
+[  9226,   9464) |* 
+Checksum: 0x0983a383
+Running post-placement legalisation...
+post-place repair: relocated 1 stranded cluster(s)/cell(s) to valid bels
+Routing global clocks...
+    routing clock '$auto$clkbufmap.cc:262:execute$1751'
+    routing clock '$iopadmap$clk100mhz'
+Running router2...
+Setting up routing resources...
+Adopted 28 pre-routed arc(s)
+Running main router loop...
+    iter=1 wires=421 overused=0 overuse=0 archfail=0
+1000 slowest nets by runtime:
+                                                                               count[26]      2 24.9ms
+                                                                          $iopadmap$btnc     27 18.9ms
+                                                                                count[1]      1 0.7ms
+                                                                $PACKER_GND_NET$legal$89      1 0.7ms
+                                                                               count[11]      1 0.7ms
+                                                                $PACKER_GND_NET$legal$81      1 0.6ms
+                                                                               count[13]      1 0.6ms
+                                                                        u_counter.n9[25]      1 0.6ms
+                                                                $PACKER_GND_NET$legal$77      1 0.5ms
+                                                                         u_counter.n9[0]      1 0.5ms
+                                                                 $PACKER_VCC_NET$legal$1      1 0.5ms
+                                                                         u_counter.n9[9]      1 0.5ms
+                                                                        u_counter.n9[16]      1 0.5ms
+                                                                        u_counter.n9[18]      1 0.5ms
+                                                                               count[10]      1 0.5ms
+                                                                        u_counter.n9[17]      1 0.5ms
+                                                               $PACKER_GND_NET$legal$109      1 0.5ms
+                                                                        u_counter.n9[19]      1 0.5ms
+                                                                               count[17]      1 0.5ms
+                                                                                count[8]      1 0.5ms
+                                                                        u_counter.n9[13]      1 0.5ms
+                                                                 $PACKER_GND_NET$legal$5      1 0.5ms
+                                                                $PACKER_GND_NET$legal$93      1 0.5ms
+                                                                                count[9]      1 0.5ms
+                                                                                count[0]      1 0.5ms
+                                                                $PACKER_GND_NET$legal$85      1 0.4ms
+                                                                               count[14]      1 0.4ms
+                                                                $PACKER_GND_NET$legal$53      1 0.4ms
+                                                                               count[23]      1 0.4ms
+                                                                               count[25]      1 0.4ms
+                                                                $PACKER_GND_NET$legal$29      1 0.4ms
+                                                                $PACKER_GND_NET$legal$17      1 0.4ms
+                                                               $PACKER_GND_NET$legal$101      1 0.4ms
+                                                                         u_counter.n9[3]      1 0.4ms
+                                                                               count[21]      1 0.4ms
+                                                                                count[5]      1 0.4ms
+                                                                                count[3]      1 0.4ms
+                                                                $PACKER_GND_NET$legal$97      1 0.4ms
+                                                                $PACKER_GND_NET$legal$73      1 0.4ms
+                                                                $PACKER_GND_NET$legal$69      1 0.4ms
+                                                                        u_counter.n9[12]      1 0.4ms
+                                                                                count[2]      1 0.4ms
+                                                                               count[15]      1 0.4ms
+                                                                         u_counter.n9[4]      1 0.4ms
+                                                                $PACKER_GND_NET$legal$45      1 0.4ms
+                                                                        u_counter.n9[21]      1 0.4ms
+                                                                         u_counter.n9[5]      1 0.4ms
+                                                                                count[6]      1 0.4ms
+                                                                               count[12]      1 0.4ms
+                                                                         u_counter.n9[1]      1 0.4ms
+                                                                $PACKER_GND_NET$legal$25      1 0.4ms
+                                                                        u_counter.n9[26]      1 0.4ms
+                                                                               count[16]      1 0.4ms
+                                                                 $PACKER_GND_NET$legal$9      1 0.4ms
+                                                                        u_counter.n9[15]      1 0.4ms
+                                                                         u_counter.n9[7]      1 0.4ms
+                                                                               count[20]      1 0.4ms
+                                                               $PACKER_GND_NET$legal$105      1 0.4ms
+                                                                $PACKER_GND_NET$legal$21      1 0.4ms
+                                                                        u_counter.n9[11]      1 0.4ms
+                                                                               count[22]      1 0.4ms
+                                                                $PACKER_GND_NET$legal$65      1 0.3ms
+                                                                        u_counter.n9[14]      1 0.3ms
+                                                                        u_counter.n9[24]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$13      1 0.3ms
+                                                                               count[19]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$61      1 0.3ms
+                                                                               count[18]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$33      1 0.3ms
+                                                                               count[24]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$49      1 0.3ms
+                                                                                count[4]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$37      1 0.3ms
+                                                                                count[7]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$57      1 0.3ms
+                                                                        u_counter.n9[23]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$41      1 0.3ms
+                                                                         u_counter.n9[8]      1 0.3ms
+                                                                         u_counter.n9[2]      1 0.3ms
+                                                                        u_counter.n9[20]      1 0.3ms
+                                                                         u_counter.n9[6]      1 0.3ms
+                                                                        u_counter.n9[22]      1 0.3ms
+                                                                        u_counter.n9[10]      1 0.3ms
+                                                                     $iopadmap$clk100mhz     27 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[3]      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[15]      1 0.0ms
+                                                     $auto$clkbufmap.cc:262:execute$1751      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[11]      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[23]      1 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[7]      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[19]      1 0.0ms
+                                                                     count[26]$legal$103      1 0.0ms
+                                                                      count[25]$legal$99      1 0.0ms
+                                                                      count[13]$legal$51      1 0.0ms
+                                                                      count[11]$legal$43      1 0.0ms
+                                                                      count[10]$legal$39      1 0.0ms
+                                                                       count[9]$legal$35      1 0.0ms
+                                                                       count[7]$legal$27      1 0.0ms
+                                                                       count[5]$legal$19      1 0.0ms
+                           u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.C[27]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[22]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[20]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[5]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[4]      0 0.0ms
+                                                                                    led0      1 0.0ms
+                                                               $PACKER_GND_NET$legal$107      1 0.0ms
+                                                                      count[24]$legal$95      1 0.0ms
+                                                                      count[23]$legal$91      1 0.0ms
+                                                                      count[22]$legal$87      1 0.0ms
+                                                                      count[21]$legal$83      1 0.0ms
+                                                                      count[20]$legal$79      1 0.0ms
+                                                                      count[19]$legal$75      1 0.0ms
+                                                                      count[18]$legal$71      1 0.0ms
+                                                                      count[17]$legal$67      1 0.0ms
+                                                                      count[16]$legal$63      1 0.0ms
+                                                                      count[15]$legal$59      1 0.0ms
+                                                                      count[14]$legal$55      1 0.0ms
+                                                                      count[12]$legal$47      1 0.0ms
+                                                                       count[8]$legal$31      1 0.0ms
+                                                                       count[6]$legal$23      1 0.0ms
+                                                                       count[4]$legal$15      1 0.0ms
+                                                                       count[3]$legal$11      1 0.0ms
+                                                                        count[2]$legal$7      1 0.0ms
+                                                                        count[1]$legal$3      1 0.0ms
+                                                                         $PACKER_VCC_NET     35 0.0ms
+                                                                         $PACKER_GND_NET     28 0.0ms
+                           u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.O[27]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[26]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[25]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[24]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[21]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[18]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[17]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[16]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[14]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[13]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[12]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[10]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[9]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[8]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[6]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[2]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[1]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[0]      0 0.0ms
+                                    u_counter.$auto$alumacc.cc:512:replace_alu$1107.X[0]      1 0.0ms
+                                                                               clk100mhz      2 0.0ms
+                                                                                    btnc      2 0.0ms
+Router2 time 1.52s
+Routing $PACKER_VCC_NET connections...
+    $PACKER_VCC_NET: 35/35 sinks bridged (0 holdouts; max BFS 31)
+Routing $PACKER_GND_NET connections...
+    $PACKER_GND_NET: 28/28 sinks bridged (0 holdouts; max BFS 169)
+Running post-routing legalisation...
+    BUFHCE pass-through CE: 1 tied to VCC, 0 already driven, 0 could not be reached
+Critical path report for clock '$iopadmap$clk100mhz' (posedge -> posedge):
+curr total
+ 0.1  0.1  Source u_counter.$auto$ff.cc:337:slice$1529.Q
+ 0.0  0.1    Net count[1] budget 0.000000 ns (14,90) -> (14,90)
+               Sink count[1]$LUT$4.A2
+ 0.1  0.2  Source count[1]$LUT$4.O6
+ 0.0  0.2    Net count[1]$legal$3 budget 0.673000 ns (14,90) -> (14,90)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[0].genblk1.carry4.S1
+ 0.5  0.8  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[0].genblk1.carry4.CO3
+ 0.1  0.9    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[3] budget 0.916000 ns (14,90) -> (14,89)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[1].genblk1.carry4.CIN
+ 0.1  1.0  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[1].genblk1.carry4.CO3
+ 0.1  1.1    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[7] budget 0.916000 ns (14,89) -> (14,88)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[2].genblk1.carry4.CIN
+ 0.1  1.2  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[2].genblk1.carry4.CO3
+ 0.1  1.3    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[11] budget 0.916000 ns (14,88) -> (14,87)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[3].genblk1.carry4.CIN
+ 0.1  1.4  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[3].genblk1.carry4.CO3
+ 0.1  1.5    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[15] budget 0.916000 ns (14,87) -> (14,86)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[4].genblk1.carry4.CIN
+ 0.1  1.6  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[4].genblk1.carry4.CO3
+ 0.1  1.8    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[19] budget 0.916000 ns (14,86) -> (14,85)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[5].genblk1.carry4.CIN
+ 0.1  1.9  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[5].genblk1.carry4.CO3
+ 0.1  2.0    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[23] budget 0.916000 ns (14,85) -> (14,84)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[6].genblk1.carry4.CIN
+ 0.3  2.3  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[6].genblk1.carry4.O1
+ 0.0  2.3    Net u_counter.n9[25] budget 0.672000 ns (14,84) -> (14,84)
+               Sink u_counter.$auto$ff.cc:337:slice$1553.D
+ 0.1  2.4  Setup u_counter.$auto$ff.cc:337:slice$1553.D
+1.8 ns logic, 0.7 ns routing
+Max frequency for clock '$iopadmap$clk100mhz': 409.67 MHz (PASS at 100.00 MHz)
+Slack histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+[  7559,   7653) |* 
+[  7653,   7747) |** 
+[  7747,   7841) |** 
+[  7841,   7935) |** 
+[  7935,   8029) |** 
+[  8029,   8123) |** 
+[  8123,   8217) | 
+[  8217,   8311) |** 
+[  8311,   8405) |** 
+[  8405,   8499) |** 
+[  8499,   8593) |** 
+[  8593,   8687) |* 
+[  8687,   8781) |** 
+[  8781,   8875) |* 
+[  8875,   8969) | 
+[  8969,   9063) |* 
+[  9063,   9157) |* 
+[  9157,   9251) | 
+[  9251,   9345) |* 
+[  9345,   9439) |* 
+Report written to _build\default\hardware.pnr.
+fasm2frames --part xc7a100tcsg324-1 --db-root C:\Users\user\.apio\packages\openxc7\share\nextpnr\external\prjxray-db\artix7 _build\default\hardware.fasm > _build\default\hardware.frames
+xc7frames2bit --part_file C:\Users\user\.apio\packages\openxc7\share\nextpnr\external\prjxray-db\artix7\xc7a100tcsg324-1\part.yaml --part_name xc7a100tcsg324-1 --frm_file _build\default\hardware.frames --output_file _build\default\hardware.bit
+======================== [SUCCESS] Took 13.71 seconds =========================

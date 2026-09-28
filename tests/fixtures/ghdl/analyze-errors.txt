@@ -1,0 +1,10 @@
+src dir/bad.vhd:4:45:error: missing ";" at end of port clause
+  port (a : in std_logic; y : out std_logic)
+                                            ^
+bad2.vhd:8:8:error: no declaration for "b"
+  y <= b;
+       ^
+ok.vhd:3:10:warning: signal "s" is never referenced [-Wunused]
+  signal s : bit;
+         ^
+D:\WSClaude\NexysVHDL\tools\ghdl-6.0.0\bin\ghdl.exe:error: cannot find entity or configuration nosuch

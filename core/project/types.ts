@@ -1,0 +1,53 @@
+import type { PinMapping } from '../board/constraints';
+import type { ToolId } from '../toolchain/types';
+
+/** Name of the project file students keep at their project root. */
+export const PROJECT_FILE_NAME = 'nexysvhdl.json';
+
+export type HdlLanguage = 'vhdl';
+export type VhdlStandard = '2008';
+
+export interface SimulationSettings {
+    /** Testbench-only files (project-relative). */
+    readonly sources: readonly string[];
+    /** Entity name of the testbench to run by default. */
+    readonly testbench?: string;
+}
+
+export interface ToolchainSettings {
+    /** Toolchain manifest id to validate against (see toolchains/*.json). */
+    readonly manifest?: string;
+    /** Explicit executable paths, overriding discovery. */
+    readonly tools?: Partial<Readonly<Record<ToolId, string>>>;
+}
+
+/** Contents of nexysvhdl.json as written by the student (all paths project-relative, `/`-separated). */
+export interface ProjectFile {
+    readonly name: string;
+    readonly board: string;
+    readonly language: HdlLanguage;
+    readonly standard: VhdlStandard;
+    /** Top-level entity for synthesis. */
+    readonly top: string;
+    /** RTL sources in compile order. */
+    readonly sources: readonly string[];
+    readonly simulation?: SimulationSettings;
+    /** Top-level port -> board resource id. */
+    readonly pins: PinMapping;
+    readonly toolchain?: ToolchainSettings;
+}
+
+/** A loaded project: the file contents plus where it lives. */
+export interface Project {
+    /** Absolute project root directory. */
+    readonly root: string;
+    /** Absolute path of nexysvhdl.json. */
+    readonly file: string;
+    readonly config: ProjectFile;
+}
+
+export const PROJECT_DEFAULTS = {
+    language: 'vhdl',
+    standard: '2008',
+    board: 'nexys-a7-100t',
+} as const satisfies Partial<ProjectFile>;

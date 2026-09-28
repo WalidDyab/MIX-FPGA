@@ -1,0 +1,17 @@
+{
+  "name": "nexys-a7-counter",
+  "board": "nexys-a7-100t",
+  "language": "vhdl",
+  "standard": "2008",
+  "top": "top",
+  "sources": ["src/counter.vhd", "src/top.vhd"],
+  "simulation": {
+    "sources": ["sim/counter_tb.vhd"],
+    "testbench": "counter_tb"
+  },
+  "pins": {
+    "clk100mhz": "CLK100MHZ",
+    "btnc": "BTNC",
+    "led0": "LED0"
+  }
+}

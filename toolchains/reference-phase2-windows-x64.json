@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "reference-phase2-windows-x64",
+  "description": "Tool versions validated on Windows 11 x64 in Phase 2 (2026-09-28). Reference record, not a release matrix.",
+  "host": { "platform": "win32", "arch": "x64" },
+  "status": "reference",
+  "validatedBy": "docs/phase2-windows.md",
+  "tools": [
+    { "tool": "ghdl", "testedVersions": ["6.0.0"], "notes": "official mcode ucrt64 zip" },
+    { "tool": "apio", "testedVersions": ["1.6.0"] },
+    { "tool": "openxc7", "testedVersions": ["2026-09-24"], "notes": "Apio openxc7 package release-tag" },
+    { "tool": "yosys", "testedVersions": ["0.63+173"] },
+    { "tool": "nextpnr-xilinx", "testedVersions": ["0eae9fb"] },
+    { "tool": "programmer", "name": "Digilent Adept Utilities (djtgcfg)", "testedVersions": ["2.7.1"], "notes": "requires Adept Runtime 2.30.4 or newer" }
+  ]
+}

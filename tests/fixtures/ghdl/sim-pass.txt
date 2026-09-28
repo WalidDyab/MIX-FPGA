@@ -1,0 +1,2 @@
+sim/counter_tb.vhd:75:9:@280ns:(report note): ALL TESTS PASSED (28 checks, ends at 280000000 fs)
+simulation stopped @280ns
