@@ -1,0 +1,57 @@
+﻿- Removed _build
+Cleanup completed
+Using env default (nexys-a7-100t)
+Chipdb file found: xc7a100tcsg324.bin
+Setting shell vars.
+-------------------------------------------------------------------------------
+yosys -p "synth_xilinx -arch xc7 -top top ; write_json _build\default\hardware.json " -DSYNTHESIZE generated.v _compare\generated.run2.v
+
+
+
+ /----------------------------------------------------------------------------\
+
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.63+173 (git sha1 66306a8ca-dirty, x86_64-w64-mingw32-g++ 13.2.1 -O3)
+
+
+
+-- Running command `read -define SYNTHESIZE' --
+
+
+
+-- Parsing `generated.v' using frontend ` -vlog2k' --
+
+
+
+1. Executing Verilog-2005 frontend: generated.v
+
+Parsing Verilog input from `generated.v' to AST representation.
+
+Storing AST representation for module `$abstract\counter_Brtl_27'.
+
+Storing AST representation for module `$abstract\top'.
+
+Successfully finished Verilog frontend.
+
+
+
+-- Parsing `_compare\generated.run2.v' using frontend ` -vlog2k' --
+_compare\generated.run2.v:1: ERROR: Re-definition of module `$abstract\counter_Brtl_27'!
+
+
+
+
+2. Executing Verilog-2005 frontend: _compare\generated.run2.v
+
+Parsing Verilog input from `_compare\generated.run2.v' to AST representation.
+
+scons: *** [_build\default\hardware.json] Error 1
+
+========================== [ERROR] Took 0.49 seconds ==========================

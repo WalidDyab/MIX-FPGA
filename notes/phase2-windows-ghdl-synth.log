@@ -1,0 +1,46 @@
+$ ghdl --synth --std=08 --workdir=_sim/synth --out=verilog src/counter.vhd src/top.vhd -e top > generated.v
+rc=0
+c3f7f40fd66357f3b70d36d71fdf4810f180d8c14e8ed6b7eee730a5f95d1eca *generated.v
+41 generated.v
+----- generated.v -----
+module counter_Brtl_27
+  (input  clk,
+   input  reset,
+   output [26:0] count);
+  reg [26:0] count_reg;
+  wire [26:0] n9;
+  wire [26:0] n11;
+  reg [26:0] n14;
+  assign count = count_reg; //(module output)
+  /*# src/counter.vhd:17:12 */
+  always @*
+    count_reg = n14; // (isignal)
+  initial
+    count_reg = 27'b000000000000000000000000000;
+  /*# src/counter.vhd:26:40 */
+  assign n9 = count_reg + 27'b000000000000000000000000001;
+  /*# src/counter.vhd:23:13 */
+  assign n11 = reset ? 27'b000000000000000000000000000 : n9;
+  /*# src/counter.vhd:22:9 */
+  always @(posedge clk)
+    n14 <= n11;
+  initial
+    n14 = 27'b000000000000000000000000000;
+endmodule
+
+module top
+  (input  clk100mhz,
+   input  btnc,
+   output led0);
+  wire [26:0] count;
+  wire n2;
+  assign led0 = n2; //(module output)
+  /*# src/top.vhd:19:5 */
+  counter_Brtl_27 u_counter (
+    .clk(clk100mhz),
+    .reset(btnc),
+    .count(count));
+  /*# src/top.vhd:29:18 */
+  assign n2 = count[26]; // extract
+endmodule
+

@@ -1,0 +1,3021 @@
+﻿- Removed _build
+Cleanup completed
+Using env default (nexys-a7-100t)
+Chipdb file found: xc7a100tcsg324.bin
+Setting shell vars.
+-------------------------------------------------------------------------------
+yosys -p "synth_xilinx -arch xc7 -top top ; write_json _build\default\hardware.json " -DSYNTHESIZE generated.v
+
+
+
+ /----------------------------------------------------------------------------\
+
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.63+173 (git sha1 66306a8ca-dirty, x86_64-w64-mingw32-g++ 13.2.1 -O3)
+
+
+
+-- Running command `read -define SYNTHESIZE' --
+
+
+
+-- Parsing `generated.v' using frontend ` -vlog2k' --
+
+
+
+1. Executing Verilog-2005 frontend: generated.v
+
+Parsing Verilog input from `generated.v' to AST representation.
+
+Storing AST representation for module `$abstract\counter_Brtl_27'.
+
+Storing AST representation for module `$abstract\top'.
+
+Successfully finished Verilog frontend.
+
+
+
+-- Running command `synth_xilinx -arch xc7 -top top ; write_json _build\default\hardware.json ' --
+
+
+
+2. Executing SYNTH_XILINX pass.
+
+
+
+2.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_sim.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_sim.v' to AST representation.
+
+Generating RTLIL representation for module `\VCC'.
+
+Generating RTLIL representation for module `\GND'.
+
+Generating RTLIL representation for module `\IBUF'.
+
+Generating RTLIL representation for module `\IBUFG'.
+
+Generating RTLIL representation for module `\OBUF'.
+
+Generating RTLIL representation for module `\IOBUF'.
+
+Generating RTLIL representation for module `\OBUFT'.
+
+Generating RTLIL representation for module `\BUFG'.
+
+Generating RTLIL representation for module `\BUFGCTRL'.
+
+Generating RTLIL representation for module `\BUFHCE'.
+
+Generating RTLIL representation for module `\INV'.
+
+Generating RTLIL representation for module `\LUT1'.
+
+Generating RTLIL representation for module `\LUT2'.
+
+Generating RTLIL representation for module `\LUT3'.
+
+Generating RTLIL representation for module `\LUT4'.
+
+Generating RTLIL representation for module `\LUT5'.
+
+Generating RTLIL representation for module `\LUT6'.
+
+Generating RTLIL representation for module `\LUT6_2'.
+
+Generating RTLIL representation for module `\$__ABC9_LUT7'.
+
+Generating RTLIL representation for module `\$__ABC9_LUT8'.
+
+Generating RTLIL representation for module `\MUXCY'.
+
+Generating RTLIL representation for module `\MUXF5'.
+
+Generating RTLIL representation for module `\MUXF6'.
+
+Generating RTLIL representation for module `\MUXF7'.
+
+Generating RTLIL representation for module `\MUXF8'.
+
+Generating RTLIL representation for module `\MUXF9'.
+
+Generating RTLIL representation for module `\XORCY'.
+
+Generating RTLIL representation for module `\CARRY4'.
+
+Generating RTLIL representation for module `\CARRY8'.
+
+Generating RTLIL representation for module `\ORCY'.
+
+Generating RTLIL representation for module `\MULT_AND'.
+
+Generating RTLIL representation for module `\FDRE'.
+
+Generating RTLIL representation for module `\FDRE_1'.
+
+Generating RTLIL representation for module `\FDSE'.
+
+Generating RTLIL representation for module `\FDSE_1'.
+
+Generating RTLIL representation for module `\FDRSE'.
+
+Generating RTLIL representation for module `\FDRSE_1'.
+
+Generating RTLIL representation for module `\FDCE'.
+
+Generating RTLIL representation for module `\FDCE_1'.
+
+Generating RTLIL representation for module `\FDPE'.
+
+Generating RTLIL representation for module `\FDPE_1'.
+
+Generating RTLIL representation for module `\FDCPE'.
+
+Generating RTLIL representation for module `\FDCPE_1'.
+
+Generating RTLIL representation for module `\LDCE'.
+
+Generating RTLIL representation for module `\LDPE'.
+
+Generating RTLIL representation for module `\LDCPE'.
+
+Generating RTLIL representation for module `\AND2B1L'.
+
+Generating RTLIL representation for module `\OR2L'.
+
+Generating RTLIL representation for module `\RAM16X1S'.
+
+Generating RTLIL representation for module `\RAM16X1S_1'.
+
+Generating RTLIL representation for module `\RAM32X1S'.
+
+Generating RTLIL representation for module `\RAM32X1S_1'.
+
+Generating RTLIL representation for module `\RAM64X1S'.
+
+Generating RTLIL representation for module `\RAM64X1S_1'.
+
+Generating RTLIL representation for module `\RAM128X1S'.
+
+Generating RTLIL representation for module `\RAM128X1S_1'.
+
+Generating RTLIL representation for module `\RAM256X1S'.
+
+Generating RTLIL representation for module `\RAM512X1S'.
+
+Generating RTLIL representation for module `\RAM16X2S'.
+
+Generating RTLIL representation for module `\RAM32X2S'.
+
+Generating RTLIL representation for module `\RAM64X2S'.
+
+Generating RTLIL representation for module `\RAM16X4S'.
+
+Generating RTLIL representation for module `\RAM32X4S'.
+
+Generating RTLIL representation for module `\RAM16X8S'.
+
+Generating RTLIL representation for module `\RAM32X8S'.
+
+Generating RTLIL representation for module `\RAM16X1D'.
+
+Generating RTLIL representation for module `\RAM16X1D_1'.
+
+Generating RTLIL representation for module `\RAM32X1D'.
+
+Generating RTLIL representation for module `\RAM32X1D_1'.
+
+Generating RTLIL representation for module `\RAM64X1D'.
+
+Generating RTLIL representation for module `\RAM64X1D_1'.
+
+Generating RTLIL representation for module `\RAM128X1D'.
+
+Generating RTLIL representation for module `\RAM256X1D'.
+
+Generating RTLIL representation for module `\RAM32M'.
+
+Generating RTLIL representation for module `\RAM32M16'.
+
+Generating RTLIL representation for module `\RAM64M'.
+
+Generating RTLIL representation for module `\RAM64M8'.
+
+Generating RTLIL representation for module `\RAM32X16DR8'.
+
+Generating RTLIL representation for module `\RAM64X8SW'.
+
+Generating RTLIL representation for module `\ROM16X1'.
+
+Generating RTLIL representation for module `\ROM32X1'.
+
+Generating RTLIL representation for module `\ROM64X1'.
+
+Generating RTLIL representation for module `\ROM128X1'.
+
+Generating RTLIL representation for module `\ROM256X1'.
+
+Generating RTLIL representation for module `\SRL16'.
+
+Generating RTLIL representation for module `\SRL16E'.
+
+Generating RTLIL representation for module `\SRLC16'.
+
+Generating RTLIL representation for module `\SRLC16E'.
+
+Generating RTLIL representation for module `\SRLC32E'.
+
+Generating RTLIL representation for module `\CFGLUT5'.
+
+Generating RTLIL representation for module `\MULT18X18'.
+
+Generating RTLIL representation for module `\MULT18X18S'.
+
+Generating RTLIL representation for module `\MULT18X18SIO'.
+
+Generating RTLIL representation for module `\DSP48A'.
+
+Generating RTLIL representation for module `\DSP48A1'.
+
+Generating RTLIL representation for module `\DSP48'.
+
+Generating RTLIL representation for module `\DSP48E1'.
+
+Generating RTLIL representation for module `\RAMB18E1'.
+
+Generating RTLIL representation for module `\RAMB36E1'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.2. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_xtra.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_xtra.v' to AST representation.
+
+Generating RTLIL representation for module `\RAMB4_S1'.
+
+Generating RTLIL representation for module `\RAMB4_S2'.
+
+Generating RTLIL representation for module `\RAMB4_S4'.
+
+Generating RTLIL representation for module `\RAMB4_S8'.
+
+Generating RTLIL representation for module `\RAMB4_S16'.
+
+Generating RTLIL representation for module `\RAMB4_S1_S1'.
+
+Generating RTLIL representation for module `\RAMB4_S1_S2'.
+
+Generating RTLIL representation for module `\RAMB4_S1_S4'.
+
+Generating RTLIL representation for module `\RAMB4_S1_S8'.
+
+Generating RTLIL representation for module `\RAMB4_S1_S16'.
+
+Generating RTLIL representation for module `\RAMB4_S2_S2'.
+
+Generating RTLIL representation for module `\RAMB4_S2_S4'.
+
+Generating RTLIL representation for module `\RAMB4_S2_S8'.
+
+Generating RTLIL representation for module `\RAMB4_S2_S16'.
+
+Generating RTLIL representation for module `\RAMB4_S4_S4'.
+
+Generating RTLIL representation for module `\RAMB4_S4_S8'.
+
+Generating RTLIL representation for module `\RAMB4_S4_S16'.
+
+Generating RTLIL representation for module `\RAMB4_S8_S8'.
+
+Generating RTLIL representation for module `\RAMB4_S8_S16'.
+
+Generating RTLIL representation for module `\RAMB4_S16_S16'.
+
+Generating RTLIL representation for module `\RAMB16_S1'.
+
+Generating RTLIL representation for module `\RAMB16_S2'.
+
+Generating RTLIL representation for module `\RAMB16_S4'.
+
+Generating RTLIL representation for module `\RAMB16_S9'.
+
+Generating RTLIL representation for module `\RAMB16_S18'.
+
+Generating RTLIL representation for module `\RAMB16_S36'.
+
+Generating RTLIL representation for module `\RAMB16_S1_S1'.
+
+Generating RTLIL representation for module `\RAMB16_S1_S2'.
+
+Generating RTLIL representation for module `\RAMB16_S1_S4'.
+
+Generating RTLIL representation for module `\RAMB16_S1_S9'.
+
+Generating RTLIL representation for module `\RAMB16_S1_S18'.
+
+Generating RTLIL representation for module `\RAMB16_S1_S36'.
+
+Generating RTLIL representation for module `\RAMB16_S2_S2'.
+
+Generating RTLIL representation for module `\RAMB16_S2_S4'.
+
+Generating RTLIL representation for module `\RAMB16_S2_S9'.
+
+Generating RTLIL representation for module `\RAMB16_S2_S18'.
+
+Generating RTLIL representation for module `\RAMB16_S2_S36'.
+
+Generating RTLIL representation for module `\RAMB16_S4_S4'.
+
+Generating RTLIL representation for module `\RAMB16_S4_S9'.
+
+Generating RTLIL representation for module `\RAMB16_S4_S18'.
+
+Generating RTLIL representation for module `\RAMB16_S4_S36'.
+
+Generating RTLIL representation for module `\RAMB16_S9_S9'.
+
+Generating RTLIL representation for module `\RAMB16_S9_S18'.
+
+Generating RTLIL representation for module `\RAMB16_S9_S36'.
+
+Generating RTLIL representation for module `\RAMB16_S18_S18'.
+
+Generating RTLIL representation for module `\RAMB16_S18_S36'.
+
+Generating RTLIL representation for module `\RAMB16_S36_S36'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S18'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S36'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S18_S9'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S18_S18'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S36_S9'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S36_S18'.
+
+Generating RTLIL representation for module `\RAMB16BWE_S36_S36'.
+
+Generating RTLIL representation for module `\RAMB16BWER'.
+
+Generating RTLIL representation for module `\RAMB8BWER'.
+
+Generating RTLIL representation for module `\FIFO16'.
+
+Generating RTLIL representation for module `\RAMB16'.
+
+Generating RTLIL representation for module `\RAMB32_S64_ECC'.
+
+Generating RTLIL representation for module `\FIFO18'.
+
+Generating RTLIL representation for module `\FIFO18_36'.
+
+Generating RTLIL representation for module `\FIFO36'.
+
+Generating RTLIL representation for module `\FIFO36_72'.
+
+Generating RTLIL representation for module `\RAMB18'.
+
+Generating RTLIL representation for module `\RAMB36'.
+
+Generating RTLIL representation for module `\RAMB18SDP'.
+
+Generating RTLIL representation for module `\RAMB36SDP'.
+
+Generating RTLIL representation for module `\FIFO18E1'.
+
+Generating RTLIL representation for module `\FIFO36E1'.
+
+Generating RTLIL representation for module `\FIFO18E2'.
+
+Generating RTLIL representation for module `\FIFO36E2'.
+
+Generating RTLIL representation for module `\RAMB18E2'.
+
+Generating RTLIL representation for module `\RAMB36E2'.
+
+Generating RTLIL representation for module `\URAM288'.
+
+Generating RTLIL representation for module `\URAM288_BASE'.
+
+Generating RTLIL representation for module `\DSP48E'.
+
+Generating RTLIL representation for module `\DSP48E2'.
+
+Generating RTLIL representation for module `\FDDRCPE'.
+
+Generating RTLIL representation for module `\FDDRRSE'.
+
+Generating RTLIL representation for module `\IFDDRCPE'.
+
+Generating RTLIL representation for module `\IFDDRRSE'.
+
+Generating RTLIL representation for module `\OFDDRCPE'.
+
+Generating RTLIL representation for module `\OFDDRRSE'.
+
+Generating RTLIL representation for module `\OFDDRTCPE'.
+
+Generating RTLIL representation for module `\OFDDRTRSE'.
+
+Generating RTLIL representation for module `\IDDR2'.
+
+Generating RTLIL representation for module `\ODDR2'.
+
+Generating RTLIL representation for module `\IDDR'.
+
+Generating RTLIL representation for module `\IDDR_2CLK'.
+
+Generating RTLIL representation for module `\ODDR'.
+
+Generating RTLIL representation for module `\IDELAYCTRL'.
+
+Generating RTLIL representation for module `\IDELAY'.
+
+Generating RTLIL representation for module `\ISERDES'.
+
+Generating RTLIL representation for module `\OSERDES'.
+
+Generating RTLIL representation for module `\IODELAY'.
+
+Generating RTLIL representation for module `\ISERDES_NODELAY'.
+
+Generating RTLIL representation for module `\IODELAYE1'.
+
+Generating RTLIL representation for module `\ISERDESE1'.
+
+Generating RTLIL representation for module `\OSERDESE1'.
+
+Generating RTLIL representation for module `\IDELAYE2'.
+
+Generating RTLIL representation for module `\ODELAYE2'.
+
+Generating RTLIL representation for module `\ISERDESE2'.
+
+Generating RTLIL representation for module `\OSERDESE2'.
+
+Generating RTLIL representation for module `\PHASER_IN'.
+
+Generating RTLIL representation for module `\PHASER_IN_PHY'.
+
+Generating RTLIL representation for module `\PHASER_OUT'.
+
+Generating RTLIL representation for module `\PHASER_OUT_PHY'.
+
+Generating RTLIL representation for module `\PHASER_REF'.
+
+Generating RTLIL representation for module `\PHY_CONTROL'.
+
+Generating RTLIL representation for module `\IDDRE1'.
+
+Generating RTLIL representation for module `\ODDRE1'.
+
+Generating RTLIL representation for module `\IDELAYE3'.
+
+Generating RTLIL representation for module `\ODELAYE3'.
+
+Generating RTLIL representation for module `\ISERDESE3'.
+
+Generating RTLIL representation for module `\OSERDESE3'.
+
+Generating RTLIL representation for module `\BITSLICE_CONTROL'.
+
+Generating RTLIL representation for module `\RIU_OR'.
+
+Generating RTLIL representation for module `\RX_BITSLICE'.
+
+Generating RTLIL representation for module `\RXTX_BITSLICE'.
+
+Generating RTLIL representation for module `\TX_BITSLICE'.
+
+Generating RTLIL representation for module `\TX_BITSLICE_TRI'.
+
+Generating RTLIL representation for module `\IODELAY2'.
+
+Generating RTLIL representation for module `\IODRP2'.
+
+Generating RTLIL representation for module `\IODRP2_MCB'.
+
+Generating RTLIL representation for module `\ISERDES2'.
+
+Generating RTLIL representation for module `\OSERDES2'.
+
+Generating RTLIL representation for module `\IBUF_DLY_ADJ'.
+
+Generating RTLIL representation for module `\IBUF_IBUFDISABLE'.
+
+Generating RTLIL representation for module `\IBUF_INTERMDISABLE'.
+
+Generating RTLIL representation for module `\IBUF_ANALOG'.
+
+Generating RTLIL representation for module `\IBUFE3'.
+
+Generating RTLIL representation for module `\IBUFDS'.
+
+Generating RTLIL representation for module `\IBUFDS_DLY_ADJ'.
+
+Generating RTLIL representation for module `\IBUFDS_IBUFDISABLE'.
+
+Generating RTLIL representation for module `\IBUFDS_INTERMDISABLE'.
+
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT'.
+
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_IBUFDISABLE'.
+
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_INTERMDISABLE'.
+
+Generating RTLIL representation for module `\IBUFDSE3'.
+
+Generating RTLIL representation for module `\IBUFDS_DPHY'.
+
+Generating RTLIL representation for module `\IBUFGDS'.
+
+Generating RTLIL representation for module `\IBUFGDS_DIFF_OUT'.
+
+Generating RTLIL representation for module `\IOBUF_DCIEN'.
+
+Generating RTLIL representation for module `\IOBUF_INTERMDISABLE'.
+
+Generating RTLIL representation for module `\IOBUFE3'.
+
+Generating RTLIL representation for module `\IOBUFDS'.
+
+Generating RTLIL representation for module `\IOBUFDS_DCIEN'.
+
+Generating RTLIL representation for module `\IOBUFDS_INTERMDISABLE'.
+
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT'.
+
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_DCIEN'.
+
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_INTERMDISABLE'.
+
+Generating RTLIL representation for module `\IOBUFDSE3'.
+
+Generating RTLIL representation for module `\OBUFDS'.
+
+Generating RTLIL representation for module `\OBUFDS_DPHY'.
+
+Generating RTLIL representation for module `\OBUFTDS'.
+
+Generating RTLIL representation for module `\KEEPER'.
+
+Generating RTLIL representation for module `\PULLDOWN'.
+
+Generating RTLIL representation for module `\PULLUP'.
+
+Generating RTLIL representation for module `\DCIRESET'.
+
+Generating RTLIL representation for module `\HPIO_VREF'.
+
+Generating RTLIL representation for module `\BUFGCE'.
+
+Generating RTLIL representation for module `\BUFGCE_1'.
+
+Generating RTLIL representation for module `\BUFGMUX'.
+
+Generating RTLIL representation for module `\BUFGMUX_1'.
+
+Generating RTLIL representation for module `\BUFGMUX_CTRL'.
+
+Generating RTLIL representation for module `\BUFGMUX_VIRTEX4'.
+
+Generating RTLIL representation for module `\BUFG_GT'.
+
+Generating RTLIL representation for module `\BUFG_GT_SYNC'.
+
+Generating RTLIL representation for module `\BUFG_PS'.
+
+Generating RTLIL representation for module `\BUFGCE_DIV'.
+
+Generating RTLIL representation for module `\BUFH'.
+
+Generating RTLIL representation for module `\BUFIO2'.
+
+Generating RTLIL representation for module `\BUFIO2_2CLK'.
+
+Generating RTLIL representation for module `\BUFIO2FB'.
+
+Generating RTLIL representation for module `\BUFPLL'.
+
+Generating RTLIL representation for module `\BUFPLL_MCB'.
+
+Generating RTLIL representation for module `\BUFIO'.
+
+Generating RTLIL representation for module `\BUFIODQS'.
+
+Generating RTLIL representation for module `\BUFR'.
+
+Generating RTLIL representation for module `\BUFMR'.
+
+Generating RTLIL representation for module `\BUFMRCE'.
+
+Generating RTLIL representation for module `\DCM'.
+
+Generating RTLIL representation for module `\DCM_SP'.
+
+Generating RTLIL representation for module `\DCM_CLKGEN'.
+
+Generating RTLIL representation for module `\DCM_ADV'.
+
+Generating RTLIL representation for module `\DCM_BASE'.
+
+Generating RTLIL representation for module `\DCM_PS'.
+
+Generating RTLIL representation for module `\PMCD'.
+
+Generating RTLIL representation for module `\PLL_ADV'.
+
+Generating RTLIL representation for module `\PLL_BASE'.
+
+Generating RTLIL representation for module `\MMCM_ADV'.
+
+Generating RTLIL representation for module `\MMCM_BASE'.
+
+Generating RTLIL representation for module `\MMCME2_ADV'.
+
+Generating RTLIL representation for module `\MMCME2_BASE'.
+
+Generating RTLIL representation for module `\PLLE2_ADV'.
+
+Generating RTLIL representation for module `\PLLE2_BASE'.
+
+Generating RTLIL representation for module `\MMCME3_ADV'.
+
+Generating RTLIL representation for module `\MMCME3_BASE'.
+
+Generating RTLIL representation for module `\PLLE3_ADV'.
+
+Generating RTLIL representation for module `\PLLE3_BASE'.
+
+Generating RTLIL representation for module `\MMCME4_ADV'.
+
+Generating RTLIL representation for module `\MMCME4_BASE'.
+
+Generating RTLIL representation for module `\PLLE4_ADV'.
+
+Generating RTLIL representation for module `\PLLE4_BASE'.
+
+Generating RTLIL representation for module `\BUFT'.
+
+Generating RTLIL representation for module `\IN_FIFO'.
+
+Generating RTLIL representation for module `\OUT_FIFO'.
+
+Generating RTLIL representation for module `\HARD_SYNC'.
+
+Generating RTLIL representation for module `\STARTUP_SPARTAN3'.
+
+Generating RTLIL representation for module `\STARTUP_SPARTAN3E'.
+
+Generating RTLIL representation for module `\STARTUP_SPARTAN3A'.
+
+Generating RTLIL representation for module `\STARTUP_SPARTAN6'.
+
+Generating RTLIL representation for module `\STARTUP_VIRTEX4'.
+
+Generating RTLIL representation for module `\STARTUP_VIRTEX5'.
+
+Generating RTLIL representation for module `\STARTUP_VIRTEX6'.
+
+Generating RTLIL representation for module `\STARTUPE2'.
+
+Generating RTLIL representation for module `\STARTUPE3'.
+
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3'.
+
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3A'.
+
+Generating RTLIL representation for module `\CAPTURE_VIRTEX4'.
+
+Generating RTLIL representation for module `\CAPTURE_VIRTEX5'.
+
+Generating RTLIL representation for module `\CAPTURE_VIRTEX6'.
+
+Generating RTLIL representation for module `\CAPTUREE2'.
+
+Generating RTLIL representation for module `\ICAP_SPARTAN3A'.
+
+Generating RTLIL representation for module `\ICAP_SPARTAN6'.
+
+Generating RTLIL representation for module `\ICAP_VIRTEX4'.
+
+Generating RTLIL representation for module `\ICAP_VIRTEX5'.
+
+Generating RTLIL representation for module `\ICAP_VIRTEX6'.
+
+Generating RTLIL representation for module `\ICAPE2'.
+
+Generating RTLIL representation for module `\ICAPE3'.
+
+Generating RTLIL representation for module `\BSCAN_SPARTAN3'.
+
+Generating RTLIL representation for module `\BSCAN_SPARTAN3A'.
+
+Generating RTLIL representation for module `\BSCAN_SPARTAN6'.
+
+Generating RTLIL representation for module `\BSCAN_VIRTEX4'.
+
+Generating RTLIL representation for module `\BSCAN_VIRTEX5'.
+
+Generating RTLIL representation for module `\BSCAN_VIRTEX6'.
+
+Generating RTLIL representation for module `\BSCANE2'.
+
+Generating RTLIL representation for module `\DNA_PORT'.
+
+Generating RTLIL representation for module `\DNA_PORTE2'.
+
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX4'.
+
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX5'.
+
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX6'.
+
+Generating RTLIL representation for module `\FRAME_ECCE2'.
+
+Generating RTLIL representation for module `\FRAME_ECCE3'.
+
+Generating RTLIL representation for module `\FRAME_ECCE4'.
+
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX4'.
+
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX5'.
+
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX6'.
+
+Generating RTLIL representation for module `\USR_ACCESSE2'.
+
+Generating RTLIL representation for module `\POST_CRC_INTERNAL'.
+
+Generating RTLIL representation for module `\SUSPEND_SYNC'.
+
+Generating RTLIL representation for module `\KEY_CLEAR'.
+
+Generating RTLIL representation for module `\MASTER_JTAG'.
+
+Generating RTLIL representation for module `\SPI_ACCESS'.
+
+Generating RTLIL representation for module `\EFUSE_USR'.
+
+Generating RTLIL representation for module `\SYSMON'.
+
+Generating RTLIL representation for module `\XADC'.
+
+Generating RTLIL representation for module `\SYSMONE1'.
+
+Generating RTLIL representation for module `\SYSMONE4'.
+
+Generating RTLIL representation for module `\GTPA1_DUAL'.
+
+Generating RTLIL representation for module `\GT11_CUSTOM'.
+
+Generating RTLIL representation for module `\GT11_DUAL'.
+
+Generating RTLIL representation for module `\GT11CLK'.
+
+Generating RTLIL representation for module `\GT11CLK_MGT'.
+
+Generating RTLIL representation for module `\GTP_DUAL'.
+
+Generating RTLIL representation for module `\GTX_DUAL'.
+
+Generating RTLIL representation for module `\CRC32'.
+
+Generating RTLIL representation for module `\CRC64'.
+
+Generating RTLIL representation for module `\GTHE1_QUAD'.
+
+Generating RTLIL representation for module `\GTXE1'.
+
+Generating RTLIL representation for module `\IBUFDS_GTXE1'.
+
+Generating RTLIL representation for module `\IBUFDS_GTHE1'.
+
+Generating RTLIL representation for module `\GTHE2_CHANNEL'.
+
+Generating RTLIL representation for module `\GTHE2_COMMON'.
+
+Generating RTLIL representation for module `\GTPE2_CHANNEL'.
+
+Generating RTLIL representation for module `\GTPE2_COMMON'.
+
+Generating RTLIL representation for module `\GTXE2_CHANNEL'.
+
+Generating RTLIL representation for module `\GTXE2_COMMON'.
+
+Generating RTLIL representation for module `\IBUFDS_GTE2'.
+
+Generating RTLIL representation for module `\GTHE3_CHANNEL'.
+
+Generating RTLIL representation for module `\GTHE3_COMMON'.
+
+Generating RTLIL representation for module `\GTYE3_CHANNEL'.
+
+Generating RTLIL representation for module `\GTYE3_COMMON'.
+
+Generating RTLIL representation for module `\IBUFDS_GTE3'.
+
+Generating RTLIL representation for module `\OBUFDS_GTE3'.
+
+Generating RTLIL representation for module `\OBUFDS_GTE3_ADV'.
+
+Generating RTLIL representation for module `\GTHE4_CHANNEL'.
+
+Generating RTLIL representation for module `\GTHE4_COMMON'.
+
+Generating RTLIL representation for module `\GTYE4_CHANNEL'.
+
+Generating RTLIL representation for module `\GTYE4_COMMON'.
+
+Generating RTLIL representation for module `\IBUFDS_GTE4'.
+
+Generating RTLIL representation for module `\OBUFDS_GTE4'.
+
+Generating RTLIL representation for module `\OBUFDS_GTE4_ADV'.
+
+Generating RTLIL representation for module `\GTM_DUAL'.
+
+Generating RTLIL representation for module `\IBUFDS_GTM'.
+
+Generating RTLIL representation for module `\OBUFDS_GTM'.
+
+Generating RTLIL representation for module `\OBUFDS_GTM_ADV'.
+
+Generating RTLIL representation for module `\HSDAC'.
+
+Generating RTLIL representation for module `\HSADC'.
+
+Generating RTLIL representation for module `\RFDAC'.
+
+Generating RTLIL representation for module `\RFADC'.
+
+Generating RTLIL representation for module `\PCIE_A1'.
+
+Generating RTLIL representation for module `\PCIE_EP'.
+
+Generating RTLIL representation for module `\PCIE_2_0'.
+
+Generating RTLIL representation for module `\PCIE_2_1'.
+
+Generating RTLIL representation for module `\PCIE_3_0'.
+
+Generating RTLIL representation for module `\PCIE_3_1'.
+
+Generating RTLIL representation for module `\PCIE40E4'.
+
+Generating RTLIL representation for module `\PCIE4CE4'.
+
+Generating RTLIL representation for module `\EMAC'.
+
+Generating RTLIL representation for module `\TEMAC'.
+
+Generating RTLIL representation for module `\TEMAC_SINGLE'.
+
+Generating RTLIL representation for module `\CMAC'.
+
+Generating RTLIL representation for module `\CMACE4'.
+
+Generating RTLIL representation for module `\MCB'.
+
+Generating RTLIL representation for module `\HBM_REF_CLK'.
+
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_APB'.
+
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_AXI'.
+
+Generating RTLIL representation for module `\HBM_ONE_STACK_INTF'.
+
+Generating RTLIL representation for module `\HBM_TWO_STACK_INTF'.
+
+Generating RTLIL representation for module `\PPC405_ADV'.
+
+Generating RTLIL representation for module `\PPC440'.
+
+Generating RTLIL representation for module `\PS7'.
+
+Generating RTLIL representation for module `\PS8'.
+
+Generating RTLIL representation for module `\ILKN'.
+
+Generating RTLIL representation for module `\ILKNE4'.
+
+Generating RTLIL representation for module `\VCU'.
+
+Generating RTLIL representation for module `\FE'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.3. Executing HIERARCHY pass (managing design hierarchy).
+
+
+
+2.4. Executing AST frontend in derive mode using pre-parsed AST for module `\top'.
+
+Generating RTLIL representation for module `\top'.
+
+
+
+2.4.1. Analyzing design hierarchy..
+
+Top module:  \top
+
+
+
+2.4.2. Executing AST frontend in derive mode using pre-parsed AST for module `\counter_Brtl_27'.
+
+Generating RTLIL representation for module `\counter_Brtl_27'.
+
+
+
+2.4.3. Analyzing design hierarchy..
+
+Top module:  \top
+
+Used module:     \counter_Brtl_27
+
+
+
+2.4.4. Analyzing design hierarchy..
+
+Top module:  \top
+
+Used module:     \counter_Brtl_27
+
+Removing unused module `$abstract\top'.
+
+Removing unused module `$abstract\counter_Brtl_27'.
+
+Removed 2 unused modules.
+
+
+
+2.5. Executing PROC pass (convert processes to netlists).
+
+
+
+2.5.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+
+Cleaned up 0 empty switches.
+
+
+
+2.5.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+
+Removed a total of 0 dead cases.
+
+
+
+2.5.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+
+Removed 0 redundant assignments.
+
+Promoted 4 assignments to connections.
+
+
+
+2.5.4. Executing PROC_INIT pass (extract init attributes).
+
+Found init rule in `\counter_Brtl_27.$proc$generated.v:22$1102'.
+
+  Set init value: \n14 = 27'000000000000000000000000000
+
+Found init rule in `\counter_Brtl_27.$proc$generated.v:13$1101'.
+
+  Set init value: \count_reg = 27'000000000000000000000000000
+
+
+
+2.5.5. Executing PROC_ARST pass (detect async resets in processes).
+
+
+
+2.5.6. Executing PROC_ROM pass (convert switches to ROMs).
+
+Converted 0 switches.
+
+
+
+2.5.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+
+Creating decoders for process `\counter_Brtl_27.$proc$generated.v:22$1102'.
+
+Creating decoders for process `\counter_Brtl_27.$proc$generated.v:13$1101'.
+
+Creating decoders for process `\counter_Brtl_27.$proc$generated.v:20$1100'.
+
+Creating decoders for process `\counter_Brtl_27.$proc$generated.v:11$1097'.
+
+
+
+2.5.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+No latch inferred for signal `\counter_Brtl_27.\count_reg' from process `\counter_Brtl_27.$proc$generated.v:11$1097'.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [0]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [1]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [2]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [3]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [4]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [5]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [6]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [7]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [8]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [9]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [10]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [11]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [12]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [13]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [14]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [15]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [16]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [17]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [18]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [19]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [20]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [21]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [22]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [23]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [24]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [25]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+Removing init bit 1'0 for non-memory siginal `\counter_Brtl_27.\count_reg [26]` in process `\counter_Brtl_27.$proc$generated.v:11$1097`.
+
+
+
+2.5.9. Executing PROC_DFF pass (convert process syncs to FFs).
+
+Creating register for signal `\counter_Brtl_27.\n14' using process `\counter_Brtl_27.$proc$generated.v:20$1100'.
+
+  created $dff cell `$procdff$1103' with positive edge clock.
+
+
+
+2.5.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+
+
+2.5.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+
+Removing empty process `counter_Brtl_27.$proc$generated.v:22$1102'.
+
+Removing empty process `counter_Brtl_27.$proc$generated.v:13$1101'.
+
+Removing empty process `counter_Brtl_27.$proc$generated.v:20$1100'.
+
+Removing empty process `counter_Brtl_27.$proc$generated.v:11$1097'.
+
+Cleaned up 0 empty switches.
+
+
+
+2.5.12. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.6. Executing TRIBUF pass.
+
+
+
+2.7. Executing DEMINOUT pass (demote inout ports to input or output).
+
+
+
+2.8. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+Removed 0 unused cells and 6 unused wires.
+
+<suppressed ~1 debug messages>
+
+
+
+2.10. Executing CHECK pass (checking for obvious problems).
+
+Checking module counter_Brtl_27...
+
+Checking module top...
+
+Found and reported 0 problems.
+
+
+
+2.11. Executing OPT pass (performing simple optimizations).
+
+
+
+2.11.1. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.11.2. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 3 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.11.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+
+Running muxtree optimizer on module \counter_Brtl_27..
+
+  Creating internal representation of mux trees.
+
+  Evaluating internal representation of mux trees.
+
+  Analyzing evaluation results.
+
+Running muxtree optimizer on module \top..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Removed 0 multiplexer ports.
+
+<suppressed ~2 debug messages>
+
+
+
+2.11.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+
+  Optimizing cells in module \counter_Brtl_27.
+
+  Optimizing cells in module \top.
+
+Performed a total of 0 changes.
+
+
+
+2.11.5. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 3 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.11.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+
+
+2.11.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.11.8. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.11.9. Finished fast OPT passes. (There is nothing left to do.)
+
+
+
+2.12. Executing FSM pass (extract and optimize FSM).
+
+
+
+2.12.1. Executing FSM_DETECT pass (finding FSMs in design).
+
+
+
+2.12.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+
+
+
+2.12.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+
+
+2.12.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.12.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+
+
+2.12.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+
+
+
+2.12.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+
+
+2.12.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+
+
+
+2.13. Executing OPT pass (performing simple optimizations).
+
+
+
+2.13.1. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.13.2. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 3 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+
+Running muxtree optimizer on module \counter_Brtl_27..
+
+  Creating internal representation of mux trees.
+
+  Evaluating internal representation of mux trees.
+
+  Analyzing evaluation results.
+
+Running muxtree optimizer on module \top..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Removed 0 multiplexer ports.
+
+<suppressed ~2 debug messages>
+
+
+
+2.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+
+  Optimizing cells in module \counter_Brtl_27.
+
+  Optimizing cells in module \top.
+
+Performed a total of 0 changes.
+
+
+
+2.13.5. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 3 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+Adding SRST signal on $procdff$1103 ($dff) from module counter_Brtl_27 (D = \n9, Q = \n14, rval = 27'000000000000000000000000000).
+
+
+
+2.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+Removed 1 unused cells and 1 unused wires.
+
+<suppressed ~2 debug messages>
+
+
+
+2.13.8. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+
+
+2.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+
+Running muxtree optimizer on module \counter_Brtl_27..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Running muxtree optimizer on module \top..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Removed 0 multiplexer ports.
+
+
+
+2.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+
+  Optimizing cells in module \counter_Brtl_27.
+
+  Optimizing cells in module \top.
+
+Performed a total of 0 changes.
+
+
+
+2.13.12. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 2 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+
+
+2.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.13.15. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.13.16. Finished fast OPT passes. (There is nothing left to do.)
+
+
+
+2.14. Executing WREDUCE pass (reducing word size of cells).
+
+Removed top 26 bits (of 27) from port B of cell counter_Brtl_27.$add$generated.v:16$1098 ($add).
+
+
+
+2.15. Executing PEEPOPT pass (run peephole optimizers).
+
+
+
+2.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.17. Executing PMUX2SHIFTX pass.
+
+
+
+2.18. Executing SORT pass.
+
+
+
+2.19. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+
+
+2.20. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.20.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/mul2dsp.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/mul2dsp.v' to AST representation.
+
+Generating RTLIL representation for module `\_80_mul'.
+
+Generating RTLIL representation for module `\_90_soft_mul'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.20.2. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/xc7_dsp_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/xc7_dsp_map.v' to AST representation.
+
+Generating RTLIL representation for module `$__MUL25X18'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.20.3. Continuing TECHMAP pass.
+
+No more expansions possible.
+
+<suppressed ~5 debug messages>
+
+
+
+2.21. Executing OPT_EXPR pass (perform const folding).
+
+
+
+2.22. Executing WREDUCE pass (reducing word size of cells).
+
+
+
+2.23. Executing XILINX_DSP pass (pack resources into DSPs).
+
+
+
+2.24. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.24.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/cmp2lut.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/cmp2lut.v' to AST representation.
+
+Generating RTLIL representation for module `\_90_lut_cmp_'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.24.2. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/cmp2lcu.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/cmp2lcu.v' to AST representation.
+
+Generating RTLIL representation for module `\_80_lcu_cmp_'.
+
+Generating RTLIL representation for module `$__CMP2LCU'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.24.3. Continuing TECHMAP pass.
+
+No more expansions possible.
+
+<suppressed ~7 debug messages>
+
+
+
+2.25. Executing ALUMACC pass (create $alu and $macc cells).
+
+Extracting $alu and $macc cells in module counter_Brtl_27:
+
+  creating $macc model for $add$generated.v:16$1098 ($add).
+
+  creating $alu model for $macc $add$generated.v:16$1098.
+
+  creating $alu cell for $add$generated.v:16$1098: $auto$alumacc.cc:512:replace_alu$1107
+
+  created 1 $alu and 0 $macc cells.
+
+Extracting $alu and $macc cells in module top:
+
+  created 0 $alu and 0 $macc cells.
+
+
+
+2.26. Executing SHARE pass (SAT-based resource sharing).
+
+
+
+2.27. Executing OPT pass (performing simple optimizations).
+
+
+
+2.27.1. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.27.2. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 2 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.27.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+
+Running muxtree optimizer on module \counter_Brtl_27..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Running muxtree optimizer on module \top..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Removed 0 multiplexer ports.
+
+
+
+2.27.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+
+  Optimizing cells in module \counter_Brtl_27.
+
+  Optimizing cells in module \top.
+
+Performed a total of 0 changes.
+
+
+
+2.27.5. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 2 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.27.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+
+
+2.27.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.27.8. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.27.9. Finished fast OPT passes. (There is nothing left to do.)
+
+
+
+2.28. Executing MEMORY pass.
+
+
+
+2.28.1. Executing OPT_MEM pass (optimize memories).
+
+Performed a total of 0 transformations.
+
+
+
+2.28.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+
+Performed a total of 0 transformations.
+
+
+
+2.28.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+
+
+2.28.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+
+
+2.28.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+
+
+2.28.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.28.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+
+
+2.28.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+
+Performed a total of 0 transformations.
+
+
+
+2.28.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.28.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+
+
+2.29. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.30. Executing MEMORY_LIBMAP pass (mapping memories to cells).
+
+
+
+2.31. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.31.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/lutrams_xc5v_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/lutrams_xc5v_map.v' to AST representation.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_SP_'.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_DP_'.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_QP_'.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_OP_'.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_SDP_'.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_64X8SW_'.
+
+Generating RTLIL representation for module `$__XILINX_LUTRAM_32X16DR8_'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.31.2. Continuing TECHMAP pass.
+
+No more expansions possible.
+
+<suppressed ~9 debug messages>
+
+
+
+2.32. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.32.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/brams_xc6v_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/brams_xc6v_map.v' to AST representation.
+
+Generating RTLIL representation for module `$__XILINX_BLOCKRAM_TDP_'.
+
+Generating RTLIL representation for module `$__XILINX_BLOCKRAM_SDP_'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.32.2. Continuing TECHMAP pass.
+
+No more expansions possible.
+
+<suppressed ~4 debug messages>
+
+
+
+2.33. Executing OPT pass (performing simple optimizations).
+
+
+
+2.33.1. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.33.2. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 2 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.33.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+
+
+2.33.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.33.5. Finished fast OPT passes.
+
+
+
+2.34. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+
+
+2.35. Executing OPT pass (performing simple optimizations).
+
+
+
+2.35.1. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.35.2. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 2 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.35.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+
+Running muxtree optimizer on module \counter_Brtl_27..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Running muxtree optimizer on module \top..
+
+  Creating internal representation of mux trees.
+
+  No muxes found in this module.
+
+Removed 0 multiplexer ports.
+
+
+
+2.35.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+
+  Optimizing cells in module \counter_Brtl_27.
+
+  Optimizing cells in module \top.
+
+Performed a total of 0 changes.
+
+
+
+2.35.5. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 2 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 0 cells.
+
+
+
+2.35.6. Executing OPT_SHARE pass.
+
+
+
+2.35.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+
+
+2.35.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+
+
+2.35.9. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.35.10. Finished fast OPT passes. (There is nothing left to do.)
+
+
+
+2.36. Executing XILINX_SRL pass (Xilinx shift register extraction).
+
+
+
+2.37. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.37.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/techmap.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/techmap.v' to AST representation.
+
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_various'.
+
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+
+Generating RTLIL representation for module `\_90_fa'.
+
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+
+Generating RTLIL representation for module `\_90_alu'.
+
+Generating RTLIL representation for module `\_90_macc'.
+
+Generating RTLIL representation for module `\_90_alumacc'.
+
+Generating RTLIL representation for module `$__div_mod_u'.
+
+Generating RTLIL representation for module `$__div_mod_trunc'.
+
+Generating RTLIL representation for module `\_90_div'.
+
+Generating RTLIL representation for module `\_90_mod'.
+
+Generating RTLIL representation for module `$__div_mod_floor'.
+
+Generating RTLIL representation for module `\_90_divfloor'.
+
+Generating RTLIL representation for module `\_90_modfloor'.
+
+Generating RTLIL representation for module `\_90_pow'.
+
+Generating RTLIL representation for module `\_90_pmux'.
+
+Generating RTLIL representation for module `\_90_demux'.
+
+Generating RTLIL representation for module `\_90_lut'.
+
+Generating RTLIL representation for module `$connect'.
+
+Generating RTLIL representation for module `$input_port'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.37.2. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/arith_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/arith_map.v' to AST representation.
+
+Generating RTLIL representation for module `\_80_xilinx_lcu'.
+
+Generating RTLIL representation for module `\_80_xilinx_alu'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.37.3. Continuing TECHMAP pass.
+
+Using template $paramod$443fc5832139ffaa8431d4bfa74df0746ae55944\_80_xilinx_alu for cells of type $alu.
+
+Using extmapper simplemap for cells of type $sdff.
+
+Using extmapper simplemap for cells of type $xor.
+
+Using extmapper simplemap for cells of type $mux.
+
+Using extmapper simplemap for cells of type $not.
+
+Using extmapper simplemap for cells of type $pos.
+
+No more expansions possible.
+
+<suppressed ~107 debug messages>
+
+
+
+2.38. Executing OPT pass (performing simple optimizations).
+
+
+
+2.38.1. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+<suppressed ~54 debug messages>
+
+Optimizing module top.
+
+
+
+2.38.2. Executing OPT_MERGE pass (detect identical cells).
+
+Finding identical cells in module `\counter_Brtl_27'.
+
+Computing hashes of 62 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+Computing hashes of 61 cells of `\counter_Brtl_27'.
+
+Finding duplicate cells in `\counter_Brtl_27'.
+
+<suppressed ~3 debug messages>
+
+Finding identical cells in module `\top'.
+
+Computing hashes of 1 cells of `\top'.
+
+Finding duplicate cells in `\top'.
+
+Removed a total of 1 cells.
+
+
+
+2.38.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+
+
+2.38.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+Finding unused cells or wires in module \counter_Brtl_27..
+
+Finding unused cells or wires in module \top..
+
+Removed 26 unused cells and 18 unused wires.
+
+<suppressed ~27 debug messages>
+
+
+
+2.38.5. Finished fast OPT passes.
+
+
+
+2.39. Executing IOPADMAP pass (mapping inputs/outputs to IO-PAD cells).
+
+Mapping port top.btnc using IBUF.
+
+Mapping port top.clk100mhz using IBUF.
+
+Mapping port top.led0 using OBUF.
+
+
+
+2.40. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.40.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/techmap.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/techmap.v' to AST representation.
+
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+
+Generating RTLIL representation for module `\_90_simplemap_various'.
+
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+
+Generating RTLIL representation for module `\_90_fa'.
+
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+
+Generating RTLIL representation for module `\_90_alu'.
+
+Generating RTLIL representation for module `\_90_macc'.
+
+Generating RTLIL representation for module `\_90_alumacc'.
+
+Generating RTLIL representation for module `$__div_mod_u'.
+
+Generating RTLIL representation for module `$__div_mod_trunc'.
+
+Generating RTLIL representation for module `\_90_div'.
+
+Generating RTLIL representation for module `\_90_mod'.
+
+Generating RTLIL representation for module `$__div_mod_floor'.
+
+Generating RTLIL representation for module `\_90_divfloor'.
+
+Generating RTLIL representation for module `\_90_modfloor'.
+
+Generating RTLIL representation for module `\_90_pow'.
+
+Generating RTLIL representation for module `\_90_pmux'.
+
+Generating RTLIL representation for module `\_90_demux'.
+
+Generating RTLIL representation for module `\_90_lut'.
+
+Generating RTLIL representation for module `$connect'.
+
+Generating RTLIL representation for module `$input_port'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.40.2. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_map.v' to AST representation.
+
+Generating RTLIL representation for module `$__SHREG_'.
+
+Generating RTLIL representation for module `$__XILINX_SHREG_'.
+
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.40.3. Continuing TECHMAP pass.
+
+No more expansions possible.
+
+<suppressed ~80 debug messages>
+
+Removed 0 unused cells and 1 unused wires.
+
+
+
+2.41. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+
+
+2.42. Executing OPT_EXPR pass (perform const folding).
+
+Optimizing module counter_Brtl_27.
+
+Optimizing module top.
+
+
+
+2.43. Executing ABC pass (technology mapping using ABC).
+
+
+
+2.43.1. Extracting gate netlist of module `\counter_Brtl_27' to `<abc-temp-dir>/input.blif'..
+
+
+
+2.43.1.1. Executed ABC.
+
+Extracted 1 gates and 2 wires to a netlist network with 1 inputs and 1 outputs.
+
+Running ABC script: <abc-temp-dir>/abc.script
+
+ABC: ======== ABC command line "source <abc-temp-dir>/abc.script"
+
+ABC: + read_blif <abc-temp-dir>/input.blif 
+
+ABC: + read_lut <abc-temp-dir>/lutdefs.txt 
+
+ABC: + strash 
+
+ABC: + &get -n 
+
+ABC: + &fraig -x 
+
+ABC: + &put 
+
+ABC: + scorr 
+
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+
+ABC: + dc2 
+
+ABC: + dretime 
+
+ABC: + strash 
+
+ABC: + dch -f 
+
+ABC: + if 
+
+ABC: + mfs2 
+
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+
+
+2.43.1.2. Re-integrating ABC results.
+
+ABC RESULTS:              $lut cells:        1
+
+ABC RESULTS:        internal signals:        0
+
+ABC RESULTS:           input signals:        1
+
+ABC RESULTS:          output signals:        1
+
+Removing temp directory.
+
+
+
+2.43.2. Extracting gate netlist of module `\top' to `<abc-temp-dir>/input.blif'..
+
+Don't call ABC as there is nothing to map.
+
+
+
+2.43.2.1. Executed ABC.
+
+Extracted 0 gates and 0 wires to a netlist network with 0 inputs and 0 outputs.
+
+Removing temp directory.
+
+Removing global temp directory.
+
+Removed 0 unused cells and 2 unused wires.
+
+
+
+2.44. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.44.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/ff_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/ff_map.v' to AST representation.
+
+Generating RTLIL representation for module `$_DFFE_NP0P_'.
+
+Generating RTLIL representation for module `$_DFFE_PP0P_'.
+
+Generating RTLIL representation for module `$_DFFE_NP1P_'.
+
+Generating RTLIL representation for module `$_DFFE_PP1P_'.
+
+Generating RTLIL representation for module `$_DFFSRE_NPPP_'.
+
+Generating RTLIL representation for module `$_DFFSRE_PPPP_'.
+
+Generating RTLIL representation for module `$_SDFFE_NP0P_'.
+
+Generating RTLIL representation for module `$_SDFFE_PP0P_'.
+
+Generating RTLIL representation for module `$_SDFFE_NP1P_'.
+
+Generating RTLIL representation for module `$_SDFFE_PP1P_'.
+
+Generating RTLIL representation for module `$_DLATCH_NP0_'.
+
+Generating RTLIL representation for module `$_DLATCH_PP0_'.
+
+Generating RTLIL representation for module `$_DLATCH_NP1_'.
+
+Generating RTLIL representation for module `$_DLATCH_PP1_'.
+
+Generating RTLIL representation for module `$_DLATCH_NPP_'.
+
+Generating RTLIL representation for module `$_DLATCH_PPP_'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.44.2. Continuing TECHMAP pass.
+
+Using template $paramod$_SDFFE_PP0P_\_TECHMAP_WIREINIT_Q_=1'0 for cells of type $_SDFFE_PP0P_.
+
+No more expansions possible.
+
+<suppressed ~56 debug messages>
+
+
+
+2.45. Executing XILINX_SRL pass (Xilinx shift register extraction).
+
+
+
+2.46. Executing TECHMAP pass (map to technology primitives).
+
+
+
+2.46.1. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/lut_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/lut_map.v' to AST representation.
+
+Generating RTLIL representation for module `$lut'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.46.2. Executing Verilog-2005 frontend: C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_map.v
+
+Parsing Verilog input from `C:\Users\user\APIO~1\packages\OSS-CA~1\bin\../share/yosys/xilinx/cells_map.v' to AST representation.
+
+Generating RTLIL representation for module `$__SHREG_'.
+
+Generating RTLIL representation for module `$__XILINX_SHREG_'.
+
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+
+Successfully finished Verilog frontend.
+
+
+
+2.46.3. Continuing TECHMAP pass.
+
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000001\LUT=2'01 for cells of type $lut.
+
+No more expansions possible.
+
+<suppressed ~20 debug messages>
+
+
+
+2.47. Executing XILINX_DFFOPT pass (optimize FF control signal usage).
+
+Optimizing FFs in counter_Brtl_27.
+
+Optimizing FFs in top.
+
+
+
+2.48. Executing OPT_LUT_INS pass (discard unused LUT inputs).
+
+Optimizing LUTs in counter_Brtl_27.
+
+Optimizing LUTs in top.
+
+
+
+2.49. Executing CLKBUFMAP pass (inserting clock buffers).
+
+Inserting BUFG on top.$iopadmap$clk100mhz[0].
+
+Removed 0 unused cells and 164 unused wires.
+
+
+
+2.50. Executing HIERARCHY pass (managing design hierarchy).
+
+Attribute `top' found on module `top'. Setting top module to top.
+
+
+
+2.50.1. Analyzing design hierarchy..
+
+Top module:  \top
+
+Used module:     \counter_Brtl_27
+
+
+
+2.50.2. Analyzing design hierarchy..
+
+Top module:  \top
+
+Used module:     \counter_Brtl_27
+
+Removed 0 unused modules.
+
+
+
+2.51. Printing statistics.
+
+
+
+=== counter_Brtl_27 ===
+
+
+
+        +----------Local Count, excluding submodules.
+
+        | 
+
+       10 wires
+
+      220 wire bits
+
+        6 public wires
+
+      110 public wire bits
+
+        3 ports
+
+       29 port bits
+
+        1 cells
+
+        1   INV
+
+       34 submodules
+
+        7   CARRY4
+
+       27   FDRE
+
+
+
+   Estimated number of LCs:          0
+
+
+
+=== top ===
+
+
+
+        +----------Local Count, excluding submodules.
+
+        | 
+
+        8 wires
+
+       34 wire bits
+
+        5 public wires
+
+       31 public wire bits
+
+        3 ports
+
+        3 port bits
+
+        4 cells
+
+        1   BUFG
+
+        2   IBUF
+
+        1   OBUF
+
+        1 submodules
+
+        1   counter_Brtl_27
+
+
+
+   Estimated number of LCs:          0
+
+
+
+=== design hierarchy ===
+
+
+
+        +----------Count including submodules.
+
+        | 
+
+        5 top
+
+        1 counter_Brtl_27
+
+
+
+        +----------Count including submodules.
+
+        | 
+
+       18 wires
+
+      254 wire bits
+
+       11 public wires
+
+      141 public wire bits
+
+        6 ports
+
+       32 port bits
+
+        - memories
+
+        - memory bits
+
+        - processes
+
+        5 cells
+
+        1   BUFG
+
+        2   IBUF
+
+        1   INV
+
+        1   OBUF
+
+        1 submodules
+
+        1   counter_Brtl_27
+
+
+
+   Estimated number of LCs:          0
+
+
+
+2.52. Executing CHECK pass (checking for obvious problems).
+
+Checking module counter_Brtl_27...
+
+Checking module top...
+
+Found and reported 0 problems.
+
+
+
+3. Executing JSON backend.
+
+
+
+End of script. Logfile hash: 6eddcfa843
+
+Yosys 0.63+173 (git sha1 66306a8ca-dirty, x86_64-w64-mingw32-g++ 13.2.1 -O3)
+
+Time spent: 1% 19x read_verilog (0 sec), 1% 15x opt_expr (0 sec), ...
+
+nextpnr-xilinx --chipdb C:\Users\user\.apio\packages\openxc7\chipdb\xc7a100tcsg324.bin --xdc nexys-a7-100t.xdc --json _build\default\hardware.json --fasm _build\default\hardware.fasm --report _build\default\hardware.pnr
+
+Propagating clock constraints...
+    derived 100.0 MHz for net '$auto$clkbufmap.cc:262:execute$1751' (through IBUF '$iopadmap$top.clk100mhz')
+    derived 100.0 MHz for net '$iopadmap$clk100mhz' (through BUFG '$auto$clkbufmap.cc:261:execute$1750')
+Packing constants..
+Inserting IO buffers..
+    IO port 'btnc' driven by IBUF '$iopadmap$top.btnc'
+    IO port 'clk100mhz' driven by IBUF '$iopadmap$top.clk100mhz'
+    IO port 'led0' driven by OBUF '$iopadmap$top.led0'
+    Constraining 'btnc' to site 'IOB_X0Y82'
+    Tile 'LIOB33_X0Y81'
+    Constraining 'clk100mhz' to site 'IOB_X1Y126'
+    Tile 'RIOB33_X57Y125'
+    Constraining 'led0' to site 'IOB_X0Y114'
+    Tile 'LIOB33_X0Y113'
+Generating input buffer for '$iopadmap$top.btnc'
+Generating input buffer for '$iopadmap$top.clk100mhz'
+Generating output buffer for '$iopadmap$top.led0'
+    Created 3 PAD cells from:
+             3x PAD
+Preparing clocking...
+Packing constants..
+Packing cfg...
+Packing PLLs...
+Packing Gigabit Transceivers..
+Packing global buffers...
+    Constrained BUFGCTRL '$auto$clkbufmap.cc:261:execute$1750' to bel 'BUFGCTRL_X0Y16/BUFGCTRL' based on dedicated routing
+Packing MUX[789]s..
+Packing carries (atomic CARRY4)..
+   Packed 7 CARRY4 cells into 1 chains (atomic).
+router2 PRECYINIT fix: 7 CARRY4 cells, 8 constant carry pins disconnected
+Packing LUTs..
+    Created 56 SLICE_LUTX cells from:
+            56x LUT1
+Packing DRAM..
+   Transformed 0 tied-low DRAM address inputs to be tied-high
+Packing BRAM..
+Packing DSPs..
+Packing flipflops..
+    Created 27 SLICE_FFX cells from:
+            27x FDRE
+    local-const FF control: disconnected 0 SR(=GND) + 27 CE(=VCC) pins from global nets
+Constrained 0 LUTFF pairs.
+
+Annotating ports with timing budgets for target frequency 12.00 MHz
+Checksum: 0xe6891ed6
+
+Device utilisation:
+	          SLICE_LUTX:    56/126800     0%
+	           SLICE_FFX:    27/126800     0%
+	              CARRY4:     7/15850     0%
+	          PSEUDO_GND:     1/30932     0%
+	          PSEUDO_VCC:     1/30932     0%
+	               HARD0:     0/ 2376     0%
+	            RAMB18E1:     0/  270     0%
+	            FIFO18E1:     0/  135     0%
+	        RAMBFIFO36E1:     0/  135     0%
+	            RAMB36E1:     0/  135     0%
+	             DSP48E1:     0/  240     0%
+	                 PAD:     3/  630     0%
+	       IOB33M_OUTBUF:     0/  144     0%
+	       IOB33S_OUTBUF:     0/  144     0%
+	        IOB33_OUTBUF:     1/  300     0%
+	     IOB33M_INBUF_EN:     0/  144     0%
+	     IOB33S_INBUF_EN:     0/  144     0%
+	      IOB33_INBUF_EN:     2/  300     0%
+	IOB33M_TERM_OVERRIDE:     0/  144     0%
+	IOB33S_TERM_OVERRIDE:     0/  144     0%
+	 IOB33_TERM_OVERRIDE:     0/  300     0%
+	       PULL_OR_KEEP1:     0/  588     0%
+	            IDELAYE2:     0/  300     0%
+	        OLOGICE3_TFF:     0/  300     0%
+	      OLOGICE3_OUTFF:     0/  300     0%
+	       OLOGICE3_MISR:     0/  300     0%
+	           OSERDESE2:     0/  300     0%
+	        ILOGICE3_IFF:     0/  300     0%
+	ILOGICE3_ZHOLD_DELAY:     0/  300     0%
+	           ISERDESE2:     0/  300     0%
+	                BUFR:     0/   24     0%
+	               BUFIO:     0/   24     0%
+	          IDELAYCTRL:     0/    6     0%
+	            BUFGCTRL:     1/   32     3%
+	            PCIE_2_1:     0/    1     0%
+	               BSCAN:     0/    4     0%
+	                BUFG:     0/   32     0%
+	              BUFHCE:     0/   96     0%
+	            DCIRESET:     0/    1     0%
+	            DNA_PORT:     0/    1     0%
+	           EFUSE_USR:     0/    1     0%
+	           FRAME_ECC:     0/    1     0%
+	       GTPE2_CHANNEL:     0/    8     0%
+	        GTPE2_COMMON:     0/    2     0%
+	         IBUFDS_GTE2:     0/    4     0%
+	                ICAP:     0/    2     0%
+	            INVERTER:     0/  144     0%
+	          MMCME2_ADV:     0/    6     0%
+	        OLOGICE2_TFF:     0/  300     0%
+	      OLOGICE2_OUTFF:     0/  300     0%
+	           PLLE2_ADV:     0/    6     0%
+	           SELMUX2_1:     0/48750     0%
+	             STARTUP:     0/    1     0%
+	          USR_ACCESS:     0/    1     0%
+	              BUFFER:     0/   42     0%
+	        ILOGICE2_IFF:     0/  300     0%
+	       OLOGICE2_MISR:     0/  300     0%
+
+HeAP congestion knobs: beta=0.400 spread_scale=2,1 alpha=0.080
+Placed 7 cells based on constraints.
+Creating initial analytic placement for 1 cells, random placement wirelen = 265.
+    at initial placer iter 0, wirelen = 199
+    at initial placer iter 1, wirelen = 199
+    at initial placer iter 2, wirelen = 199
+    at initial placer iter 3, wirelen = 199
+Running main analytical placer.
+    at iteration #1, type CARRY4: wirelen solved = 211, spread = 211, legal = 251; time = 0.01s
+HeAP Placer Time: 0.09s
+  of which solving equations: 0.00s
+  of which spreading cells: 0.00s
+  of which strict legalisation: 0.00s
+
+Running simulated annealing placer for refinement.
+  at iteration #1: temp = 0.000000, timing cost = 4, wirelen = 251
+  at iteration #2: temp = 0.000000, timing cost = 4, wirelen = 251 
+SA placement time 0.00s
+
+Max frequency for clock '$iopadmap$clk100mhz': 188.82 MHz (PASS at 100.00 MHz)
+
+Slack histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+[  4704,   4942) |** 
+[  4942,   5180) |* 
+[  5180,   5418) |** 
+[  5418,   5656) |** 
+[  5656,   5894) | 
+[  5894,   6132) |*** 
+[  6132,   6370) |* 
+[  6370,   6608) | 
+[  6608,   6846) |*** 
+[  6846,   7084) |* 
+[  7084,   7322) |* 
+[  7322,   7560) |** 
+[  7560,   7798) |* 
+[  7798,   8036) |** 
+[  8036,   8274) |** 
+[  8274,   8512) | 
+[  8512,   8750) | 
+[  8750,   8988) |** 
+[  8988,   9226) |* 
+[  9226,   9464) |* 
+Checksum: 0x0983a383
+Running post-placement legalisation...
+post-place repair: relocated 1 stranded cluster(s)/cell(s) to valid bels
+Routing global clocks...
+    routing clock '$auto$clkbufmap.cc:262:execute$1751'
+    routing clock '$iopadmap$clk100mhz'
+Running router2...
+Setting up routing resources...
+Adopted 28 pre-routed arc(s)
+Running main router loop...
+    iter=1 wires=421 overused=0 overuse=0 archfail=0
+1000 slowest nets by runtime:
+                                                                               count[26]      2 14.3ms
+                                                                          $iopadmap$btnc     27 10.5ms
+                                                                        u_counter.n9[25]      1 0.6ms
+                                                                                count[1]      1 0.5ms
+                                                                 $PACKER_GND_NET$legal$9      1 0.4ms
+                                                                $PACKER_GND_NET$legal$33      1 0.4ms
+                                                                        u_counter.n9[24]      1 0.3ms
+                                                                         u_counter.n9[0]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$53      1 0.3ms
+                                                               $PACKER_GND_NET$legal$109      1 0.3ms
+                                                                $PACKER_GND_NET$legal$93      1 0.3ms
+                                                                        u_counter.n9[26]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$61      1 0.3ms
+                                                                                count[5]      1 0.3ms
+                                                                                count[0]      1 0.3ms
+                                                               $PACKER_GND_NET$legal$105      1 0.3ms
+                                                                $PACKER_GND_NET$legal$37      1 0.3ms
+                                                                                count[3]      1 0.3ms
+                                                                                count[9]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$49      1 0.3ms
+                                                               $PACKER_GND_NET$legal$101      1 0.3ms
+                                                                 $PACKER_GND_NET$legal$5      1 0.3ms
+                                                                $PACKER_GND_NET$legal$69      1 0.3ms
+                                                                $PACKER_GND_NET$legal$85      1 0.3ms
+                                                                $PACKER_GND_NET$legal$25      1 0.3ms
+                                                                        u_counter.n9[21]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$29      1 0.3ms
+                                                                $PACKER_GND_NET$legal$73      1 0.3ms
+                                                                $PACKER_GND_NET$legal$17      1 0.3ms
+                                                                               count[13]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$45      1 0.3ms
+                                                                        u_counter.n9[17]      1 0.3ms
+                                                                               count[25]      1 0.3ms
+                                                                 $PACKER_VCC_NET$legal$1      1 0.3ms
+                                                                $PACKER_GND_NET$legal$57      1 0.3ms
+                                                                                count[7]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$97      1 0.3ms
+                                                                         u_counter.n9[3]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$13      1 0.3ms
+                                                                                count[2]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$21      1 0.3ms
+                                                                               count[11]      1 0.3ms
+                                                                               count[24]      1 0.3ms
+                                                                               count[10]      1 0.3ms
+                                                                               count[21]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$65      1 0.3ms
+                                                                               count[23]      1 0.3ms
+                                                                               count[16]      1 0.3ms
+                                                                               count[15]      1 0.3ms
+                                                                                count[8]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$77      1 0.3ms
+                                                                        u_counter.n9[13]      1 0.3ms
+                                                                         u_counter.n9[9]      1 0.3ms
+                                                                               count[14]      1 0.3ms
+                                                                                count[4]      1 0.3ms
+                                                                $PACKER_GND_NET$legal$41      1 0.3ms
+                                                                         u_counter.n9[5]      1 0.3ms
+                                                                               count[20]      1 0.2ms
+                                                                               count[18]      1 0.2ms
+                                                                               count[12]      1 0.2ms
+                                                                               count[19]      1 0.2ms
+                                                                        u_counter.n9[23]      1 0.2ms
+                                                                               count[22]      1 0.2ms
+                                                                               count[17]      1 0.2ms
+                                                                         u_counter.n9[1]      1 0.2ms
+                                                                                count[6]      1 0.2ms
+                                                                $PACKER_GND_NET$legal$81      1 0.2ms
+                                                                $PACKER_GND_NET$legal$89      1 0.2ms
+                                                                        u_counter.n9[11]      1 0.2ms
+                                                                        u_counter.n9[20]      1 0.2ms
+                                                                        u_counter.n9[16]      1 0.2ms
+                                                                         u_counter.n9[7]      1 0.2ms
+                                                                         u_counter.n9[8]      1 0.2ms
+                                                                         u_counter.n9[6]      1 0.2ms
+                                                                        u_counter.n9[19]      1 0.2ms
+                                                                        u_counter.n9[10]      1 0.2ms
+                                                                         u_counter.n9[4]      1 0.2ms
+                                                                         u_counter.n9[2]      1 0.2ms
+                                                                        u_counter.n9[15]      1 0.2ms
+                                                                        u_counter.n9[12]      1 0.2ms
+                                                                        u_counter.n9[22]      1 0.2ms
+                                                                        u_counter.n9[14]      1 0.2ms
+                                                                        u_counter.n9[18]      1 0.2ms
+                                                                     $iopadmap$clk100mhz     27 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[3]      1 0.0ms
+                                                     $auto$clkbufmap.cc:262:execute$1751      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[15]      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[11]      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[23]      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[19]      1 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[7]      1 0.0ms
+                                                               $PACKER_GND_NET$legal$107      1 0.0ms
+                                                                      count[25]$legal$99      1 0.0ms
+                                                                      count[23]$legal$91      1 0.0ms
+                                                                       count[9]$legal$35      1 0.0ms
+                                                                       count[4]$legal$15      1 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[21]      0 0.0ms
+                                    u_counter.$auto$alumacc.cc:512:replace_alu$1107.X[0]      1 0.0ms
+                                                                                    led0      1 0.0ms
+                                                                     count[26]$legal$103      1 0.0ms
+                                                                      count[24]$legal$95      1 0.0ms
+                                                                      count[22]$legal$87      1 0.0ms
+                                                                      count[21]$legal$83      1 0.0ms
+                                                                      count[20]$legal$79      1 0.0ms
+                                                                      count[19]$legal$75      1 0.0ms
+                                                                      count[18]$legal$71      1 0.0ms
+                                                                      count[17]$legal$67      1 0.0ms
+                                                                      count[16]$legal$63      1 0.0ms
+                                                                      count[15]$legal$59      1 0.0ms
+                                                                      count[14]$legal$55      1 0.0ms
+                                                                      count[13]$legal$51      1 0.0ms
+                                                                      count[12]$legal$47      1 0.0ms
+                                                                      count[11]$legal$43      1 0.0ms
+                                                                      count[10]$legal$39      1 0.0ms
+                                                                       count[8]$legal$31      1 0.0ms
+                                                                       count[7]$legal$27      1 0.0ms
+                                                                       count[6]$legal$23      1 0.0ms
+                                                                       count[5]$legal$19      1 0.0ms
+                                                                       count[3]$legal$11      1 0.0ms
+                                                                        count[2]$legal$7      1 0.0ms
+                                                                        count[1]$legal$3      1 0.0ms
+                                                                         $PACKER_VCC_NET     35 0.0ms
+                                                                         $PACKER_GND_NET     28 0.0ms
+                           u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.O[27]      0 0.0ms
+                           u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.C[27]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[26]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[25]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[24]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[22]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[20]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[18]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[17]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[16]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[14]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[13]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[12]      0 0.0ms
+                                  u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[10]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[9]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[8]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[6]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[5]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[4]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[2]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[1]      0 0.0ms
+                                   u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[0]      0 0.0ms
+                                                                               clk100mhz      2 0.0ms
+                                                                                    btnc      2 0.0ms
+Router2 time 1.25s
+Routing $PACKER_VCC_NET connections...
+    $PACKER_VCC_NET: 35/35 sinks bridged (0 holdouts; max BFS 31)
+Routing $PACKER_GND_NET connections...
+    $PACKER_GND_NET: 28/28 sinks bridged (0 holdouts; max BFS 169)
+Running post-routing legalisation...
+    BUFHCE pass-through CE: 1 tied to VCC, 0 already driven, 0 could not be reached
+
+Critical path report for clock '$iopadmap$clk100mhz' (posedge -> posedge):
+curr total
+ 0.1  0.1  Source u_counter.$auto$ff.cc:337:slice$1529.Q
+ 0.0  0.1    Net count[1] budget 0.000000 ns (14,90) -> (14,90)
+               Sink count[1]$LUT$4.A2
+ 0.1  0.2  Source count[1]$LUT$4.O6
+ 0.0  0.2    Net count[1]$legal$3 budget 0.673000 ns (14,90) -> (14,90)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[0].genblk1.carry4.S1
+ 0.5  0.8  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[0].genblk1.carry4.CO3
+ 0.1  0.9    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[3] budget 0.916000 ns (14,90) -> (14,89)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[1].genblk1.carry4.CIN
+ 0.1  1.0  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[1].genblk1.carry4.CO3
+ 0.1  1.1    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[7] budget 0.916000 ns (14,89) -> (14,88)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[2].genblk1.carry4.CIN
+ 0.1  1.2  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[2].genblk1.carry4.CO3
+ 0.1  1.3    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[11] budget 0.916000 ns (14,88) -> (14,87)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[3].genblk1.carry4.CIN
+ 0.1  1.4  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[3].genblk1.carry4.CO3
+ 0.1  1.5    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[15] budget 0.916000 ns (14,87) -> (14,86)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[4].genblk1.carry4.CIN
+ 0.1  1.6  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[4].genblk1.carry4.CO3
+ 0.1  1.8    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[19] budget 0.916000 ns (14,86) -> (14,85)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[5].genblk1.carry4.CIN
+ 0.1  1.9  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[5].genblk1.carry4.CO3
+ 0.1  2.0    Net u_counter.$auto$alumacc.cc:512:replace_alu$1107.CO[23] budget 0.916000 ns (14,85) -> (14,84)
+               Sink u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[6].genblk1.carry4.CIN
+ 0.3  2.3  Source u_counter.$auto$alumacc.cc:512:replace_alu$1107.genblk1.slice[6].genblk1.carry4.O1
+ 0.0  2.3    Net u_counter.n9[25] budget 0.672000 ns (14,84) -> (14,84)
+               Sink u_counter.$auto$ff.cc:337:slice$1553.D
+ 0.1  2.4  Setup u_counter.$auto$ff.cc:337:slice$1553.D
+1.8 ns logic, 0.7 ns routing
+
+Max frequency for clock '$iopadmap$clk100mhz': 409.67 MHz (PASS at 100.00 MHz)
+
+Slack histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+[  7559,   7653) |* 
+[  7653,   7747) |** 
+[  7747,   7841) |** 
+[  7841,   7935) |** 
+[  7935,   8029) |** 
+[  8029,   8123) |** 
+[  8123,   8217) | 
+[  8217,   8311) |** 
+[  8311,   8405) |** 
+[  8405,   8499) |** 
+[  8499,   8593) |** 
+[  8593,   8687) |* 
+[  8687,   8781) |** 
+[  8781,   8875) |* 
+[  8875,   8969) | 
+[  8969,   9063) |* 
+[  9063,   9157) |* 
+[  9157,   9251) | 
+[  9251,   9345) |* 
+[  9345,   9439) |* 
+Report written to _build\default\hardware.pnr.
+fasm2frames --part xc7a100tcsg324-1 --db-root C:\Users\user\.apio\packages\openxc7\share\nextpnr\external\prjxray-db\artix7 _build\default\hardware.fasm > _build\default\hardware.frames
+
+xc7frames2bit --part_file C:\Users\user\.apio\packages\openxc7\share\nextpnr\external\prjxray-db\artix7\xc7a100tcsg324-1\part.yaml --part_name xc7a100tcsg324-1 --frm_file _build\default\hardware.frames --output_file _build\default\hardware.bit
+
+======================== [SUCCESS] Took 10.42 seconds =========================

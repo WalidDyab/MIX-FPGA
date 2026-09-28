@@ -1,0 +1,9 @@
+﻿USB\VID_0403&PID_6010&MI_00\6&252D3FDB&2&0000 | USB Serial Converter A | inf=oem32.inf provider=FTDI ver=2.12.36.20 svc=FTDIBUS
+FTDIBUS\VID_0403+PID_6010+210292BCFFE4B\0000 | USB Serial Port (COM6) | inf=oem121.inf provider=FTDI ver=2.12.36.20 svc=FTSER2K
+USB\VID_0403&PID_6010&MI_01\6&252D3FDB&2&0001 | USB Serial Converter B | inf=oem32.inf provider=FTDI ver=2.12.36.20 svc=FTDIBUS
+USB\VID_0403&PID_6010\210292BCFFE4 | USB Composite Device | inf=usb.inf provider=Microsoft ver=10.0.26100.9549 svc=usbccgp
+dmgr.dll 2.8.5 2018-06-15T02:42:00
+djtg.dll 2.13.1 2018-06-15T02:42:00
+dpcutil.dll 2.9.5 2018-06-15T02:42:02
+jtsc.dll 2.10.4 2018-06-15T02:42:10
+ftd2xx.dll 3.2.21.1 2024-11-19T04:51:28

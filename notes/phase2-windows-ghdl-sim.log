@@ -1,0 +1,29 @@
+# GHDL GHDL 6.0.0 (6.0.0.r0.ge589c698c.dirty) [Dunoon edition]
+$ ghdl -a --std=08 --workdir=_sim/work src/counter.vhd
+rc=0
+$ ghdl -a --std=08 --workdir=_sim/work src/top.vhd
+rc=0
+$ ghdl -a --std=08 --workdir=_sim/work sim/counter_tb.vhd
+rc=0
+$ ghdl -e --std=08 --workdir=_sim/work top
+rc=0
+$ ghdl -e --std=08 --workdir=_sim/work counter_tb
+rc=0
+$ ghdl -r --std=08 --workdir=_sim/work counter_tb --wave=_sim/counter_tb.ghw --assert-level=error
+sim/counter_tb.vhd:75:9:@280ns:(report note): ALL TESTS PASSED (28 checks, ends at 280000000 fs)
+simulation stopped @280ns
+rc=0
+
+# ---- fault injection (faulty copies under _sim/fault, src/ untouched) ----
+## fault=plus2: count_reg <= count_reg + 2;
+sim/counter_tb.vhd:42:17:@30ns:(report error): count step 1: expected 1, got 2
+ghdl:error: report failed
+  instance: /counter_tb/stimulus
+ghdl:error: simulation failed
+rc=1
+## fault=noreset: count_reg <= count_reg + 1;
+sim/counter_tb.vhd:42:17:@10ns:(report error): reset, edge 1: expected 0, got 1
+ghdl:error: report failed
+  instance: /counter_tb/stimulus
+ghdl:error: simulation failed
+rc=1

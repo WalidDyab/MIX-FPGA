@@ -1,0 +1,12 @@
+# Store and check out text as LF on every platform, so portable sources
+# (VHDL, XDC, apio.ini) stay byte-identical on Windows and macOS.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary FPGA / waveform artifacts (normally ignored anyway)
+*.bit binary
+*.bin binary
+*.ghw binary

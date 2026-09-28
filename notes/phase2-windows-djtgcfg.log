@@ -1,0 +1,34 @@
+# Digilent JTAG Config Utility v2.6.1
+$ djtgcfg enum
+Found 1 device(s)
+
+Device: NexysA7
+    Device Transport Type: 00020001 (USB)
+    Product Name:          Digilent Nexys A7 -100T
+    User Name:             NexysA7
+    Serial Number:         210292BCFFE4
+rc=0
+$ djtgcfg init -d SN:210292BCFFE4
+Initializing scan chain...
+ERROR: failed to initialize scan chain
+rc=1
+$ djtgcfg prog -d SN:210292BCFFE4 -index 0 -file D:\WSClaude\NexysVHDL\experiments\phase2-windows-clocked-vhdl\_build\program\hardware-digilent.bit
+[stdout]
+ERROR: failed to initialize scan chain
+[stderr]
+rc=1 elapsed=0.22s
+
+# ---- retry after board power switched ON ----
+$ djtgcfg init -d SN:210292BCFFE4
+Initializing scan chain...
+Found Device ID: 13631093
+
+Found 1 device(s):
+    Device 0: XC7A100T
+rc=0
+$ djtgcfg prog -d SN:210292BCFFE4 -index 0 -file D:\WSClaude\NexysVHDL\experiments\phase2-windows-clocked-vhdl\_build\program\hardware-digilent.bit
+[stdout]
+Programming device. Do not touch your board. This may take a few minutes...
+Programming succeeded.
+[stderr]
+rc=0 elapsed=4.02s
