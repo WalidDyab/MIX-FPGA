@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { NodeToolRunner, succeeded } from '../core';
@@ -30,7 +30,10 @@ describe('NodeToolRunner', () => {
         const dir = join(await tempDir(t), 'dir with spaces');
         await mkdir(dir);
         const r = await runner.run({ executable: NODE, args: ['-e', 'process.stdout.write(process.cwd())'], cwd: dir });
-        assert.equal(r.stdout.toLowerCase(), dir.toLowerCase());
+        assert.ok(succeeded(r), r.stderr);
+        // The child reports its cwd with symlinks resolved (macOS /var -> /private/var) and
+        // Windows may hand out 8.3 temp names, so compare canonical paths on both sides.
+        assert.equal((await realpath(r.stdout)).toLowerCase(), (await realpath(dir)).toLowerCase());
     });
 
     it('applies environment overrides and removals', async () => {

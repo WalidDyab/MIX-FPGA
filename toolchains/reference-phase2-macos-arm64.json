@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "id": "reference-phase2-macos-arm64",
-  "description": "Tool versions validated on Apple-silicon macOS in Phase 2. Reference record, not a release matrix. Programmer version to be filled in by the macOS agent.",
+  "description": "Tool versions validated on Apple-silicon macOS in Phase 2. Reference record, not a release matrix.",
   "host": { "platform": "darwin", "arch": "arm64" },
   "status": "reference",
-  "validatedBy": "Phase 2 macOS report (record not yet in this repository)",
+  "validatedBy": "docs/phase1-macos.md, docs/phase2-macos.md",
   "tools": [
     { "tool": "ghdl", "testedVersions": ["6.0.0"] },
     { "tool": "apio", "testedVersions": ["1.7.0"] },
-    { "tool": "openxc7", "testedVersions": ["2026.09.25"], "notes": "pinned; format as reported on macOS" },
+    { "tool": "openxc7", "testedVersions": ["2026.09.25"], "notes": "pinned via toolchains/apio-remote-config/apio-1.7.x.jsonc; format as reported on macOS" },
     { "tool": "yosys", "testedVersions": ["0.63+173"] },
     { "tool": "nextpnr-xilinx", "testedVersions": ["e860c9c8"] },
-    { "tool": "programmer", "name": "openFPGALoader", "testedVersions": [], "notes": "version not recorded in this repository yet" }
+    { "tool": "programmer", "name": "openFPGALoader", "testedVersions": ["1.1.1"], "notes": "reported as v1.1.1; bundled in Apio oss-cad-suite 2026.09.15" }
   ]
 }

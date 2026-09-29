@@ -15,3 +15,7 @@ The two current manifests are **reference** records from Phase 2. A release matr
 ## Consequences
 
 Upgrading a tool becomes a deliberate step: validate, then add or replace a manifest. Doctor and the future UI can warn about untested versions instead of failing mysteriously. Detection of openXC7 package metadata and programmer versions is platform-specific and is left to Phase 3B adapters.
+
+## Pinned Apio packages
+
+A manifest records which versions were tested; it does not make Apio install them. For Apio 1.7.x the package versions are pinned with `toolchains/apio-remote-config/apio-1.7.x.jsonc`, the remote config used by the validated macOS runs (openxc7 `2026-09-25` instead of the incompatible upstream `2026-09-27`). Apio reads it through `APIO_REMOTE_CONFIG_URL`, which the adapter running Apio sets per invocation. See `toolchains/apio-remote-config/README.md`.
