@@ -1,5 +1,5 @@
 import { type HostInfo, NodeToolRunner, packageRoot, type ToolRunner } from '../../core';
-import type { PlatformServices } from '../types';
+import type { PlatformFactory, PlatformServices } from '../types';
 import { DigilentProgrammer, type DigilentProgrammerOptions } from './digilent/digilent-programmer';
 import { nodeWindowsFileSystem, type WindowsHostEnvironment } from './host-environment';
 import { WindowsToolchainInspector } from './toolchain-inspector';
@@ -14,7 +14,7 @@ export interface WindowsPlatformOptions {
 export interface WindowsPlatformServices extends PlatformServices {
     readonly toolLocator: WindowsToolLocator;
     readonly programmer: DigilentProgrammer;
-    /** openXC7/programmer-aware version detection (PlatformServices has no slot for it yet; see docs/phase3b-windows.md). */
+    /** openXC7/programmer-aware version detection with the adapter's own locator. */
     readonly inspector: WindowsToolchainInspector;
 }
 
@@ -34,7 +34,8 @@ export function defaultWindowsEnvironment(): WindowsHostEnvironment {
  * ProgrammerProvider for Digilent Adept (`djtgcfg`) that keeps the standard
  * FTDI/Digilent driver. No Vivado, no driver changes, FPGA SRAM only.
  *
- * Not registered in platform/index.ts yet (Phase 3C does that).
+ * Windows needs no per-tool environment, so the base runner is used unchanged
+ * (in particular, the macOS Apio pin is never applied here).
  */
 export function createWindowsPlatformServices(_host: HostInfo, options: WindowsPlatformOptions = {}): WindowsPlatformServices {
     const environment = options.environment ?? defaultWindowsEnvironment();
@@ -47,5 +48,14 @@ export function createWindowsPlatformServices(_host: HostInfo, options: WindowsP
         toolLocator,
         programmer: new DigilentProgrammer(toolLocator, runner, environment, options.programmer),
         inspector: new WindowsToolchainInspector(toolLocator, runner, environment),
+        async inspectToolchain(request) {
+            // The composition root's locator puts project settings and NEXYSVHDL_* first.
+            const tools = await new WindowsToolchainInspector(request.locator, runner, environment).detectAll(request.tools);
+            return { tools, diagnostics: [] };
+        },
     };
 }
+
+/** The factory registered in platform/index.ts for win32/x64. */
+export const createWindowsPlatform: PlatformFactory = (host, context) =>
+    createWindowsPlatformServices(host, { runner: context.runner, environment: { ...defaultWindowsEnvironment(), env: context.env } });

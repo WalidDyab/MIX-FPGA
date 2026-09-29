@@ -11,7 +11,7 @@ import {
     type ToolRunner,
     type VhdlProvider,
 } from '../../core';
-import type { PlatformFactory, PlatformServices } from '../types';
+import type { PlatformFactory, PlatformServices, ToolchainInspectionRequest } from '../types';
 import { apioRemoteConfigUrl, APIO_REMOTE_CONFIG_ENV, PinnedApioRunner, pinnedConfigDir } from './apio-pin';
 import { OpenFpgaLoaderProgrammer } from './programmer';
 import { type MacosSystem, nodeSystem } from './system';
@@ -28,19 +28,14 @@ export * from './toolchain';
 export * from './tool-locator';
 
 /**
- * The factory registered in platform/index.ts. Deliberately INERT until Phase 3C:
- * the shared CLI composition root builds the Apio provider and ToolDetector with
- * its own ToolRunner, and PlatformServices has no way to add the pinned
- * APIO_REMOTE_CONFIG_URL to it. Activating the real adapter here would make the
- * CLI (and the shared CLI tests) run Apio unpinned, which replaced the validated
- * openXC7 package during Phase 3B. See docs/phase3b-macos.md,
- * "Phase 3C integration requirement". Use createMacosAdapter() directly instead.
+ * The factory registered in platform/index.ts for darwin/arm64: the real
+ * adapter, built on the composition root's base runner and environment. Its
+ * `runner` (a PinnedApioRunner) becomes the CLI's runner, so every Apio call —
+ * doctor probes, `apio raw`, `apio build` — carries the pinned
+ * APIO_REMOTE_CONFIG_URL, and Apio is refused if the pin cannot be expressed.
  */
-export const createMacosPlatform: PlatformFactory = () => ({
-    id: 'macos',
-    displayName: 'macOS',
-    status: 'adapter implemented (Phase 3B); activation pending Phase 3C integration',
-});
+export const createMacosPlatform: PlatformFactory = (host, context) =>
+    createMacosAdapter(host, { runner: context.runner, system: nodeSystem(context.env) });
 
 /** The real macOS adapter: PlatformServices plus the pieces a composition root needs. */
 export interface MacosAdapter extends PlatformServices {
@@ -79,7 +74,7 @@ export function developmentLocations(system: MacosSystem): NonNullable<MacosLoca
     };
 }
 
-/** Apple-silicon macOS adapter (Phase 3B), for direct use until Phase 3C wires it into the CLI. */
+/** Apple-silicon macOS adapter. Registered through createMacosPlatform; also usable directly (tests, tools). */
 export function createMacosAdapter(host: HostInfo, options: MacosAdapterOptions = {}): MacosAdapter {
     const system = options.system ?? nodeSystem();
     // POSIX join: this adapter handles macOS paths only (also keeps its unit tests host-independent).
@@ -93,6 +88,11 @@ export function createMacosAdapter(host: HostInfo, options: MacosAdapterOptions 
     }
     const runner = new PinnedApioRunner(options.runner ?? new NodeToolRunner(), apioEnvironment);
     const common = { id: 'macos', displayName: 'macOS', runner, pinnedConfigDir: configDir, apioEnvironment };
+    const inspect = (detector: () => MacosToolchainDetector) => async (request: ToolchainInspectionRequest) => {
+        // macOS discovery checks executable architecture, so it uses its own locator.
+        const report = await detector().detect(request.manifest);
+        return { tools: report.tools, diagnostics: report.diagnostics };
+    };
 
     if (host.arch !== 'arm64') {
         // Intel Macs are not validated; on Apple silicon x64 means Node runs under Rosetta.
@@ -102,6 +102,7 @@ export function createMacosAdapter(host: HostInfo, options: MacosAdapterOptions 
             status: `unsupported architecture ${host.arch}: requires native arm64 (Apple silicon, no Rosetta)`,
             providers: async () => ({ located: {} }),
             toolchainDetector: () => new MacosToolchainDetector(system, locator, runner, configDir),
+            inspectToolchain: inspect(() => new MacosToolchainDetector(system, locator, runner, configDir)),
         };
     }
 
@@ -123,5 +124,6 @@ export function createMacosAdapter(host: HostInfo, options: MacosAdapterOptions 
             };
         },
         toolchainDetector: () => new MacosToolchainDetector(system, locator, runner, configDir),
+        inspectToolchain: inspect(() => new MacosToolchainDetector(system, locator, runner, configDir)),
     };
 }

@@ -12,6 +12,7 @@ import {
     type ProgrammerAvailability,
     type ProgrammerProvider,
     type ProgrammingArtifact,
+    ProgrammingError,
     type ProgrammingResult,
     type ProgramRequest,
     sha256File,
@@ -49,10 +50,10 @@ export interface DigilentProgrammerOptions {
     readonly probeJtagOnDetect?: boolean;
 }
 
-/** Thrown by prepareArtifact(): the shared contract has no structured failure result for preparation. */
-export class DigilentArtifactError extends Error {
-    constructor(readonly diagnostics: readonly Diagnostic[]) {
-        super(diagnostics.map((d) => d.message).join(' '));
+/** Thrown by prepareArtifact(); ProgrammingService reports its diagnostics as a failed result. */
+export class DigilentArtifactError extends ProgrammingError {
+    constructor(diagnostics: readonly Diagnostic[]) {
+        super(diagnostics);
         this.name = 'DigilentArtifactError';
     }
 }

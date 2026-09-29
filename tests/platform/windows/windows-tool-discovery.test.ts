@@ -161,9 +161,17 @@ describe('Windows platform factory', () => {
         assert.equal(runner.calls.length, 0);
     });
 
-    it('leaves the registered Phase 3A entry point as a placeholder until Phase 3C', () => {
-        const services = createWindowsPlatform(currentHost());
-        assert.equal(services.programmer, undefined);
-        assert.equal(services.toolLocator, undefined);
+    it('the registered factory builds the real adapter on the base runner, undecorated', async () => {
+        const runner = new FakeRunner();
+        const services = createWindowsPlatform(currentHost(), { runner, env: {} });
+        assert.equal(services.programmer?.id, 'digilent-adept');
+        assert.ok(services.toolLocator instanceof WindowsToolLocator);
+        assert.equal(services.runner, undefined); // composition root keeps the base runner
+        assert.equal(runner.calls.length, 0);
+
+        // Its inspection uses the locator it is given (project settings / NEXYSVHDL_* first).
+        const inspection = await services.inspectToolchain!({ tools: ['ghdl'], locator: { locate: async () => undefined } });
+        assert.equal(inspection.tools.size, 0);
+        assert.equal(runner.calls.length, 0);
     });
 });

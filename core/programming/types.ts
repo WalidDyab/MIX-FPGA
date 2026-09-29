@@ -73,3 +73,15 @@ export interface ProgrammerProvider {
     prepareArtifact(request: PrepareRequest): Promise<ProgrammingArtifact>;
     program(request: ProgramRequest): Promise<ProgrammingResult>;
 }
+
+/**
+ * Error a provider may throw (e.g. from prepareArtifact()) to carry structured
+ * diagnostics. ProgrammingService turns any provider exception into a failed
+ * ProgrammingResult; with this class the diagnostics survive unchanged.
+ */
+export class ProgrammingError extends Error {
+    constructor(readonly diagnostics: readonly Diagnostic[]) {
+        super(diagnostics.map((d) => d.message).join(' ') || 'programming provider error');
+        this.name = 'ProgrammingError';
+    }
+}

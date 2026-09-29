@@ -1,6 +1,6 @@
 # NexysVHDL architecture
 
-Status: Phase 3A (shared workflow core). Applies to branch `phase3/core` and later.
+Status: Phase 3C (platform adapters integrated). Applies to branch `phase3/integration` and later.
 
 ## 1. Objective
 
@@ -21,10 +21,13 @@ Phases 1–2 proved the backend (GHDL → generated Verilog → Apio/Yosys/nextp
   no platform   │  process (ToolRunner)   programming (contract + service) │
   code)         │  vhdl/ghdl (VhdlProvider)  implementation/apio            │
                 └───────┬──────────────────────────────┬─────────────────┘
-                        │ ProgrammerProvider, ToolLocator (interfaces)
+                        │ PlatformServices: runner, ToolLocator,
+                        │ ProgrammerProvider, inspectToolchain
                 ┌───────▼─────────────┐        ┌───────▼─────────────┐
   platform      │ platform/windows/   │        │ platform/macos/     │
-  adapters      │ (Phase 3B, Windows) │        │ (Phase 3B, macOS)   │
+  adapters      │ win32/x64: djtgcfg  │        │ darwin/arm64:       │
+                │ base runner as-is   │        │ openFPGALoader,     │
+                │                     │        │ Apio-pinned runner  │
                 └───────┬─────────────┘        └───────┬─────────────┘
                         │ spawn (argument arrays, no shell)
   external      GHDL · Apio → Yosys → nextpnr-xilinx → Project X-Ray · board programmer
@@ -91,19 +94,26 @@ All external programs run through `ToolRunner.run({ executable, args[], cwd, env
 - Failures are values, never exceptions: `outcome` is one of `exited | timed-out | cancelled | spawn-failed`.
 - Tests substitute a fake runner.
 - Windows `.bat`/`.cmd` launchers can't be run without a shell; adapters must locate real executables.
+- **One configured runner per host.** The composition root creates a base `NodeToolRunner` and gives it to the platform factory. If the adapter returns `PlatformServices.runner`, that runner replaces the base runner for *every* tool: `ToolDetector`, GHDL, Apio, the programmer and doctor inspection.
+  - macOS returns a `PinnedApioRunner`. It adds `APIO_REMOTE_CONFIG_URL` to each Apio call, and refuses Apio if the pin cannot be expressed.
+  - Windows returns none and uses the base runner unchanged.
+  - No `process.env` mutation and no shell profiles are involved.
 
 ## 7. Isolated implementation staging (ADR-001)
 
 ```
 student project/                         <project>/.nexysvhdl/      (build workspace)
-  nexysvhdl.json                           sim/     GHDL library, *.ghw waveform
-  src/*.vhd  ──── GHDL (cwd = project) ──▶ synth/   GHDL library, generated.v
-  sim/*.vhd                                impl/    ◀── the ONLY folder Apio sees
+  nexysvhdl.json                           check/   GHDL library + elaboration output of `check`
+  src/*.vhd  ── GHDL (cwd = workspace, ──▶ sim/     GHDL library, elaborated testbench, *.ghw
+  sim/*.vhd     absolute source paths)     synth/   GHDL library, generated.v
+                                           impl/    ◀── the ONLY folder Apio sees
   (stray *.v, *.xdc are harmless)                    generated.v  generated.xdc  apio.ini
                                                      _build/default/hardware.bit   (canonical)
                                            program/ prepared programming artifacts
                                            logs/    raw tool logs
 ```
+
+Every GHDL run uses its step's workspace folder as working directory and gets absolute source paths. With GHDL's LLVM/GCC backends (macOS), `-e` writes native executables and `e~*.o` objects into the working directory, so they now stay in `check/` or `sim/`; they never land in the student's tree. `simulate` elaborates (`-e`) before running (`-r`) in `sim/`. Diagnostics are mapped back to project-relative paths.
 
 `BuildWorkspace.stageImplementation()` deletes and recreates `impl/`, writes exactly the requested files, and then verifies the folder holds nothing else. Apio runs with `cwd = impl/`.
 
@@ -134,6 +144,7 @@ A build whose timing fails is **not** a successful build, even if a bitstream ex
 - `toolchains/*.json` holds tested combinations per host. There are currently two **reference** manifests recorded from Phase 2 (Windows x64, macOS arm64). A release matrix is not chosen yet.
 - `ToolDetector` probes GHDL, Apio, Yosys and nextpnr-xilinx (the last two via `apio raw --`) through a `ToolLocator`.
 - openXC7 package metadata and the programmer backend are detected by platform adapters.
+- `doctor` shows the adapter's `PlatformServices.inspectToolchain()` result, which uses the shared `DetectedTool` model plus diagnostics. Without an adapter it falls back to `ToolDetector`. `doctor` itself never names a platform tool.
 
 ## 10. Programmer abstraction (ADR-002)
 
@@ -150,16 +161,35 @@ interface ProgrammerProvider {
 - `ProgrammingArtifact` is always a separate object from the canonical `BuildArtifact`. It has a `transformation`, which is `none` when the canonical file is used as-is.
 - `ProgrammingService` checks availability and selects the target: by serial number, or the single matching board; it never guesses among several.
 - It also hashes the canonical `hardware.bit` before and after `prepareArtifact()`. It refuses to program if the canonical file changed, or if a transformed artifact claims the canonical path.
+- A provider exception at any stage becomes a failed `ProgrammingResult` with diagnostics; exceptions never escape. A provider may throw `ProgrammingError(diagnostics)` to keep its own structured diagnostics (e.g. a malformed bitstream).
 
 ## 11. Windows/macOS separation
 
-`platform/index.ts` is the single place that maps `process.platform` to an adapter. Each adapter returns `PlatformServices { programmer?, toolLocator?, status }`. In Phase 3A both adapters are placeholders that provide nothing, so programming reports *not configured*.
+`platform/index.ts` is the single place that maps a host to an adapter, by platform **and** architecture:
+
+| Host | Adapter |
+|---|---|
+| `win32/x64` | Windows: Digilent Adept `djtgcfg` programmer, Windows tool discovery |
+| `darwin/arm64` | macOS: openFPGALoader programmer, arm64 discovery, pinned Apio runner |
+| anything else (incl. `darwin/x64`, i.e. Intel or Rosetta) | `unsupported`, with a reason |
+
+A factory receives `PlatformContext { runner, env }` and returns `PlatformServices`:
+
+| Field | Meaning |
+|---|---|
+| `id`, `displayName`, `status` | Adapter identity and one-line state |
+| `runner?` | The configured runner |
+| `toolLocator?` | Tool discovery |
+| `programmer?` | The `ProgrammerProvider` |
+| `inspectToolchain?` | Toolchain inspection for `doctor` |
+
+A missing capability reports *not configured*.
 
 Explicit tool paths already work on every platform, through `nexysvhdl.json` → `toolchain.tools` or `NEXYSVHDL_<TOOL>` environment variables.
 
 ## 12. CLI
 
-`cli/` is a thin consumer. It builds the context (host → adapter → locators → providers → `WorkflowController`), runs one command and prints structured results. The commands are `doctor`, `boards`, `project info`, `check`, `simulate`, `build [--simulate] [--json]` and `program [--serial]`.
+`cli/` is a thin consumer. It builds the context (host → adapter → configured runner → locators → providers → `WorkflowController`), runs one command and prints structured results. Tests inject `ContextOverrides` (fake host, fake platform, a runner that refuses everything), so `npm test` never reaches host tools. `tests/test-isolation.test.ts` enforces this. The commands are `doctor`, `boards`, `project info`, `check`, `simulate`, `build [--simulate] [--json]` and `program [--serial]`.
 
 Exit codes: 0 ok, 1 failed, 2 usage/project error, 3 provider not configured. `runCli()` is exported for tests.
 

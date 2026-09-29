@@ -80,12 +80,19 @@ describe('macOS Apio pin regression', () => {
         assert.equal(runner.calls.filter(isApio).length, 0);
     });
 
-    it('the factory registered in platform/index.ts is inert: no locator, programmer or runner reach local tools', () => {
-        for (const services of [createMacosPlatform(HOST), createPlatformServices(HOST)]) {
+    it('the registered factory supplies the pinned runner as the platform runner; Apio is never run unpinned', async () => {
+        for (const make of [createMacosPlatform, createPlatformServices]) {
+            const base = scriptedRunner([[() => true, {}]]);
+            const services = make(HOST, { runner: base, env: {} });
             assert.equal(services.id, 'macos');
-            assert.equal(services.toolLocator, undefined);
-            assert.equal(services.programmer, undefined);
-            assert.equal('runner' in services, false);
+            assert.ok(services.runner, 'the composition root must use the adapter runner');
+            assert.ok(services.programmer && services.toolLocator && services.inspectToolchain);
+            assert.equal(base.calls.length, 0, 'building the adapter runs nothing');
+
+            await services.runner.run({ executable: APIO, args: ['raw', '--', 'yosys', '-V'] });
+            // On a POSIX checkout the tracked pin is injected; on a Windows checkout it cannot be
+            // expressed as a macOS file:// URL, so Apio is refused. Never unpinned.
+            for (const call of base.calls.filter(isApio)) assert.match(call.env?.[APIO_REMOTE_CONFIG_ENV] ?? '', /^file:\/\/\/.*apio-\{major\}\.\{minor\}\.x\.jsonc$/);
         }
     });
 });

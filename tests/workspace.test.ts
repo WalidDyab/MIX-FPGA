@@ -14,13 +14,13 @@ async function listRecursive(dir: string): Promise<string[]> {
 }
 
 describe('build workspace isolation (ADR-001)', () => {
-    it('opens under <project>/.nexysvhdl with separate sim/synth/impl/program/logs folders', async (t) => {
+    it('opens under <project>/.nexysvhdl with separate check/sim/synth/impl/program/logs folders', async (t) => {
         const project = await makeProject(t);
         const { workspace, diagnostics } = await new WorkspaceManager().open(project);
         assert.deepEqual(diagnostics, []);
         assert.equal(workspace!.paths.root, join(project.root, WORKSPACE_DIR_NAME));
         const dirs = new Set(Object.values(workspace!.paths));
-        assert.equal(dirs.size, 6, 'all workspace folders are distinct');
+        assert.equal(dirs.size, 7, 'all workspace folders are distinct');
     });
 
     it('refuses a workspace equal to the project root', async (t) => {

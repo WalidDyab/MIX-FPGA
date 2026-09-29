@@ -32,13 +32,16 @@ export interface CliContext {
     readonly boards: BoardRegistry;
     readonly boardDiagnostics: readonly Diagnostic[];
     readonly manifests: readonly ToolchainManifest[];
+    /** The platform-configured runner; every external tool goes through it. */
     readonly runner: ToolRunner;
     readonly env: Readonly<Record<string, string | undefined>>;
 }
 
 export interface ContextOverrides {
     readonly host?: HostInfo;
+    /** Replaces the registry's adapter (tests inject a fake so no host tool is ever found). */
     readonly platform?: PlatformServices;
+    /** Base runner; the platform's `runner`, if it has one, is used instead. */
     readonly runner?: ToolRunner;
     readonly env?: Readonly<Record<string, string | undefined>>;
     readonly dataRoot?: string;
@@ -49,14 +52,19 @@ export async function createContext(overrides: ContextOverrides = {}): Promise<C
     const paths = overrides.dataRoot ? dataPaths(overrides.dataRoot) : dataPaths();
     const { registry, diagnostics } = await BoardRegistry.loadDirectory(paths.boards);
     const { manifests } = await loadManifests(paths.toolchains);
+    const env = overrides.env ?? process.env;
+    const baseRunner = overrides.runner ?? new NodeToolRunner();
+    const platform = overrides.platform ?? createPlatformServices(host, { runner: baseRunner, env });
     return {
         host,
-        platform: overrides.platform ?? createPlatformServices(host),
+        platform,
         boards: registry,
         boardDiagnostics: diagnostics,
         manifests,
-        runner: overrides.runner ?? new NodeToolRunner(),
-        env: overrides.env ?? process.env,
+        // The platform's configured runner (e.g. with a pinned tool environment) is used for
+        // every tool: detection, GHDL, Apio and anything the adapter itself runs.
+        runner: platform.runner ?? baseRunner,
+        env,
     };
 }
 

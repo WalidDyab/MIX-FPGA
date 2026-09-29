@@ -9,6 +9,8 @@ export const WORKSPACE_DIR_NAME = '.nexysvhdl';
 /** Paths of one project's build workspace. All absolute. */
 export interface WorkspacePaths {
     readonly root: string;
+    /** GHDL library and elaboration output for `check`. */
+    readonly check: string;
     /** GHDL library + waveforms for simulation. */
     readonly sim: string;
     /** GHDL library + generated Verilog for synthesis. */
@@ -76,7 +78,7 @@ export class BuildWorkspace {
 
     static pathsFor(root: string): WorkspacePaths {
         const r = resolve(root);
-        return { root: r, sim: join(r, 'sim'), synth: join(r, 'synth'), impl: join(r, 'impl'), program: join(r, 'program'), logs: join(r, 'logs') };
+        return { root: r, check: join(r, 'check'), sim: join(r, 'sim'), synth: join(r, 'synth'), impl: join(r, 'impl'), program: join(r, 'program'), logs: join(r, 'logs') };
     }
 
     async ensureDirectories(): Promise<void> {
