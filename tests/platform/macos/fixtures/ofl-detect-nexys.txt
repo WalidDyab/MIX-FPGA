@@ -1,0 +1,8 @@
+empty
+Jtag frequency : requested 6.00MHz    -> real 6.00MHz   
+index 0:
+	idcode 0x3631093
+	manufacturer xilinx
+	family artix a7 100t
+	model  xc7a100
+	irlength 6
