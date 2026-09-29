@@ -1,0 +1,3 @@
+Digilent JTAG Config Utility v2.6.1
+Copyright (C) 2010 Digilent, Inc.
+support@digilentinc.com

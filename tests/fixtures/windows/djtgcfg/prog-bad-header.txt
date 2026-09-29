@@ -1,0 +1,2 @@
+ERROR: failed to set programming file
+Received error: unrecognized error code
