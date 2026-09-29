@@ -47,7 +47,13 @@ createContext():
 ```
 
 - **Windows** returns no `runner`, so the base runner is used unchanged. The macOS Apio pin is never applied on Windows.
-- **macOS** returns its `PinnedApioRunner`. Every invocation whose executable is named `apio` gets `APIO_REMOTE_CONFIG_URL=file://<repo>/toolchains/apio-remote-config/apio-{major}.{minor}.x.jsonc`. If that URL cannot be formed, the invocation is refused with `spawn-failed` and never runs unpinned.
+- **macOS** returns its `PinnedApioRunner`. Every Apio invocation gets `APIO_REMOTE_CONFIG_URL=file://<repo>/toolchains/apio-remote-config/apio-{major}.{minor}.x.jsonc`. If that URL cannot be formed, Apio execution is refused with `spawn-failed` and never runs unpinned.
+  - Apio is identified by the resolved identity of the executable (`ResolvedApioIdentity`), not by its literal file name alone. An executable counts as Apio when:
+    - its name is `apio` in any case, or
+    - its realpath or file identity (dev:ino) matches the Apio that the macOS locator resolved, or
+    - it resolves to a file inside an Apio installation (next to Apio's `BUILD-INFO.json` with `package-name` `apio-cli`).
+  - Case variants, versioned aliases and symlinks that resolve to the configured or discovered Apio therefore stay pinned. That includes explicit supported overrides (`NEXYSVHDL_APIO`, project `toolchain.tools.apio`).
+  - Unrelated executables are not treated as Apio: a name that merely contains "apio" does not match.
 - The factory receives the base runner instead of the root calling a later `configureRunner()`. That way the adapter's programmer and inspector are guaranteed to share the configured runner.
 
 ### 3.2 CLI test isolation (Issue 2)
@@ -172,7 +178,7 @@ Run on the Apple-silicon Mac through the ordinary CLI from `examples/nexys-a7-co
 
 ## 8. Known limitations and concerns
 
-- **The macOS pin matches by file name.** The Apio pin recognises Apio when the executable's name is exactly `apio`. An explicit `NEXYSVHDL_APIO` or project `toolchain.tools.apio` path to a differently named executable would not be pinned. The ordinary discovered path is `…/apio`. This is left as validated in Phase 3B for the macOS owner to decide.
+- **The macOS pin follows resolved identity** (resolved by `dd0a8c5`). The pin originally matched only executables literally named `apio`, so a differently named override could have run unpinned. macOS now identifies Apio by its canonical, resolved identity (see §3.1). Explicit overrides, case variants, aliases and symlinks that resolve to Apio are pinned; unrelated executables are not; and Apio is refused if the pin cannot be established.
 - **macOS doctor ignores project tool paths.** The macOS `inspectToolchain` uses its own locator (architecture checks), so project-level `toolchain.tools` paths are not reflected in the macOS `doctor` table. Windows uses the composition root's locator.
 - **Windows arm64 is unsupported** until it is validated.
 - `simulate` now runs an extra `ghdl -e`, which costs about 0.1 s with mcode.
