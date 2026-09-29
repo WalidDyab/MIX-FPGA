@@ -1,0 +1,48 @@
+== apio devices scan-usb
+Active env options [APIO_REMOTE_CONFIG_URL].
+
+USB Devices                                                                             
+┌───────────┬─────────┬──────────────┬────────────────────────┬──────────────┬─────────┐
+│ VID:PID   │ BUS:DEV │ MANUFACTURER │ PRODUCT                │ SERIAL-NUM   │ TYPE    │
+├───────────┼─────────┼──────────────┼────────────────────────┼──────────────┼─────────┤
+│ 03F0:504A │   1:3   │ HP           │ HP USB-C Travel Hub G2 │ 1CWYWWZZZZ   │         │
+├───────────┼─────────┼──────────────┼────────────────────────┼──────────────┼─────────┤
+│ 0403:6010 │   1:4   │ Digilent     │ Digilent USB Device    │ 210292BCFFE4 │ FT2232H │
+└───────────┴─────────┴──────────────┴────────────────────────┴──────────────┴─────────┘
+Found 2 USB devices
+== openFPGALoader --detect
+empty
+Jtag frequency : requested 6.00MHz    -> real 6.00MHz   
+index 0:
+	idcode 0x3631093
+	manufacturer xilinx
+	family artix a7 100t
+	model  xc7a100
+	irlength 6
+== apio upload
+Active env options [APIO_REMOTE_CONFIG_URL].
+Using env default (nexys-a7-100t)
+Setting shell vars.
+Checking device presence...
+- FILTER [VID=0403, PID=6010]
+- DEVICE [0403:6010] [1:4] [Digilent] [Digilent USB Device] [210292BCFFE4]
+Chipdb file found: chipdb-xc7a100t.bin
+--------------------------------------------------------------------------------
+yosys -p "synth_xilinx -arch xc7 -top top ; write_json _build/default/hardware.json " -q -DSYNTHESIZE generated.v
+nextpnr-xilinx --device xc7a100tcsg324-1 --chipdb /Users/nohafahmy/.apio/packages/openxc7/chipdb/chipdb-xc7a100t.bin -o xdc=nexys-a7-100t.xdc -o fasm=_build/default/hardware.fasm --json _build/default/hardware.json --report _build/default/hardware.pnr -q
+Warning: ignoring unsupported XDC option '-add' (on line 2)
+Warning: ignoring unsupported XDC option '-name' (on line 2)
+Warning: ignoring unsupported XDC option '-waveform' (on line 2)
+3 warnings, 0 errors
+openFPGALoader --force-terminal-mode --verify --board nexys_a7_100 _build/default/hardware.bit
+empty
+Jtag frequency : requested 6.00MHz    -> real 6.00MHz   
+Open file DONE
+Parse file DONE
+load program
+
+Done
+Shift IR 35
+ir: 1 isc_done 1 isc_ena 0 init 1 done 1
+========================= [SUCCESS] Took 8.82 seconds ==========================
+rc=0

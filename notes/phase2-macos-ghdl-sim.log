@@ -1,0 +1,23 @@
+# GHDL 6.0.0 (6.0.0.r0.ge589c698c) [Dunoon edition]
+# Mon Sep 28 20:37:50 +03 2026
++(eval):4> /Users/nohafahmy/WSClaude/NexysVHDL/tools/ghdl/bin/ghdl -a '--std=08' '--workdir=_sim' src/counter.vhd src/top.vhd sim/counter_tb.vhd
++(eval):4> echo 'analyze rc=0'
+analyze rc=0
++(eval):5> /Users/nohafahmy/WSClaude/NexysVHDL/tools/ghdl/bin/ghdl -e '--std=08' '--workdir=_sim' -o _sim/top_elab top
+ld: warning: object file (/Users/nohafahmy/WSClaude/NexysVHDL/experiments/phase2-clocked-vhdl/_sim/e~top_elab.o) was built for newer 'macOS' version (28.0) than being linked (15.5)
+ld: warning: object file (/Users/nohafahmy/WSClaude/NexysVHDL/experiments/phase2-clocked-vhdl/_sim/top.o) was built for newer 'macOS' version (28.0) than being linked (15.5)
+ld: warning: object file (/Users/nohafahmy/WSClaude/NexysVHDL/experiments/phase2-clocked-vhdl/_sim/counter.o) was built for newer 'macOS' version (28.0) than being linked (15.5)
++(eval):5> echo 'elab top rc=0'
+elab top rc=0
++(eval):6> /Users/nohafahmy/WSClaude/NexysVHDL/tools/ghdl/bin/ghdl -e '--std=08' '--workdir=_sim' -o _sim/counter_tb counter_tb
+ld: warning: object file (/Users/nohafahmy/WSClaude/NexysVHDL/experiments/phase2-clocked-vhdl/_sim/e~counter_tb.o) was built for newer 'macOS' version (28.0) than being linked (15.5)
+ld: warning: object file (/Users/nohafahmy/WSClaude/NexysVHDL/experiments/phase2-clocked-vhdl/_sim/counter_tb.o) was built for newer 'macOS' version (28.0) than being linked (15.5)
+ld: warning: object file (/Users/nohafahmy/WSClaude/NexysVHDL/experiments/phase2-clocked-vhdl/_sim/counter.o) was built for newer 'macOS' version (28.0) than being linked (15.5)
++(eval):6> echo 'elab tb rc=0'
+elab tb rc=0
++(eval):7> _sim/counter_tb '--wave=_sim/counter_tb.ghw'
+sim/counter_tb.vhd:70:9:@246ns:(report note): counter_tb: ALL TESTS PASSED
+simulation stopped @246ns
++(eval):7> echo 'sim rc=0'
+sim rc=0
++(eval):8> set +x
