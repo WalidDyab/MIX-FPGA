@@ -38,28 +38,52 @@ export interface FakeFile {
     readonly text?: string;
     readonly head?: Uint8Array;
     readonly executable?: boolean;
+    /** Symlink target (absolute). */
+    readonly link?: string;
 }
 
-/** In-memory MacosSystem: POSIX paths, no disk access. */
+/**
+ * In-memory MacosSystem: POSIX paths, no disk access. Like a default macOS
+ * (APFS) volume it is case-insensitive and case-preserving: lookups ignore
+ * case and realpath returns the stored spelling. Symlinks are followed.
+ */
 export function fakeSystem(files: Record<string, FakeFile>, env: Record<string, string | undefined> = {}, processArch = 'arm64'): MacosSystem {
+    const byLower = new Map(Object.keys(files).map((k) => [k.toLowerCase(), k]));
+    const resolve = (p: string, depth = 0): string | undefined => {
+        const key = byLower.get(p.toLowerCase());
+        if (key === undefined || depth > 8) return undefined;
+        const link = files[key]!.link;
+        return link === undefined ? key : resolve(link, depth + 1);
+    };
+    const file = (p: string) => {
+        const key = resolve(p);
+        return key === undefined ? undefined : files[key];
+    };
     return {
         env: { PATH: '/usr/bin:/bin', ...env },
         homeDir: HOME,
         processArch,
         async isFile(p) {
-            return p in files;
+            return file(p) !== undefined;
         },
         async isExecutable(p) {
-            return files[p]?.executable === true;
+            return file(p)?.executable === true;
         },
         async readText(p) {
-            const f = files[p];
+            const f = file(p);
             return f === undefined ? undefined : (f.text ?? (f.head ? new TextDecoder().decode(f.head) : ''));
         },
         async readHead(p, bytes) {
-            const f = files[p];
+            const f = file(p);
             if (!f) return undefined;
             return (f.head ?? new TextEncoder().encode(f.text ?? '')).subarray(0, bytes);
+        },
+        async realpath(p) {
+            return resolve(p);
+        },
+        async fileId(p) {
+            const key = resolve(p);
+            return key === undefined ? undefined : `fake:${key}`;
         },
     };
 }

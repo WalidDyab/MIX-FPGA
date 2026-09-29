@@ -12,11 +12,11 @@ import {
     type VhdlProvider,
 } from '../../core';
 import type { PlatformFactory, PlatformServices, ToolchainInspectionRequest } from '../types';
-import { apioRemoteConfigUrl, APIO_REMOTE_CONFIG_ENV, PinnedApioRunner, pinnedConfigDir } from './apio-pin';
+import { apioRemoteConfigUrl, APIO_REMOTE_CONFIG_ENV, PinnedApioRunner, pinnedConfigDir, ResolvedApioIdentity } from './apio-pin';
 import { OpenFpgaLoaderProgrammer } from './programmer';
 import { type MacosSystem, nodeSystem } from './system';
 import { MacosToolchainDetector } from './toolchain';
-import { type MacosLocatorOptions, MacosToolLocator } from './tool-locator';
+import { APIO_APP_PATH, type MacosLocatorOptions, MacosToolLocator } from './tool-locator';
 
 export * from './apio-pin';
 export * from './executable';
@@ -86,7 +86,13 @@ export function createMacosAdapter(host: HostInfo, options: MacosAdapterOptions 
     } catch (err) {
         pinProblem = (err as Error).message;
     }
-    const runner = new PinnedApioRunner(options.runner ?? new NodeToolRunner(), apioEnvironment);
+    // Apio is recognised by resolved identity: the locator's Apio (which honours NEXYSVHDL_APIO) is the reference.
+    const locator = new MacosToolLocator(system, options.locator ?? { developmentLocations: developmentLocations(system) });
+    const identity = new ResolvedApioIdentity(system, async () => {
+        const found = await locator.discover('apio');
+        return [...(found.located ? [found.located.path] : []), APIO_APP_PATH];
+    });
+    const runner = new PinnedApioRunner(options.runner ?? new NodeToolRunner(), apioEnvironment, identity);
     const common = { id: 'macos', displayName: 'macOS', runner, pinnedConfigDir: configDir, apioEnvironment };
     const inspect = (detector: () => MacosToolchainDetector) => async (request: ToolchainInspectionRequest) => {
         // macOS discovery checks executable architecture, so it uses its own locator.
@@ -106,7 +112,6 @@ export function createMacosAdapter(host: HostInfo, options: MacosAdapterOptions 
         };
     }
 
-    const locator = new MacosToolLocator(system, options.locator ?? { developmentLocations: developmentLocations(system) });
     return {
         ...common,
         status: pinProblem

@@ -18,9 +18,10 @@ import {
     pinnedConfigFile,
     readOpenXc7Package,
     reportedOpenXc7Version,
+    ResolvedApioIdentity,
 } from '../../../platform/macos';
 import { REPO } from '../../helpers';
-import { APIO, argsInclude, fakeSystem, fixture, HOME, OFL, scriptedRunner, validatedMacFiles } from './macos-fakes';
+import { APIO, argsInclude, fakeSystem, fixture, HOME, machO, OFL, scriptedRunner, validatedMacFiles } from './macos-fakes';
 
 const PIN_DIR = pinnedConfigDir(dataPaths(REPO).toolchains);
 const PIN_FILE_TEXT = readFileSync(join(PIN_DIR, 'apio-1.7.x.jsonc'), 'utf8');
@@ -71,7 +72,8 @@ describe('pinned Apio config', () => {
 
     it('adds the pin to Apio invocations only, overriding an inherited value', async () => {
         const inner = scriptedRunner([[() => true, {}]]);
-        const runner = new PinnedApioRunner(inner, { [APIO_REMOTE_CONFIG_ENV]: 'file:///pin/apio-{major}.{minor}.x.jsonc' });
+        const system = fakeSystem({ [APIO]: { head: machO('arm64'), executable: true }, [OFL]: { head: machO('arm64'), executable: true } });
+        const runner = new PinnedApioRunner(inner, { [APIO_REMOTE_CONFIG_ENV]: 'file:///pin/apio-{major}.{minor}.x.jsonc' }, new ResolvedApioIdentity(system, async () => [APIO]));
         await runner.run({ executable: APIO, args: ['build'], env: { [APIO_REMOTE_CONFIG_ENV]: 'https://upstream', KEEP: '1' } });
         await runner.run({ executable: OFL, args: ['--Version'] });
         assert.deepEqual(inner.calls[0]!.env, { [APIO_REMOTE_CONFIG_ENV]: 'file:///pin/apio-{major}.{minor}.x.jsonc', KEEP: '1' });

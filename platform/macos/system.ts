@@ -20,6 +20,13 @@ export interface MacosSystem {
     readText(path: string): Promise<string | undefined>;
     /** First `bytes` bytes of a file (for executable headers). */
     readHead(path: string, bytes: number): Promise<Uint8Array | undefined>;
+    /**
+     * Canonical path: symlinks followed and, on case-insensitive volumes, the
+     * on-disk case restored (macOS realpath(3)). Undefined if it does not exist.
+     */
+    realpath(path: string): Promise<string | undefined>;
+    /** Stable file identity (`<dev>:<ino>`) of what `path` resolves to. */
+    fileId(path: string): Promise<string | undefined>;
 }
 
 /** The real host. */
@@ -47,6 +54,21 @@ export function nodeSystem(env: Readonly<Record<string, string | undefined>> = p
         async readText(path) {
             try {
                 return await readFile(path, 'utf8');
+            } catch {
+                return undefined;
+            }
+        },
+        async realpath(path) {
+            try {
+                return await realpath(path);
+            } catch {
+                return undefined;
+            }
+        },
+        async fileId(path) {
+            try {
+                const s = await stat(path);
+                return `${s.dev}:${s.ino}`;
             } catch {
                 return undefined;
             }

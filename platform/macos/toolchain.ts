@@ -8,7 +8,7 @@ import {
     type ToolId,
     type ToolRunner,
 } from '../../core';
-import { type ApioPinStatus, checkApioPin, PinnedApioRunner } from './apio-pin';
+import { type ApioPinStatus, checkApioPin, PinnedApioRunner, ResolvedApioIdentity } from './apio-pin';
 import type { ArchitectureReport } from './executable';
 import { parseOpenFpgaLoaderVersion } from './openfpgaloader';
 import { checkOpenXc7Package, openXc7Detected, readOpenXc7Package } from './openxc7';
@@ -57,7 +57,11 @@ export class MacosToolchainDetector {
 
         // The pin URL does not depend on the Apio version, so no Apio command ever runs without it.
         const base = await checkApioPin(this.system, this.pinnedConfigDir);
-        const detector = new ToolDetector(this.locator, base.env ? new PinnedApioRunner(this.runner, base.env) : this.runner);
+        const identity = new ResolvedApioIdentity(this.system, async () => {
+            const found = await this.locator.discover('apio');
+            return found.located ? [found.located.path] : [];
+        });
+        const detector = new ToolDetector(this.locator, base.env ? new PinnedApioRunner(this.runner, base.env, identity) : this.runner);
         const apio = base.env && architectures.has('apio') ? await detector.detect('apio') : undefined;
         if (apio) tools.set('apio', apio);
         // With the Apio version known, check the config file Apio will actually read.

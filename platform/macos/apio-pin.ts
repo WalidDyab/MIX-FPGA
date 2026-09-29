@@ -110,9 +110,84 @@ export async function checkApioPin(system: MacosSystem, configDir: string, apioV
     }
 }
 
-/** True for invocations of Apio (matched by the executable's file name). */
-export function isApioInvocation(invocation: ToolInvocation): boolean {
-    return posix.basename(invocation.executable) === 'apio';
+/** A path whose file name is exactly `apio` (any case). Only a fast path; see ResolvedApioIdentity. */
+export function isApioName(path: string): boolean {
+    return posix.basename(path).toLowerCase() === 'apio';
+}
+
+/** Decides whether an executable is Apio. */
+export interface ApioIdentity {
+    isApio(executable: string): Promise<boolean>;
+}
+
+/** Apio's own BUILD-INFO.json package name (next to the executable in every Apio release). */
+export const APIO_PACKAGE_NAME = 'apio-cli';
+
+/**
+ * Identifies Apio by what an executable path RESOLVES to, not by how it is
+ * spelled, so overrides such as `/Applications/Apio/Apio` (case-insensitive
+ * APFS), `apio-1.7.0` aliases and symlinks are still recognised. An executable
+ * is Apio if:
+ *   - its file name is exactly `apio` (any case), or
+ *   - its realpath or file identity (dev:ino) equals that of a known Apio
+ *     executable (the one the macOS locator resolved), or
+ *   - its resolved file is named `apio`, or sits next to Apio's BUILD-INFO.json
+ *     (`"package-name": "apio-cli"`), i.e. it is an Apio installation.
+ * A name merely containing "apio" is not enough.
+ */
+export class ResolvedApioIdentity implements ApioIdentity {
+    private readonly cache = new Map<string, Promise<boolean>>();
+    private knownIds: Promise<{ paths: Set<string>; ids: Set<string> }> | undefined;
+
+    constructor(
+        private readonly system: MacosSystem,
+        /** Paths of known Apio executables (e.g. the locator's resolved Apio). */
+        private readonly known: () => Promise<readonly string[]>,
+    ) {}
+
+    isApio(executable: string): Promise<boolean> {
+        let answer = this.cache.get(executable);
+        if (!answer) {
+            answer = this.resolve(executable);
+            this.cache.set(executable, answer);
+        }
+        return answer;
+    }
+
+    private knownIdentities(): Promise<{ paths: Set<string>; ids: Set<string> }> {
+        this.knownIds ??= (async () => {
+            const paths = new Set<string>();
+            const ids = new Set<string>();
+            for (const p of await this.known()) {
+                const real = await this.system.realpath(p);
+                if (real) paths.add(real.toLowerCase());
+                const id = await this.system.fileId(p);
+                if (id) ids.add(id);
+            }
+            return { paths, ids };
+        })();
+        return this.knownIds;
+    }
+
+    private async resolve(executable: string): Promise<boolean> {
+        if (isApioName(executable)) return true;
+        const real = await this.system.realpath(executable);
+        if (!real) return false;
+        if (isApioName(real)) return true;
+        const known = await this.knownIdentities();
+        if (known.paths.has(real.toLowerCase())) return true;
+        const id = await this.system.fileId(executable);
+        if (id && known.ids.has(id)) return true;
+        const buildInfo = await this.system.readText(posix.join(posix.dirname(real), 'BUILD-INFO.json'));
+        if (buildInfo) {
+            try {
+                return (JSON.parse(buildInfo) as { 'package-name'?: unknown })['package-name'] === APIO_PACKAGE_NAME;
+            } catch {
+                return false;
+            }
+        }
+        return false;
+    }
 }
 
 /**
@@ -120,15 +195,17 @@ export function isApioInvocation(invocation: ToolInvocation): boolean {
  * APIO_REMOTE_CONFIG_URL (overriding any inherited value). Other tools run
  * unchanged. This is how the pin reaches the shared ApioImplementationProvider
  * and the shared ToolDetector's `apio raw` probes without touching the core.
+ * Apio is recognised by resolved identity (ResolvedApioIdentity).
  */
 export class PinnedApioRunner implements ToolRunner {
     constructor(
         private readonly inner: ToolRunner,
         private readonly pinEnv: Readonly<Record<string, string>>,
+        private readonly identity: ApioIdentity,
     ) {}
 
-    run(invocation: ToolInvocation): Promise<ToolRunResult> {
-        if (!isApioInvocation(invocation)) return this.inner.run(invocation);
+    async run(invocation: ToolInvocation): Promise<ToolRunResult> {
+        if (!(await this.identity.isApio(invocation.executable))) return this.inner.run(invocation);
         if (!this.pinEnv[APIO_REMOTE_CONFIG_ENV]) {
             // Never let Apio run unpinned: it would follow upstream and may replace packages.
             return Promise.resolve({
