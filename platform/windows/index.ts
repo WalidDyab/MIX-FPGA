@@ -1,13 +1,22 @@
 import type { PlatformFactory } from '../types';
 
+export { createWindowsPlatformServices, defaultWindowsEnvironment } from './windows-platform';
+export type { WindowsPlatformOptions, WindowsPlatformServices } from './windows-platform';
+export { DigilentArtifactError, DigilentProgrammer, prepareDigilentBitstream, PREPARED_BITSTREAM_NAME } from './digilent/digilent-programmer';
+export { digilentPartName, normalizeForDigilent, parseBitHeader } from './digilent/bit-header';
+export { describeAdept, inspectAdept } from './digilent/adept-environment';
+export { WindowsToolchainInspector } from './toolchain-inspector';
+export { WindowsToolLocator } from './tool-locator';
+export { nodeWindowsFileSystem } from './host-environment';
+export type { WindowsFileSystem, WindowsHostEnvironment } from './host-environment';
+
 /**
- * Windows x64 adapter — placeholder.
+ * Registered Windows entry point — still the Phase 3A placeholder.
  *
- * Phase 3B (Windows agent) adds, in this folder only:
- *  - a ProgrammerProvider for the Digilent Adept stack (board detection,
- *    serial selection, bit-header preparation, SRAM programming);
- *  - a ToolLocator for Windows tool discovery (GHDL, Apio).
- * See docs/phase3-plan.md.
+ * The real adapter is createWindowsPlatformServices() (./windows-platform).
+ * It is deliberately not wired in here during Phase 3B: platform/index.ts and
+ * tests/cli.test.ts still expect a placeholder on win32. Phase 3C activates it
+ * by pointing this registration at createWindowsPlatformServices.
  */
 export const createWindowsPlatform: PlatformFactory = () => ({
     id: 'windows',

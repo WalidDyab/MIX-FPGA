@@ -1,0 +1,19 @@
+Found 3 device(s)
+
+Device: Basys3
+    Device Transport Type: 00020001 (USB)
+    Product Name:          Digilent Basys3
+    User Name:             Basys3
+    Serial Number:         210183A1B2C3
+
+Device: NexysA7
+    Device Transport Type: 00020001 (USB)
+    Product Name:          Digilent Nexys A7 -100T
+    User Name:             NexysA7
+    Serial Number:         210292BCFFE4
+
+Device: NexysA7-50
+    Device Transport Type: 00020001 (USB)
+    Product Name:          Digilent Nexys A7 -50T
+    User Name:             NexysA7-50
+    Serial Number:         210292C0FFEE

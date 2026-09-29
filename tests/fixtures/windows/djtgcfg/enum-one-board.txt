@@ -1,0 +1,7 @@
+Found 1 device(s)
+
+Device: NexysA7
+    Device Transport Type: 00020001 (USB)
+    Product Name:          Digilent Nexys A7 -100T
+    User Name:             NexysA7
+    Serial Number:         210292BCFFE4
