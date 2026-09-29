@@ -1,0 +1,30 @@
+{
+    "definitions": {
+        "version": "2026.09.17",
+        "platform": "darwin-arm64",
+        "loaded-by": "1.7.0",
+        "loaded-at": "2026-09-27-20-44",
+        "loaded-from": "https://github.com/fpgawars/apio-definitions/releases/download/2026-09-17/apio-definitions-20260917.tgz"
+    },
+    "oss-cad-suite": {
+        "version": "2026.09.15",
+        "platform": "darwin-arm64",
+        "loaded-by": "1.7.0",
+        "loaded-at": "2026-09-27-20-44",
+        "loaded-from": "https://github.com/fpgawars/tools-oss-cad-suite/releases/download/2026-09-15/apio-oss-cad-suite-darwin-arm64-20260915.tgz"
+    },
+    "verible": {
+        "version": "2026.09.20",
+        "platform": "darwin-arm64",
+        "loaded-by": "1.7.0",
+        "loaded-at": "2026-09-27-20-44",
+        "loaded-from": "https://github.com/fpgawars/tools-verible/releases/download/2026-09-20/apio-verible-darwin-arm64-20260920.tgz"
+    },
+    "openxc7": {
+        "version": "2026.09.25",
+        "platform": "darwin-arm64",
+        "loaded-by": "1.7.0",
+        "loaded-at": "2026-09-28-20-11",
+        "loaded-from": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-25/apio-openxc7-darwin-arm64-20260925.tgz"
+    }
+}

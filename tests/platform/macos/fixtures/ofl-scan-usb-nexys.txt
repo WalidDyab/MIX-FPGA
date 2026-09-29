@@ -1,0 +1,3 @@
+empty
+Bus device vid:pid       probe_type manufacturer serial       product
+001 004    0x0403:0x6010 FTDI2232   Digilent     210292BCFFE4 Digilent USB Device

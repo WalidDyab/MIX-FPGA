@@ -1,0 +1,20 @@
+{
+  "package-name"                   : "openxc7",
+  "description"                    : "openXC7 toolchain for Xilinx 7-series FPGAs",
+  "release-tag"                    : "2026-09-25",
+  "yosys-release-tag"              : "2026-03-24",
+  "nextpnr-xilinx-revision"        : "e860c9c8360d8501a1b55df94e58f3dfe7bde958",
+  "prjxray-db-revision"            : "a90f27c1caefee5276f47440f4c730b50519a86f",
+  "eigen-version"                  : "3.4.0",
+  "chipdb-source"                  : "generated",
+  "use-cached-chipdb"              : "false",
+  "chipdb-id"                      : "d8eda92262f6d0c1",
+  "build-repo"                     : "fpgawars/tools-openxc7",
+  "build-workflow"                 : "build-pre-release",
+  "workflow-run-id"                : "36106100107",
+  "workflow-run-number"            : "92",
+  "build-time"                     : "2026-09-25 07:24:23 UTC",
+  "commit"                         : "22b6a11dc3198c2c28ad6b9c482f23e7a08e2331",
+  "target-platform"                : "darwin-arm64",
+  "file-name"                      : "apio-openxc7-darwin-arm64-20260925.tgz"
+}
