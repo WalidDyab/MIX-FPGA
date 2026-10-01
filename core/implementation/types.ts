@@ -39,18 +39,31 @@ export interface TimingResult {
     readonly passed?: boolean;
 }
 
+/**
+ * Educational stages of the implementation backend, in order:
+ * `synthesis` (netlist -> FPGA primitives), `implementation` (placement,
+ * routing, timing) and `bitstream` (routed design -> hardware.bit).
+ */
+export type ImplementationStage = 'synthesis' | 'implementation' | 'bitstream';
+
+export const IMPLEMENTATION_STAGES: readonly ImplementationStage[] = ['synthesis', 'implementation', 'bitstream'];
+
 export interface ImplementationRequest {
     readonly project: Project;
     readonly board: BoardDefinition;
     readonly workspace: BuildWorkspace;
     /** Netlist from VHDL synthesis. */
     readonly verilog: BuildArtifact;
-    /** Constraints generated from board data + project pin mapping. */
+    /** Constraints: generated from board data + pin mapping, or the project's own XDC (normalized). */
     readonly xdc: string;
     readonly signal?: AbortSignal;
+    /** Called when the backend starts a stage (progress display only). */
+    readonly onStage?: (stage: ImplementationStage) => void;
 }
 
 export interface ImplementationResult extends OperationResult {
+    /** Last stage the backend started, as seen in its output; absent if none was recognised. */
+    readonly reachedStage?: ImplementationStage;
     /** Implementation part actually targeted, as reported by the backend. */
     readonly part?: string;
     /** The canonical bitstream (hardware.bit). Never modified after this point. */

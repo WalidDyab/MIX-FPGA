@@ -15,10 +15,12 @@ export * from './process/tool-runner';
 export * from './board/types';
 export * from './board/board-registry';
 export * from './board/constraints';
+export * from './board/xdc';
 
 export * from './project/types';
 export * from './project/project-loader';
 export * from './project/validation';
+export * from './project/project-writer';
 
 export * from './toolchain/types';
 export * from './toolchain/compatibility';
@@ -36,6 +38,9 @@ export * from './vhdl/ghdl/ghdl-provider';
 export * from './implementation/types';
 export * from './implementation/apio/reports';
 export * from './implementation/apio/apio-provider';
+
+export * from './rtl/types';
+export * from './rtl/yosys-rtl-provider';
 
 export * from './programming/types';
 export * from './programming/programming-service';

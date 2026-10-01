@@ -32,8 +32,14 @@ export interface ProjectFile {
     /** RTL sources in compile order. */
     readonly sources: readonly string[];
     readonly simulation?: SimulationSettings;
-    /** Top-level port -> board resource id. */
-    readonly pins: PinMapping;
+    /**
+     * The project's own XDC constraints file (project-relative, e.g.
+     * `constraints/nexys-a7-100t.xdc`). Students may edit it directly.
+     * A project uses either `constraints` or `pins`, never both.
+     */
+    readonly constraints?: string;
+    /** Top-level port -> board resource id; NexysVHDL generates the XDC from it. */
+    readonly pins?: PinMapping;
     readonly toolchain?: ToolchainSettings;
 }
 
@@ -45,6 +51,16 @@ export interface Project {
     readonly file: string;
     readonly config: ProjectFile;
 }
+
+/** Standard folders of a NexysVHDL project (Phase 4A folder contract). */
+export const PROJECT_FOLDERS = {
+    /** RTL sources (`src/**\/*.vhd`). */
+    sources: 'src',
+    /** Testbenches (`sim/**\/*.vhd`). */
+    simulation: 'sim',
+    /** XDC constraints (`constraints/**\/*.xdc`). */
+    constraints: 'constraints',
+} as const;
 
 export const PROJECT_DEFAULTS = {
     language: 'vhdl',

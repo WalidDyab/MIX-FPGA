@@ -4,7 +4,8 @@ import { type ToolInvocation, type ToolRunResult, type ToolRunner, succeeded } f
 import type { BuildArtifact } from '../../results/artifact';
 import { type Diagnostic, errorDiag, hasErrors, type LogRef } from '../../results/diagnostic';
 import type { OperationResult } from '../../results/operation';
-import type { SimulationOptions, SimulationResult, SynthesisResult, VhdlCheckResult, VhdlContext, VhdlProvider } from '../types';
+import { sha256File } from '../../util/hash';
+import type { SimulationOptions, SimulationResult, SynthesisOptions, SynthesisResult, VhdlCheckResult, VhdlContext, VhdlProvider } from '../types';
 import { listVerilogModules, parseGhdlOutput } from './ghdl-output';
 
 /** VHDL-2008 flag; the only standard supported for now. */
@@ -14,6 +15,9 @@ const DEFAULT_TIMEOUT_MS = 60_000;
 
 /** Name of the synthesized netlist inside the workspace synth directory. */
 export const GENERATED_VERILOG = 'generated.v';
+
+/** Name of the VCD waveform inside the workspace sim directory. */
+export const VCD_FILE = 'waveform.vcd';
 
 interface StepOutcome {
     readonly ok: boolean;
@@ -128,6 +132,8 @@ export class GhdlVhdlProvider implements VhdlProvider {
         const wave = join(workdir, `${options.testbench}.ghw`);
         const args = ['-r', STD, `--workdir=${workdir}`, options.testbench, '--assert-level=error'];
         if (options.waveform) args.push(`--wave=${wave}`);
+        const vcdPath = join(workdir, VCD_FILE);
+        if (options.vcd) args.push(`--vcd=${vcdPath}`);
         const r = await this.exec(ctx, workdir, args, logs, `ghdl-run-${options.testbench}`, SIM_TIMEOUT_MS);
         diagnostics.push(...r.diagnostics);
 
@@ -142,6 +148,15 @@ export class GhdlVhdlProvider implements VhdlProvider {
                 /* no waveform written (e.g. run failed before start) */
             }
         }
+        let vcd: BuildArtifact | undefined;
+        if (options.vcd) {
+            try {
+                const s = await stat(vcdPath);
+                vcd = { kind: 'waveform', path: vcdPath, canonical: false, sizeBytes: s.size, sha256: await sha256File(vcdPath) };
+            } catch {
+                /* no VCD written */
+            }
+        }
         return {
             ...base,
             status: r.run.outcome === 'exited' ? 'succeeded' : 'failed',
@@ -151,14 +166,15 @@ export class GhdlVhdlProvider implements VhdlProvider {
             durationMs: Date.now() - started,
             ...(parsed.stoppedAt !== undefined ? { stoppedAt: parsed.stoppedAt } : {}),
             ...(waveform ? { waveform } : {}),
+            ...(vcd ? { vcd } : {}),
         };
     }
 
-    async synthesize(ctx: VhdlContext): Promise<SynthesisResult> {
+    async synthesize(ctx: VhdlContext, options: SynthesisOptions = {}): Promise<SynthesisResult> {
         const started = Date.now();
         const logs: LogRef[] = [];
         const top = ctx.project.config.top;
-        const workdir = ctx.workspace.paths.synth;
+        const workdir = options.outputDir ?? ctx.workspace.paths.synth;
         const out = join(workdir, GENERATED_VERILOG);
         const fail = (diagnostics: Diagnostic[]): SynthesisResult & OperationResult => ({
             status: 'failed', top, modules: [], diagnostics, logs, durationMs: Date.now() - started,
@@ -166,7 +182,7 @@ export class GhdlVhdlProvider implements VhdlProvider {
 
         await rm(workdir, { recursive: true, force: true });
         await mkdir(workdir, { recursive: true });
-        const s = await this.exec(ctx, workdir, ['--synth', STD, `--workdir=${workdir}`, '--out=verilog', ...this.rtl(ctx), '-e', top], logs, 'ghdl-synth');
+        const s = await this.exec(ctx, workdir, ['--synth', STD, `--workdir=${workdir}`, '--out=verilog', ...this.rtl(ctx), '-e', top], logs, options.outputDir ? 'ghdl-rtl-synth' : 'ghdl-synth');
         if (!s.ok) return fail(s.diagnostics);
 
         const verilog = s.run.stdout;

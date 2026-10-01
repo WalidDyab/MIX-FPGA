@@ -120,7 +120,7 @@ describe('CLI uses the platform-configured runner everywhere', () => {
     it('doctor, check, simulate and build run tools only through PlatformServices.runner', async (t) => {
         const platformRunner = new FakeRunner((inv: ToolInvocation) => {
             if (inv.args[0] === '--version') return { stdout: inv.executable.includes('ghdl') ? 'GHDL 6.0.0 (x) [Dunoon edition]\n' : 'Apio CLI version 1.6.0\n' };
-            if (inv.args[0] === '--synth') return { stdout: 'module top(input clk100mhz, input btnc, output led0);\nendmodule\n' };
+            if (inv.args[0] === '--synth') return { stdout: 'module top(input sw, output led);\nendmodule\n' };
             if (inv.args[0] === '-r') return { stdout: 'counter_tb.vhd:1:1:@280ns:(report note): ALL TESTS PASSED\n' };
             return {};
         });

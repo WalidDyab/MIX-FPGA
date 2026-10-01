@@ -55,7 +55,9 @@ describe('unit tests are isolated from the host FPGA environment', () => {
             // Without overrides, runCli()/createContext() use the host registry and a real NodeToolRunner.
             const code = text.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
             // Such files must inject the isolation overrides, or (registry tests) a fake runner under a process trap.
-            if (/\b(runCli|createContext)\(/.test(code) && !/\b(isolatedCli|trapProcesses)\(/.test(code)) offenders.push(relative(REPO, file));
+            if (/\b(runCli|createContext)\(|\bnew CoreBackend\(/.test(code) && !/\b(isolatedCli|trapProcesses)\(/.test(code)) offenders.push(relative(REPO, file));
+            // The extension backend builds the same context, so it must always get isolation overrides too.
+            if (/\bnew CoreBackend\(\s*\)/.test(code)) offenders.push(`${relative(REPO, file)}: new CoreBackend()`);
             if (/\bcreateContext\(\s*\)/.test(code)) offenders.push(`${relative(REPO, file)}: createContext()`);
         }
         assert.deepEqual(offenders, []);

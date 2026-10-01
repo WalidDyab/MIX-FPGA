@@ -1,17 +1,449 @@
 {
   "name": "nexysvhdl",
-  "version": "0.3.0-dev",
+  "displayName": "NexysVHDL",
+  "version": "0.4.0-dev",
   "description": "Cross-platform VHDL-first FPGA workflow for the Digilent Nexys A7-100T (in development).",
+  "publisher": "nexysvhdl",
   "private": true,
   "license": "UNLICENSED",
   "type": "commonjs",
-  "main": "dist/core/index.js",
-  "types": "dist/core/index.d.ts",
+  "main": "dist/extension/extension.js",
   "bin": {
     "nexysvhdl": "dist/cli/main.js"
   },
   "engines": {
-    "node": ">=20.12"
+    "node": ">=20.12",
+    "vscode": "^1.120.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:nexysvhdl.json"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nexysvhdl",
+          "title": "NexysVHDL",
+          "icon": "resources/nexysvhdl.svg"
+        }
+      ]
+    },
+    "views": {
+      "nexysvhdl": [
+        {
+          "id": "nexysvhdl.project",
+          "name": "Project"
+        },
+        {
+          "id": "nexysvhdl.files",
+          "name": "Project Files",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "id": "nexysvhdl.hierarchy",
+          "name": "Design Hierarchy",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "id": "nexysvhdl.workflow",
+          "name": "Workflow",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "id": "nexysvhdl.hardware",
+          "name": "Hardware",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "id": "nexysvhdl.results",
+          "name": "Results",
+          "when": "nexysvhdl.hasProject",
+          "visibility": "collapsed"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "nexysvhdl.project",
+        "contents": "No NexysVHDL project is open.\n[Create Project](command:nexysvhdl.createProject)\n[Open Project](command:nexysvhdl.openProject)\nA project is a folder containing nexysvhdl.json.",
+        "when": "!nexysvhdl.hasProject"
+      }
+    ],
+    "commands": [
+      {
+        "command": "nexysvhdl.createProject",
+        "title": "Create Project",
+        "category": "NexysVHDL",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "nexysvhdl.openProject",
+        "title": "Open Project",
+        "category": "NexysVHDL",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "nexysvhdl.refreshProject",
+        "title": "Refresh Project",
+        "category": "NexysVHDL",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "nexysvhdl.refreshHierarchy",
+        "title": "Refresh Hierarchy",
+        "category": "NexysVHDL",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "nexysvhdl.openProjectSettings",
+        "title": "Open Project Settings",
+        "category": "NexysVHDL",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "nexysvhdl.setTopEntity",
+        "title": "Set Top Entity",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.setTopEntityFromItem",
+        "title": "Set as Top Entity",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.setTestbench",
+        "title": "Set Testbench",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.useConstraintsFile",
+        "title": "Use This Constraints File",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.check",
+        "title": "Check VHDL",
+        "category": "NexysVHDL",
+        "icon": "$(check)"
+      },
+      {
+        "command": "nexysvhdl.simulate",
+        "title": "Simulate",
+        "category": "NexysVHDL",
+        "icon": "$(play)"
+      },
+      {
+        "command": "nexysvhdl.build",
+        "title": "Build",
+        "category": "NexysVHDL",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "nexysvhdl.program",
+        "title": "Program FPGA",
+        "category": "NexysVHDL",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "nexysvhdl.cancel",
+        "title": "Cancel Running Action",
+        "category": "NexysVHDL",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "nexysvhdl.detectBoards",
+        "title": "Detect Boards",
+        "category": "NexysVHDL",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "nexysvhdl.selectBoard",
+        "title": "Use This Board",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.openSchematic",
+        "title": "Open Design Schematic",
+        "category": "NexysVHDL",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "nexysvhdl.openSchematicFromItem",
+        "title": "Open Design Schematic Here",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.openRtlSchematic",
+        "title": "Open RTL Schematic",
+        "category": "NexysVHDL",
+        "icon": "$(circuit-board)"
+      },
+      {
+        "command": "nexysvhdl.openWaveform",
+        "title": "Open Waveform",
+        "category": "NexysVHDL",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "nexysvhdl.goToEntity",
+        "title": "Go to Entity Declaration",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.showEnvironment",
+        "title": "Show Environment",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.showLog",
+        "title": "Show Log",
+        "category": "NexysVHDL",
+        "icon": "$(output)"
+      },
+      {
+        "command": "nexysvhdl.openLocation",
+        "title": "Open Source Location",
+        "category": "NexysVHDL"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "nexysvhdl.refreshProject",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.refreshHierarchy",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.openProjectSettings",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.setTopEntity",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.setTopEntityFromItem",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.setTestbench",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.useConstraintsFile",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.check",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.simulate",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.build",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.program",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.cancel",
+          "when": "nexysvhdl.busy"
+        },
+        {
+          "command": "nexysvhdl.detectBoards",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.selectBoard",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.openSchematic",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.openSchematicFromItem",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.goToEntity",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.openLocation",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.openRtlSchematic",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.openWaveform",
+          "when": "nexysvhdl.hasProject"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "nexysvhdl.openProjectSettings",
+          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.refreshProject",
+          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
+          "group": "navigation@2"
+        },
+        {
+          "command": "nexysvhdl.refreshProject",
+          "when": "view == nexysvhdl.files",
+          "group": "navigation"
+        },
+        {
+          "command": "nexysvhdl.openSchematic",
+          "when": "view == nexysvhdl.hierarchy",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.openRtlSchematic",
+          "when": "view == nexysvhdl.hierarchy",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.refreshHierarchy",
+          "when": "view == nexysvhdl.hierarchy",
+          "group": "navigation@2"
+        },
+        {
+          "command": "nexysvhdl.cancel",
+          "when": "view == nexysvhdl.workflow && nexysvhdl.busy",
+          "group": "navigation@0"
+        },
+        {
+          "command": "nexysvhdl.showLog",
+          "when": "view == nexysvhdl.workflow",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.detectBoards",
+          "when": "view == nexysvhdl.hardware",
+          "group": "navigation"
+        },
+        {
+          "command": "nexysvhdl.showLog",
+          "when": "view == nexysvhdl.results",
+          "group": "navigation"
+        },
+        {
+          "command": "nexysvhdl.openWaveform",
+          "when": "view == nexysvhdl.workflow",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "nexysvhdl.setTopEntityFromItem",
+          "when": "viewItem =~ /^nexysvhdl\\.(source|entity)$/",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.useConstraintsFile",
+          "when": "viewItem == nexysvhdl.constraints",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.setTestbench",
+          "when": "viewItem == nexysvhdl.simulation",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.openSchematicFromItem",
+          "when": "viewItem =~ /^nexysvhdl\\.(entity|topEntity|simEntity)$/",
+          "group": "nexysvhdl@2"
+        },
+        {
+          "command": "nexysvhdl.goToEntity",
+          "when": "viewItem =~ /^nexysvhdl\\.(entity|topEntity|simEntity)$/",
+          "group": "nexysvhdl@3"
+        },
+        {
+          "command": "nexysvhdl.refreshProject",
+          "when": "viewItem =~ /^nexysvhdl\\.(source|simulation|constraints|group)/",
+          "group": "nexysvhdl@9"
+        },
+        {
+          "command": "nexysvhdl.check",
+          "when": "view == nexysvhdl.workflow && viewItem == nexysvhdl.action.check",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.simulate",
+          "when": "view == nexysvhdl.workflow && viewItem == nexysvhdl.action.simulate",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.build",
+          "when": "view == nexysvhdl.workflow && viewItem == nexysvhdl.action.build",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.program",
+          "when": "view == nexysvhdl.workflow && viewItem == nexysvhdl.action.program",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.selectBoard",
+          "when": "viewItem == nexysvhdl.board.selectable",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "NexysVHDL",
+      "properties": {
+        "nexysvhdl.checkOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run Check (VHDL analysis) automatically when a project VHDL file is saved. Build never runs automatically."
+        },
+        "nexysvhdl.detectBoardsOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Look for connected boards when a project is opened."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "vhdl",
+        "aliases": [
+          "VHDL",
+          "vhdl"
+        ],
+        "extensions": [
+          ".vhd",
+          ".vhdl"
+        ],
+        "configuration": "./resources/vhdl/language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "vhdl",
+        "scopeName": "source.vhdl",
+        "path": "./resources/vhdl/vhdl.tmLanguage.json"
+      }
+    ]
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
@@ -22,6 +454,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.0",
+    "@types/vscode": "~1.120.0",
     "typescript": "^7.0.2"
   }
 }

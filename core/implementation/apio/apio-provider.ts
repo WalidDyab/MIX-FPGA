@@ -4,8 +4,8 @@ import { type ToolRunner, succeeded } from '../../process/tool-runner';
 import type { BuildArtifact } from '../../results/artifact';
 import { type Diagnostic, errorDiag, type LogRef } from '../../results/diagnostic';
 import { sha256File } from '../../util/hash';
-import type { ImplementationProvider, ImplementationRequest, ImplementationResult, ResourceUtilization } from '../types';
-import { countPrimitives, parseApioBuildLog, parseNextpnrReport, summarizeTiming } from './reports';
+import type { ImplementationProvider, ImplementationRequest, ImplementationResult, ImplementationStage, ResourceUtilization } from '../types';
+import { apioReachedStage, apioStageTracker, countPrimitives, parseApioBuildLog, parseNextpnrReport, summarizeTiming } from './reports';
 
 const BUILD_TIMEOUT_MS = 15 * 60_000;
 
@@ -48,8 +48,10 @@ export class ApioImplementationProvider implements ImplementationProvider {
     async implement(req: ImplementationRequest): Promise<ImplementationResult> {
         const started = Date.now();
         const logs: LogRef[] = [];
+        let reachedStage: ImplementationStage | undefined;
         const fail = (diagnostics: Diagnostic[], stagedFiles: readonly string[] = []): ImplementationResult => ({
             status: 'failed', diagnostics, logs, stagedFiles, durationMs: Date.now() - started,
+            ...(reachedStage ? { reachedStage } : {}),
         });
 
         const apioBoard = req.board.backendIds['apio'];
@@ -71,11 +73,13 @@ export class ApioImplementationProvider implements ImplementationProvider {
             cwd: staged.dir,
             timeoutMs: BUILD_TIMEOUT_MS,
             ...(req.signal ? { signal: req.signal } : {}),
+            ...(req.onStage ? { onOutput: apioStageTracker(req.onStage) } : {}),
         });
         const logText = `${run.stdout}\n${run.stderr}`;
         const logPath = join(req.workspace.paths.logs, 'apio-build.log');
         await writeFile(logPath, logText, 'utf8');
         logs.push({ label: 'apio-build', path: logPath });
+        reachedStage = apioReachedStage(logText);
 
         if (run.outcome === 'spawn-failed') {
             return fail([errorDiag('implementation', 'APIO_NOT_STARTED', `Could not start Apio (${this.apio}): ${run.errorMessage ?? 'unknown error'}`)], staged.files);
@@ -129,6 +133,7 @@ export class ApioImplementationProvider implements ImplementationProvider {
             diagnostics,
             logs,
             durationMs: Date.now() - started,
+            ...(reachedStage ? { reachedStage } : {}),
             ...(facts.part !== undefined ? { part: facts.part } : {}),
             ...(utilization ? { utilization } : {}),
         };

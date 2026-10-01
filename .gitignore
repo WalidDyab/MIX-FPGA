@@ -41,6 +41,8 @@ tools/_dl/
 *.o
 *.ghw
 *.vcd
+# ...except small, reviewed test fixtures
+!tests/fixtures/**/*.vcd
 *.fst
 
 # NexysVHDL build workspaces (isolated staging, GHDL libraries, logs)
@@ -83,4 +85,6 @@ Thumbs.db
 desktop.ini
 .vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 .idea/

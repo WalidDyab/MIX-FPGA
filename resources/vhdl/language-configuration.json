@@ -1,0 +1,38 @@
+{
+  "comments": {
+    "lineComment": "--",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["(", ")"],
+    ["[", "]"]
+  ],
+  "autoClosingPairs": [
+    { "open": "(", "close": ")" },
+    { "open": "[", "close": "]" },
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] }
+  ],
+  "autoCloseBefore": ";:.,=}])> \n\t",
+  "surroundingPairs": [
+    ["(", ")"],
+    ["[", "]"],
+    ["\"", "\""]
+  ],
+  "wordPattern": "(\\\\[^\\\\\\n]+\\\\)|(-?\\d+(?:\\.\\d+)?)|([A-Za-z][A-Za-z0-9_]*)",
+  "indentationRules": {
+    "increaseIndentPattern": {
+      "pattern": "^\\s*(?:(?:[a-z]\\w*\\s*:\\s*)?(?:process|block)\\b.*|.*\\b(?:is|begin|then|else|loop|generate)\\s*(?:--.*)?|.*\\bwhen\\b.*=>\\s*(?:--.*)?|(?:entity|architecture|package|configuration|component|record|protected)\\b.*)$",
+      "flags": "i"
+    },
+    "decreaseIndentPattern": {
+      "pattern": "^\\s*(?:end\\b|elsif\\b|else\\b|begin\\b|\\))",
+      "flags": "i"
+    }
+  },
+  "folding": {
+    "markers": {
+      "start": "^\\s*--\\s*#?region\\b",
+      "end": "^\\s*--\\s*#?endregion\\b"
+    }
+  }
+}

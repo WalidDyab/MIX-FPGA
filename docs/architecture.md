@@ -1,6 +1,6 @@
 # NexysVHDL architecture
 
-Status: Phase 3C (platform adapters integrated). Applies to branch `phase3/integration` and later.
+Status: Phase 4A (VS Code extension on the Phase 3 core). Applies to branch `phase4/vscode-workspace` and later.
 
 ## 1. Objective
 
@@ -50,7 +50,8 @@ Dependencies point downwards only. `core/` never imports from `platform/` or `cl
 | `vhdl/` | `VhdlProvider` contract; `ghdl/` = GHDL implementation + output parser |
 | `implementation/` | `ImplementationProvider` contract, utilization/timing models; `apio/` = Apio implementation + report parsers |
 | `programming/` | `ProgrammerProvider` contract, `ProgrammingService` (target selection, canonical-bitstream protection) |
-| `workflow/` | `WorkflowController` (check / simulate / build), `BuildResult` |
+| `rtl/` | `RtlProvider` contract, `ApioYosysRtlProvider` (generic Yosys RTL JSON for the RTL schematic; no place/route) |
+| `workflow/` | `WorkflowController` (check / simulate / build / rtl), `BuildResult` |
 
 Every dependency is passed in through a constructor. There is no DI framework and no global mutable state.
 
@@ -75,7 +76,8 @@ A student project is a folder with a `nexysvhdl.json`:
 ```
 
 - Paths are project-relative with `/`. Absolute paths, `\`, and paths that escape the project are rejected.
-- `pins` maps top-level port names to board resource ids. Students never write XDC or `apio.ini`; NexysVHDL generates both.
+- Constraints come from the project's own XDC file (`constraints`, e.g. `constraints/nexys-a7-100t.xdc`, Phase 4A) or from `pins`, which maps top-level port names to board resource ids. A project uses one or the other (ADR-006). Students never write `apio.ini`.
+- The Phase 4A folder contract (`src/`, `sim/`, `constraints/`, generated `.nexysvhdl/`) and the source-list sync are described in ADR-006.
 - `validateProject()` returns every problem as a structured `Diagnostic` with a stable code, e.g. `PROJECT_MISSING_TOP`, `PROJECT_BOARD_UNSUPPORTED`, `PROJECT_NO_SOURCES`, `PROJECT_SOURCE_NOT_FOUND` or `PIN_RESOURCE_UNKNOWN`.
 - See `examples/nexys-a7-counter/`, which holds the Phase 2 design.
 
@@ -193,6 +195,6 @@ Explicit tool paths already work on every platform, through `nexysvhdl.json` →
 
 Exit codes: 0 ok, 1 failed, 2 usage/project error, 3 provider not configured. `runCli()` is exported for tests.
 
-## 13. Future VS Code UI
+## 13. VS Code extension (Phase 4A)
 
-The extension will import `core/` directly and replace the CLI's composition root with its own. It will render `BuildResult`/`Diagnostic` objects (Problems panel, status bar, utilization/timing views) and open `LogRef` paths for debug views. Cancellation already flows through `AbortSignal`. No GUI work starts before the Phase 3B adapters are merged.
+The extension (`extension/`) is a thin UI over the core. It shares the CLI's composition root, which now lives in `runtime/` (`createContext`, `controllerFor`, `programmingFor`, `inspectEnvironment`, canonical bitstream lookup); `cli/context.ts` re-exports it. `NexysVhdlService` owns project, design index, workflow, board and result state and is free of the VS Code API; views render its state. The extension never starts processes or names platform tools (`tests/extension/architecture.test.ts`). Build progress comes from `BuildOptions.onProgress`; cancellation flows through `AbortSignal`. See [phase4a-vscode-workspace.md](phase4a-vscode-workspace.md).

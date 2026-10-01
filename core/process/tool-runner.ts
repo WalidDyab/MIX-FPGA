@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { StringDecoder } from 'node:string_decoder';
 
 /**
  * One external tool invocation. Arguments are passed as an array and never
@@ -15,6 +16,11 @@ export interface ToolInvocation {
     readonly timeoutMs?: number;
     /** External cancellation (e.g. a UI "Cancel" button). */
     readonly signal?: AbortSignal;
+    /**
+     * Receives output text (stdout and stderr) as it arrives, for progress
+     * display. The complete output is still returned in the result.
+     */
+    readonly onOutput?: (text: string) => void;
 }
 
 export type ToolRunOutcome = 'exited' | 'timed-out' | 'cancelled' | 'spawn-failed';
@@ -105,8 +111,22 @@ export class NodeToolRunner implements ToolRunner {
                           child.kill();
                       }, invocation.timeoutMs);
 
-            child.stdout.on('data', (chunk: Buffer) => stdout.push(chunk));
-            child.stderr.on('data', (chunk: Buffer) => stderr.push(chunk));
+            const collect = (into: Buffer[]) => {
+                const decoder = invocation.onOutput ? new StringDecoder('utf8') : undefined;
+                return (chunk: Buffer) => {
+                    into.push(chunk);
+                    const text = decoder?.write(chunk);
+                    if (text) {
+                        try {
+                            invocation.onOutput!(text);
+                        } catch {
+                            /* a progress observer must never break the run */
+                        }
+                    }
+                };
+            };
+            child.stdout.on('data', collect(stdout));
+            child.stderr.on('data', collect(stderr));
             child.on('error', (err) => {
                 outcome = 'spawn-failed';
                 finish(null, err.message);

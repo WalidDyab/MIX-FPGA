@@ -17,6 +17,7 @@ export async function simulate(ctx: CliContext, out: Output, project: Project, t
     for (const m of result.messages) out.line(`  ${m}`);
     printDiagnostics(out, result.diagnostics.filter((d) => d.code !== 'GHDL_REPORT_NOTE'));
     if (result.waveform) out.line(`  waveform: ${result.waveform.path} (${result.waveform.sizeBytes} bytes)`);
+    if (result.vcd) out.line(`  vcd:      ${result.vcd.path} (${result.vcd.sizeBytes} bytes)`);
     if (result.status === 'succeeded' && !result.passed) return EXIT.failed;
     return statusExit(result.status);
 }

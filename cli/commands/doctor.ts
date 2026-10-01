@@ -1,15 +1,6 @@
-import {
-    ALL_TOOL_IDS,
-    type DetectedTool,
-    evaluateToolchain,
-    packageVersion,
-    type Project,
-    selectManifest,
-    ToolDetector,
-    toolEnvVar,
-    type ToolId,
-} from '../../core';
-import { type CliContext, providersFor, toolLocatorFor } from '../context';
+import { type DetectedTool, packageVersion, type Project, toolEnvVar, type ToolId } from '../../core';
+import { inspectEnvironment } from '../../runtime/environment';
+import type { CliContext } from '../context';
 import { EXIT, type ExitCode, formatDiagnostic, type Output } from '../output';
 
 const TOOL_LABEL: Record<ToolId, string> = {
@@ -44,37 +35,30 @@ export async function doctor(ctx: CliContext, out: Output, project?: Project): P
     for (const d of ctx.boardDiagnostics) out.line(`  problem: ${d.message}`);
     out.line();
 
-    const explicit = project?.config.toolchain?.manifest;
-    const manifest = selectManifest(ctx.manifests, ctx.host, explicit);
+    const env = await inspectEnvironment(ctx, project);
+    const { manifest, requestedManifest: explicit } = env;
     out.line('Toolchain expectations:');
     out.line(
         manifest
             ? `  manifest: ${manifest.id} (${manifest.status})`
             : `  manifest: none for ${ctx.host.platform}/${ctx.host.arch}${explicit ? ` (requested "${explicit}" not found)` : ''}`,
     );
-
-    const locator = toolLocatorFor(ctx, project);
-    const inspection = ctx.platform.inspectToolchain
-        ? await ctx.platform.inspectToolchain({ tools: ALL_TOOL_IDS, locator, ...(manifest ? { manifest } : {}) })
-        : { tools: await new ToolDetector(locator, ctx.runner).detectAll(ALL_TOOL_IDS), diagnostics: [] };
-    const evaluation = evaluateToolchain(manifest, inspection.tools, ALL_TOOL_IDS);
-    for (const t of evaluation.tools) {
+    for (const t of env.toolchain.tools) {
         out.line(`  ${TOOL_LABEL[t.tool]}${t.expected?.name ? ` (${t.expected.name})` : ''}:`);
         out.line(`    expected: ${t.expected && t.expected.testedVersions.length ? t.expected.testedVersions.join(', ') : 'none recorded'}`);
         out.line(`    detected: ${detectedText(t.detected)}`);
         out.line(`    status:   ${t.status}`);
     }
-    out.line(`  overall:  ${evaluation.overall}`);
-    for (const d of inspection.diagnostics) out.line(`  ${formatDiagnostic(d).trim()}`);
+    out.line(`  overall:  ${env.toolchain.overall}`);
+    for (const d of env.diagnostics) out.line(`  ${formatDiagnostic(d).trim()}`);
     out.line();
 
-    const providers = await providersFor(ctx, project);
-    const programmer = ctx.platform.programmer;
-    const availability = programmer ? await programmer.availability() : undefined;
+    const { ghdl, apio } = env.providers;
+    const programmer = env.programmer;
     out.line('Providers:');
-    out.line(`  VHDL (GHDL):             ${providers.located.ghdl ? `configured via ${providers.located.ghdl.method}` : `not configured (set ${toolEnvVar('ghdl')} or install it where the platform adapter looks)`}`);
-    out.line(`  Implementation (Apio):   ${providers.located.apio ? `configured via ${providers.located.apio.method}` : `not configured (set ${toolEnvVar('apio')} or install it where the platform adapter looks)`}`);
-    out.line(`  Programmer:              ${programmer ? `${programmer.displayName}: ${availability!.available ? 'available' : 'unavailable'} — ${availability!.detail}` : 'not configured'}`);
+    out.line(`  VHDL (GHDL):             ${ghdl ? `configured via ${ghdl.method}` : `not configured (set ${toolEnvVar('ghdl')} or install it where the platform adapter looks)`}`);
+    out.line(`  Implementation (Apio):   ${apio ? `configured via ${apio.method}` : `not configured (set ${toolEnvVar('apio')} or install it where the platform adapter looks)`}`);
+    out.line(`  Programmer:              ${programmer ? `${programmer.displayName}: ${programmer.availability.available ? 'available' : 'unavailable'} — ${programmer.availability.detail}` : 'not configured'}`);
 
     return EXIT.ok;
 }

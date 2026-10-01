@@ -1,5 +1,5 @@
 import { type Diagnostic, diagnostic } from '../../results/diagnostic';
-import type { ClockTiming, ResourceUsage, ResourceUtilization, TimingResult } from '../types';
+import { type ClockTiming, IMPLEMENTATION_STAGES, type ImplementationStage, type ResourceUsage, type ResourceUtilization, type TimingResult } from '../types';
 
 /** Shape of nextpnr-xilinx's `--report` JSON (fields NexysVHDL reads). */
 interface NextpnrReport {
@@ -40,6 +40,48 @@ export function parseNextpnrReport(json: string): { utilization: ResourceUtiliza
         ...(typeof f.constraint === 'number' && typeof f.achieved === 'number' ? { passed: f.achieved >= f.constraint } : {}),
     }));
     return { utilization, clocks };
+}
+
+/**
+ * The stage a line of `apio build --verbose` output starts, if any. Apio
+ * echoes each tool command line before running it: Yosys (synthesis),
+ * nextpnr-xilinx (placement/routing/timing), then fasm2frames and
+ * xc7frames2bit (bitstream). Pure.
+ */
+export function apioStageOfLine(line: string): ImplementationStage | undefined {
+    const l = line.trimStart();
+    if (/^yosys\s+-/.test(l)) return 'synthesis';
+    if (/^nextpnr-xilinx\s+-/.test(l)) return 'implementation';
+    if (/^(fasm2frames|xc7frames2bit)\s+-/.test(l)) return 'bitstream';
+    return undefined;
+}
+
+/** Last stage started in a complete Apio log. Pure. */
+export function apioReachedStage(log: string): ImplementationStage | undefined {
+    let reached: ImplementationStage | undefined;
+    for (const line of log.split(/\r?\n/)) {
+        const stage = apioStageOfLine(line);
+        if (stage && (!reached || IMPLEMENTATION_STAGES.indexOf(stage) > IMPLEMENTATION_STAGES.indexOf(reached))) reached = stage;
+    }
+    return reached;
+}
+
+/** Feeds streamed output text line by line and reports each newly started stage once. */
+export function apioStageTracker(onStage: (stage: ImplementationStage) => void): (text: string) => void {
+    let pending = '';
+    let reached = -1;
+    return (text: string) => {
+        const lines = (pending + text).split(/\r?\n/);
+        pending = lines.pop() ?? '';
+        for (const line of lines) {
+            const stage = apioStageOfLine(line);
+            const index = stage ? IMPLEMENTATION_STAGES.indexOf(stage) : -1;
+            if (stage && index > reached) {
+                reached = index;
+                onStage(stage);
+            }
+        }
+    };
 }
 
 /** Facts extracted from `apio build --verbose` output. */

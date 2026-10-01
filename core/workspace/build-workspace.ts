@@ -17,6 +17,8 @@ export interface WorkspacePaths {
     readonly synth: string;
     /** Implementation staging: the ONLY directory the implementation backend sees. */
     readonly impl: string;
+    /** RTL analysis: GHDL netlist + Yosys RTL JSON for the RTL schematic (no place/route). */
+    readonly rtl: string;
     /** Prepared programming artifacts (never the canonical bitstream). */
     readonly program: string;
     readonly logs: string;
@@ -78,7 +80,7 @@ export class BuildWorkspace {
 
     static pathsFor(root: string): WorkspacePaths {
         const r = resolve(root);
-        return { root: r, check: join(r, 'check'), sim: join(r, 'sim'), synth: join(r, 'synth'), impl: join(r, 'impl'), program: join(r, 'program'), logs: join(r, 'logs') };
+        return { root: r, check: join(r, 'check'), sim: join(r, 'sim'), synth: join(r, 'synth'), impl: join(r, 'impl'), rtl: join(r, 'rtl'), program: join(r, 'program'), logs: join(r, 'logs') };
     }
 
     async ensureDirectories(): Promise<void> {

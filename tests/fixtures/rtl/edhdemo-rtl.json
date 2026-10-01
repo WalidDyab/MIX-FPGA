@@ -1,0 +1,266 @@
+{
+  "creator": "Yosys 0.63+173 (git sha1 66306a8ca-dirty, x86_64-w64-mingw32-g++ 13.2.1 -O3)",
+  "modules": {
+    "blink_counter_Brtl_26": {
+      "attributes": {
+        "src": "generated.v:1.1-27.10"
+      },
+      "ports": {
+        "clk": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "reset": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "q": {
+          "direction": "output",
+          "bits": [ 4 ]
+        }
+      },
+      "cells": {
+        "$add$generated.v:17$2": {
+          "hide_name": 1,
+          "type": "$add",
+          "parameters": {
+            "A_SIGNED": "00000000000000000000000000000000",
+            "A_WIDTH": "00000000000000000000000000011011",
+            "B_SIGNED": "00000000000000000000000000000000",
+            "B_WIDTH": "00000000000000000000000000011011",
+            "Y_WIDTH": "00000000000000000000000000011011"
+          },
+          "attributes": {
+            "src": "generated.v:17.15-17.54"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 4 ],
+            "B": [ "1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
+            "Y": [ 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 ]
+          }
+        },
+        "$procdff$8": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": "1",
+            "WIDTH": "00000000000000000000000000011011"
+          },
+          "attributes": {
+            "src": "generated.v:23.3-24.16"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84 ],
+            "Q": [ 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 4 ]
+          }
+        },
+        "$ternary$generated.v:19$3": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": "00000000000000000000000000011011"
+          },
+          "attributes": {
+            "src": "generated.v:19.16-19.60"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 ],
+            "B": [ "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
+            "S": [ 3 ],
+            "Y": [ 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84 ]
+          }
+        }
+      },
+      "netnames": {
+        "clk": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "generated.v:2.11-2.14"
+          }
+        },
+        "count": {
+          "hide_name": 0,
+          "bits": [ 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 4 ],
+          "attributes": {
+            "src": "generated.v:5.14-5.19"
+          }
+        },
+        "n11": {
+          "hide_name": 0,
+          "bits": [ 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84 ],
+          "attributes": {
+            "src": "generated.v:7.15-7.18"
+          }
+        },
+        "n14": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "generated.v:8.8-8.11"
+          }
+        },
+        "n15": {
+          "hide_name": 0,
+          "bits": [ 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 4 ],
+          "attributes": {
+            "init": "000000000000000000000000000",
+            "src": "generated.v:9.14-9.17"
+          }
+        },
+        "n9": {
+          "hide_name": 0,
+          "bits": [ 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 ],
+          "attributes": {
+            "src": "generated.v:6.15-6.17"
+          }
+        },
+        "q": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "generated.v:4.11-4.12"
+          }
+        },
+        "reset": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "generated.v:3.11-3.16"
+          }
+        }
+      }
+    },
+    "top": {
+      "attributes": {
+        "top": "00000000000000000000000000000001",
+        "src": "generated.v:29.1-44.10"
+      },
+      "ports": {
+        "clk": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "btnc": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "sw0": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "led0": {
+          "direction": "output",
+          "bits": [ 5 ]
+        }
+      },
+      "cells": {
+        "$and$generated.v:43$7": {
+          "hide_name": 1,
+          "type": "$and",
+          "parameters": {
+            "A_SIGNED": "00000000000000000000000000000000",
+            "A_WIDTH": "00000000000000000000000000000001",
+            "B_SIGNED": "00000000000000000000000000000000",
+            "B_WIDTH": "00000000000000000000000000000001",
+            "Y_WIDTH": "00000000000000000000000000000001"
+          },
+          "attributes": {
+            "src": "generated.v:43.15-43.26"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 6 ],
+            "B": [ 4 ],
+            "Y": [ 5 ]
+          }
+        },
+        "u_blink": {
+          "hide_name": 0,
+          "type": "blink_counter_Brtl_26",
+          "parameters": {
+          },
+          "attributes": {
+            "module_not_derived": "00000000000000000000000000000001",
+            "src": "generated.v:38.25-41.15"
+          },
+          "port_directions": {
+            "clk": "input",
+            "q": "output",
+            "reset": "input"
+          },
+          "connections": {
+            "clk": [ 2 ],
+            "q": [ 6 ],
+            "reset": [ 3 ]
+          }
+        }
+      },
+      "netnames": {
+        "blink": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "generated.v:34.8-34.13"
+          }
+        },
+        "btnc": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "generated.v:31.11-31.15"
+          }
+        },
+        "clk": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "generated.v:30.11-30.14"
+          }
+        },
+        "led0": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "generated.v:33.11-33.15"
+          }
+        },
+        "n2": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "generated.v:35.8-35.10"
+          }
+        },
+        "sw0": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "generated.v:32.11-32.14"
+          }
+        }
+      }
+    }
+  }
+}

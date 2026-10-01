@@ -30,16 +30,20 @@ export async function projectInfo(ctx: CliContext, out: Output, project: Project
     if (c.simulation) {
         out.line(`  sim:      ${c.simulation.sources.join(', ') || '(none)'}${c.simulation.testbench ? `  testbench: ${c.simulation.testbench}` : ''}`);
     }
-    out.line('  pins:');
-    for (const [port, id] of Object.entries(c.pins ?? {})) {
-        const r = board ? findResource(board, id) : undefined;
-        out.line(`    ${port.padEnd(12)} -> ${id}${r ? ` (pin ${r.pins.join(',')}${r.clock ? `, ${r.clock.frequencyHz / 1e6} MHz` : ''})` : ' (unknown resource)'}`);
+    if (c.constraints !== undefined) {
+        out.line(`  constraints: ${c.constraints}`);
+    } else {
+        out.line('  pins:');
+        for (const [port, id] of Object.entries(c.pins ?? {})) {
+            const r = board ? findResource(board, id) : undefined;
+            out.line(`    ${port.padEnd(12)} -> ${id}${r ? ` (pin ${r.pins.join(',')}${r.clock ? `, ${r.clock.frequencyHz / 1e6} MHz` : ''})` : ' (unknown resource)'}`);
+        }
     }
     out.line();
     out.line(`Validation: ${validation.valid ? 'OK' : 'FAILED'}`);
     printDiagnostics(out, validation.diagnostics, true);
 
-    if (validation.valid && board) {
+    if (validation.valid && board && c.pins !== undefined && c.constraints === undefined) {
         out.line();
         out.line('Generated constraints (preview):');
         for (const l of generateXdc(board, c.pins).xdc.trimEnd().split('\n')) out.line(`  ${l}`);

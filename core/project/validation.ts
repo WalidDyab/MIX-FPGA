@@ -107,10 +107,26 @@ export async function validateProject(project: Project, boards: BoardRegistry): 
         d.push(warningDiag('project', 'PROJECT_TESTBENCH_NO_SOURCES', 'A testbench is selected but no simulation sources are listed.', loc));
     }
 
-    if (typeof c.pins !== 'object' || c.pins === null || Object.keys(c.pins).length === 0) {
-        d.push(errorDiag('project', 'PROJECT_NO_PINS', 'No pin mappings are defined ("pins").', loc));
+    const hasPins = typeof c.pins === 'object' && c.pins !== null && Object.keys(c.pins).length > 0;
+    if (c.constraints !== undefined) {
+        if (hasPins) {
+            d.push(errorDiag('project', 'PROJECT_CONSTRAINTS_AND_PINS', 'Use either a constraints file ("constraints") or pin mappings ("pins"), not both.', loc));
+        }
+        if (typeof c.constraints !== 'string') {
+            d.push(errorDiag('project', 'PROJECT_PATH_INVALID', 'constraints: must be a project-relative path string', loc));
+        } else {
+            const pathProblem = checkRelativePath(project.root, c.constraints, 'constraints');
+            if (pathProblem) d.push(pathProblem);
+            else if (!/\.xdc$/i.test(c.constraints)) {
+                d.push(errorDiag('project', 'PROJECT_CONSTRAINTS_NOT_XDC', `"${c.constraints}" is not an .xdc file.`, loc));
+            } else if (!(await isFile(resolve(project.root, c.constraints)))) {
+                d.push(errorDiag('project', 'PROJECT_CONSTRAINTS_NOT_FOUND', `Constraints file "${c.constraints}" does not exist.`, loc));
+            }
+        }
+    } else if (!hasPins) {
+        d.push(errorDiag('project', 'PROJECT_NO_PINS', 'No constraints: set "constraints" to an XDC file or define pin mappings ("pins").', loc));
     } else if (board) {
-        d.push(...generateXdc(board, c.pins).diagnostics);
+        d.push(...generateXdc(board, c.pins!).diagnostics);
     }
 
     return { valid: !d.some((x) => x.severity === 'error'), diagnostics: d };

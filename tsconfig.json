@@ -18,5 +18,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["core/**/*.ts", "platform/**/*.ts", "cli/**/*.ts", "tests/**/*.ts"]
+  "include": ["core/**/*.ts", "platform/**/*.ts", "runtime/**/*.ts", "cli/**/*.ts", "extension/**/*.ts", "tests/**/*.ts"]
 }

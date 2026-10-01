@@ -4,7 +4,7 @@
  * (see core/programming).
  */
 
-export type BuildArtifactKind = 'bitstream' | 'generated-verilog' | 'constraints' | 'report' | 'waveform';
+export type BuildArtifactKind = 'bitstream' | 'generated-verilog' | 'constraints' | 'report' | 'waveform' | 'rtl-netlist';
 
 export interface BuildArtifact {
     readonly kind: BuildArtifactKind;

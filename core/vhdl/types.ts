@@ -17,8 +17,10 @@ export interface VhdlCheckResult extends OperationResult {
 
 export interface SimulationOptions {
     readonly testbench: string;
-    /** Write a waveform file into the workspace. */
+    /** Write a GHW waveform file into the workspace. */
     readonly waveform: boolean;
+    /** Also write a VCD waveform (`sim/waveform.vcd`), the format the VS Code viewer reads. */
+    readonly vcd?: boolean;
 }
 
 export interface SimulationResult extends OperationResult {
@@ -28,6 +30,8 @@ export interface SimulationResult extends OperationResult {
     /** Simulation time at which it stopped, as reported (e.g. `280ns`). */
     readonly stoppedAt?: string;
     readonly waveform?: BuildArtifact;
+    /** VCD waveform of this run (with sha256), when requested. */
+    readonly vcd?: BuildArtifact;
     /** `report`/`assert` messages from the testbench, in order. */
     readonly messages: readonly string[];
 }
@@ -45,5 +49,10 @@ export interface VhdlProvider {
     readonly id: string;
     check(ctx: VhdlContext): Promise<VhdlCheckResult>;
     simulate(ctx: VhdlContext, options: SimulationOptions): Promise<SimulationResult>;
-    synthesize(ctx: VhdlContext): Promise<SynthesisResult>;
+    synthesize(ctx: VhdlContext, options?: SynthesisOptions): Promise<SynthesisResult>;
+}
+
+export interface SynthesisOptions {
+    /** Workspace folder for the GHDL library and netlist (default: `synth/`). */
+    readonly outputDir?: string;
 }
