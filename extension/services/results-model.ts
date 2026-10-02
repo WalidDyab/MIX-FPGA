@@ -20,7 +20,8 @@ export interface ResultsModel {
     };
 }
 
-const usage = (u: ResourceUsage | undefined) => (u ? `${u.used}${u.available !== undefined ? ` / ${u.available}` : ''}` : undefined);
+const count = (n: number) => n.toLocaleString('en-US');
+const usage = (u: ResourceUsage | undefined) => (u ? `${count(u.used)}${u.available !== undefined ? ` / ${count(u.available)}` : ''}` : undefined);
 const mhz = (v: number) => `${Math.round(v * 100) / 100} MHz`;
 
 /**
@@ -73,7 +74,7 @@ export function buildResultsModel(check?: VhdlCheckResult, sim?: SimulationResul
             ? [
                   { label: 'LUTs', value: usage(u.luts) ?? 'not reported' },
                   { label: 'Flip-Flops', value: usage(u.flipFlops) ?? 'not reported' },
-                  { label: 'BRAM', value: usage(u.bram) ?? 'not reported' },
+                  { label: 'BRAM (36 Kb)', value: usage(u.bram) ?? 'not reported' },
                   { label: 'DSP', value: usage(u.dsp) ?? 'not reported' },
                   ...(u.io ? [{ label: 'I/O pins', value: usage(u.io)! }] : []),
               ]

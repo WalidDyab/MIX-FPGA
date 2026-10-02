@@ -1,0 +1,203 @@
+import assert from 'node:assert/strict';
+import { join, win32 } from 'node:path';
+import { describe, it } from 'node:test';
+import { type HostInfo, installToolchainArchive, type ToolchainRequirement, type ToolInvocation } from '../core';
+import { summarizeEnvironment, boardRow } from '../extension/services/environment-summary';
+import type { WindowsHostEnvironment } from '../platform/windows/host-environment';
+import { createWindowsPlatformServices } from '../platform/windows';
+import { controllerFor, createContext, toolLocatorFor } from '../runtime/context';
+import { inspectEnvironment } from '../runtime/environment';
+import { fakeArchive, writeFakeBundle } from './bundle-fixture';
+import { FakeRunner, makeProject, tempDir, trapProcesses } from './helpers';
+
+const WIN: HostInfo = { platform: 'win32', arch: 'x64', nodeVersion: 'v24.0.0-test' };
+const MAC: HostInfo = { platform: 'darwin', arch: 'arm64', nodeVersion: 'v24.0.0-test' };
+
+/** Answers version probes like the real bundled tools (and djtgcfg) do. */
+function toolRunner(): FakeRunner {
+    return new FakeRunner((inv: ToolInvocation) => {
+        const a = inv.args.join(' ');
+        if (a === '--version' && /ghdl/i.test(inv.executable)) return { stdout: 'GHDL 6.0.0 (6.0.0.r0) [Dunoon edition]\n' };
+        if (a === '--version') return { stdout: 'Apio CLI version 1.6.0 (pyinst-windows-amd64-2026-09-15)\n' };
+        if (a.includes('yosys -V')) return { stdout: 'Yosys 0.63+173 (git sha1 66306a8ca-dirty)\n' };
+        if (a.includes('nextpnr-xilinx --version')) return { stdout: '"nextpnr-xilinx" -- Next Generation Place and Route (Version 0eae9fb)\n' };
+        if (a === '-version') return { stdout: 'Digilent JTAG Config Utility v2.6.1\n' };
+        if (a === '--Version') return { stdout: 'openFPGALoader v1.1.1\n' };
+        return {};
+    });
+}
+
+/** A data root with toolchain 1.0 for `host` installed through the real installer. */
+async function installedDataRoot(t: Parameters<typeof tempDir>[0], target = 'win32-x64', programmer = false): Promise<{ dataRoot: string; requirement: ToolchainRequirement }> {
+    const dir = await tempDir(t, 'nexys-classroom-');
+    const bundle = join(dir, 'bundle');
+    await writeFakeBundle(bundle, { target, programmer });
+    const { archive, requirement } = await fakeArchive(dir, bundle, { target });
+    const dataRoot = join(dir, 'data');
+    const r = await installToolchainArchive({ archive, dataRoot, target, requirement });
+    assert.notEqual(r.status, 'failed');
+    return { dataRoot, requirement };
+}
+
+describe('classroom mode: the bundled toolchain only', () => {
+    it('resolves GHDL/Apio only from the installed toolchain, ignoring overrides, project paths and PATH', async (t) => {
+        trapProcesses(t);
+        const { dataRoot, requirement } = await installedDataRoot(t);
+        const runner = toolRunner();
+        const env = { NEXYSVHDL_GHDL: 'C:\\other\\ghdl.exe', NEXYSVHDL_APIO: 'C:\\other\\apio.exe', Path: 'C:\\Python314;C:\\msys64\\ucrt64\\bin', APIO_HOME: 'C:\\Users\\student\\.apio', SystemRoot: 'C:\\Windows' };
+        const ctx = await createContext({ host: WIN, env, runner, classroom: { requirement, dataRoot } });
+        const tc = ctx.classroom!.toolchain!;
+        assert.ok(tc, JSON.stringify(ctx.classroom!.diagnostics));
+        const project = await makeProject(t, { toolchain: { tools: { ghdl: 'C:\\project\\ghdl.exe' } } });
+        const locator = toolLocatorFor(ctx, project);
+        assert.deepEqual(await locator.locate('ghdl'), { path: tc.executables.ghdl, method: 'NexysVHDL bundled toolchain' });
+        assert.deepEqual(await locator.locate('apio'), { path: tc.executables.apio, method: 'NexysVHDL bundled toolchain' });
+        assert.equal(await locator.locate('programmer'), undefined, 'no Digilent install in this environment, and no PATH fallback');
+        assert.deepEqual(ctx.manifests.map((m) => m.id), ['bundle-win32-x64-1.0'], 'compares with the bundle, not the reference manifests');
+
+        const report = await inspectEnvironment(ctx, project);
+        assert.equal(report.toolchain.tools.filter((x) => x.tool !== 'programmer').every((x) => x.status === 'compatible'), true, JSON.stringify(report.toolchain.tools));
+        for (const call of runner.calls) {
+            assert.ok(call.executable.startsWith(tc.root), `${call.executable} comes from the installed toolchain`);
+            assert.equal(call.env?.['APIO_HOME'], tc.apioHome);
+            assert.equal(call.env?.['Path'], undefined, 'inherited PATH removed');
+            assert.ok(!call.env?.['PATH']?.includes('Python314'));
+        }
+
+        // Check runs the bundled GHDL.
+        await (await controllerFor(ctx, project)).check(project);
+        assert.ok(runner.calls.some((c) => c.executable === tc.executables.ghdl && c.args.includes('-a')));
+    });
+
+    it('never falls back to discovery when the toolchain is not installed', async (t) => {
+        trapProcesses(t);
+        const dir = await tempDir(t, 'nexys-classroom-');
+        const requirement: ToolchainRequirement = { schemaVersion: 1, bundleVersion: '1.0', targets: { 'win32-x64': { status: 'validated', treeSha256: 'a'.repeat(64) } } };
+        const runner = toolRunner();
+        const ctx = await createContext({ host: WIN, env: { NEXYSVHDL_GHDL: 'C:\\other\\ghdl.exe', USERPROFILE: 'C:\\Users\\student' }, runner, classroom: { requirement, dataRoot: join(dir, 'data') } });
+        assert.equal(ctx.classroom!.installed?.status, 'missing');
+        const project = await makeProject(t, { toolchain: { tools: { ghdl: 'C:\\project\\ghdl.exe' } } });
+        assert.equal(await toolLocatorFor(ctx, project).locate('ghdl'), undefined);
+        assert.equal(await toolLocatorFor(ctx, project).locate('apio'), undefined);
+        const summary = summarizeEnvironment(await inspectEnvironment(ctx, project));
+        assert.equal(summary.level, 'setup-required');
+        assert.equal(summary.toolchain?.state, 'not-installed');
+        assert.equal(summary.setup.find((r) => r.id === 'toolchain')?.status, 'Not Installed');
+        assert.equal(runner.calls.length, 0, 'nothing was run');
+    });
+
+    it('reports an unsupported host instead of guessing', async (t) => {
+        trapProcesses(t);
+        const requirement: ToolchainRequirement = { schemaVersion: 1, bundleVersion: '1.0', targets: { 'win32-x64': { status: 'validated', treeSha256: 'a'.repeat(64) } } };
+        const ctx = await createContext({ host: { platform: 'linux', arch: 'x64', nodeVersion: 'x' }, env: {}, runner: toolRunner(), classroom: { requirement } });
+        assert.deepEqual(ctx.classroom!.diagnostics.map((d) => d.code), ['TOOLCHAIN_TARGET_UNSUPPORTED']);
+        assert.equal(ctx.platform.id, 'unsupported');
+    });
+
+    it('uses the per-user data root of the platform (LOCALAPPDATA on Windows, ~/Library/NexysVHDL on macOS)', async (t) => {
+        trapProcesses(t);
+        const requirement: ToolchainRequirement = { schemaVersion: 1, bundleVersion: '1.0', targets: { 'win32-x64': { status: 'validated', treeSha256: 'a'.repeat(64) }, 'darwin-arm64': { status: 'pending' } } };
+        const win = await createContext({ host: WIN, env: { LOCALAPPDATA: 'C:\\Users\\student\\AppData\\Local' }, runner: toolRunner(), classroom: { requirement } });
+        assert.equal(win.classroom!.dataRoot, win32.join('C:\\Users\\student\\AppData\\Local', 'NexysVHDL'));
+        const mac = await createContext({ host: MAC, env: { HOME: '/Users/student' }, runner: toolRunner(), classroom: { requirement } });
+        assert.equal(mac.classroom!.dataRoot, '/Users/student/Library/NexysVHDL');
+        assert.equal(mac.classroom!.installed?.status, 'pending');
+    });
+
+    it('macOS classroom adapter takes GHDL, Apio and the programmer only from the bundle', async (t) => {
+        trapProcesses(t);
+        const { dataRoot, requirement } = await installedDataRoot(t, 'darwin-arm64', true);
+        const runner = toolRunner();
+        const ctx = await createContext({ host: MAC, env: { HOME: '/Users/student', NEXYSVHDL_PROGRAMMER: '/usr/local/bin/openFPGALoader', PATH: '/opt/homebrew/bin' }, runner, classroom: { requirement, dataRoot } });
+        const tc = ctx.classroom!.toolchain!;
+        assert.ok(tc, JSON.stringify(ctx.classroom!.diagnostics));
+        assert.equal(ctx.platform.programmerSetup?.bundled, true);
+        assert.equal((await ctx.platform.toolLocator!.locate('programmer'))?.path, tc.executables.programmer);
+        assert.equal((await ctx.platform.toolLocator!.locate('ghdl'))?.path, tc.executables.ghdl);
+        const report = await inspectEnvironment(ctx);
+        assert.equal(report.toolchain.tools.find((x) => x.tool === 'programmer')?.detected?.version, '1.1.1');
+        assert.ok(runner.calls.every((c) => c.executable.startsWith(tc.root)), 'no Homebrew or PATH tool was run');
+    });
+});
+
+describe('classroom mode: Windows Digilent prerequisite', () => {
+    const PF86 = 'C:\\Program Files (x86)';
+    const djtgcfg = `${PF86}\\Digilent\\AdeptUtilities\\djtgcfg.exe`;
+    const host = (files: string[], env: Record<string, string> = {}): WindowsHostEnvironment => ({
+        env: { 'ProgramFiles(x86)': PF86, ProgramFiles: 'C:\\Program Files', ...env },
+        fs: {
+            isFile: async (p) => files.some((f) => f.toLowerCase() === p.toLowerCase()),
+            listDirectories: async () => [],
+            readFile: async (p) => (p.toLowerCase() === 'c:\\program files\\digilent\\install.log' ? Buffer.from('<<<<< Digilent Adept Runtime 2.30.4 >>>>>\n') : undefined),
+        },
+    });
+
+    it('uses an existing official Digilent installation', async () => {
+        const services = createWindowsPlatformServices(WIN, { environment: host([djtgcfg, 'C:\\Program Files\\Digilent\\install.log']), runner: toolRunner(), classroom: {} });
+        assert.equal((await services.toolLocator.locate('programmer'))?.path, djtgcfg);
+        assert.equal((await services.programmer.availability()).available, true);
+        assert.equal(services.programmerSetup?.bundled, false);
+        assert.match(services.programmerSetup!.guide!, /^https:\/\/digilent\.com\//);
+    });
+
+    it('reports Digilent support as missing, without using a djtgcfg found elsewhere (no PATH fallback)', async () => {
+        const services = createWindowsPlatformServices(WIN, { environment: host(['C:\\tools\\djtgcfg.exe'], { PATH: 'C:\\tools', NEXYSVHDL_PROGRAMMER: 'C:\\tools\\djtgcfg.exe' }), runner: toolRunner(), classroom: {} });
+        assert.equal(await services.toolLocator.locate('programmer'), undefined);
+        assert.equal((await services.programmer.availability()).available, false);
+    });
+});
+
+describe('student setup summary', () => {
+    const base = (programmerAvailable: boolean, bundledProgrammer = false) =>
+        summarizeEnvironment({
+            adapter: { id: 'x', displayName: 'X', status: '' },
+            toolchain: {
+                overall: 'compatible',
+                tools: (['ghdl', 'apio', 'openxc7', 'yosys', 'nextpnr-xilinx'] as const).map((tool) => ({ tool, status: 'compatible' as const, reason: 'ok', detected: { tool, found: true, version: '1', method: 'NexysVHDL bundled toolchain' } })),
+            },
+            diagnostics: [],
+            providers: { ghdl: { path: 'g', method: 'm' }, apio: { path: 'a', method: 'm' } },
+            programmer: { displayName: 'P', availability: { available: programmerAvailable, detail: programmerAvailable ? 'ok' : 'not installed' } },
+            programmerSetup: bundledProgrammer ? { name: 'Board programmer', bundled: true } : { name: 'USB/JTAG Support', bundled: false, guide: 'https://example.invalid/guide' },
+            classroom: {
+                requirement: { schemaVersion: 1, bundleVersion: '1.0', targets: { 'win32-x64': { status: 'validated', treeSha256: 'a'.repeat(64) } } },
+                target: 'win32-x64',
+                dataRoot: 'C:\\data',
+                diagnostics: [],
+                // A minimal usable toolchain for the summary.
+                toolchain: {} as never,
+                resolution: { root: 'r', target: 'win32-x64', diagnostics: [], manifest: { bundleVersion: '1.0', displayPlatform: 'Windows x64' } as never },
+                installed: { status: 'installed', paths: { dataRoot: 'C:\\data', versionDir: 'C:\\data\\toolchains\\win32-x64\\1.0', stagingRoot: '', stateDir: '' }, marker: {} as never },
+            },
+        });
+
+    it('ready toolchain and Digilent missing: design and build work, programming needs setup', () => {
+        const s = base(false);
+        assert.equal(s.headline, 'Ready (programming needs setup)');
+        assert.equal(s.status, 'Ready for design and build');
+        assert.deepEqual(s.setup.map((r) => `${r.label}: ${r.status}`), ['Bundled FPGA Toolchain: Ready', 'USB/JTAG Support: Setup Required']);
+        assert.equal(s.programmerGuide?.url, 'https://example.invalid/guide');
+    });
+
+    it('everything ready', () => {
+        const s = base(true);
+        assert.equal(s.level, 'ready');
+        assert.equal(s.status, 'Ready for design, build and programming');
+        assert.equal(s.setup.find((r) => r.id === 'programmer')?.status, 'Ready');
+        assert.equal(s.programmerGuide?.name, 'USB/JTAG Support');
+    });
+
+    it('a bundled programmer (macOS) is not a system prerequisite', () => {
+        const s = base(true, true);
+        assert.equal(s.setup.find((r) => r.id === 'programmer')?.status, 'Ready (bundled)');
+        assert.equal(s.programmerGuide, undefined);
+    });
+
+    it('a missing board is not a missing programmer', () => {
+        assert.deepEqual(
+            [boardRow({ status: 'none', boards: [], diagnostics: [] }).status, boardRow({ status: 'unavailable', boards: [], diagnostics: [] }).status, boardRow({ status: 'unknown', boards: [], diagnostics: [] }).status],
+            ['Not Connected', 'Not Checked', 'Not Checked'],
+        );
+        assert.equal(boardRow({ status: 'one', boards: [{ selector: 'SN:1', serialNumber: '1', productName: 'Nexys A7-100T' } as never], diagnostics: [] }).status, 'Connected');
+    });
+});

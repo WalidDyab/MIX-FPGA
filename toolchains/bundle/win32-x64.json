@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "target": "win32-x64",
+  "platform": "win32",
+  "arch": "x64",
+  "displayPlatform": "Windows x64",
+  "bundleVersion": "1.0",
+  "status": "validated",
+  "validatedBy": [
+    "docs/phase1-windows.md",
+    "docs/phase2-windows.md",
+    "docs/phase3b-windows.md",
+    "docs/phase3c-integration.md",
+    "docs/phase4b-classroom-bundle.md"
+  ],
+  "notes": "Exact component set validated on Windows 11 x64 in Phases 1-4A (GHDL 6.0.0 mcode zip; Apio 1.6.0 bundle; the Apio package set Apio 1.6.0 installed on 2026-09-22/26, including openXC7 2026-09-24 and its xc7a100tcsg324 chipdb). Staged from the official release archives below; nothing is upgraded for uniformity with macOS.",
+  "versions": {
+    "ghdl": "6.0.0",
+    "apio": "1.6.0",
+    "openxc7": "2026-09-24",
+    "openxc7PartsIndexSchema": 5,
+    "yosys": "0.63+173",
+    "nextpnr-xilinx": "0eae9fb"
+  },
+  "executables": {
+    "ghdl": "ghdl/bin/ghdl.exe",
+    "apio": "apio/bin/apio.exe"
+  },
+  "apio": {
+    "version": "1.6.0",
+    "platformId": "windows-amd64",
+    "packagesDir": "apio/packages",
+    "remoteConfigDir": "apio/remote-config",
+    "installedAt": "2026-09-26-22-17"
+  },
+  "environment": {
+    "pathPrepend": [
+      "shims"
+    ],
+    "set": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "notes": "Every bundled tool runs with PATH = the bundle shims + the operating-system folders only (no developer or student tools), inherited APIO_* and PYTHON* variables removed, and Python bytecode writing disabled so the immutable bundle is never written to."
+  },
+  "shims": [
+    {
+      "file": "shims/python.cmd",
+      "target": "apio/packages/oss-cad-suite/lib/python3.exe",
+      "reason": "openXC7 fasm2frames.cmd/bit2fasm.cmd/xc7pll.cmd run a bare \"python\" from PATH. In Phases 1-4A this silently resolved to the developer machine's C:Python314python.exe. The shim points it at the CPython 3.11.6 shipped inside the official oss-cad-suite package; fasm2frames output was verified byte-identical (hardware.frames sha256 0c4e6307...) to the validated Python 3.14.3 run."
+    }
+  ],
+  "programmer": {
+    "kind": "system",
+    "name": "Digilent Adept (djtgcfg)",
+    "bundled": false,
+    "reason": "Digilent Adept Runtime/Utilities are proprietary; no redistribution permission. The installed official Digilent software is detected and used.",
+    "testedVersion": "2.7.1",
+    "validated": {
+      "adeptUtilities": "2.7.1",
+      "djtgcfg": "2.6.1",
+      "adeptRuntime": "2.30.4"
+    },
+    "installGuide": "https://digilent.com/reference/software/adept/start"
+  },
+  "components": [
+    {
+      "id": "ghdl",
+      "name": "GHDL",
+      "version": "6.0.0",
+      "description": "VHDL analyzer, simulator and synthesizer (mcode backend, MSYS2 UCRT64 build)",
+      "license": "GPL-2.0-or-later",
+      "licenseEvidence": "Upstream COPYING.md (https://github.com/ghdl/ghdl/blob/v6.0.0/COPYING.md); the binary zip contains no license file. Bundles MinGW/GNAT runtime DLLs (libgnat-15.dll: GPL-3.0 with GCC Runtime Library Exception; libgcc_s_seh-1.dll: GCC Runtime Library Exception; libwinpthread-1.dll: MIT/BSD-style; zlib1.dll: Zlib). IEEE library sources under lib/ghdl/src/ieee2008 carry their own LICENSE.",
+      "homepage": "https://github.com/ghdl/ghdl",
+      "sourceCode": "https://github.com/ghdl/ghdl/archive/refs/tags/v6.0.0.tar.gz",
+      "archive": {
+        "url": "https://github.com/ghdl/ghdl/releases/download/v6.0.0/ghdl-mcode-6.0.0-ucrt64.zip",
+        "file": "ghdl-mcode-6.0.0-ucrt64.zip",
+        "size": 23713332,
+        "sha256": "76e160ceec35834c73ada6e4e484416d13aed4b64cbc7c74c5cca53a7ef60e41",
+        "strip": 0
+      },
+      "dest": "ghdl",
+      "licenseFiles": [
+        "licenses/GHDL-COPYING.md",
+        "licenses/GCC-RUNTIME-EXCEPTION-3.1.txt",
+        "licenses/GPL-3.0.txt",
+        "licenses/zlib-LICENSE.txt",
+        "ghdl/lib/ghdl/src/ieee2008/LICENSE"
+      ]
+    },
+    {
+      "id": "apio",
+      "name": "Apio",
+      "version": "1.6.0",
+      "description": "FPGA build manager (PyInstaller bundle with a private Python 3.14 runtime and SCons)",
+      "license": "GPL-2.0",
+      "licenseEvidence": "apio/LICENSE in the bundle (GNU GPL version 2). The PyInstaller bundle includes Python 3.14 (PSF-2.0) and Python packages whose license files are under apio/bin/_internal/*.dist-info.",
+      "homepage": "https://github.com/FPGAwars/apio",
+      "sourceCode": "https://github.com/FPGAwars/apio/tree/9fbb279c2bd793bb94e83d9b1523a420ed219f93",
+      "archive": {
+        "url": "https://github.com/fpgawars/apio/releases/download/2026-09-15/apio-cli-windows-amd64-20260915-bundle.zip",
+        "file": "apio-cli-windows-amd64-20260915-bundle.zip",
+        "size": 19456972,
+        "sha256": "281d1de955da0c72ac493e9c9b82ad2546511a8ea90ea2c3c38ec68cfd2af6c0",
+        "strip": 1
+      },
+      "dest": "apio/bin",
+      "licenseFiles": [
+        "apio/bin/LICENSE"
+      ]
+    },
+    {
+      "id": "apio-definitions",
+      "name": "Apio definitions package",
+      "version": "2026.09.17",
+      "description": "Apio board/FPGA/programmer definitions",
+      "license": "GPL-2.0",
+      "licenseEvidence": "LICENSE in the package.",
+      "homepage": "https://github.com/FPGAwars/apio-definitions",
+      "sourceCode": "https://github.com/FPGAwars/apio-definitions/tree/2fd2c66575c775810aacfa1e174b377ec711f6a4",
+      "apioPackage": {
+        "name": "definitions",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "apio-definitions"
+        },
+        "releaseTag": "2026-09-17",
+        "packageTemplate": "apio-definitions-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/apio-definitions/releases/download/2026-09-17/apio-definitions-20260917.tgz",
+        "file": "apio-definitions-20260917.tgz",
+        "size": 1986520,
+        "sha256": "34a2047db39c3c91f9dfb2e84b5ea67095302b7cc8bbf7dd5d3f1f06d57be150",
+        "strip": 0
+      },
+      "dest": "apio/packages/definitions",
+      "licenseFiles": [
+        "apio/packages/definitions/LICENSE"
+      ]
+    },
+    {
+      "id": "apio-drivers",
+      "name": "Apio drivers package",
+      "version": "2026.09.15",
+      "description": "USB driver utilities (Zadig, lsusb, FTDI tools). Required by Apio's package check; never run by NexysVHDL.",
+      "license": "Mixed: Zadig GPL-3.0-or-later (libwdi LGPL-3.0); libusb/libftdi tools LGPL-2.1/GPL-2.0",
+      "licenseEvidence": "No license files in the package; licenses taken from the upstream projects (https://github.com/pbatard/libwdi, https://libusb.info, https://www.intra2net.com/en/developer/libftdi/). serial_install.exe provenance to be confirmed with FPGAwars/tools-drivers.",
+      "homepage": "https://github.com/FPGAwars/tools-drivers",
+      "sourceCode": "https://github.com/FPGAwars/tools-drivers/tree/ec1dd4b70a1bfa0ae93286af695039e6af6ea148",
+      "apioPackage": {
+        "name": "drivers",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-drivers"
+        },
+        "releaseTag": "2026-09-15",
+        "packageTemplate": "apio-drivers-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-drivers/releases/download/2026-09-15/apio-drivers-windows-amd64-20260915.tgz",
+        "file": "apio-drivers-windows-amd64-20260915.tgz",
+        "size": 6299744,
+        "sha256": "6c2fc7cf4599835e6743be1ceb32fccb0ca81deb79eee1f1ce7d7530eef3c4f6",
+        "strip": 0
+      },
+      "dest": "apio/packages/drivers",
+      "licenseFiles": [
+        "licenses/GPL-3.0.txt",
+        "licenses/libwdi-COPYING.txt",
+        "licenses/LGPL-2.1.txt",
+        "licenses/GPL-2.0.txt"
+      ]
+    },
+    {
+      "id": "apio-graphviz",
+      "name": "Apio graphviz package",
+      "version": "2026.09.15",
+      "description": "Graphviz (used by 'apio graph'; required by Apio's package check; not used by NexysVHDL)",
+      "license": "EPL (Graphviz upstream is EPL-2.0 today; the exact version for this 2026-09-15 build is to be confirmed with FPGAwars/tools-graphviz)",
+      "licenseEvidence": "No license file in the package; Graphviz upstream license https://graphviz.org/license/ . Bundled third-party DLLs (cairo, brotli, bz2, ...) carry their own upstream licenses.",
+      "homepage": "https://github.com/FPGAwars/tools-graphviz",
+      "sourceCode": "https://github.com/FPGAwars/tools-graphviz/tree/d1ddf4b2d2ba2a5e639051824e05eae0182e683b",
+      "apioPackage": {
+        "name": "graphviz",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-graphviz"
+        },
+        "releaseTag": "2026-09-15",
+        "packageTemplate": "apio-graphviz-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-graphviz/releases/download/2026-09-15/apio-graphviz-windows-amd64-20260915.tgz",
+        "file": "apio-graphviz-windows-amd64-20260915.tgz",
+        "size": 9523332,
+        "sha256": "72ebcffb1b5faba67de10e9c2923a65b3d72851579daa2498f1682c5a69e87ca",
+        "strip": 0
+      },
+      "dest": "apio/packages/graphviz",
+      "licenseFiles": [
+        "licenses/graphviz-LICENSE.txt"
+      ]
+    },
+    {
+      "id": "apio-oss-cad-suite",
+      "name": "Apio oss-cad-suite package (Yosys)",
+      "version": "2026.09.15",
+      "description": "YosysHQ OSS CAD Suite build for Apio: Yosys 0.63+173 (yosys-release-tag 2026-03-24) plus the rest of the suite",
+      "license": "Mixed; Yosys ISC. Per-tool licenses in license/LICENSE.* (47 files), including GPL-licensed tools (e.g. Icarus Verilog, GTKWave) and Python 3.11 (PSF-2.0)",
+      "licenseEvidence": "license/LICENSE.* in the package; Python packages under lib/python3.11/site-packages/*.dist-info.",
+      "homepage": "https://github.com/FPGAwars/tools-oss-cad-suite",
+      "sourceCode": "https://github.com/FPGAwars/tools-oss-cad-suite/tree/b246ed025634562f953daccef0c9d2f7995d30c3 (build recipe); upstream https://github.com/YosysHQ/oss-cad-suite-build",
+      "apioPackage": {
+        "name": "oss-cad-suite",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-oss-cad-suite"
+        },
+        "releaseTag": "2026-09-15",
+        "packageTemplate": "apio-oss-cad-suite-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-oss-cad-suite/releases/download/2026-09-15/apio-oss-cad-suite-windows-amd64-20260915.tgz",
+        "file": "apio-oss-cad-suite-windows-amd64-20260915.tgz",
+        "size": 548547645,
+        "sha256": "7e221239a5c866b58c7fdbcf118b29bcae69b27ff61e2ace706a3e211ad1200b",
+        "strip": 0
+      },
+      "dest": "apio/packages/oss-cad-suite",
+      "licenseFiles": [
+        "apio/packages/oss-cad-suite/license",
+        "licenses/yosys-COPYING.txt"
+      ]
+    },
+    {
+      "id": "apio-verible",
+      "name": "Apio verible package",
+      "version": "2026.09.20",
+      "description": "Verible SystemVerilog tools (used by 'apio format/lint'; required by Apio's package check; not used by NexysVHDL)",
+      "license": "Apache-2.0 (Verible upstream)",
+      "licenseEvidence": "No license file in the package; https://github.com/chipsalliance/verible/blob/master/LICENSE",
+      "homepage": "https://github.com/FPGAwars/tools-verible",
+      "sourceCode": "https://github.com/chipsalliance/verible/tree/v0.0-4294-gc1d8f5e8",
+      "apioPackage": {
+        "name": "verible",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-verible"
+        },
+        "releaseTag": "2026-09-20",
+        "packageTemplate": "apio-verible-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-verible/releases/download/2026-09-20/apio-verible-windows-amd64-20260920.tgz",
+        "file": "apio-verible-windows-amd64-20260920.tgz",
+        "size": 7094599,
+        "sha256": "2ae295de0038945ef6a0da48ac58df0b2e611652ca262f7980997cd1c74e523c",
+        "strip": 0
+      },
+      "dest": "apio/packages/verible",
+      "licenseFiles": [
+        "licenses/verible-LICENSE.txt"
+      ]
+    },
+    {
+      "id": "apio-openxc7",
+      "name": "Apio openXC7 package (nextpnr-xilinx, Project X-Ray tools)",
+      "version": "2026.09.24",
+      "description": "openXC7: nextpnr-xilinx 0eae9fbb19dfb83cdd30d5048d8b0ba744180ad0, prjxray fasm2frames/xc7frames2bit, Project X-Ray database, parts index schema 5",
+      "license": "Mixed; nextpnr-xilinx ISC, Project X-Ray tools ISC, prjxray-db CC0-1.0, Python 3.11 (PSF-2.0) and packages under lib/",
+      "licenseEvidence": "No top-level license file in the package; upstream https://github.com/openXC7/nextpnr-xilinx/blob/xilinx-upstream/COPYING , https://github.com/f4pga/prjxray/blob/master/LICENSE , https://github.com/f4pga/prjxray-db/blob/master/LICENSE ; Python package licenses under lib/python3.12/site-packages/*.dist-info and lib/python3.11/LICENSE.txt.",
+      "homepage": "https://github.com/FPGAwars/tools-openxc7",
+      "sourceCode": "https://github.com/FPGAwars/tools-openxc7/tree/8a01b11b7bac1e66c01d44f43c3a5290f65981a7 (build recipe); https://github.com/openXC7/nextpnr-xilinx/tree/0eae9fbb19dfb83cdd30d5048d8b0ba744180ad0",
+      "apioPackage": {
+        "name": "openxc7",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-openxc7"
+        },
+        "releaseTag": "2026-09-24",
+        "packageTemplate": "apio-openxc7-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-24/apio-openxc7-windows-amd64-20260924.tgz",
+        "file": "apio-openxc7-windows-amd64-20260924.tgz",
+        "size": 85810369,
+        "sha256": "57efc44b0e4421d2c3505f90e05f60bcd3e33404726ba127eccb4aae593d8066",
+        "strip": 0
+      },
+      "dest": "apio/packages/openxc7",
+      "licenseFiles": [
+        "licenses/nextpnr-xilinx-COPYING.txt",
+        "licenses/prjxray-LICENSE.txt",
+        "licenses/prjxray-db-LICENSE.txt",
+        "licenses/PSF-2.0-Python-3.11.txt",
+        "apio/packages/openxc7/lib/python3.11/LICENSE.txt"
+      ]
+    },
+    {
+      "id": "openxc7-chipdb-xc7a100tcsg324",
+      "name": "openXC7 chip database for xc7a100tcsg324 (Nexys A7-100T)",
+      "version": "2026-09-24",
+      "description": "nextpnr-xilinx chipdb that Apio would otherwise download on demand into openxc7/chipdb; generated from Project X-Ray data for the same openXC7 release",
+      "license": "Derived from prjxray-db (CC0-1.0) by nextpnr-xilinx (ISC) tooling",
+      "licenseEvidence": "Release asset of FPGAwars/tools-openxc7 2026-09-24; sha256 values from the package's XILINX-PARTS-INDEX.json (asset-sha256, chipdb-sha256).",
+      "homepage": "https://github.com/FPGAwars/tools-openxc7",
+      "sourceCode": "https://github.com/FPGAwars/tools-openxc7/tree/8a01b11b7bac1e66c01d44f43c3a5290f65981a7",
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-24/apio-xilinx-chipdb-xc7a100tcsg324-20260924.bin.tgz",
+        "file": "apio-xilinx-chipdb-xc7a100tcsg324-20260924.bin.tgz",
+        "size": 44028794,
+        "sha256": "bc74f32f8ac5d18a80c8697487108f62397ab06f41eef479d6aa9ef45c8539b1",
+        "strip": 0
+      },
+      "dest": "apio/packages/openxc7/chipdb",
+      "verifyFiles": {
+        "xc7a100tcsg324.bin": "2dcf4be7e7ca140f7844984b4d16629bda813fdf432b83b7a123a0743163c7ad"
+      },
+      "licenseFiles": [
+        "licenses/prjxray-db-LICENSE.txt",
+        "licenses/nextpnr-xilinx-COPYING.txt"
+      ]
+    }
+  ]
+}

@@ -14,7 +14,7 @@ import {
     type VhdlCheckResult,
 } from '../../core';
 import type { EnvironmentReport } from '../../runtime/environment';
-import type { BitstreamInfo, NexysBackend } from '../../extension/services/backend';
+import type { BitstreamInfo, NexysBackend, ToolchainInstallOutcome } from '../../extension/services/backend';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { repoBoards } from '../helpers';
@@ -90,13 +90,27 @@ export class FakeBackend implements NexysBackend {
         this.calls.push(`program:${serial ?? '(auto)'}`);
         return this.programResult;
     }
+    environmentReport: EnvironmentReport = {
+        adapter: { id: 'fake', displayName: 'Fake', status: 'fake' },
+        toolchain: { overall: 'compatible', tools: [] },
+        diagnostics: [],
+        providers: {},
+    };
     async environment(): Promise<EnvironmentReport> {
-        return {
-            adapter: { id: 'fake', displayName: 'Fake', status: 'fake' },
-            toolchain: { overall: 'compatible', tools: [] },
-            diagnostics: [],
-            providers: {},
-        };
+        return this.environmentReport;
+    }
+    installOutcome: ToolchainInstallOutcome = { status: 'installed', version: '1.0', location: '/data/toolchains/test/1.0', diagnostics: [] };
+    async installToolchain(archive: string, onProgress: (fraction: number | undefined, message: string) => void): Promise<ToolchainInstallOutcome> {
+        this.calls.push(`installToolchain:${archive}`);
+        onProgress(1, 'done');
+        return this.installOutcome;
+    }
+    async verifyToolchain(): Promise<{ ok: boolean; diagnostics: [] }> {
+        this.calls.push('verifyToolchain');
+        return { ok: true, diagnostics: [] };
+    }
+    async toolchainArchiveName(): Promise<string | undefined> {
+        return 'nexysvhdl-toolchain-1.0-test.tar.gz';
     }
 }
 

@@ -4,6 +4,7 @@ import { type ToolRunner, succeeded } from '../../process/tool-runner';
 import type { BuildArtifact } from '../../results/artifact';
 import { type Diagnostic, errorDiag, type LogRef } from '../../results/diagnostic';
 import { sha256File } from '../../util/hash';
+import { applyDeviceCapacity } from '../capacity';
 import type { ImplementationProvider, ImplementationRequest, ImplementationResult, ImplementationStage, ResourceUtilization } from '../types';
 import { apioReachedStage, apioStageTracker, countPrimitives, parseApioBuildLog, parseNextpnrReport, summarizeTiming } from './reports';
 
@@ -113,7 +114,8 @@ export class ApioImplementationProvider implements ImplementationProvider {
         let clocks = facts.maxFrequency;
         try {
             const report = parseNextpnrReport(await readFile(join(outDir, OUT.pnr), 'utf8'));
-            utilization = report.utilization;
+            // Capacities as the data sheet counts them (nextpnr's own bel/pad counts stay in `device`).
+            utilization = req.board.fpga.capacity ? applyDeviceCapacity(report.utilization, req.board.fpga.capacity) : report.utilization;
             if (report.clocks.length > 0) clocks = report.clocks;
         } catch {
             diagnostics.push({ severity: 'warning', source: 'implementation', code: 'APIO_NO_PNR_REPORT', message: 'nextpnr report not found; utilization unavailable.' });

@@ -1,0 +1,27 @@
+# NexysVHDL VSIX content: an allowlist. Everything is excluded unless listed.
+# The FPGA toolchain is NOT in the VSIX: it is a separate, versioned artifact
+# (nexysvhdl-toolchain-<version>-<target>.tar.gz) installed once per user.
+**
+
+# Compiled runtime (no TypeScript sources, declarations, source maps, tests or CLI)
+!dist/core/**/*.js
+!dist/platform/**/*.js
+!dist/runtime/**/*.js
+!dist/extension/**/*.js
+
+# Manifest, language support, icons, Getting Started pages
+!package.json
+!resources/**
+
+# Board data used at runtime (pins, starter XDC, identification)
+!boards/**/*.json
+
+# The toolchain version this release requires (content hash per platform)
+!toolchains/bundle/requirement.json
+
+# Student documentation, release notes and notices
+!CHANGELOG.md
+!THIRD_PARTY_NOTICES.md
+!docs/student-install-windows.md
+!docs/student-install-macos.md
+!docs/student-quick-start.md

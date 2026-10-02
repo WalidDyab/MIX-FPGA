@@ -1,5 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import {
     type BuildResult,
     type Diagnostic,
@@ -20,6 +20,7 @@ import { parseVhdl } from '../hierarchy/vhdl-parser';
 import { buildProjectFilesModel, classifyProjectPath, type ProjectFilesModel, scanProjectFiles, type ScannedFiles } from '../project/project-layout';
 import { computeSourceSync } from '../project/project-sync';
 import { buildRtlModel, parseYosysJson, type RtlModel } from '../rtl/rtl-model';
+import type { EnvironmentReport } from '../../runtime/environment';
 import type { NexysBackend } from './backend';
 import { type EnvironmentSummary, summarizeEnvironment } from './environment-summary';
 import { Emitter, type Logger, silentLogger } from './events';
@@ -111,6 +112,8 @@ export class NexysVhdlService {
     workflow: WorkflowState = initialWorkflow();
     hardware: HardwareState = initialHardware;
     environment: EnvironmentSummary | undefined;
+    /** The full report behind `environment` (engineering details). */
+    environmentReport: EnvironmentReport | undefined;
     lastCheck: VhdlCheckResult | undefined;
     lastSimulation: SimulationResult | undefined;
     lastBuild: BuildResult | undefined;
@@ -622,7 +625,7 @@ export class NexysVhdlService {
                     top: snap.project.config.top,
                     projectRoot: snap.root,
                     entities: [...snap.index.entities.values()].map((e) => e[e.length - 1]!.decl.name),
-                    ...(result.verilog ? { verilog: await readFile(result.verilog.path, 'utf8').catch(() => '') } : {}),
+                    ...(result.verilog ? { verilog: await readFile(result.verilog.path, 'utf8').catch(() => ''), verilogDir: dirname(result.verilog.path) } : {}),
                 });
                 this.rtl = { status: 'ready', result, model, generatedAt: new Date(), revision };
             } catch (err) {
@@ -665,6 +668,7 @@ export class NexysVhdlService {
     async refreshEnvironment(): Promise<EnvironmentSummary | undefined> {
         try {
             const report = await this.backend.environment(this.project);
+            this.environmentReport = report;
             this.environment = summarizeEnvironment(report);
             this.log.info(`Environment: ${this.environment.headline} (${report.adapter.displayName})`);
             for (const p of this.environment.problems) this.log.info(`  ${p}`);

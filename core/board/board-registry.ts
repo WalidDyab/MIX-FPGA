@@ -24,6 +24,12 @@ export function validateBoardDefinition(data: unknown, origin: string): Diagnost
     }
     if (!b.fpga || typeof b.fpga.part !== 'string' || typeof b.fpga.device !== 'string') {
         fail('BOARD_FPGA_MISSING', 'missing fpga.part / fpga.device');
+    } else if (b.fpga.capacity !== undefined) {
+        const c = b.fpga.capacity as unknown as Record<string, unknown>;
+        for (const k of ['luts', 'flipFlops', 'bram36', 'dsp', 'userIo']) {
+            if (typeof c[k] !== 'number' || !Number.isInteger(c[k]) || (c[k] as number) <= 0) fail('BOARD_CAPACITY_INVALID', `fpga.capacity.${k} must be a positive integer`);
+        }
+        if (typeof c['source'] !== 'string' || c['source'] === '') fail('BOARD_CAPACITY_INVALID', 'fpga.capacity.source must name the data sheet');
     }
     if (!b.backendIds || typeof b.backendIds !== 'object') fail('BOARD_FIELD_MISSING', 'missing "backendIds"');
     if (!Array.isArray(b.resources)) {

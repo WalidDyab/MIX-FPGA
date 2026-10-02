@@ -1,35 +1,40 @@
 # NexysVHDL
 
-NexysVHDL is an **in-development** cross-platform VHDL workflow targeting the Digilent Nexys A7-100T (XC7A100T-1CSG324C). It is not ready for student use yet.
+NexysVHDL is a VHDL-first FPGA workflow in VS Code for the Digilent Nexys A7-100T (XC7A100T-1CSG324C).
 
-**Current development stage:** Phase 4 — VS Code student interface (Phase 4A: project workspace, design hierarchy, workflow UI). It runs only in a VS Code Extension Development Host on the validated development machines; there is no installer or packaged extension yet.
+**Current stage:** Phase 4B — **Classroom Preview** (0.5.0). It is an installable classroom package with its own FPGA toolchain; it is not on the Visual Studio Marketplace.
 
 Target platforms:
-- Windows x64
-- Apple-silicon macOS
+- Windows x64 (Classroom Preview package validated)
+- Apple-silicon macOS (package pending Mac validation)
 
-Validated backend technologies (Phases 1–2, on real hardware):
-- GHDL (VHDL-2008 analysis, simulation, synthesis to Verilog)
-- Apio / openXC7
-- Yosys
-- nextpnr-xilinx
-- Project X-Ray
+## For students
+
+See [docs/student-install-windows.md](docs/student-install-windows.md), [docs/student-install-macos.md](docs/student-install-macos.md) and [docs/student-quick-start.md](docs/student-quick-start.md).
+
+A classroom download contains two separately versioned parts:
+
+| Part | File | Size |
+|---|---|---|
+| NexysVHDL extension | `nexysvhdl-<version>-<platform>.vsix` | about 230 KB |
+| NexysVHDL FPGA toolchain | `nexysvhdl-toolchain-<toolchain version>-<platform>.tar.gz` | about 725 MB (Windows), installed once per user |
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `core/` | Platform-neutral TypeScript workflow core |
+| `core/` | Platform-neutral TypeScript workflow core (incl. `core/toolchain/bundle.ts`, `store.ts`, `tar.ts`: the bundled toolchain) |
 | `platform/` | Windows / macOS platform adapters |
-| `runtime/` | Shared composition root used by the CLI and the extension |
-| `extension/` | VS Code extension (Phase 4A) |
-| `cli/` | `nexysvhdl` command-line interface |
+| `runtime/` | Shared composition root used by the CLI and the extension (`classroom.ts`: classroom mode) |
+| `extension/` | VS Code extension |
+| `cli/` | `nexysvhdl` developer command-line interface (not shipped to students) |
 | `boards/` | Board definitions (data) |
-| `toolchains/` | Tested tool-version manifests (data) |
-| `examples/` | Example student projects |
-| `tests/` | Unit tests (`node:test`) |
-| `docs/` | Architecture, plans, ADRs, phase engineering records |
-| `experiments/`, `notes/` | Phase 1–2 experiments and raw logs |
+| `toolchains/` | Reference tool manifests; `toolchains/bundle/`: classroom toolchain recipes, requirement and license texts |
+| `scripts/` | Toolchain assembly/packing and VSIX packaging; validation tools |
+| `resources/` | Icons, VHDL grammar, Getting Started pages |
+| `examples/` | Example projects |
+| `tests/` | Unit tests (`node:test`); `tests/integration/`: EDH and installed-package validation |
+| `docs/` | Architecture, ADRs, phase engineering records, student documentation |
 
 ## Development
 
@@ -37,10 +42,16 @@ Requires Node.js 20.12 or newer.
 
 ```sh
 npm install
-npm test                    # build + unit tests (no FPGA tools or board needed)
-node dist/cli/main.js doctor
+npm test                         # build + unit tests (no FPGA tools or board needed)
 ```
 
-To try the extension: open this folder in VS Code and run the **Run NexysVHDL Extension** launch configuration (F5), then open or create a NexysVHDL project in the Extension Development Host. See [docs/phase4a-vscode-workspace.md](docs/phase4a-vscode-workspace.md).
+Classroom packages (Windows shown; `--target darwin-arm64` / `npm run package:mac` on a Mac):
 
-See [docs/architecture.md](docs/architecture.md) and [docs/phase3-plan.md](docs/phase3-plan.md).
+```sh
+npm run toolchain:assemble -- --target win32-x64 --download   # official archives -> toolchain/win32-x64/ (git-ignored)
+npm run toolchain:pack -- --target win32-x64                  # -> .artifacts/dist/nexysvhdl-toolchain-1.0-win32-x64.tar.gz
+npm run package:win                                           # VSIX + classroom distribution folder/zip
+npm run toolchain:install                                     # install the toolchain for this user (developers; students use the extension)
+```
+
+To try the extension from source: run the **Run NexysVHDL Extension** launch configuration (F5). It uses the same per-user toolchain store as the installed package (`npm run toolchain:install`). See [docs/phase4b-classroom-bundle.md](docs/phase4b-classroom-bundle.md), [docs/decisions/ADR-007-separately-versioned-classroom-toolchain.md](docs/decisions/ADR-007-separately-versioned-classroom-toolchain.md) and [docs/architecture.md](docs/architecture.md).

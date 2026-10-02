@@ -28,6 +28,9 @@ export * from './toolchain/version-parsers';
 export * from './toolchain/manifest-loader';
 export * from './toolchain/tool-locator';
 export * from './toolchain/tool-detector';
+export * from './toolchain/bundle';
+export * from './toolchain/store';
+export * from './toolchain/tar';
 
 export * from './workspace/build-workspace';
 
@@ -36,6 +39,7 @@ export * from './vhdl/ghdl/ghdl-output';
 export * from './vhdl/ghdl/ghdl-provider';
 
 export * from './implementation/types';
+export * from './implementation/capacity';
 export * from './implementation/apio/reports';
 export * from './implementation/apio/apio-provider';
 

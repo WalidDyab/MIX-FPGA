@@ -39,7 +39,12 @@ function projectRelative(d: Diagnostic, projectRoot: string, cwd: string): Diagn
  * GHDL executable.
  *
  * Every GHDL run uses a build-workspace directory as its working directory
- * (check/, sim/ or synth/) and receives absolute source paths. Nothing GHDL
+ * (check/, sim/ or synth/) and receives every path relative to it
+ * (`--workdir=.`, `../../src/top.vhd`). GHDL records source paths in its
+ * library index (work-obj08.cf) and cannot read that file back when a path
+ * contains some non-ASCII characters (e.g. CJK), so the student's project
+ * location (e.g. under a Windows profile named "José García 学生") must never
+ * reach GHDL. Nothing GHDL
  * writes — work libraries and, with the LLVM/GCC backends, elaborated
  * executables and `e~*.o` objects — can land in the student's tree (ADR-001).
  * Diagnostics are mapped back to project-relative paths.
@@ -74,19 +79,29 @@ export class GhdlVhdlProvider implements VhdlProvider {
     private async analyze(ctx: VhdlContext, workdir: string, files: readonly string[], logs: LogRef[], label: string): Promise<StepOutcome> {
         await rm(workdir, { recursive: true, force: true });
         await mkdir(workdir, { recursive: true });
-        return this.exec(ctx, workdir, ['-a', STD, `--workdir=${workdir}`, ...files], logs, label);
+        const unsupported = files.filter((f) => !/^[ -~]*$/.test(f));
+        if (unsupported.length) {
+            // GHDL would fail later with "invalid character" in its own library file; say what to fix instead.
+            const diagnostics = unsupported.map((f) => {
+                const rel = relative(ctx.project.root, resolve(workdir, f)).split(sep).join('/');
+                return { ...errorDiag('vhdl', 'GHDL_FILE_NAME_UNSUPPORTED', `GHDL cannot use the file name "${rel}": rename it using only English letters, digits, "_" and "-".`), location: { file: rel } };
+            });
+            return { ok: false, diagnostics, run: { invocation: { executable: this.ghdl, args: [] }, outcome: 'exited', exitCode: 1, stdout: '', stderr: '', durationMs: 0 } };
+        }
+        return this.exec(ctx, workdir, ['-a', STD, '--workdir=.', ...files], logs, label);
     }
 
-    private absolute(ctx: VhdlContext, files: readonly string[]): string[] {
-        return files.map((f) => resolve(ctx.project.root, f));
+    /** Source paths relative to the GHDL working directory (see the class comment). */
+    private relativeTo(ctx: VhdlContext, workdir: string, files: readonly string[]): string[] {
+        return files.map((f) => relative(workdir, resolve(ctx.project.root, f)));
     }
 
-    private rtl(ctx: VhdlContext): readonly string[] {
-        return this.absolute(ctx, ctx.project.config.sources);
+    private rtl(ctx: VhdlContext, workdir: string): readonly string[] {
+        return this.relativeTo(ctx, workdir, ctx.project.config.sources);
     }
 
-    private all(ctx: VhdlContext): readonly string[] {
-        return this.absolute(ctx, [...ctx.project.config.sources, ...(ctx.project.config.simulation?.sources ?? [])]);
+    private all(ctx: VhdlContext, workdir: string): readonly string[] {
+        return this.relativeTo(ctx, workdir, [...ctx.project.config.sources, ...(ctx.project.config.simulation?.sources ?? [])]);
     }
 
     async check(ctx: VhdlContext): Promise<VhdlCheckResult> {
@@ -98,14 +113,14 @@ export class GhdlVhdlProvider implements VhdlProvider {
             status: ok ? 'succeeded' : 'failed', diagnostics, logs, durationMs: Date.now() - started, elaborated,
         });
 
-        const a = await this.analyze(ctx, workdir, this.all(ctx), logs, 'ghdl-check-analyze');
+        const a = await this.analyze(ctx, workdir, this.all(ctx, workdir), logs, 'ghdl-check-analyze');
         diagnostics.push(...a.diagnostics);
         if (!a.ok) return done(false, []);
 
         const units = [ctx.project.config.top, ...(ctx.project.config.simulation?.testbench ? [ctx.project.config.simulation.testbench] : [])];
         const elaborated: string[] = [];
         for (const unit of units) {
-            const e = await this.exec(ctx, workdir, ['-e', STD, `--workdir=${workdir}`, unit], logs, `ghdl-elaborate-${unit}`);
+            const e = await this.exec(ctx, workdir, ['-e', STD, '--workdir=.', unit], logs, `ghdl-elaborate-${unit}`);
             diagnostics.push(...e.diagnostics);
             if (!e.ok) return done(false, elaborated);
             elaborated.push(unit);
@@ -120,20 +135,20 @@ export class GhdlVhdlProvider implements VhdlProvider {
         const workdir = ctx.workspace.paths.sim;
         const base = { testbench: options.testbench, logs };
 
-        const a = await this.analyze(ctx, workdir, this.all(ctx), logs, 'ghdl-sim-analyze');
+        const a = await this.analyze(ctx, workdir, this.all(ctx, workdir), logs, 'ghdl-sim-analyze');
         diagnostics.push(...a.diagnostics);
         if (!a.ok) return { ...base, status: 'failed', passed: false, messages: [], diagnostics, durationMs: Date.now() - started };
 
         // Elaborate here too: with the LLVM/GCC backends `-r` runs the executable that `-e` writes into this directory.
-        const e = await this.exec(ctx, workdir, ['-e', STD, `--workdir=${workdir}`, options.testbench], logs, `ghdl-elaborate-${options.testbench}`);
+        const e = await this.exec(ctx, workdir, ['-e', STD, '--workdir=.', options.testbench], logs, `ghdl-elaborate-${options.testbench}`);
         diagnostics.push(...e.diagnostics);
         if (!e.ok) return { ...base, status: 'failed', passed: false, messages: [], diagnostics, durationMs: Date.now() - started };
 
         const wave = join(workdir, `${options.testbench}.ghw`);
-        const args = ['-r', STD, `--workdir=${workdir}`, options.testbench, '--assert-level=error'];
-        if (options.waveform) args.push(`--wave=${wave}`);
+        const args = ['-r', STD, '--workdir=.', options.testbench, '--assert-level=error'];
+        if (options.waveform) args.push(`--wave=${options.testbench}.ghw`);
         const vcdPath = join(workdir, VCD_FILE);
-        if (options.vcd) args.push(`--vcd=${vcdPath}`);
+        if (options.vcd) args.push(`--vcd=${VCD_FILE}`);
         const r = await this.exec(ctx, workdir, args, logs, `ghdl-run-${options.testbench}`, SIM_TIMEOUT_MS);
         diagnostics.push(...r.diagnostics);
 
@@ -182,7 +197,7 @@ export class GhdlVhdlProvider implements VhdlProvider {
 
         await rm(workdir, { recursive: true, force: true });
         await mkdir(workdir, { recursive: true });
-        const s = await this.exec(ctx, workdir, ['--synth', STD, `--workdir=${workdir}`, '--out=verilog', ...this.rtl(ctx), '-e', top], logs, options.outputDir ? 'ghdl-rtl-synth' : 'ghdl-synth');
+        const s = await this.exec(ctx, workdir, ['--synth', STD, '--workdir=.', '--out=verilog', ...this.rtl(ctx, workdir), '-e', top], logs, options.outputDir ? 'ghdl-rtl-synth' : 'ghdl-synth');
         if (!s.ok) return fail(s.diagnostics);
 
         const verilog = s.run.stdout;

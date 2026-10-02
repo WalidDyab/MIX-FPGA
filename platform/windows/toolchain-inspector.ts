@@ -20,6 +20,7 @@ export class WindowsToolchainInspector {
         private readonly locator: ToolLocator,
         private readonly runner: ToolRunner,
         private readonly host: WindowsHostEnvironment,
+        private readonly options: { readonly apioPackagesDir?: string } = {},
     ) {
         this.core = new ToolDetector(locator, runner);
     }
@@ -46,10 +47,11 @@ export class WindowsToolchainInspector {
 
     /** Apio package metadata; Apio itself must be locatable for the package to be usable. */
     private async detectOpenXc7(): Promise<DetectedTool> {
-        const method = 'Apio packages folder';
+        const method = this.options.apioPackagesDir ? 'NexysVHDL bundled toolchain' : 'Apio packages folder';
         const home = apioHome(this.host.env);
-        if (!home) return { tool: 'openxc7', found: false, method: `${method} (no USERPROFILE/APIO_HOME)` };
-        const path = win32.join(home, 'packages', 'openxc7', 'BUILD-INFO.json');
+        const packages = this.options.apioPackagesDir ?? (home ? win32.join(home, 'packages') : undefined);
+        if (!packages) return { tool: 'openxc7', found: false, method: `${method} (no USERPROFILE/APIO_HOME)` };
+        const path = win32.join(packages, 'openxc7', 'BUILD-INFO.json');
         const buf = await this.host.fs.readFile(path);
         if (!buf) return { tool: 'openxc7', found: false, path, method };
         const raw = buf.toString('utf8');

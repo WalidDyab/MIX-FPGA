@@ -20,8 +20,10 @@ export interface ResourceUtilization {
     readonly globalClockBuffers?: ResourceUsage;
     /** Synthesis primitive counts (e.g. FDRE, CARRY4) for advanced views. */
     readonly primitives?: Readonly<Record<string, number>>;
-    /** Every device resource the placer reported, verbatim names. */
+    /** Every device resource the placer reported, verbatim names and placer counts (e.g. SLICE_LUTX bels). */
     readonly device?: Readonly<Record<string, ResourceUsage>>;
+    /** Where the `available` figures come from: the vendor data sheet (board metadata) or the placer's own counts. */
+    readonly capacitySource?: string;
 }
 
 export interface ClockTiming {

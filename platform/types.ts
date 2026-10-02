@@ -1,4 +1,4 @@
-import type { DetectedTool, Diagnostic, HostInfo, ProgrammerProvider, ToolchainManifest, ToolId, ToolLocator, ToolRunner } from '../core';
+import type { BundledToolchain, PathAlias, DetectedTool, Diagnostic, HostInfo, ProgrammerProvider, ToolchainManifest, ToolId, ToolLocator, ToolRunner } from '../core';
 
 /** What the composition root hands a platform factory. */
 export interface PlatformContext {
@@ -6,6 +6,24 @@ export interface PlatformContext {
     readonly runner: ToolRunner;
     /** Environment the adapter may read (process.env in production). */
     readonly env: Readonly<Record<string, string | undefined>>;
+    /**
+     * Classroom mode. When present the adapter must take GHDL/Apio (and a
+     * bundled programmer) only from `classroom.toolchain` and must never
+     * discover tools anywhere else; without an installed toolchain those tools
+     * are simply not available.
+     */
+    readonly classroom?: { readonly toolchain?: BundledToolchain };
+}
+
+/** How the board programmer is provided on a platform, for the setup view. */
+export interface ProgrammerSetup {
+    /** Student-facing name, e.g. "Digilent USB/JTAG Support". */
+    readonly name: string;
+    /** true: shipped in the NexysVHDL toolchain; false: a system prerequisite the student installs. */
+    readonly bundled: boolean;
+    /** Official installation guide for a system prerequisite. */
+    readonly guide?: string;
+    readonly instructions?: string;
 }
 
 export interface ToolchainInspectionRequest {
@@ -41,6 +59,8 @@ export interface PlatformServices {
      */
     readonly runner?: ToolRunner;
     readonly programmer?: ProgrammerProvider;
+    /** Where the programmer comes from (bundled, or a system prerequisite with install guidance). */
+    readonly programmerSetup?: ProgrammerSetup;
     /** Discovers tool executables on this platform. */
     readonly toolLocator?: ToolLocator;
     /** Full toolchain detection for `doctor`; absent means the core ToolDetector is used. */
@@ -48,3 +68,13 @@ export interface PlatformServices {
 }
 
 export type PlatformFactory = (host: HostInfo, context: PlatformContext) => PlatformServices;
+
+/** Host facts the composition root needs before an adapter exists (classroom toolchain store, tool PATH). */
+export interface PlatformHostFacts {
+    /** Per-user NexysVHDL data root (installed toolchains, tool state). */
+    userDataRoot(env: Readonly<Record<string, string | undefined>>): string | undefined;
+    /** Operating-system folders every bundled tool may need on PATH. */
+    systemPath(env: Readonly<Record<string, string | undefined>>): string[];
+    /** An ASCII path resolving to `target`, for folders Apio refuses (Windows profile names with spaces/Unicode). */
+    pathAlias?(target: string, env: Readonly<Record<string, string | undefined>>): Promise<PathAlias>;
+}

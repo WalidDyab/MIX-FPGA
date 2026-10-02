@@ -88,3 +88,7 @@ desktop.ini
 !.vscode/launch.json
 !.vscode/tasks.json
 .idea/
+
+# Phase 4B classroom bundle: downloaded archives, assembled private toolchain, packages
+.artifacts/
+/toolchain/

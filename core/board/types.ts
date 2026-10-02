@@ -32,6 +32,28 @@ export interface FpgaSpec {
     readonly device: string;
     /** Implementation part name used by the open toolchain, e.g. `xc7a100tcsg324-1`. */
     readonly part: string;
+    /** Engineering capacity of this device in this package (vendor data sheet), for utilization reports. */
+    readonly capacity?: DeviceCapacity;
+}
+
+/**
+ * Device resources as the FPGA vendor counts them (what students compare
+ * with Vivado). Placer-internal counts can differ: nextpnr-xilinx models each
+ * 7-series LUT6 site as two SLICE_LUTX bels and reports every package pad.
+ */
+export interface DeviceCapacity {
+    /** 6-input LUTs (4 per slice on 7-series). */
+    readonly luts: number;
+    readonly flipFlops: number;
+    readonly slices?: number;
+    /** 36 Kb block RAMs (each usable as two 18 Kb). */
+    readonly bram36: number;
+    readonly dsp: number;
+    /** User I/O pins of this package. */
+    readonly userIo: number;
+    readonly globalClockBuffers?: number;
+    /** Where the numbers come from (data sheet and table). */
+    readonly source: string;
 }
 
 /** Physical identity hints a programmer provider may use to recognise the board. */

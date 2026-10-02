@@ -65,6 +65,9 @@ export const errorDiag = (source: DiagnosticSource, code: string, message: strin
 export const warningDiag = (source: DiagnosticSource, code: string, message: string, location?: SourceLocation) =>
     diagnostic('warning', source, code, message, location);
 
+export const infoDiag = (source: DiagnosticSource, code: string, message: string, location?: SourceLocation) =>
+    diagnostic('info', source, code, message, location);
+
 export function hasErrors(diagnostics: readonly Diagnostic[]): boolean {
     return diagnostics.some((d) => d.severity === 'error');
 }

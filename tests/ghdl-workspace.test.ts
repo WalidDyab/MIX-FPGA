@@ -16,7 +16,7 @@ class LlvmLikeGhdl implements ToolRunner {
     async run(inv: ToolInvocation): Promise<ToolRunResult> {
         this.calls.push(inv);
         const cwd = inv.cwd ?? process.cwd();
-        const workdir = inv.args.find((a) => a.startsWith('--workdir='))?.slice('--workdir='.length) ?? cwd;
+        const workdir = resolve(cwd, inv.args.find((a) => a.startsWith('--workdir='))?.slice('--workdir='.length) ?? '.');
         const unit = inv.args[3] ?? '';
         const touch = async (dir: string, name: string) => {
             await mkdir(dir, { recursive: true });
@@ -60,13 +60,18 @@ async function setup(t: TestContext) {
     const ctx = { project, workspace: workspace! };
     const wsRoot = resolve(project.root, WORKSPACE_DIR_NAME);
 
-    /** Every GHDL run: cwd inside the workspace (never the project root), all source paths absolute. */
+    /** Every GHDL run: cwd inside the workspace (never the project root); paths relative to it, never the project location. */
     const assertIsolatedRuns = (expectedCwd: string) => {
         assert.ok(runner.calls.length > 0);
         for (const c of runner.calls) {
             assert.equal(resolve(c.cwd!), resolve(expectedCwd), c.args.join(' '));
             assert.notEqual(resolve(c.cwd!), resolve(project.root));
-            for (const a of c.args.filter((x) => x.endsWith('.vhd'))) assert.ok(isAbsolute(a), a);
+            for (const a of c.args.filter((x) => x.endsWith('.vhd'))) {
+                assert.ok(!isAbsolute(a), a);
+                assert.ok(!relative(project.root, resolve(c.cwd!, a)).startsWith('..'), `${a} resolves inside the project`);
+            }
+            assert.ok(!c.args.some((a) => a.includes(project.root)), 'the project location never reaches GHDL');
+            assert.ok(c.args.includes('--workdir=.'));
         }
         runner.calls.length = 0;
     };
@@ -108,6 +113,13 @@ describe('GHDL runs only inside the build workspace (ADR-001)', () => {
         await s.assertTreeUnchanged();
         assert.equal(r.generatedVerilog?.path, join(s.workspace.paths.synth, 'generated.v'));
         assert.match(await readFile(r.generatedVerilog!.path, 'utf8'), /module top/);
+    });
+
+    it('maps GHDL workspace-relative paths back to project-relative diagnostics', async (t) => {
+        const s = await setup(t);
+        const failing = new FakeRunner(() => ({ exitCode: 1, stderr: `${join('..', '..', 'src', 'top.vhd')}:12:5:error: no declaration for "q"\n` }));
+        const r = await new GhdlVhdlProvider('/fake/ghdl', failing).check(s.ctx);
+        assert.deepEqual(r.diagnostics[0]!.location, { file: 'src/top.vhd', line: 12, column: 5 });
     });
 
     it('reports diagnostics with project-relative paths although GHDL got absolute ones', async (t) => {

@@ -1,18 +1,32 @@
-import { type HostInfo, NodeToolRunner, packageRoot, type ToolRunner } from '../../core';
+import { win32 } from 'node:path';
+import {
+    type BundledToolchain,
+    BundledToolLocator,
+    ChainedToolLocator,
+    type HostInfo,
+    type LocatedTool,
+    NodeToolRunner,
+    packageRoot,
+    type ToolId,
+    type ToolLocator,
+    type ToolRunner,
+} from '../../core';
 import type { PlatformFactory, PlatformServices } from '../types';
 import { DigilentProgrammer, type DigilentProgrammerOptions } from './digilent/digilent-programmer';
-import { nodeWindowsFileSystem, type WindowsHostEnvironment } from './host-environment';
+import { type EnvironmentVariables, getEnv, nodeWindowsFileSystem, type WindowsHostEnvironment } from './host-environment';
 import { WindowsToolchainInspector } from './toolchain-inspector';
-import { WindowsToolLocator } from './tool-locator';
+import { digilentUtilityFolders, WindowsToolLocator } from './tool-locator';
 
 export interface WindowsPlatformOptions {
     readonly environment?: WindowsHostEnvironment;
     readonly runner?: ToolRunner;
     readonly programmer?: DigilentProgrammerOptions;
+    /** Classroom mode: user-space tools come only from the installed bundle (no discovery). */
+    readonly classroom?: { readonly toolchain?: BundledToolchain };
 }
 
 export interface WindowsPlatformServices extends PlatformServices {
-    readonly toolLocator: WindowsToolLocator;
+    readonly toolLocator: ToolLocator;
     readonly programmer: DigilentProgrammer;
     /** openXC7/programmer-aware version detection with the adapter's own locator. */
     readonly inspector: WindowsToolchainInspector;
@@ -28,29 +42,77 @@ export function defaultWindowsEnvironment(): WindowsHostEnvironment {
     return { env: process.env, fs: nodeWindowsFileSystem, ...(root ? { packageRoot: root } : {}) };
 }
 
+/** Operating-system folders bundled tools may need (cmd.exe for Apio's SCons scripts, system DLLs incl. the Digilent runtime). */
+export function windowsSystemPath(env: EnvironmentVariables): string[] {
+    const root = getEnv(env, 'SystemRoot') ?? getEnv(env, 'windir') ?? 'C:\\Windows';
+    return [win32.join(root, 'System32'), root, win32.join(root, 'System32', 'Wbem')];
+}
+
+/**
+ * Per-user NexysVHDL data root: %LOCALAPPDATA%\NexysVHDL. Local (not
+ * Roaming) AppData, so a multi-GB toolchain never travels with a roaming
+ * classroom profile, and it is shared by every VS Code flavour/profile.
+ */
+export function windowsUserDataRoot(env: EnvironmentVariables): string | undefined {
+    const local = getEnv(env, 'LOCALAPPDATA');
+    return local ? win32.join(local, 'NexysVHDL') : undefined;
+}
+
+/**
+ * The Digilent programmer in classroom mode: only the official Adept Utilities
+ * install locations (Program Files). Never PATH, never an override: Digilent
+ * support is a system prerequisite that NexysVHDL detects but does not ship.
+ */
+export class DigilentSystemLocator implements ToolLocator {
+    constructor(private readonly host: WindowsHostEnvironment) {}
+
+    async locate(tool: ToolId): Promise<LocatedTool | undefined> {
+        if (tool !== 'programmer') return undefined;
+        for (const dir of digilentUtilityFolders(this.host.env)) {
+            const path = win32.join(dir, 'djtgcfg.exe');
+            if (await this.host.fs.isFile(path)) return { path, method: 'Digilent Adept Utilities (official install)' };
+        }
+        return undefined;
+    }
+}
+
 /**
  * The real Windows x64 adapter: tool discovery (GHDL, Apio, djtgcfg), Windows
  * version detection (openXC7 package, Adept Utilities/Runtime) and a
  * ProgrammerProvider for Digilent Adept (`djtgcfg`) that keeps the standard
  * FTDI/Digilent driver. No Vivado, no driver changes, FPGA SRAM only.
  *
- * Windows needs no per-tool environment, so the base runner is used unchanged
+ * With a bundled toolchain (classroom mode) GHDL/Apio come only from the
+ * bundle and djtgcfg only from the official Digilent install folders.
+ * Windows needs no per-tool environment beyond the composition root's runner
  * (in particular, the macOS Apio pin is never applied here).
  */
 export function createWindowsPlatformServices(_host: HostInfo, options: WindowsPlatformOptions = {}): WindowsPlatformServices {
     const environment = options.environment ?? defaultWindowsEnvironment();
     const runner = options.runner ?? new NodeToolRunner();
-    const toolLocator = new WindowsToolLocator(environment);
+    const bundle = options.classroom?.toolchain;
+    const toolLocator: ToolLocator = options.classroom
+        ? new ChainedToolLocator([...(bundle ? [new BundledToolLocator(bundle)] : []), new DigilentSystemLocator(environment)])
+        : new WindowsToolLocator(environment);
+    const inspectorOptions = bundle ? { apioPackagesDir: bundle.apioPackagesDir } : {};
     return {
         id: 'windows',
         displayName: 'Windows',
-        status: 'Digilent Adept programmer (djtgcfg, FPGA SRAM); tool discovery for GHDL, Apio/openXC7',
+        status: options.classroom
+            ? `NexysVHDL toolchain ${bundle ? bundle.manifest.bundleVersion : '(not installed)'}; Digilent Adept programmer (djtgcfg, FPGA SRAM)`
+            : 'Digilent Adept programmer (djtgcfg, FPGA SRAM); tool discovery for GHDL, Apio/openXC7',
         toolLocator,
         programmer: new DigilentProgrammer(toolLocator, runner, environment, options.programmer),
-        inspector: new WindowsToolchainInspector(toolLocator, runner, environment),
+        inspector: new WindowsToolchainInspector(toolLocator, runner, environment, inspectorOptions),
+        programmerSetup: {
+            name: 'Digilent USB/JTAG Support',
+            bundled: false,
+            guide: 'https://digilent.com/reference/software/adept/start',
+            instructions: 'Install the official Digilent Adept Runtime and Adept Utilities from Digilent, then run Show Environment again.',
+        },
         async inspectToolchain(request) {
-            // The composition root's locator puts project settings and NEXYSVHDL_* first.
-            const tools = await new WindowsToolchainInspector(request.locator, runner, environment).detectAll(request.tools);
+            // The composition root's locator puts project settings and NEXYSVHDL_* first (discovery mode only).
+            const tools = await new WindowsToolchainInspector(request.locator, runner, environment, inspectorOptions).detectAll(request.tools);
             return { tools, diagnostics: [] };
         },
     };
@@ -58,4 +120,8 @@ export function createWindowsPlatformServices(_host: HostInfo, options: WindowsP
 
 /** The factory registered in platform/index.ts for win32/x64. */
 export const createWindowsPlatform: PlatformFactory = (host, context) =>
-    createWindowsPlatformServices(host, { runner: context.runner, environment: { ...defaultWindowsEnvironment(), env: context.env } });
+    createWindowsPlatformServices(host, {
+        runner: context.runner,
+        environment: { ...defaultWindowsEnvironment(), env: context.env },
+        ...(context.classroom ? { classroom: context.classroom } : {}),
+    });

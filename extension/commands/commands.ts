@@ -8,6 +8,7 @@ import type { RtlPanel } from '../rtl/rtl-panel';
 import type { SchematicPanel } from '../schematic/schematic-panel';
 import type { WaveformPanel } from '../waveform/waveform-panel';
 import type { NexysBackend } from '../services/backend';
+import { boardRow, type SetupRow } from '../services/environment-summary';
 import { NexysError, type NexysVhdlService } from '../services/nexys-service';
 import { BUILD_STAGES } from '../services/workflow-state';
 import type { Node } from '../views/base';
@@ -20,7 +21,16 @@ export interface CommandDeps {
     readonly rtl: RtlPanel;
     readonly waveform: WaveformPanel;
     readonly output: vscode.OutputChannel;
+    readonly extensionVersion: string;
 }
+
+const SETUP_ICON: Record<SetupRow['state'], string> = {
+    ready: '$(pass)',
+    'setup-required': '$(warning)',
+    problem: '$(error)',
+    'not-connected': '$(circle-outline)',
+    'not-checked': '$(circle-outline)',
+};
 
 const STAGE_LABEL = { synthesis: 'Synthesis', implementation: 'Implementation', bitstream: 'Bitstream' } as const;
 
@@ -49,14 +59,14 @@ async function openFolder(root: string): Promise<void> {
 }
 
 export function registerCommands(context: vscode.ExtensionContext, deps: CommandDeps): void {
-    const { service, backend, schematic, rtl, waveform, output } = deps;
+    const { service, backend, schematic, rtl, waveform, output, extensionVersion } = deps;
 
-    /** Wraps a handler: NexysErrors become friendly messages, anything else is logged too. */
+    /** Wraps a handler: NexysErrors become friendly messages, anything else is logged too. The handler's result is returned. */
     const register = (id: string, handler: (...args: never[]) => unknown) => {
         context.subscriptions.push(
             vscode.commands.registerCommand(id, async (...args: never[]) => {
                 try {
-                    await handler(...args);
+                    return await handler(...args);
                 } catch (err) {
                     if (err instanceof NexysError) void vscode.window.showWarningMessage(err.message);
                     else {
@@ -76,29 +86,43 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
 
     // ------------------------------------------------------------- projects
 
-    register('nexysvhdl.createProject', async () => {
-        const parent = await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Create Project Here', title: 'NexysVHDL: choose the folder that will contain the new project folder' });
-        if (!parent?.[0]) return;
-        const name = await vscode.window.showInputBox({
-            title: 'NexysVHDL: project name',
-            prompt: `A new folder with this name is created in ${parent[0].fsPath}`,
-            placeHolder: 'CounterDemo',
-            validateInput: (v) => validateProjectName(v),
-        });
-        if (!name) return;
+    /**
+     * Interactive (dialogs) by default. Scripted use (lab setup, validation) may pass
+     * { parentDir, name, board? }: the same project is created without dialogs and not opened.
+     */
+    register('nexysvhdl.createProject', async (scripted?: { parentDir: string; name: string; board?: string }) => {
         const boards = await backend.boards();
-        const pick = await vscode.window.showQuickPick(
-            boards.all().map((b) => ({ label: b.name, description: `${b.fpga.device}`, id: b.id })),
-            { title: 'NexysVHDL: board', placeHolder: 'Choose the FPGA board' },
-        );
-        if (!pick) return;
-        const result = await createProject({ parentDir: parent[0].fsPath, name, board: boards.get(pick.id)! });
+        let parentDir = scripted?.parentDir;
+        let name = scripted?.name;
+        let boardId = scripted?.board ?? (scripted ? boards.all()[0]?.id : undefined);
+        if (!scripted) {
+            const parent = await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Create Project Here', title: 'NexysVHDL: choose the folder that will contain the new project folder' });
+            if (!parent?.[0]) return undefined;
+            parentDir = parent[0].fsPath;
+            name = await vscode.window.showInputBox({
+                title: 'NexysVHDL: project name',
+                prompt: `A new folder with this name is created in ${parentDir}`,
+                placeHolder: 'CounterDemo',
+                validateInput: (v) => validateProjectName(v),
+            });
+            if (!name) return undefined;
+            const pick = await vscode.window.showQuickPick(
+                boards.all().map((b) => ({ label: b.name, description: `${b.fpga.device}`, id: b.id })),
+                { title: 'NexysVHDL: board', placeHolder: 'Choose the FPGA board' },
+            );
+            if (!pick) return undefined;
+            boardId = pick.id;
+        }
+        const board = boardId ? boards.get(boardId) : undefined;
+        if (!parentDir || !name || !board) throw new NexysError('Create Project needs a folder, a project name and a supported board.');
+        const result = await createProject({ parentDir, name, board });
         if (!result.ok) {
             void vscode.window.showErrorMessage(result.message);
-            return;
+            return result;
         }
         output.appendLine(`Created project ${result.root}: ${result.files.join(', ')}`);
-        await openFolder(result.root);
+        if (!scripted) await openFolder(result.root);
+        return result;
     });
 
     register('nexysvhdl.openProject', async () => {
@@ -394,18 +418,124 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     register('nexysvhdl.showEnvironment', async () => {
         const summary = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Inspecting tools' }, () => service.refreshEnvironment());
         if (!summary) throw new NexysError('The environment could not be inspected; see the log.');
-        const items: vscode.QuickPickItem[] = [
-            { label: `Environment: ${summary.headline}`, kind: vscode.QuickPickItemKind.Separator },
-            ...summary.items.map((i) => ({ label: `${i.ok ? (i.warn ? '$(warning)' : '$(pass)') : '$(error)'} ${i.label}`, description: i.detail })),
-            ...(summary.problems.length ? [{ label: 'Notes', kind: vscode.QuickPickItemKind.Separator }, ...summary.problems.map((p) => ({ label: `$(info) ${p}` }))] : []),
-            { label: '', kind: vscode.QuickPickItemKind.Separator },
-            { label: '$(output) Show details in the NexysVHDL log' },
+        const rows = [...summary.setup, boardRow(service.hardware)];
+        const tc = summary.toolchain;
+        type Item = vscode.QuickPickItem & { action?: () => unknown };
+        const sep = (label: string): Item => ({ label, kind: vscode.QuickPickItemKind.Separator });
+        const items: Item[] = [
+            sep(`NexysVHDL ${extensionVersion} — Classroom Preview`),
+            { label: '$(pass) Extension', description: `Ready — ${extensionVersion}` },
+            ...rows.map((r) => ({ label: `${SETUP_ICON[r.state]} ${r.label}`, description: r.status, ...(r.detail ? { detail: r.detail } : {}) })),
+            sep(`Status: ${summary.status}`),
         ];
-        const pick = await vscode.window.showQuickPick(items, { title: 'NexysVHDL Environment', placeHolder: summary.headline });
-        if (pick?.label.includes('Show details')) {
-            output.appendLine('Toolchain details:');
-            for (const t of summary.tools) output.appendLine(`  ${t.tool}: ${t.status} — ${t.reason}`);
-            output.show();
+        if (tc?.state === 'ready' || tc?.state === 'problem') items.push(sep(`NexysVHDL Toolchain ${tc.installedVersion ?? tc.requiredVersion}${tc.platform ? ` — ${tc.platform}` : ''}`));
+        else if (!tc) items.push(sep('Tools'));
+        if (tc?.state !== 'not-installed') {
+            for (const i of summary.items.slice(0, -1)) items.push({ label: `${i.ok ? (i.warn ? '$(warning)' : '$(pass)') : '$(error)'} ${i.label}`, description: `${i.detail}${i.ok && !i.warn ? '   Ready' : ''}` });
+        }
+        if (summary.problems.length && summary.level !== 'ready') items.push(sep('Notes'), ...summary.problems.map((p) => ({ label: `$(info) ${p}` })));
+        items.push(sep('Actions'));
+        if (tc && tc.state !== 'ready') items.push({ label: '$(desktop-download) Install FPGA Toolchain…', ...(tc.archiveName ? { description: tc.archiveName } : {}), action: () => vscode.commands.executeCommand('nexysvhdl.installToolchain') });
+        const guide = summary.programmerGuide;
+        if (guide && rows.some((r) => r.id === 'programmer' && r.state !== 'ready')) {
+            items.push({ label: `$(link-external) How to install ${guide.name}`, ...(guide.instructions ? { detail: guide.instructions } : {}), action: () => guide.url && vscode.env.openExternal(vscode.Uri.parse(guide.url)) });
+        }
+        if (tc?.state === 'ready') items.push({ label: '$(verified) Verify Toolchain', description: 'checks every installed file', action: () => vscode.commands.executeCommand('nexysvhdl.verifyToolchain') });
+        items.push(
+            { label: '$(book) Getting Started', action: () => vscode.commands.executeCommand('nexysvhdl.gettingStarted') },
+            { label: '$(law) Third-Party Notices', action: () => vscode.commands.executeCommand('nexysvhdl.openThirdPartyNotices') },
+            { label: '$(output) Engineering details (paths, versions) in the log', action: () => showEngineeringDetails() },
+        );
+        const pick = await vscode.window.showQuickPick(items, { title: 'NexysVHDL Environment', placeHolder: summary.status, matchOnDescription: true });
+        await pick?.action?.();
+    });
+
+    const showEngineeringDetails = () => {
+        const report = service.environmentReport;
+        output.appendLine(`NexysVHDL ${extensionVersion} environment details:`);
+        const c = report?.classroom;
+        if (c) {
+            output.appendLine('  Mode: classroom (bundled toolchain only; no PATH or system FPGA tools)');
+            output.appendLine(`  Required toolchain: ${c.requirement.bundleVersion} for ${c.target} (content ${c.requirement.targets[c.target]?.treeSha256 ?? 'n/a'})`);
+            output.appendLine(`  Data root: ${c.dataRoot ?? 'unknown'}`);
+            if (c.installed) output.appendLine(`  Toolchain folder: ${c.installed.paths.versionDir} (${c.installed.status})`);
+            if (c.installed) output.appendLine(`  Tool state folder: ${c.installed.paths.stateDir}`);
+            if (c.installed?.status === 'installed') output.appendLine(`  Installed: ${c.installed.marker.installedAt} from ${c.installed.marker.source}, ${c.installed.marker.files} files`);
+            for (const comp of c.resolution?.manifest?.components ?? []) output.appendLine(`  Component ${comp.id} ${comp.version} (${comp.license}) ${comp.content.files} files, tree ${comp.content.treeSha256}`);
+        }
+        for (const t of report?.toolchain.tools ?? []) output.appendLine(`  ${t.tool}: ${t.status} — ${t.reason}${t.detected?.path ? ` — ${t.detected.path}` : ''}${t.detected?.method ? ` (${t.detected.method})` : ''}`);
+        if (report?.programmer) output.appendLine(`  Programmer: ${report.programmer.displayName} — ${report.programmer.availability.detail}`);
+        for (const d of report?.diagnostics ?? []) output.appendLine(`  [${d.code}] ${d.message}`);
+        output.show();
+    };
+
+    /** Interactive by default; scripted use (lab setup, validation) may pass the archive path. Returns the outcome. */
+    register('nexysvhdl.installToolchain', async (scriptedArchive?: string) => {
+        const name = await backend.toolchainArchiveName();
+        const picked = typeof scriptedArchive === 'string' ? [vscode.Uri.file(scriptedArchive)] : await vscode.window.showOpenDialog({
+            canSelectFiles: true,
+            canSelectFolders: false,
+            canSelectMany: false,
+            filters: { 'NexysVHDL toolchain': ['gz'] },
+            openLabel: 'Install Toolchain',
+            title: `NexysVHDL: choose the toolchain file${name ? ` (${name})` : ''}`,
+        });
+        if (!picked?.[0]) return undefined;
+        const archive = picked[0].fsPath;
+        const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Installing the NexysVHDL FPGA toolchain', cancellable: true }, async (progress, token) => {
+            const abort = new AbortController();
+            token.onCancellationRequested(() => abort.abort());
+            let shown = 0;
+            return backend.installToolchain(
+                archive,
+                (fraction, message) => {
+                    if (fraction === undefined) return progress.report({ message });
+                    const pct = Math.round(fraction * 100);
+                    progress.report({ increment: pct - shown, message: `${pct}% (${message})` });
+                    shown = pct;
+                },
+                abort.signal,
+            );
+        });
+        for (const d of outcome.diagnostics) output.appendLine(`[toolchain] ${d.message}`);
+        if (outcome.status === 'failed') {
+            void vscode.window.showErrorMessage(outcome.diagnostics[0]?.message ?? 'The toolchain could not be installed.', 'Show Log').then((c) => c && output.show());
+            return outcome;
+        }
+        output.appendLine(`Toolchain ${outcome.version} ${outcome.status === 'installed' ? 'installed' : 'was already installed'} at ${outcome.location}`);
+        await service.refreshEnvironment();
+        const done = outcome.status === 'installed' ? `NexysVHDL FPGA toolchain ${outcome.version} installed.` : `NexysVHDL FPGA toolchain ${outcome.version} is already installed.`;
+        void vscode.window.showInformationMessage(done, 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
+        return outcome;
+    });
+
+    register('nexysvhdl.verifyToolchain', async () => {
+        const r = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'NexysVHDL: verifying the toolchain' }, async (progress) => {
+            let n = 0;
+            return backend.verifyToolchain(() => {
+                if (++n % 500 === 0) progress.report({ message: `${n.toLocaleString('en-US')} files checked` });
+            });
+        });
+        if (r.ok) void vscode.window.showInformationMessage(`NexysVHDL toolchain verified: all ${r.files?.toLocaleString('en-US') ?? ''} files are unchanged.`);
+        else void vscode.window.showErrorMessage(r.diagnostics[0]?.message ?? 'The toolchain could not be verified.');
+        return r;
+    });
+
+    register('nexysvhdl.gettingStarted', async () => {
+        await vscode.commands.executeCommand('workbench.action.openWalkthrough', `${context.extension.id}#nexysvhdl.gettingStarted`, false);
+    });
+
+    register('nexysvhdl.openThirdPartyNotices', async () => {
+        const files = [join(context.extensionPath, 'THIRD_PARTY_NOTICES.md')];
+        const location = service.environment?.toolchain?.location;
+        if (location) files.push(join(location, 'THIRD_PARTY_NOTICES.md'));
+        for (const f of files) {
+            try {
+                await stat(f);
+                await vscode.commands.executeCommand('markdown.showPreview', vscode.Uri.file(f));
+            } catch {
+                /* a notices file that is not there (toolchain not installed) is skipped */
+            }
         }
     });
 

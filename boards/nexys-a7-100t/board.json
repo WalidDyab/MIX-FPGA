@@ -6,43 +6,68 @@
   "fpga": {
     "family": "artix7",
     "device": "XC7A100T-1CSG324C",
-    "part": "xc7a100tcsg324-1"
+    "part": "xc7a100tcsg324-1",
+    "capacity": {
+      "luts": 63400,
+      "flipFlops": 126800,
+      "slices": 15850,
+      "bram36": 135,
+      "dsp": 240,
+      "userIo": 210,
+      "globalClockBuffers": 32,
+      "source": "AMD/Xilinx DS180, 7 Series FPGAs Data Sheet: Overview, Artix-7 FPGA feature summary (XC7A100T: 15,850 slices x 4 = 63,400 LUTs, 126,800 flip-flops, 135 36 Kb block RAMs, 240 DSP48E1, 32 BUFGs) and package table (CSG324: 210 user I/O)"
+    }
   },
   "backendIds": {
     "apio": "nexys-a7-100t"
   },
   "identification": {
-    "usb": { "vendorId": "0403", "productId": "6010" },
-    "productNames": ["Nexys A7 -100T"]
+    "usb": {
+      "vendorId": "0403",
+      "productId": "6010"
+    },
+    "productNames": [
+      "Nexys A7 -100T"
+    ]
   },
   "resources": [
     {
       "id": "CLK100MHZ",
       "kind": "clock",
       "description": "100 MHz system oscillator",
-      "pins": ["E3"],
+      "pins": [
+        "E3"
+      ],
       "ioStandard": "LVCMOS33",
-      "clock": { "frequencyHz": 100000000 }
+      "clock": {
+        "frequencyHz": 100000000
+      }
     },
     {
       "id": "BTNC",
       "kind": "button",
       "description": "Centre push button (active high)",
-      "pins": ["N17"],
+      "pins": [
+        "N17"
+      ],
       "ioStandard": "LVCMOS33"
     },
     {
       "id": "SW0",
       "kind": "switch",
       "description": "Slide switch 0",
-      "pins": ["J15"],
+      "pins": [
+        "J15"
+      ],
       "ioStandard": "LVCMOS33"
     },
     {
       "id": "LED0",
       "kind": "led",
       "description": "User LED 0 (active high)",
-      "pins": ["H17"],
+      "pins": [
+        "H17"
+      ],
       "ioStandard": "LVCMOS33"
     }
   ]

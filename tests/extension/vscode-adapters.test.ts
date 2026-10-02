@@ -142,9 +142,9 @@ describe('tree views', () => {
             '  Achieved | 372.58 MHz',
             '  Worst slack | 7.3 ns',
             '  Resources',
-            '    LUTs | 56 / 63400',
+            '    LUTs | 56 / 63,400',
             '    Flip-Flops | 27',
-            '    BRAM | not reported',
+            '    BRAM (36 Kb) | not reported',
             '    DSP | not reported',
             '  Bitstream | hardware.bit',
         ]);

@@ -10,3 +10,6 @@
 *.bit binary
 *.bin binary
 *.ghw binary
+
+# Third-party license texts are kept byte-identical to upstream (no whitespace normalization or checks).
+toolchains/bundle/licenses/** -whitespace -text

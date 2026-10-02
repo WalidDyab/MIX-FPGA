@@ -181,14 +181,15 @@ describe('waveform artifact from the shared simulation backend', () => {
         const srcBefore = await readdir(join(project.root, 'src'));
         const runner = new FakeRunner((inv) => {
             const vcd = inv.args.find((a) => a.startsWith('--vcd='));
-            if (vcd) writeFileSync(vcd.slice('--vcd='.length), SAMPLE);
+            if (vcd) writeFileSync(join(inv.cwd!, vcd.slice('--vcd='.length)), SAMPLE);
             return inv.args[0] === '-r' ? { stdout: 'top_tb.vhd:1:1:@660ns:(report note): ALL TESTS PASSED\n' } : {};
         });
         const controller = new WorkflowController({ boards: await repoBoards(), workspaces: new WorkspaceManager(), vhdl: new GhdlVhdlProvider('/fake/ghdl', runner) });
         const r = await controller.simulate(project);
         const simDir = join(project.root, '.nexysvhdl', 'sim');
         const run = runner.calls.find((c) => c.args[0] === '-r')!;
-        assert.ok(run.args.includes(`--vcd=${join(simDir, VCD_FILE)}`));
+        assert.ok(run.args.includes(`--vcd=${VCD_FILE}`), 'relative to the sim workspace (GHDL must never see the project location)');
+        assert.equal(run.cwd, simDir);
         assert.ok(run.args.some((a) => a.startsWith('--wave=')), 'the GHW waveform is still written');
         assert.equal(r.vcd?.path, join(simDir, 'waveform.vcd'));
         assert.equal(r.vcd?.kind, 'waveform');

@@ -35,6 +35,12 @@ export interface ToolDiscovery {
 export interface MacosLocatorOptions {
     /** Extra locations tried last, e.g. a development install from an earlier phase. */
     readonly developmentLocations?: Partial<Readonly<Record<ToolId, readonly ToolCandidate[]>>>;
+    /**
+     * Classroom mode: the installed NexysVHDL toolchain's executables. When
+     * set, these are the ONLY candidates (no override, no PATH, no Apio or
+     * development locations); the architecture check still applies.
+     */
+    readonly bundled?: Partial<Readonly<Record<ToolId, string>>>;
 }
 
 /** Apio's home directory (packages live in `<home>/packages`). */
@@ -65,6 +71,10 @@ export class MacosToolLocator implements ToolLocator {
     ) {}
 
     candidates(tool: ToolId): ToolCandidate[] {
+        if (this.options.bundled) {
+            const path = this.options.bundled[tool];
+            return path ? [{ path, method: 'NexysVHDL bundled toolchain' }] : [];
+        }
         const out: ToolCandidate[] = [];
         const variable = toolEnvVar(tool);
         const override = this.system.env[variable];

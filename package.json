@@ -1,22 +1,20 @@
 {
   "name": "nexysvhdl",
   "displayName": "NexysVHDL",
-  "version": "0.4.0-dev",
-  "description": "Cross-platform VHDL-first FPGA workflow for the Digilent Nexys A7-100T (in development).",
-  "publisher": "nexysvhdl",
+  "version": "0.5.0",
+  "description": "Classroom Preview: VHDL-2008 design for the Digilent Nexys A7-100T in VS Code. Check, simulate, waveforms, design and RTL schematics, build and program, using the separately installed NexysVHDL FPGA toolchain.",
+  "publisher": "emxplore",
   "private": true,
   "license": "UNLICENSED",
+  "preview": true,
   "type": "commonjs",
   "main": "dist/extension/extension.js",
-  "bin": {
-    "nexysvhdl": "dist/cli/main.js"
-  },
   "engines": {
-    "node": ">=20.12",
     "vscode": "^1.120.0"
   },
   "categories": [
     "Programming Languages",
+    "Education",
     "Other"
   ],
   "activationEvents": [
@@ -69,8 +67,18 @@
     "viewsWelcome": [
       {
         "view": "nexysvhdl.project",
-        "contents": "No NexysVHDL project is open.\n[Create Project](command:nexysvhdl.createProject)\n[Open Project](command:nexysvhdl.openProject)\nA project is a folder containing nexysvhdl.json.",
+        "contents": "NexysVHDL needs its FPGA toolchain before it can check, simulate or build designs. It is installed once for your user account and reused by NexysVHDL updates.\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)\nChoose the nexysvhdl-toolchain file from the NexysVHDL classroom download.",
+        "when": "nexysvhdl.toolchainState == not-installed"
+      },
+      {
+        "view": "nexysvhdl.project",
+        "contents": "No NexysVHDL project is open.\n[Create NexysVHDL Project](command:nexysvhdl.createProject)\n[Open NexysVHDL Project](command:nexysvhdl.openProject)\nA project is a folder containing nexysvhdl.json.\n[Getting Started](command:nexysvhdl.gettingStarted)\n[Show Environment](command:nexysvhdl.showEnvironment)",
         "when": "!nexysvhdl.hasProject"
+      },
+      {
+        "view": "explorer",
+        "contents": "NexysVHDL (Nexys A7 FPGA)\n[Create NexysVHDL Project](command:nexysvhdl.createProject)\n[Open NexysVHDL Project](command:nexysvhdl.openProject)\n[NexysVHDL: Getting Started](command:nexysvhdl.gettingStarted)",
+        "when": "workbenchState == empty"
       }
     ],
     "commands": [
@@ -196,7 +204,8 @@
       {
         "command": "nexysvhdl.showEnvironment",
         "title": "Show Environment",
-        "category": "NexysVHDL"
+        "category": "NexysVHDL",
+        "icon": "$(pulse)"
       },
       {
         "command": "nexysvhdl.showLog",
@@ -207,6 +216,28 @@
       {
         "command": "nexysvhdl.openLocation",
         "title": "Open Source Location",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.installToolchain",
+        "title": "Install FPGA Toolchain…",
+        "category": "NexysVHDL",
+        "icon": "$(desktop-download)"
+      },
+      {
+        "command": "nexysvhdl.verifyToolchain",
+        "title": "Verify FPGA Toolchain",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.gettingStarted",
+        "title": "Getting Started",
+        "category": "NexysVHDL",
+        "icon": "$(book)"
+      },
+      {
+        "command": "nexysvhdl.openThirdPartyNotices",
+        "title": "Third-Party Notices",
         "category": "NexysVHDL"
       }
     ],
@@ -443,6 +474,122 @@
         "scopeName": "source.vhdl",
         "path": "./resources/vhdl/vhdl.tmLanguage.json"
       }
+    ],
+    "walkthroughs": [
+      {
+        "id": "nexysvhdl.gettingStarted",
+        "title": "Get started with NexysVHDL",
+        "description": "From VHDL to a programmed Nexys A7-100T: set up, create a project, check, simulate, build and program.",
+        "steps": [
+          {
+            "id": "setup",
+            "title": "Verify your setup",
+            "description": "Check that the NexysVHDL FPGA toolchain is installed (and, on Windows, the Digilent USB/JTAG support needed only for programming).\n[Show Environment](command:nexysvhdl.showEnvironment)\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)",
+            "media": {
+              "markdown": "resources/walkthrough/setup.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.showEnvironment"
+            ]
+          },
+          {
+            "id": "project",
+            "title": "Create or open a project",
+            "description": "A NexysVHDL project is a folder with nexysvhdl.json, src/, sim/ and constraints/.\n[Create NexysVHDL Project](command:nexysvhdl.createProject)\n[Open NexysVHDL Project](command:nexysvhdl.openProject)",
+            "media": {
+              "markdown": "resources/walkthrough/project.md"
+            },
+            "completionEvents": [
+              "onContext:nexysvhdl.hasProject"
+            ]
+          },
+          {
+            "id": "edit",
+            "title": "Edit VHDL",
+            "description": "Write your design in src/ and your testbench in sim/. The Design Hierarchy updates when you save.\n[Show Project Files](command:nexysvhdl.files.focus)",
+            "media": {
+              "markdown": "resources/walkthrough/edit.md"
+            },
+            "completionEvents": [
+              "onView:nexysvhdl.files"
+            ]
+          },
+          {
+            "id": "xdc",
+            "title": "Edit the XDC constraints",
+            "description": "Pins and clocks are ordinary Xilinx XDC, exactly as in Vivado. Top-level port names must match the XDC.\n[Open Project Settings](command:nexysvhdl.openProjectSettings)",
+            "media": {
+              "markdown": "resources/walkthrough/xdc.md"
+            }
+          },
+          {
+            "id": "check",
+            "title": "Check",
+            "description": "Analyze and elaborate your VHDL. Errors appear in Problems.\n[Check VHDL](command:nexysvhdl.check)",
+            "media": {
+              "markdown": "resources/walkthrough/check.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.check"
+            ]
+          },
+          {
+            "id": "simulate",
+            "title": "Simulate",
+            "description": "Run the self-checking testbench.\n[Simulate](command:nexysvhdl.simulate)",
+            "media": {
+              "markdown": "resources/walkthrough/simulate.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.simulate"
+            ]
+          },
+          {
+            "id": "waveform",
+            "title": "Open the waveform",
+            "description": "Inspect signals over time after a simulation.\n[Open Waveform](command:nexysvhdl.openWaveform)",
+            "media": {
+              "markdown": "resources/walkthrough/waveform.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.openWaveform"
+            ]
+          },
+          {
+            "id": "rtl",
+            "title": "Open the RTL Schematic",
+            "description": "See the hardware your VHDL describes: registers, multiplexers, adders, logic.\n[Open RTL Schematic](command:nexysvhdl.openRtlSchematic)",
+            "media": {
+              "markdown": "resources/walkthrough/rtl.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.openRtlSchematic"
+            ]
+          },
+          {
+            "id": "build",
+            "title": "Build",
+            "description": "Synthesis, Implementation and Bitstream for the Nexys A7-100T, with timing and resource results.\n[Build](command:nexysvhdl.build)",
+            "media": {
+              "markdown": "resources/walkthrough/build.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.build"
+            ]
+          },
+          {
+            "id": "program",
+            "title": "Connect and program",
+            "description": "Connect the board by USB, turn it on, then program the FPGA.\n[Detect Boards](command:nexysvhdl.detectBoards)\n[Program FPGA](command:nexysvhdl.program)",
+            "media": {
+              "markdown": "resources/walkthrough/program.md"
+            },
+            "completionEvents": [
+              "onCommand:nexysvhdl.program"
+            ]
+          }
+        ]
+      }
     ]
   },
   "scripts": {
@@ -450,11 +597,34 @@
     "build": "npm run clean && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test --test-reporter=spec \"dist/tests/**/*.test.js\"",
-    "cli": "node dist/cli/main.js"
+    "cli": "node dist/cli/main.js",
+    "toolchain:assemble": "node scripts/toolchain/assemble.mjs",
+    "toolchain:pack": "npm run build && node scripts/toolchain/pack.mjs",
+    "toolchain:install": "npm run build && node scripts/toolchain/install.mjs",
+    "package:win": "node scripts/package.mjs --target win32-x64",
+    "package:mac": "node scripts/package.mjs --target darwin-arm64"
   },
   "devDependencies": {
     "@types/node": "^24.19.0",
     "@types/vscode": "~1.120.0",
+    "@vscode/vsce": "^4.0.0",
     "typescript": "^7.0.2"
+  },
+  "keywords": [
+    "vhdl",
+    "fpga",
+    "nexys",
+    "digilent",
+    "xilinx",
+    "artix-7",
+    "education",
+    "classroom"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "NexysVHDL runs its FPGA tools on the project files, so the folder must be trusted."
+    },
+    "virtualWorkspaces": false
   }
 }

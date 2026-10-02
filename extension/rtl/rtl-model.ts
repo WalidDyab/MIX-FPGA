@@ -1,4 +1,4 @@
-import { isAbsolute, relative, sep } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 /**
  * RTL schematic model built from the Yosys JSON netlist produced by the
@@ -216,6 +216,8 @@ export interface RtlBuildOptions {
     readonly verilog?: string;
     /** Project root, to make source paths project-relative (others are dropped). */
     readonly projectRoot?: string;
+    /** Folder GHDL ran in; relative paths in its comments are relative to it. */
+    readonly verilogDir?: string;
     /** Known entity names, to name GHDL's mangled modules (`counter_Brtl_27` -> `counter`). */
     readonly entities?: readonly string[];
 }
@@ -224,7 +226,7 @@ export interface RtlBuildOptions {
  * Line -> VHDL location from GHDL's Verilog: a statement line counts only
  * when the line directly above it is GHDL's `/*# path:line:col *\/` comment.
  */
-export function ghdlSourceMap(verilog: string, projectRoot?: string): Map<number, SourceRef> {
+export function ghdlSourceMap(verilog: string, projectRoot?: string, verilogDir?: string): Map<number, SourceRef> {
     const map = new Map<number, SourceRef>();
     const lines = verilog.split(/\r?\n/);
     lines.forEach((text, i) => {
@@ -232,7 +234,11 @@ export function ghdlSourceMap(verilog: string, projectRoot?: string): Map<number
         if (!m || i + 1 >= lines.length) return;
         let file = m[1]!;
         if (projectRoot) {
-            if (!isAbsolute(file)) return;
+            // GHDL is given workspace-relative sources (non-ASCII project folders), so its comments are relative to verilogDir.
+            if (!isAbsolute(file)) {
+                if (!verilogDir) return;
+                file = resolve(verilogDir, file);
+            }
             const rel = relative(projectRoot, file);
             if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return;
             file = rel.split(sep).join('/');
@@ -423,7 +429,7 @@ export function buildRtlModel(netlist: YosysNetlist, options: RtlBuildOptions = 
     });
     const top = options.top && netlist.modules[options.top.toLowerCase()] ? options.top.toLowerCase() : (flagged ?? names[0]!);
     const moduleNames = new Set(names);
-    const sources = options.verilog !== undefined ? ghdlSourceMap(options.verilog, options.projectRoot) : undefined;
+    const sources = options.verilog !== undefined ? ghdlSourceMap(options.verilog, options.projectRoot, options.verilogDir) : undefined;
     const modules = new Map<string, RtlModuleView>();
     for (const n of names) modules.set(n, buildModule(n, netlist.modules[n]!, moduleNames, sources, options.entities ?? []));
     return { top, modules };

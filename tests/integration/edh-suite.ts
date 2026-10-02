@@ -12,18 +12,34 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 import type { NexysVhdlApi } from '../../extension/extension';
-import { flatten } from '../../extension/hierarchy/hierarchy';
-import { buildSchematic } from '../../extension/schematic/schematic-model';
+import type * as HierarchyModule from '../../extension/hierarchy/hierarchy';
+import type * as SchematicModule from '../../extension/schematic/schematic-model';
+
+/** The NexysVHDL extension id (publisher.name). */
+export const EXTENSION_ID = 'emxplore.nexysvhdl';
+
+/**
+ * Helper modules are loaded from the extension under test (its own dist/),
+ * never from this repository, so an installed-package run loads no repository
+ * code into the extension host.
+ */
+export function extensionModules(extensionPath: string) {
+    const load = <T>(...p: string[]) => require(join(extensionPath, 'dist', 'extension', ...p)) as T;
+    return {
+        flatten: load<typeof HierarchyModule>('hierarchy', 'hierarchy.js').flatten,
+        buildSchematic: load<typeof SchematicModule>('schematic', 'schematic-model.js').buildSchematic,
+    };
+}
 
 type Report = Record<string, unknown>;
-const report: Report = {};
-const log: string[] = [];
-const step = (name: string, value: unknown) => {
+export const report: Report = {};
+export const log: string[] = [];
+export const step = (name: string, value: unknown) => {
     report[name] = value;
     log.push(`${name}: ${JSON.stringify(value)}`);
 };
 
-async function waitFor<T>(what: string, get: () => T | undefined | false, timeoutMs = 20_000): Promise<T> {
+export async function waitFor<T>(what: string, get: () => T | undefined | false, timeoutMs = 20_000): Promise<T> {
     const start = Date.now();
     for (;;) {
         const v = get();
@@ -33,7 +49,7 @@ async function waitFor<T>(what: string, get: () => T | undefined | false, timeou
     }
 }
 
-async function tree(dir: string, prefix = ''): Promise<string[]> {
+export async function tree(dir: string, prefix = ''): Promise<string[]> {
     const out: string[] = [];
     for (const e of await readdir(dir, { withFileTypes: true })) {
         const rel = `${prefix}${e.name}`;
@@ -60,7 +76,7 @@ async function command<T>(what: string, send: () => void, done: () => T | undefi
 }
 
 /** Replaces UI prompts with scripted answers (window API functions are plain properties). */
-function stub<K extends keyof typeof vscode.window>(name: K, impl: unknown): void {
+export function stub<K extends keyof typeof vscode.window>(name: K, impl: unknown): void {
     (vscode.window as unknown as Record<string, unknown>)[name] = impl;
 }
 
@@ -95,9 +111,10 @@ async function createPhase(): Promise<void> {
     step('createProject.duplicateError', errors);
 }
 
-async function projectPhase(): Promise<void> {
+export async function projectPhase(): Promise<void> {
     const root = vscode.workspace.workspaceFolders![0]!.uri.fsPath;
-    const ext = vscode.extensions.getExtension<NexysVhdlApi>('nexysvhdl.nexysvhdl')!;
+    const ext = vscode.extensions.getExtension<NexysVhdlApi>(EXTENSION_ID)!;
+    const { flatten, buildSchematic } = extensionModules(ext.extensionPath);
     step('activatedOnOpen', ext.isActive);
     const { service, rtl, waveform } = await ext.activate();
     await waitFor('project', () => service.snapshot?.project);
@@ -320,7 +337,7 @@ end architecture rtl;
             comment: tokens.find((t) => t.c.startsWith('--'))?.t ?? '(none)',
         };
     }
-    step('syntaxHighlighting', { otherExtensions: vscode.extensions.all.filter((e) => !e.id.startsWith('vscode.') && e.id !== 'nexysvhdl.nexysvhdl').map((e) => e.id), files: highlight });
+    step('syntaxHighlighting', { otherExtensions: vscode.extensions.all.filter((e) => !e.id.startsWith('vscode.') && e.id !== EXTENSION_ID && !e.extensionPath.includes('validation-harness')).map((e) => e.id), files: highlight });
 
     // Environment and generated files.
     const env = await service.refreshEnvironment();
@@ -336,7 +353,7 @@ end architecture rtl;
 async function showcasePhase(): Promise<void> {
     const root = vscode.workspace.workspaceFolders![0]!.uri.fsPath;
     const out = process.env['NEXYS_EDH_REPORT']!;
-    const { service, rtl, waveform } = await vscode.extensions.getExtension<NexysVhdlApi>('nexysvhdl.nexysvhdl')!.activate();
+    const { service, rtl, waveform } = await vscode.extensions.getExtension<NexysVhdlApi>(EXTENSION_ID)!.activate();
     await waitFor('project', () => service.snapshot?.project);
     const pause = async (n: number, what: string) => {
         step(`showcase.${n}`, what);

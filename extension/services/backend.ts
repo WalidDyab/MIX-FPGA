@@ -3,6 +3,7 @@ import {
     BoardRegistry,
     type BuildProgress,
     type BuildResult,
+    type Diagnostic,
     errorDiag,
     loadProject,
     type Project,
@@ -14,7 +15,9 @@ import {
     validateProject,
     type VhdlCheckResult,
 } from '../../core';
+import { stat } from 'node:fs/promises';
 import { loadCanonicalBitstream, workspacePaths } from '../../runtime/bitstream';
+import { expectedArchiveName, installClassroomToolchain, verifyClassroomToolchain } from '../../runtime/classroom';
 import { type ContextOverrides, controllerFor, createContext, programmingFor, type RuntimeContext } from '../../runtime/context';
 import { type EnvironmentReport, inspectEnvironment } from '../../runtime/environment';
 
@@ -42,11 +45,24 @@ export interface NexysBackend {
     bitstream(project: Project): Promise<BitstreamInfo | undefined>;
     program(project: Project, serialNumber: string | undefined, signal?: AbortSignal): Promise<ProgrammingResult>;
     environment(project?: Project): Promise<EnvironmentReport>;
+    /** Classroom mode: installs a NexysVHDL toolchain archive into the per-user store. */
+    installToolchain(archive: string, onProgress: (fraction: number | undefined, message: string) => void, signal?: AbortSignal): Promise<ToolchainInstallOutcome>;
+    /** Classroom mode: re-hashes the installed toolchain. */
+    verifyToolchain(onFile?: (path: string) => void): Promise<{ readonly ok: boolean; readonly files?: number; readonly diagnostics: readonly Diagnostic[] }>;
+    /** File name of the toolchain archive this release needs, for the install dialog. */
+    toolchainArchiveName(): Promise<string | undefined>;
+}
+
+export interface ToolchainInstallOutcome {
+    readonly status: 'installed' | 'already-installed' | 'failed';
+    readonly version?: string;
+    readonly location?: string;
+    readonly diagnostics: readonly Diagnostic[];
 }
 
 /** NexysBackend over the shared Phase 3 core. */
 export class CoreBackend implements NexysBackend {
-    private context?: Promise<RuntimeContext>;
+    private context: Promise<RuntimeContext> | undefined;
 
     /** `overrides` exist for tests (fake platform, refusing runner); production passes none. */
     constructor(private readonly overrides: ContextOverrides = {}) {}
@@ -116,5 +132,25 @@ export class CoreBackend implements NexysBackend {
 
     async environment(project?: Project): Promise<EnvironmentReport> {
         return inspectEnvironment(await this.ctx(), project);
+    }
+
+    async installToolchain(archive: string, onProgress: (fraction: number | undefined, message: string) => void, signal?: AbortSignal): Promise<ToolchainInstallOutcome> {
+        const ctx = await this.ctx();
+        const size = await stat(archive).then((s) => s.size, () => undefined);
+        const r = await installClassroomToolchain(ctx, archive, onProgress, signal, size);
+        // The composition root resolves the toolchain once; rebuild it so the new install is used.
+        if (r.status !== 'failed') this.context = undefined;
+        return r.status === 'failed'
+            ? { status: 'failed', diagnostics: r.diagnostics }
+            : { status: r.status, version: r.marker.bundleVersion, location: r.paths.versionDir, diagnostics: [] };
+    }
+
+    async verifyToolchain(onFile?: (path: string) => void): Promise<{ ok: boolean; files?: number; diagnostics: readonly Diagnostic[] }> {
+        const r = await verifyClassroomToolchain(await this.ctx(), onFile);
+        return { ok: r.ok, ...(r.files !== undefined ? { files: r.files } : {}), diagnostics: r.diagnostics };
+    }
+
+    async toolchainArchiveName(): Promise<string | undefined> {
+        return expectedArchiveName(await this.ctx());
     }
 }

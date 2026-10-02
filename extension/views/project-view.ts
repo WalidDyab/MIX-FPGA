@@ -58,6 +58,12 @@ export class ProjectView extends ServiceTree {
         }
 
         const env = this.service.environment;
+        if (env?.toolchain && env.toolchain.state !== 'ready') {
+            const tc = info('FPGA toolchain', env.toolchain.state === 'not-installed' ? `not installed — click to install ${env.toolchain.requiredVersion}` : 'needs attention', 'desktop-download');
+            tc.tooltip = env.problems.join('\n');
+            tc.command = { title: 'Install FPGA Toolchain', command: env.toolchain.state === 'not-installed' ? 'nexysvhdl.installToolchain' : 'nexysvhdl.showEnvironment' };
+            nodes.push(tc);
+        }
         const envNode = info('Environment', env ? env.headline : 'checking…', env ? (env.level === 'ready' ? 'pass' : env.level === 'warning' ? 'warning' : 'error') : 'loading~spin');
         envNode.command = { title: 'Show Environment', command: 'nexysvhdl.showEnvironment' };
         if (env?.problems.length) envNode.tooltip = env.problems.join('\n');
