@@ -75,6 +75,6 @@ export interface PlatformHostFacts {
     userDataRoot(env: Readonly<Record<string, string | undefined>>): string | undefined;
     /** Operating-system folders every bundled tool may need on PATH. */
     systemPath(env: Readonly<Record<string, string | undefined>>): string[];
-    /** An ASCII path resolving to `target`, for folders Apio refuses (Windows profile names with spaces/Unicode). */
+    /** An ASCII path resolving to `target`, for folders Apio refuses (Windows profile names, or a macOS home folder, with spaces/Unicode). */
     pathAlias?(target: string, env: Readonly<Record<string, string | undefined>>): Promise<PathAlias>;
 }

@@ -6,7 +6,7 @@
 import { existsSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { fail, listFiles, parseArgs, sha256File } from './lib.mjs';
+import { fail, linkTarget, listFiles, parseArgs, sha256File } from './lib.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const [a, b] = args._;
@@ -25,6 +25,12 @@ let same = 0;
 for (const f of fa.filter((x) => sb.has(x))) {
     const pa = join(a, ...f.split('/'));
     const pb = join(b, ...f.split('/'));
+    const [la, lb] = [await linkTarget(pa), await linkTarget(pb)];
+    if (la !== undefined || lb !== undefined) {
+        if (la !== lb) differ.push(`${f} (link ${la ?? 'file'} vs ${lb ?? 'file'})`);
+        else same++;
+        continue;
+    }
     const [za, zb] = [(await stat(pa)).size, (await stat(pb)).size];
     if (za !== zb || (await sha256File(pa)) !== (await sha256File(pb))) differ.push(`${f} (${za} vs ${zb} bytes)`);
     else same++;

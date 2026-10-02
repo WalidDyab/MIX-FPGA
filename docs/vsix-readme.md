@@ -8,7 +8,7 @@ VHDL-2008 design for the **Digilent Nexys A7-100T** in Visual Studio Code: creat
 2. Click the **NexysVHDL** icon → **Install FPGA Toolchain…** → choose the `nexysvhdl-toolchain-…tar.gz` file from your classroom download. It is installed once for your user account and reused by NexysVHDL updates.
 3. Windows only, for programming: if **Show Environment** says *Digilent USB/JTAG Support — Setup Required*, install the official Digilent Adept Runtime and Adept Utilities (see the installation guide).
 
-You do not need to install GHDL, Apio, Yosys, nextpnr, Python or Vivado.
+You do not need to install GHDL, Apio, Yosys, nextpnr, Python or Vivado (macOS: nor Homebrew, Xcode Command Line Tools, openFPGALoader or a USB driver; the board programmer is included).
 
 ## Use
 
@@ -20,6 +20,6 @@ Pins are set in standard Xilinx **XDC** files, exactly as in Vivado.
 
 - `docs/student-install-windows.md`, `docs/student-install-macos.md`
 - `docs/student-quick-start.md`
-- `THIRD_PARTY_NOTICES.md`, `CHANGELOG.md`
+- `LICENSE` (Apache-2.0, NexysVHDL itself), `NOTICE`, `THIRD_PARTY_NOTICES.md` (the FPGA toolchain's components keep their own licenses), `CHANGELOG.md`
 
-Supported: Windows x64, macOS Apple silicon (pending), VS Code 1.120+.
+Supported: Windows x64, macOS Apple silicon, VS Code 1.120+.

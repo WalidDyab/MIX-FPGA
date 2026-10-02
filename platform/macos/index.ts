@@ -25,6 +25,7 @@ export * from './apio-pin';
 export * from './executable';
 export * from './openfpgaloader';
 export * from './openxc7';
+export * from './path-alias';
 export * from './programmer';
 export * from './system';
 export * from './toolchain';
@@ -47,7 +48,8 @@ export function macosSystemPath(): string[] {
 
 /**
  * Per-user NexysVHDL data root: ~/Library/NexysVHDL. Not "Application
- * Support": Apio refuses paths that contain a space.
+ * Support": Apio refuses paths that contain a space. A home folder whose path
+ * itself has a space or non-ASCII character is reached through macosPathAlias.
  */
 export function macosUserDataRoot(env: Readonly<Record<string, string | undefined>>): string | undefined {
     return env['HOME'] ? posix.join(env['HOME'], 'Library', 'NexysVHDL') : undefined;

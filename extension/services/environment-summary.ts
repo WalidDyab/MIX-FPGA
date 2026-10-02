@@ -106,7 +106,9 @@ export function summarizeEnvironment(report: EnvironmentReport): EnvironmentSumm
         if (!report.providers.ghdl) problems.push('The VHDL tools (GHDL) are not available: Check, Simulate and Build are unavailable.');
         if (!report.providers.apio) problems.push('The FPGA build tools are not available: Build and the RTL Schematic are unavailable.');
     }
-    if (!programmerReady) problems.push(setupInfo && !setupInfo.bundled ? `${programmerLabel} is not set up: Program is unavailable (everything else works).` : 'The board programmer is not available: Program is unavailable.');
+    // A bundled programmer arrives with the toolchain: until then the toolchain problem says it all.
+    const programmerAwaitsToolchain = setupInfo?.bundled === true && toolchain?.state === 'not-installed';
+    if (!programmerReady && !programmerAwaitsToolchain) problems.push(setupInfo && !setupInfo.bundled ? `${programmerLabel} is not set up: Program is unavailable (everything else works).` : 'The board programmer is not available: Program is unavailable.');
     problems.push(...report.diagnostics.filter((d) => d.severity !== 'info' && d.code !== 'TOOLCHAIN_NOT_INSTALLED').map((d) => d.message));
 
     // Without GHDL/Apio nothing can be built; without a programmer everything but Program works.
@@ -141,7 +143,13 @@ export function summarizeEnvironment(report: EnvironmentReport): EnvironmentSumm
     if (setupInfo && !setupInfo.bundled) {
         setup.push({ id: 'programmer', label: setupInfo.name, state: programmerReady ? 'ready' : 'setup-required', status: programmerReady ? 'Ready' : 'Setup Required', ...(prog ? { detail: prog.availability.detail } : {}) });
     } else if (setupInfo) {
-        setup.push({ id: 'programmer', label: setupInfo.name, state: programmerReady ? 'ready' : 'problem', status: programmerReady ? 'Ready (bundled)' : 'Problem' });
+        setup.push(
+            programmerReady
+                ? { id: 'programmer', label: setupInfo.name, state: 'ready', status: 'Ready (bundled)' }
+                : programmerAwaitsToolchain
+                  ? { id: 'programmer', label: setupInfo.name, state: 'setup-required', status: 'Not Installed', detail: 'installed with the FPGA toolchain' }
+                  : { id: 'programmer', label: setupInfo.name, state: 'problem', status: 'Problem' },
+        );
     }
 
     return {

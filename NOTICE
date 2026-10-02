@@ -1,0 +1,18 @@
+NexysVHDL
+Copyright 2026 Walid Dyab
+
+NexysVHDL is an EMXplore project (VS Code publisher: emxplore).
+
+NexysVHDL is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The NexysVHDL extension (.vsix) contains only NexysVHDL's own code and data;
+it bundles no third-party code.
+
+The separately versioned NexysVHDL FPGA toolchain
+(nexysvhdl-toolchain-<version>-<platform>.tar.gz) redistributes unmodified
+third-party programs and data (including GHDL, Apio, Yosys, nextpnr-xilinx,
+openXC7, Project X-Ray, openFPGALoader and Python). These components are the
+work of their respective authors; the copyright above does not cover them and
+they are NOT licensed under the Apache License: each remains under its own
+license, including the GNU GPL and LGPL. See THIRD_PARTY_NOTICES.md here, and the
+THIRD_PARTY_NOTICES.md file and licenses/ folder inside the installed toolchain.

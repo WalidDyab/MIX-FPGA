@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -106,6 +107,33 @@ describe('package manifest (Classroom Preview)', () => {
     });
 });
 
+describe('license: NexysVHDL is Apache-2.0; third-party software keeps its own licenses', () => {
+    it('package metadata, the canonical Apache-2.0 text and the NOTICE file', async () => {
+        const pkg = JSON.parse(await readFile(join(REPO, 'package.json'), 'utf8'));
+        assert.equal(pkg.license, 'Apache-2.0');
+        const license = await readFile(join(REPO, 'LICENSE'));
+        // SHA-256 of https://www.apache.org/licenses/LICENSE-2.0.txt (unmodified).
+        assert.equal(createHash('sha256').update(license).digest('hex'), 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30');
+        const notice = await readFile(join(REPO, 'NOTICE'), 'utf8');
+        assert.match(notice, /^NexysVHDL\nCopyright \d{4} /);
+        assert.match(notice, /Apache License, Version 2\.0/);
+        assert.match(notice, /NOT\s+licensed under the Apache License/);
+        const script = await readFile(join(REPO, 'scripts', 'package.mjs'), 'utf8');
+        assert.doesNotMatch(script, /--skip-license/, 'vsce checks the license');
+        for (const f of ["'LICENSE'", "'NOTICE'"]) assert.ok(script.includes(f), `package gate requires ${f}`);
+    });
+
+    it('the notices never present the FPGA toolchain as Apache-2.0', async () => {
+        const notices = await readFile(join(REPO, 'THIRD_PARTY_NOTICES.md'), 'utf8');
+        assert.match(notices, /Third-party software is not relicensed/);
+        assert.match(notices, /The Apache License does not apply to them/);
+        for (const recipe of ['win32-x64', 'darwin-arm64']) {
+            const r = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', `${recipe}.json`), 'utf8'));
+            for (const c of r.components) assert.doesNotMatch(`${c.license} ${c.licenseEvidence}`, /NexysVHDL/, `${recipe} ${c.id}: licensed by its authors, not by NexysVHDL`);
+        }
+    });
+});
+
 describe('VSIX content control (.vscodeignore)', () => {
     it('is an allowlist: compiled JavaScript and runtime data only', async () => {
         const lines = (await readFile(join(REPO, '.vscodeignore'), 'utf8')).split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
@@ -114,7 +142,7 @@ describe('VSIX content control (.vscodeignore)', () => {
         for (const a of allowed) {
             assert.doesNotMatch(a, /\.ts$|\.map$|^tests|^dist\/tests|^dist\/cli|^toolchain\/|^tools|^examples|^experiments|^notes|^node_modules|^scripts|^docs\/images|\.nexysvhdl/, `allowlist entry ${a}`);
         }
-        for (const required of ['dist/extension/**/*.js', 'dist/core/**/*.js', 'dist/runtime/**/*.js', 'dist/platform/**/*.js', 'package.json', 'resources/**', 'boards/**/*.json', 'toolchains/bundle/requirement.json', 'THIRD_PARTY_NOTICES.md']) {
+        for (const required of ['dist/extension/**/*.js', 'dist/core/**/*.js', 'dist/runtime/**/*.js', 'dist/platform/**/*.js', 'package.json', 'resources/**', 'boards/**/*.json', 'toolchains/bundle/requirement.json', 'THIRD_PARTY_NOTICES.md', 'LICENSE', 'NOTICE']) {
             assert.ok(allowed.includes(required), required);
         }
     });
@@ -134,17 +162,22 @@ describe('VSIX content control (.vscodeignore)', () => {
 });
 
 describe('toolchain requirement and recipes', () => {
-    it('requires toolchain 1.0: Windows validated, macOS pending', async () => {
+    it('requires toolchain 1.0: Windows and macOS validated, each with its own content hash and archive', async () => {
         const req = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'requirement.json'), 'utf8'));
         assert.deepEqual(validateRequirement(req), []);
         assert.equal(req.bundleVersion, '1.0');
         assert.equal(req.targets['win32-x64'].status, 'validated');
         assert.equal(req.targets['win32-x64'].archive, 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz');
-        assert.equal(req.targets['darwin-arm64'].status, 'pending');
+        // The released Windows toolchain 1.0 is immutable: the macOS step must not change it.
+        assert.equal(req.targets['win32-x64'].treeSha256, '43b3fb80d30f7f87a61364ce636a57da1dcfd44ee07033746ca5854f133eaef9');
+        assert.equal(req.targets['darwin-arm64'].status, 'validated');
+        assert.equal(req.targets['darwin-arm64'].archive, 'nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz');
+        assert.match(req.targets['darwin-arm64'].treeSha256, /^[0-9a-f]{64}$/);
+        assert.notEqual(req.targets['darwin-arm64'].treeSha256, req.targets['win32-x64'].treeSha256);
         assert.deepEqual(Object.keys(req.targets).sort(), ['darwin-arm64', 'win32-x64'], 'no Linux, Windows ARM or Intel macOS');
     });
 
-    it('the Windows recipe is fully pinned, validated and matches the requirement version; the macOS recipe is a draft', async () => {
+    it('the Windows and macOS recipes are fully pinned, validated and match the requirement version', async () => {
         const lib = (await import(pathToFileURL(join(REPO, 'scripts', 'toolchain', 'lib.mjs')).href)) as { validateRecipe(r: unknown, target: string): string[] };
         const win = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'win32-x64.json'), 'utf8'));
         assert.deepEqual(lib.validateRecipe(win, 'win32-x64'), []);
@@ -154,16 +187,55 @@ describe('toolchain requirement and recipes', () => {
         assert.ok(!JSON.stringify(win).match(/digilent\.com\/[^"\s]*\.(exe|msi|zip)/i), 'no Digilent installer is mirrored');
         assert.ok(!win.components.some((c: { archive: { url: string } }) => /digilent/i.test(c.archive.url)), 'no Digilent component');
         for (const c of win.components) assert.match(c.archive.url, /^https:\/\/github\.com\/(ghdl|fpgawars)\//i, `${c.id} comes from an official release`);
-        const mac = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'darwin-arm64.json'), 'utf8'));
-        assert.equal(mac.status, 'draft');
-        assert.ok(lib.validateRecipe(mac, 'darwin-arm64').length > 0, 'a draft recipe cannot be assembled');
     });
 
-    it('license texts referenced by the recipe exist', async () => {
-        const win = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'win32-x64.json'), 'utf8'));
-        for (const c of win.components) {
-            for (const f of c.licenseFiles as string[]) if (f.startsWith('licenses/')) assert.ok(existsSync(join(REPO, 'toolchains', 'bundle', f)), f);
+    it('the macOS recipe pins exactly the validated Apple-silicon toolchain (no upgrades, no Windows-only packages)', async () => {
+        const lib = (await import(pathToFileURL(join(REPO, 'scripts', 'toolchain', 'lib.mjs')).href)) as { validateRecipe(r: unknown, target: string): string[]; apioRemoteConfig(r: unknown): { packages: Record<string, { release: { tag: string } }> } };
+        const mac = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'darwin-arm64.json'), 'utf8'));
+        assert.deepEqual(lib.validateRecipe(mac, 'darwin-arm64'), []);
+        assert.equal(mac.status, 'validated');
+        assert.equal(mac.bundleVersion, '1.0');
+        assert.deepEqual(mac.versions, { ghdl: '6.0.0', apio: '1.7.0', openxc7: '2026-09-25', openxc7PartsIndexSchema: 7, yosys: '0.63+173', 'nextpnr-xilinx': 'e860c9c8', openFPGALoader: '1.1.1' });
+        assert.equal(mac.apio.platformId, 'darwin-arm64');
+        assert.deepEqual(mac.executables, { ghdl: 'ghdl/bin/ghdl', apio: 'apio/bin/apio', programmer: 'apio/packages/oss-cad-suite/bin/openFPGALoader' });
+        // GHDL 6.0.0 from the official release, never Apio's oss-cad-suite GHDL (duplicate LC_RPATH on macOS 27), and
+        // the LLVM JIT build: the ahead-of-time LLVM build links each elaborated design with the system cc/ld, which
+        // only exists on a Mac with Xcode Command Line Tools.
+        const ghdl = mac.components.find((c: { id: string }) => c.id === 'ghdl');
+        assert.equal(ghdl.version, '6.0.0');
+        assert.equal(ghdl.archive.url, 'https://github.com/ghdl/ghdl/releases/download/v6.0.0/ghdl-llvm-jit-6.0.0-macos15-aarch64.tar.gz');
+        assert.equal(ghdl.archive.sha256, 'c21312d5a0cc5833e6d8690d8c4343e67f4fc32f070c07343816cd11a31c7769');
+        // Apio 1.7.0: the official darwin-arm64 PyInstaller bundle of release 2026-09-27 (its own Python; none needed on the Mac).
+        const apio = mac.components.find((c: { id: string }) => c.id === 'apio');
+        assert.equal(apio.archive.url, 'https://github.com/fpgawars/apio/releases/download/2026-09-27/apio-cli-darwin-arm64-20260927-bundle.tgz');
+        // Apio 1.7.0 restricts drivers and graphviz to windows-amd64: the Mac bundle has exactly these packages.
+        const pinned = lib.apioRemoteConfig(mac).packages;
+        assert.deepEqual(Object.fromEntries(Object.entries(pinned).map(([k, v]) => [k, v.release.tag])), { definitions: '2026-09-17', 'oss-cad-suite': '2026-09-15', verible: '2026-09-20', openxc7: '2026-09-25' });
+        assert.ok(!JSON.stringify(mac).includes('2026-09-27/apio-openxc7'), 'openXC7 2026-09-27 (parts-index schema 8) is never used');
+        for (const c of mac.components) assert.match(c.archive.url, /^https:\/\/github\.com\/(ghdl|fpgawars)\//i, `${c.id} comes from an official release`);
+        for (const c of mac.components) assert.ok(c.archive.url.endsWith(c.archive.file), `${c.id}: file name matches the URL`);
+        // The programmer is bundled (openFPGALoader in oss-cad-suite); nothing from Digilent, no Homebrew.
+        assert.equal(mac.programmer.kind, 'bundled');
+        assert.equal(mac.programmer.testedVersion, '1.1.1');
+        assert.ok(!mac.components.some((c: { archive: { url: string } }) => /digilent|brew|homebrew/i.test(c.archive.url)), 'no Digilent or Homebrew download');
+        // No Python shim: openXC7's wrappers run the package's own Python on macOS.
+        assert.deepEqual(mac.shims, []);
+        assert.deepEqual(mac.environment.pathPrepend, []);
+    });
+
+    it('license texts referenced by the recipes exist (shared, or platform-specific in licenses-<target>/)', async () => {
+        for (const target of ['win32-x64', 'darwin-arm64']) {
+            const recipe = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', `${target}.json`), 'utf8'));
+            for (const c of recipe.components) {
+                for (const f of c.licenseFiles as string[]) {
+                    if (!f.startsWith('licenses/')) continue;
+                    const name = f.slice('licenses/'.length);
+                    assert.ok(existsSync(join(REPO, 'toolchains', 'bundle', 'licenses', name)) || existsSync(join(REPO, 'toolchains', 'bundle', `licenses-${target}`, name)), `${target}: ${f}`);
+                }
+            }
         }
+        // Platform-specific texts never land in the shared folder (that would change the released Windows content).
+        for (const f of await readdir(join(REPO, 'toolchains', 'bundle', 'licenses-darwin-arm64'))) assert.ok(!existsSync(join(REPO, 'toolchains', 'bundle', 'licenses', f)), f);
     });
 });
 

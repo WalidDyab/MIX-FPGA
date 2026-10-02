@@ -13,6 +13,7 @@
  *                        the installed toolchain is reused untouched
  *   NEXYS_REPORT=<file>  JSON report
  */
+import { realpathSync } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import * as vscode from 'vscode';
@@ -28,8 +29,10 @@ function nexysExtension(): vscode.Extension<NexysVhdlApi> {
 /** Where every loaded NexysVHDL module came from (proof that nothing loads from the repository). */
 function loadedModules(extensionPath: string) {
     const keys = Object.keys(require.cache);
-    // VS Code may report the drive letter in another case than require.cache does.
-    const within = (k: string) => k.toLowerCase().startsWith((extensionPath + sep).toLowerCase());
+    // VS Code may report the drive letter in another case than require.cache does, and
+    // require.cache holds real paths (macOS: /tmp is /private/tmp).
+    const roots = [extensionPath, realpathSync(extensionPath)].map((p) => (p + sep).toLowerCase());
+    const within = (k: string) => roots.some((r) => k.toLowerCase().startsWith(r));
     const inside = keys.filter(within);
     const nexysLike = keys.filter((k) => /[\\/]dist[\\/](core|platform|runtime|extension)[\\/]/.test(k));
     return {
@@ -37,7 +40,7 @@ function loadedModules(extensionPath: string) {
         fromInstalledExtension: inside.length,
         nexysModulesOutsideInstall: nexysLike.filter((k) => !within(k)),
         typeScriptSources: keys.filter((k) => k.endsWith('.ts')),
-        sample: inside.slice(0, 3).map((k) => relative(extensionPath.toLowerCase(), k.toLowerCase())),
+        sample: inside.slice(0, 3).map((k) => relative(realpathSync(extensionPath).toLowerCase(), k.toLowerCase())),
     };
 }
 
@@ -136,7 +139,14 @@ async function updatePhase(): Promise<void> {
 export async function run(): Promise<void> {
     const phase = process.env['NEXYS_PHASE'];
     const out = process.env['NEXYS_REPORT']!;
-    step('process', { pathVariable: process.env['PATH'] ?? process.env['Path'], apioHomeVariable: process.env['APIO_HOME'], localAppData: process.env['LOCALAPPDATA'], vscode: vscode.version });
+    step('process', {
+        pathVariable: process.env['PATH'] ?? process.env['Path'],
+        hostile: Object.fromEntries(Object.entries(process.env).filter(([k]) => /^(APIO_|PYTHON|NEXYSVHDL_|HTTPS?_PROXY)/i.test(k))),
+        localAppData: process.env['LOCALAPPDATA'],
+        home: process.env['HOME'],
+        vscode: vscode.version,
+        platform: `${process.platform}-${process.arch}`,
+    });
     try {
         if (phase === 'setup') await setupPhase();
         else if (phase === 'update') await updatePhase();

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createWriteStream, existsSync } from 'node:fs';
-import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readdir, readFile, readlink, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { delimiter, join, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
@@ -18,6 +18,7 @@ import {
     inventoryDirectory,
     loadBundledToolchain,
     safeArchivePath,
+    safeLinkTarget,
     storePaths,
     treeHash,
     validateRequirement,
@@ -173,9 +174,10 @@ describe('toolchain archive (tar.gz)', () => {
         assert.equal(safeArchivePath('apio/packages/x.json'), 'apio/packages/x.json');
 
         const dir = await tempDir(t, 'nexys-tar-');
-        const header = (name: string, type: string, size = 0) => {
+        const header = (name: string, type: string, size = 0, linkname = '') => {
             const b = Buffer.alloc(512);
             b.write(name, 0);
+            b.write(linkname, 157);
             b.write('0000644\0', 100);
             b.write('0000000\0', 108);
             b.write('0000000\0', 116);
@@ -198,7 +200,13 @@ describe('toolchain archive (tar.gz)', () => {
         };
         const cases: Array<[string, Buffer[], RegExp]> = [
             ['traversal', [header('../evil.txt', '0'), Buffer.alloc(1024)], /unsafe path/],
-            ['symlink', [header('link', '2'), Buffer.alloc(1024)], /links are not allowed/],
+            ['symlink without target', [header('link', '2'), Buffer.alloc(1024)], /unsafe symbolic link/],
+            ['absolute symlink', [header('link', '2', 0, '/etc'), Buffer.alloc(1024)], /unsafe symbolic link/],
+            ['escaping symlink', [header('a/link', '2', 0, '../../evil.txt'), Buffer.alloc(1024)], /unsafe symbolic link/],
+            ['inner .. in symlink', [header('a/link', '2', 0, 'b/../../evil.txt'), Buffer.alloc(1024)], /unsafe symbolic link/],
+            ['entry written through a symlink', [header('a', '2', 0, 'b'), header('a/evil.txt', '0'), Buffer.alloc(1024)], /below a symbolic link/],
+            ['symlink replacing a folder with entries', [header('a/x.txt', '0'), header('a', '2', 0, 'b'), Buffer.alloc(1024)], /below a symbolic link/],
+            ['hard link', [header('link', '1', 0, 'a.txt'), Buffer.alloc(1024)], /hard links and special files are not allowed/],
             ['damaged', [(() => { const h = header('a.txt', '0'); h[0] = 0x62; return h; })(), Buffer.alloc(1024)], /checksum/],
             ['truncated', [header('a.txt', '0', 600), Buffer.alloc(100)], /truncated/],
         ];
@@ -215,6 +223,61 @@ describe('toolchain archive (tar.gz)', () => {
         const lib = (await import(pathToFileURL(join(REPO, 'scripts', 'toolchain', 'lib.mjs')).href)) as { inventory(dir: string): Promise<{ treeSha256: string }> };
         assert.equal((await lib.inventory(dir)).treeSha256, (await inventoryDirectory(dir)).treeSha256);
         assert.equal(treeHash([]), createHash('sha256').digest('hex'));
+        // With symbolic links (macOS bundles), too.
+        await symlink('b.txt', join(dir, 'a', 'link'));
+        assert.equal((await lib.inventory(dir)).treeSha256, (await inventoryDirectory(dir)).treeSha256);
+    });
+
+    it('a tree without links hashes exactly as before link support (released content hashes stay valid)', async (t) => {
+        const dir = await tempDir(t, 'nexys-tar-');
+        await writeFiles(dir, { 'z.txt': 'z', 'a/b.txt': 'bb' });
+        const sha = (s: string) => createHash('sha256').update(s).digest('hex');
+        const legacy = createHash('sha256').update(`a/b.txt\x002\x00${sha('bb')}\nz.txt\x001\x00${sha('z')}\n`).digest('hex');
+        assert.equal((await inventoryDirectory(dir)).treeSha256, legacy);
+    });
+
+    it('round-trips relative symbolic links (macOS frameworks, dylib aliases) as links, inside the tree', async (t) => {
+        const dir = await tempDir(t, 'nexys-tar-');
+        const src = join(dir, 'src');
+        await writeFiles(src, { 'Q.framework/Versions/5/Q': 'dylib', 'bin/yosys-abc': '#!/bin/sh\n', 'lib/libz.1.dylib': 'z' });
+        await symlink('5', join(src, 'Q.framework', 'Versions', 'Current'));
+        await symlink('Versions/Current/Q', join(src, 'Q.framework', 'Q'));
+        await symlink('../bin/yosys-abc', join(src, 'lib', 'yosys-abc'));
+        const longTarget = `${'n'.repeat(120)}.dylib`;
+        await writeFiles(src, { [`lib/${longTarget}`]: 'long' });
+        await symlink(longTarget, join(src, 'lib', 'libz.dylib'));
+        const before = await inventoryDirectory(src);
+        assert.equal(before.entries.filter((e) => e.link !== undefined).length, 4);
+        await writeTarGz(src, join(dir, 'l.tar.gz'));
+        const out = join(dir, 'out');
+        await mkdir(out);
+        const r = await extractTarGz(join(dir, 'l.tar.gz'), out);
+        assert.equal(r.treeSha256, before.treeSha256);
+        assert.equal((await inventoryDirectory(out)).treeSha256, before.treeSha256);
+        assert.ok((await lstat(join(out, 'Q.framework', 'Q'))).isSymbolicLink());
+        assert.equal(await readlink(join(out, 'lib', 'libz.dylib')), longTarget);
+        assert.equal(await readFile(join(out, 'Q.framework', 'Q'), 'utf8'), 'dylib');
+        // A changed link target changes the content hash (Verify Toolchain sees it).
+        const changed = await tempDir(t, 'nexys-tar-');
+        await writeFiles(changed, { 'a.txt': 'a', 'b.txt': 'a' });
+        await symlink('a.txt', join(changed, 'l'));
+        const h1 = (await inventoryDirectory(changed)).treeSha256;
+        const changed2 = await tempDir(t, 'nexys-tar-');
+        await writeFiles(changed2, { 'a.txt': 'a', 'b.txt': 'a' });
+        await symlink('b.txt', join(changed2, 'l'));
+        assert.notEqual((await inventoryDirectory(changed2)).treeSha256, h1);
+    });
+
+    it('accepts only link targets that stay inside the tree, and never archives an unsafe link', async (t) => {
+        assert.equal(safeLinkTarget('a/b/link', '../../x'), '../../x');
+        assert.equal(safeLinkTarget('Q.framework/Versions/Current', '5'), '5');
+        for (const [link, target] of [['link', '../x'], ['a/link', '../../x'], ['a/link', 'x/../y'], ['a/link', './x'], ['a/link', '/x'], ['a/link', '..'], ['a/link', ''], ['a/link', 'C:/x'], ['a/link', 'x\\y']] as const) {
+            assert.equal(safeLinkTarget(link, target), undefined, `${link} -> ${target}`);
+        }
+        const dir = await tempDir(t, 'nexys-tar-');
+        await writeFiles(join(dir, 'src'), { 'a.txt': 'a' });
+        await symlink('/etc/passwd', join(dir, 'src', 'evil'));
+        await assert.rejects(writeTarGz(join(dir, 'src'), join(dir, 'x.tar.gz')), /must be relative and inside/);
     });
 });
 
@@ -290,6 +353,31 @@ describe('toolchain store: separately versioned, immutable installs', () => {
         const r = await installToolchainArchive({ archive, dataRoot, target: 'win32-x64', requirement });
         assert.equal(r.status, 'failed');
         assert.equal(await readFile(join(versionDir, 'something.txt'), 'utf8'), 'keep me');
+    });
+
+    it('a macOS toolchain with framework and dylib links installs, verifies, and a re-pointed link is detected', async (t) => {
+        const dir = await tempDir(t, 'nexys-store-');
+        const bundle = join(dir, 'bundle');
+        await writeFakeBundle(bundle, { target: 'darwin-arm64', programmer: true, files: { 'apio/bin/_internal/Python.framework/Versions/3.14/Python': 'python dylib', 'apio/packages/oss-cad-suite/lib/libusb-1.0.0.dylib': 'libusb' } });
+        await symlink('3.14', join(bundle, 'apio', 'bin', '_internal', 'Python.framework', 'Versions', 'Current'));
+        await symlink('Python.framework/Versions/3.14/Python', join(bundle, 'apio', 'bin', '_internal', 'Python'));
+        await symlink('libusb-1.0.0.dylib', join(bundle, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libusb-1.0.dylib'));
+        const { archive, requirement } = await fakeArchive(dir, bundle, { target: 'darwin-arm64' });
+        const dataRoot = join(dir, 'data');
+        const r = await installToolchainArchive({ archive, dataRoot, target: 'darwin-arm64', requirement });
+        assert.equal(r.status, 'installed');
+        const root = join(dataRoot, 'toolchains', 'darwin-arm64', '1.0');
+        assert.equal(await readlink(join(root, 'apio', 'bin', '_internal', 'Python')), 'Python.framework/Versions/3.14/Python');
+        assert.equal(await readFile(join(root, 'apio', 'bin', '_internal', 'Python'), 'utf8'), 'python dylib');
+        assert.ok(((await stat(join(root, 'apio', 'packages', 'oss-cad-suite', 'bin', 'openFPGALoader'))).mode & 0o111) !== 0, 'executable bit survives pack and install');
+        assert.equal((await verifyInstalledToolchain(dataRoot, 'darwin-arm64', requirement)).ok, true);
+        // Re-point a link (same files, different target): Verify Toolchain must notice.
+        const link = join(root, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libusb-1.0.dylib');
+        await rm(link);
+        await symlink('../../../bin/apio', link);
+        const v = await verifyInstalledToolchain(dataRoot, 'darwin-arm64', requirement);
+        assert.equal(v.ok, false);
+        assert.equal(v.diagnostics[0]!.code, 'TOOLCHAIN_MODIFIED');
     });
 
     it('Verify Toolchain detects a modified file', async (t) => {

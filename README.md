@@ -6,7 +6,11 @@ NexysVHDL is a VHDL-first FPGA workflow in VS Code for the Digilent Nexys A7-100
 
 Target platforms:
 - Windows x64 (Classroom Preview package validated)
-- Apple-silicon macOS (package pending Mac validation)
+- Apple-silicon macOS (Classroom Preview package validated)
+
+## License
+
+NexysVHDL itself is licensed under the [Apache License, Version 2.0](LICENSE) (see also [NOTICE](NOTICE)). The separately distributed FPGA toolchain redistributes third-party tools (GHDL, Apio, Yosys, nextpnr-xilinx, openXC7, openFPGALoader, …) that remain under their own licenses, including the GNU GPL and LGPL: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## For students
 
@@ -17,7 +21,7 @@ A classroom download contains two separately versioned parts:
 | Part | File | Size |
 |---|---|---|
 | NexysVHDL extension | `nexysvhdl-<version>-<platform>.vsix` | about 230 KB |
-| NexysVHDL FPGA toolchain | `nexysvhdl-toolchain-<toolchain version>-<platform>.tar.gz` | about 725 MB (Windows), installed once per user |
+| NexysVHDL FPGA toolchain | `nexysvhdl-toolchain-<toolchain version>-<platform>.tar.gz` | about 725 MB (Windows) / 630 MB (macOS), installed once per user |
 
 ## Repository layout
 

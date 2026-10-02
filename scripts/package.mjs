@@ -83,6 +83,8 @@ const required = [
     ...pkg.contributes.walkthroughs.flatMap((w) => w.steps.map((s) => s.media.markdown)),
     'boards/nexys-a7-100t/board.json',
     'toolchains/bundle/requirement.json',
+    'LICENSE',
+    'NOTICE',
     'THIRD_PARTY_NOTICES.md',
     'CHANGELOG.md',
     'docs/student-install-windows.md',
@@ -97,7 +99,7 @@ ok(`${required.length} required resources present`);
 await mkdir(dist, { recursive: true });
 const vsix = join(dist, `nexysvhdl-${pkg.version}-${target}.vsix`);
 await rm(vsix, { force: true });
-run('npx', ['vsce', 'package', '--target', target, '--no-dependencies', '--skip-license', '--allow-missing-repository', '--readme-path', 'docs/vsix-readme.md', '--out', vsix]);
+run('npx', ['vsce', 'package', '--target', target, '--no-dependencies', '--allow-missing-repository', '--readme-path', 'docs/vsix-readme.md', '--out', vsix]);
 
 // 5. Content audit (the equivalent of `vsce ls` on the actual file).
 const entries = listZip(vsix).filter((e) => e.startsWith('extension/') && !e.endsWith('/')).map((e) => e.slice('extension/'.length));
@@ -105,7 +107,8 @@ const forbidden = [/\.ts$/, /\.map$/, /^dist\/tests\//, /^dist\/cli\//, /^tests\
 const bad = entries.filter((e) => forbidden.some((r) => r.test(e)));
 if (bad.length) fail(`VSIX contains excluded content:\n  ${bad.join('\n  ')}`);
 const lower = new Set(entries.map((e) => e.toLowerCase()));
-for (const p of required.filter((x) => x !== 'docs/vsix-readme.md')) if (!lower.has(p.toLowerCase())) fail(`VSIX is missing ${p}`);
+// vsce stores the license file as LICENSE.txt.
+for (const p of required.filter((x) => x !== 'docs/vsix-readme.md')) if (!lower.has(p.toLowerCase()) && !(p === 'LICENSE' && lower.has('license.txt'))) fail(`VSIX is missing ${p}`);
 if (!lower.has('readme.md')) fail('VSIX is missing its README');
 ok(`VSIX content audit: ${entries.length} files, no tests/sources/maps/toolchain/scratch`);
 
@@ -123,6 +126,9 @@ for (const f of textFiles) {
     const text = await readFile(f, 'utf8');
     for (const r of privacy) if (r.test(text)) leaks.push(`${relative(REPO_ROOT, f)}: ${r}`);
 }
+const shippedLicense = ['LICENSE.txt', 'LICENSE'].map((n) => join(scratch, 'extension', n)).find(existsSync);
+if (!shippedLicense || (await sha256File(shippedLicense)) !== (await sha256File(join(REPO_ROOT, 'LICENSE')))) fail('the VSIX license file is not the repository LICENSE (Apache-2.0)');
+ok('VSIX license: Apache-2.0 text identical to LICENSE; NOTICE present');
 await rm(scratch, { recursive: true, force: true });
 if (leaks.length) fail(`privacy audit failed:\n  ${leaks.join('\n  ')}`);
 ok(`privacy audit: ${textFiles.length} text files (VSIX + generated toolchain files), no local paths, user names or secrets`);
@@ -137,6 +143,8 @@ await link(archive, join(folder, want.archive)).catch(() => copyFile(archive, jo
 const guide = target.startsWith('win32') ? 'student-install-windows.md' : 'student-install-macos.md';
 await copyFile(join(REPO_ROOT, 'docs', guide), join(folder, 'INSTALL.md'));
 await copyFile(join(REPO_ROOT, 'THIRD_PARTY_NOTICES.md'), join(folder, 'THIRD_PARTY_NOTICES.md'));
+await copyFile(join(REPO_ROOT, 'LICENSE'), join(folder, 'LICENSE'));
+await copyFile(join(REPO_ROOT, 'NOTICE'), join(folder, 'NOTICE'));
 const sums = [];
 for (const f of (await readdir(folder)).sort()) sums.push(`${await sha256File(join(folder, f))}  ${f}`);
 await writeFile(join(folder, 'SHA256SUMS.txt'), `${sums.join('\n')}\n`);

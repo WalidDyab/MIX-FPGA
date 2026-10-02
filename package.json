@@ -5,7 +5,7 @@
   "description": "Classroom Preview: VHDL-2008 design for the Digilent Nexys A7-100T in VS Code. Check, simulate, waveforms, design and RTL schematics, build and program, using the separately installed NexysVHDL FPGA toolchain.",
   "publisher": "emxplore",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "preview": true,
   "type": "commonjs",
   "main": "dist/extension/extension.js",

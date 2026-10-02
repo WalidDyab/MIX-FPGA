@@ -3,8 +3,11 @@
   "bundleVersion": "1.0",
   "targets": {
     "darwin-arm64": {
-      "status": "pending",
-      "notes": "Assembled and validated on an Apple-silicon Mac in the Phase 4B Mac step (toolchains/bundle/darwin-arm64.json)."
+      "status": "validated",
+      "treeSha256": "f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7",
+      "files": 31699,
+      "bytes": 2758218326,
+      "archive": "nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz"
     },
     "win32-x64": {
       "status": "validated",

@@ -5,19 +5,18 @@
   "arch": "arm64",
   "displayPlatform": "macOS Apple silicon",
   "bundleVersion": "1.0",
-  "status": "draft",
-  "draftNotes": [
-    "DRAFT prepared on Windows from the macOS engineering records (docs/phase1-macos.md, docs/phase2-macos.md, toolchains/apio-remote-config/apio-1.7.x.jsonc). It has NOT been assembled or validated. The assembler refuses any recipe whose status is not 'validated'.",
-    "Mac step (on an Apple-silicon Mac): confirm every version and URL against the validated Mac installation, download each archive, fill in size and sha256, compare the extracted content with ~/.apio/packages and tools/ghdl (scripts/toolchain/compare.mjs), then set status to 'validated'.",
-    "Apio: the validated Apio 1.7.0 build was 'pyinst-darwin-arm64-2026-09-27' installed at /Applications/Apio/apio. Find the matching official darwin-arm64 bundle archive of the 2026-09-27 Apio release; if only an installer package exists, document how its payload is staged reproducibly.",
-    "Python: openXC7's fasm2frames/bit2fasm/xc7pll scripts need a Python interpreter. On Windows they ran the developer's system Python (now replaced by the 'python' shim to the oss-cad-suite CPython). On macOS check which interpreter the scripts' shebang/wrappers resolve to (a clean Mac's /usr/bin/python3 is only a Command Line Tools installer stub) and add a shim to a bundled interpreter if needed; then prove byte-identical hardware.frames.",
-    "openXC7 parts-index schema must be 7 for Apio 1.7.0 (openxc7 2026-09-25 is pinned because 2026-09-27 moved to schema 8).",
-    "GHDL: Apio's bundled GHDL does not launch on macOS 27 (duplicate LC_RPATH); the validated GHDL is the official ghdl-llvm-6.0.0-macos15-aarch64 release."
+  "status": "validated",
+  "validatedBy": [
+    "docs/phase1-macos.md",
+    "docs/phase2-macos.md",
+    "docs/phase3c-integration.md",
+    "docs/phase4b-classroom-bundle.md"
   ],
+  "notes": "Exact component set validated on Apple-silicon macOS in Phases 1-4A: GHDL 6.0.0 from the official GHDL release, macOS 15 aarch64 build with the LLVM JIT backend (Apio's own GHDL does not launch on macOS 27: duplicate LC_RPATH; the ahead-of-time LLVM build validated in Phases 1-4A links every elaborated design with the system cc/ld, i.e. it needs Xcode Command Line Tools, which a student Mac does not have and which cannot be redistributed; the LLVM JIT build of the same release elaborates in memory and was verified in Phase 4B to give identical simulation output, GHW, VCD (apart from its $date line) and synthesized Verilog), the Apio 1.7.0 darwin-arm64 bundle of release 2026-09-27 (identical to the validated /Applications/Apio install), and the Apio package set Apio 1.7.0 installs on darwin-arm64 (definitions, oss-cad-suite, verible, openxc7; Apio restricts drivers and graphviz to windows-amd64), with openXC7 pinned to 2026-09-25 (parts-index schema 7; 2026-09-27 moved to schema 8) and its xc7a100t chipdb. Staged from the official release archives below; nothing is upgraded for uniformity with Windows.",
   "versions": {
     "ghdl": "6.0.0",
     "apio": "1.7.0",
-    "openxc7": "2026.09.25",
+    "openxc7": "2026-09-25",
     "openxc7PartsIndexSchema": 7,
     "yosys": "0.63+173",
     "nextpnr-xilinx": "e860c9c8",
@@ -33,143 +32,227 @@
     "platformId": "darwin-arm64",
     "packagesDir": "apio/packages",
     "remoteConfigDir": "apio/remote-config",
-    "installedAt": "TODO (from the validated ~/.apio/packages/installed_packages.json)"
+    "installedAt": "2026-09-27-20-44"
   },
   "environment": {
     "pathPrepend": [],
-    "set": { "PYTHONDONTWRITEBYTECODE": "1" }
+    "set": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "notes": "Every bundled tool runs with PATH = the operating-system folders only (/usr/bin:/bin:/usr/sbin:/sbin; Apio adds its own package folders), inherited APIO_* and PYTHON* variables removed, and Python bytecode writing disabled so the immutable bundle is never written to. No Python shim is needed on macOS: openXC7's fasm2frames/bit2fasm wrappers run the package's own libexec/python3.12 with PYTHONHOME set to the package, and Apio is a self-contained PyInstaller executable with its own Python 3.14."
   },
   "shims": [],
   "programmer": {
     "kind": "bundled",
     "name": "openFPGALoader",
     "bundled": true,
+    "reason": "openFPGALoader 1.1.1 (Apache-2.0) ships in the official Apio oss-cad-suite package together with the libusb, libftdi and hidapi libraries it loads from the package itself; macOS needs no FPGA USB driver for the Nexys A7's FTDI JTAG interface.",
     "testedVersion": "1.1.1",
-    "validated": { "openFPGALoader": "1.1.1" }
+    "validated": {
+      "openFPGALoader": "1.1.1"
+    }
   },
   "components": [
     {
       "id": "ghdl",
       "name": "GHDL",
       "version": "6.0.0",
-      "description": "VHDL analyzer, simulator and synthesizer (LLVM backend, macOS 15 aarch64 build)",
-      "license": "GPL-2.0-or-later",
-      "licenseEvidence": "TODO: check the release archive for COPYING; upstream https://github.com/ghdl/ghdl/blob/v6.0.0/COPYING.md",
+      "description": "VHDL analyzer, simulator and synthesizer (LLVM 22.1.0 JIT backend, macOS 15 aarch64 build: elaboration and simulation run in memory, no system linker or Xcode Command Line Tools needed)",
+      "license": "GPL-2.0-or-later; libgnat GPL-3.0 with GCC Runtime Library Exception; libgcc_s GCC Runtime Library Exception; LLVM (statically linked into bin/ghdl) Apache-2.0 WITH LLVM-exception",
+      "licenseEvidence": "Upstream COPYING.md (https://github.com/ghdl/ghdl/blob/v6.0.0/COPYING.md); the binary archive contains no license file of its own. bin/ghdl statically links LLVM 22.1.0 (Homebrew LLVM build, string 'Homebrew LLVM version 22.1.0') and the GNAT 14.2.0 runtime; lib/ also ships libgnat-14.dylib and libgcc_s.1.1.dylib (GCC 14.2.0 runtime). IEEE library sources under lib/ghdl/src/ieee2008 carry their own LICENSE.",
       "homepage": "https://github.com/ghdl/ghdl",
-      "sourceCode": "https://github.com/ghdl/ghdl/archive/refs/tags/v6.0.0.tar.gz",
+      "sourceCode": "https://github.com/ghdl/ghdl/archive/refs/tags/v6.0.0.tar.gz (GHDL 6.0.0.r0.ge589c698c); LLVM https://github.com/llvm/llvm-project/tree/llvmorg-22.1.0; GCC 14.2.0 runtime https://ftp.gnu.org/gnu/gcc/gcc-14.2.0/",
       "archive": {
-        "url": "https://github.com/ghdl/ghdl/releases/download/v6.0.0/ghdl-llvm-6.0.0-macos15-aarch64.tar.gz",
-        "file": "ghdl-llvm-6.0.0-macos15-aarch64.tar.gz",
-        "size": null,
-        "sha256": "69beb5913a490b5971980bd045af6a63b6f52e861b444fa990bffac436587478",
+        "url": "https://github.com/ghdl/ghdl/releases/download/v6.0.0/ghdl-llvm-jit-6.0.0-macos15-aarch64.tar.gz",
+        "file": "ghdl-llvm-jit-6.0.0-macos15-aarch64.tar.gz",
+        "size": 37155806,
+        "sha256": "c21312d5a0cc5833e6d8690d8c4343e67f4fc32f070c07343816cd11a31c7769",
         "strip": 1
       },
       "dest": "ghdl",
-      "licenseFiles": ["licenses/GHDL-COPYING.md"]
+      "licenseFiles": [
+        "licenses/GHDL-COPYING.md",
+        "licenses/GPL-2.0.txt",
+        "licenses/GPL-3.0.txt",
+        "licenses/GCC-RUNTIME-EXCEPTION-3.1.txt",
+        "licenses/LLVM-LICENSE.txt",
+        "ghdl/lib/ghdl/src/ieee2008/LICENSE"
+      ]
     },
     {
       "id": "apio",
       "name": "Apio",
       "version": "1.7.0",
-      "description": "FPGA build manager (darwin-arm64 bundle)",
-      "license": "GPL-2.0",
-      "licenseEvidence": "TODO: LICENSE in the bundle",
+      "description": "FPGA build manager (PyInstaller bundle pyinst-darwin-arm64-2026-09-27 with a private Python 3.14.7 runtime and SCons; identical to the validated /Applications/Apio install)",
+      "license": "GPL-2.0; Python 3.14.7 PSF-2.0; bundled OpenSSL 3.5.7 Apache-2.0, libusb-1.0 LGPL-2.1-or-later, zstd 1.5.7 BSD-3-Clause; Python packages per *.dist-info",
+      "licenseEvidence": "apio/LICENSE in the bundle (GNU GPL version 2). The bundle contains no license text for Python, OpenSSL, libusb or zstd (texts shipped in licenses/); Python package licenses under apio/bin/_internal/*.dist-info.",
       "homepage": "https://github.com/FPGAwars/apio",
-      "sourceCode": "TODO: commit of the 2026-09-27 release",
-      "archive": { "url": "TODO", "file": "TODO", "size": null, "sha256": null, "strip": 1 },
+      "sourceCode": "https://github.com/FPGAwars/apio/tree/ccede3ecb88f809d1c5a6063a274ba1852bdc519",
+      "archive": {
+        "url": "https://github.com/fpgawars/apio/releases/download/2026-09-27/apio-cli-darwin-arm64-20260927-bundle.tgz",
+        "file": "apio-cli-darwin-arm64-20260927-bundle.tgz",
+        "size": 18884126,
+        "sha256": "963529620145c7dac6e3356f79fc7bd0f7e2302420e1e7c712345435fc77e15f",
+        "strip": 1
+      },
       "dest": "apio/bin",
-      "licenseFiles": []
+      "licenseFiles": [
+        "apio/bin/LICENSE",
+        "licenses/PSF-2.0-Python-3.14.txt",
+        "licenses/LGPL-2.1.txt",
+        "licenses/LLVM-LICENSE.txt"
+      ]
     },
     {
       "id": "apio-definitions",
       "name": "Apio definitions package",
       "version": "2026.09.17",
+      "description": "Apio board/FPGA/programmer definitions",
       "license": "GPL-2.0",
       "licenseEvidence": "LICENSE in the package.",
       "homepage": "https://github.com/FPGAwars/apio-definitions",
       "sourceCode": "https://github.com/FPGAwars/apio-definitions/tree/2fd2c66575c775810aacfa1e174b377ec711f6a4",
-      "apioPackage": { "name": "definitions", "repository": { "organization": "fpgawars", "name": "apio-definitions" }, "releaseTag": "2026-09-17", "packageTemplate": "apio-definitions-${YYYYMMDD}.tgz" },
-      "archive": { "url": "https://github.com/fpgawars/apio-definitions/releases/download/2026-09-17/apio-definitions-20260917.tgz", "file": "apio-definitions-20260917.tgz", "size": 1986520, "sha256": "34a2047db39c3c91f9dfb2e84b5ea67095302b7cc8bbf7dd5d3f1f06d57be150", "strip": 0 },
+      "apioPackage": {
+        "name": "definitions",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "apio-definitions"
+        },
+        "releaseTag": "2026-09-17",
+        "packageTemplate": "apio-definitions-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/apio-definitions/releases/download/2026-09-17/apio-definitions-20260917.tgz",
+        "file": "apio-definitions-20260917.tgz",
+        "size": 1986520,
+        "sha256": "34a2047db39c3c91f9dfb2e84b5ea67095302b7cc8bbf7dd5d3f1f06d57be150",
+        "strip": 0
+      },
       "dest": "apio/packages/definitions",
-      "licenseFiles": ["apio/packages/definitions/LICENSE"]
-    },
-    {
-      "id": "apio-drivers",
-      "name": "Apio drivers package",
-      "version": "2026.09.15",
-      "license": "TODO (darwin-arm64 drivers package contents)",
-      "licenseEvidence": "TODO",
-      "homepage": "https://github.com/FPGAwars/tools-drivers",
-      "sourceCode": "TODO",
-      "apioPackage": { "name": "drivers", "repository": { "organization": "fpgawars", "name": "tools-drivers" }, "releaseTag": "2026-09-15", "packageTemplate": "apio-drivers-${PLATFORM}-${YYYYMMDD}.tgz" },
-      "archive": { "url": "https://github.com/fpgawars/tools-drivers/releases/download/2026-09-15/apio-drivers-darwin-arm64-20260915.tgz", "file": "apio-drivers-darwin-arm64-20260915.tgz", "size": null, "sha256": null, "strip": 0 },
-      "dest": "apio/packages/drivers",
-      "licenseFiles": []
-    },
-    {
-      "id": "apio-graphviz",
-      "name": "Apio graphviz package",
-      "version": "2026.09.15",
-      "license": "EPL (version to be confirmed)",
-      "licenseEvidence": "TODO",
-      "homepage": "https://github.com/FPGAwars/tools-graphviz",
-      "sourceCode": "TODO",
-      "apioPackage": { "name": "graphviz", "repository": { "organization": "fpgawars", "name": "tools-graphviz" }, "releaseTag": "2026-09-15", "packageTemplate": "apio-graphviz-${PLATFORM}-${YYYYMMDD}.tgz" },
-      "archive": { "url": "https://github.com/fpgawars/tools-graphviz/releases/download/2026-09-15/apio-graphviz-darwin-arm64-20260915.tgz", "file": "apio-graphviz-darwin-arm64-20260915.tgz", "size": null, "sha256": null, "strip": 0 },
-      "dest": "apio/packages/graphviz",
-      "licenseFiles": ["licenses/graphviz-LICENSE.txt"]
+      "licenseFiles": [
+        "apio/packages/definitions/LICENSE"
+      ]
     },
     {
       "id": "apio-oss-cad-suite",
       "name": "Apio oss-cad-suite package (Yosys, openFPGALoader)",
       "version": "2026.09.15",
-      "license": "Mixed; per-tool licenses in license/ (openFPGALoader Apache-2.0, Yosys ISC, ...)",
-      "licenseEvidence": "TODO: license/LICENSE.* in the darwin-arm64 package",
+      "description": "YosysHQ OSS CAD Suite build for Apio (darwin-arm64): Yosys 0.63+173 (yosys-release-tag 2026-03-24), openFPGALoader 1.1.1 with libusb/libftdi/hidapi, Python 3.11, and the rest of the suite (incl. Qt 5 frameworks used only by other nextpnr variants and GUIs)",
+      "license": "Mixed; Yosys ISC, openFPGALoader Apache-2.0, libusb LGPL-2.1, libftdi LGPL-2.1/GPL-2.0; per-tool licenses in license/LICENSE.* (59 files), including GPL-licensed tools (e.g. Icarus Verilog, GTKWave) and Python 3.11 (PSF-2.0). Qt 5 frameworks (Frameworks/Qt*.framework, LGPL-3.0) ship without a license file",
+      "licenseEvidence": "license/LICENSE.* in the package; Python packages under lib/python3.11/site-packages/*.dist-info. No Qt license text in the package (LGPL-3.0/GPL-3.0 texts shipped in licenses/).",
       "homepage": "https://github.com/FPGAwars/tools-oss-cad-suite",
-      "sourceCode": "TODO",
-      "apioPackage": { "name": "oss-cad-suite", "repository": { "organization": "fpgawars", "name": "tools-oss-cad-suite" }, "releaseTag": "2026-09-15", "packageTemplate": "apio-oss-cad-suite-${PLATFORM}-${YYYYMMDD}.tgz" },
-      "archive": { "url": "https://github.com/fpgawars/tools-oss-cad-suite/releases/download/2026-09-15/apio-oss-cad-suite-darwin-arm64-20260915.tgz", "file": "apio-oss-cad-suite-darwin-arm64-20260915.tgz", "size": null, "sha256": null, "strip": 0 },
+      "sourceCode": "https://github.com/FPGAwars/tools-oss-cad-suite/tree/b246ed025634562f953daccef0c9d2f7995d30c3 (build recipe); upstream https://github.com/YosysHQ/oss-cad-suite-build",
+      "apioPackage": {
+        "name": "oss-cad-suite",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-oss-cad-suite"
+        },
+        "releaseTag": "2026-09-15",
+        "packageTemplate": "apio-oss-cad-suite-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-oss-cad-suite/releases/download/2026-09-15/apio-oss-cad-suite-darwin-arm64-20260915.tgz",
+        "file": "apio-oss-cad-suite-darwin-arm64-20260915.tgz",
+        "size": 506883485,
+        "sha256": "5c8729c24567dcf83f5a28dcaf02a276d0456a263b43ae5714f9bcf13a31b9d2",
+        "strip": 0
+      },
       "dest": "apio/packages/oss-cad-suite",
-      "licenseFiles": ["apio/packages/oss-cad-suite/license"]
+      "licenseFiles": [
+        "apio/packages/oss-cad-suite/license",
+        "licenses/yosys-COPYING.txt",
+        "licenses/LGPL-3.0.txt",
+        "licenses/GPL-3.0.txt"
+      ]
     },
     {
       "id": "apio-verible",
       "name": "Apio verible package",
       "version": "2026.09.20",
+      "description": "Verible SystemVerilog tools (used by 'apio format/lint'; required by Apio's package check; not used by NexysVHDL)",
       "license": "Apache-2.0 (Verible upstream)",
-      "licenseEvidence": "TODO",
+      "licenseEvidence": "No license file in the package; https://github.com/chipsalliance/verible/blob/master/LICENSE",
       "homepage": "https://github.com/FPGAwars/tools-verible",
-      "sourceCode": "TODO",
-      "apioPackage": { "name": "verible", "repository": { "organization": "fpgawars", "name": "tools-verible" }, "releaseTag": "2026-09-20", "packageTemplate": "apio-verible-${PLATFORM}-${YYYYMMDD}.tgz" },
-      "archive": { "url": "https://github.com/fpgawars/tools-verible/releases/download/2026-09-20/apio-verible-darwin-arm64-20260920.tgz", "file": "apio-verible-darwin-arm64-20260920.tgz", "size": null, "sha256": null, "strip": 0 },
+      "sourceCode": "https://github.com/chipsalliance/verible/tree/v0.0-4294-gc1d8f5e8",
+      "apioPackage": {
+        "name": "verible",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-verible"
+        },
+        "releaseTag": "2026-09-20",
+        "packageTemplate": "apio-verible-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-verible/releases/download/2026-09-20/apio-verible-darwin-arm64-20260920.tgz",
+        "file": "apio-verible-darwin-arm64-20260920.tgz",
+        "size": 7944844,
+        "sha256": "dba75c553500903d8c813295bc30c1c2cc2079462bf648d20ff73b815f111e4b",
+        "strip": 0
+      },
       "dest": "apio/packages/verible",
-      "licenseFiles": ["licenses/verible-LICENSE.txt"]
+      "licenseFiles": [
+        "licenses/verible-LICENSE.txt"
+      ]
     },
     {
       "id": "apio-openxc7",
-      "name": "Apio openXC7 package",
+      "name": "Apio openXC7 package (nextpnr-xilinx, Project X-Ray tools)",
       "version": "2026.09.25",
-      "license": "Mixed; nextpnr-xilinx ISC, Project X-Ray ISC, prjxray-db CC0-1.0",
-      "licenseEvidence": "TODO",
+      "description": "openXC7 (darwin-arm64): nextpnr-xilinx e860c9c8360d8501a1b55df94e58f3dfe7bde958, prjxray fasm2frames/xc7frames2bit, Project X-Ray database a90f27c1caefee5276f47440f4c730b50519a86f, parts index schema 7, Python 3.12.5",
+      "license": "Mixed; nextpnr-xilinx ISC, Project X-Ray tools ISC, prjxray-db CC0-1.0, Python 3.12 (PSF-2.0) and packages under lib/",
+      "licenseEvidence": "No top-level license file in the package; upstream https://github.com/openXC7/nextpnr-xilinx/blob/xilinx-upstream/COPYING , https://github.com/f4pga/prjxray/blob/master/LICENSE , https://github.com/f4pga/prjxray-db/blob/master/LICENSE ; Python license lib/python3.12/LICENSE.txt and package licenses under lib/python3.12/site-packages/*.dist-info.",
       "homepage": "https://github.com/FPGAwars/tools-openxc7",
-      "sourceCode": "TODO",
-      "apioPackage": { "name": "openxc7", "repository": { "organization": "fpgawars", "name": "tools-openxc7" }, "releaseTag": "2026-09-25", "packageTemplate": "apio-openxc7-${PLATFORM}-${YYYYMMDD}.tgz" },
-      "archive": { "url": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-25/apio-openxc7-darwin-arm64-20260925.tgz", "file": "apio-openxc7-darwin-arm64-20260925.tgz", "size": null, "sha256": null, "strip": 0 },
+      "sourceCode": "https://github.com/FPGAwars/tools-openxc7/tree/22b6a11dc3198c2c28ad6b9c482f23e7a08e2331 (build recipe); https://github.com/openXC7/nextpnr-xilinx/tree/e860c9c8360d8501a1b55df94e58f3dfe7bde958 ; https://github.com/f4pga/prjxray-db/tree/a90f27c1caefee5276f47440f4c730b50519a86f",
+      "apioPackage": {
+        "name": "openxc7",
+        "repository": {
+          "organization": "fpgawars",
+          "name": "tools-openxc7"
+        },
+        "releaseTag": "2026-09-25",
+        "packageTemplate": "apio-openxc7-${PLATFORM}-${YYYYMMDD}.tgz"
+      },
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-25/apio-openxc7-darwin-arm64-20260925.tgz",
+        "file": "apio-openxc7-darwin-arm64-20260925.tgz",
+        "size": 77149656,
+        "sha256": "24469f147f56ff02b1e18384096a1f56c8a5b56cc7c488edd32554c3e0ecf3e2",
+        "strip": 0
+      },
       "dest": "apio/packages/openxc7",
-      "licenseFiles": ["licenses/nextpnr-xilinx-COPYING.txt", "licenses/prjxray-LICENSE.txt", "licenses/prjxray-db-LICENSE.txt"]
+      "licenseFiles": [
+        "licenses/nextpnr-xilinx-COPYING.txt",
+        "licenses/prjxray-LICENSE.txt",
+        "licenses/prjxray-db-LICENSE.txt",
+        "apio/packages/openxc7/lib/python3.12/LICENSE.txt"
+      ]
     },
     {
-      "id": "openxc7-chipdb-xc7a100tcsg324",
-      "name": "openXC7 chip database for xc7a100tcsg324 (Nexys A7-100T)",
+      "id": "openxc7-chipdb-xc7a100t",
+      "name": "openXC7 chip database for xc7a100t (Nexys A7-100T, xc7a100tcsg324)",
       "version": "2026-09-25",
+      "description": "nextpnr-xilinx chipdb that Apio would otherwise download on demand into openxc7/chipdb; generated from Project X-Ray data for the same openXC7 release (chipdb-id d8eda92262f6d0c1)",
       "license": "Derived from prjxray-db (CC0-1.0) by nextpnr-xilinx (ISC) tooling",
-      "licenseEvidence": "TODO: asset/chipdb sha256 from the package's XILINX-PARTS-INDEX.json",
+      "licenseEvidence": "Release asset of FPGAwars/tools-openxc7 2026-09-25; sha256 values from the package's XILINX-PARTS-INDEX.json (asset-sha256, chipdb-sha256) for parts xc7a100tcsg324-*.",
       "homepage": "https://github.com/FPGAwars/tools-openxc7",
-      "sourceCode": "TODO",
-      "archive": { "url": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-25/apio-xilinx-chipdb-xc7a100tcsg324-20260925.bin.tgz", "file": "apio-xilinx-chipdb-xc7a100tcsg324-20260925.bin.tgz", "size": null, "sha256": null, "strip": 0 },
+      "sourceCode": "https://github.com/FPGAwars/tools-openxc7/tree/22b6a11dc3198c2c28ad6b9c482f23e7a08e2331",
+      "archive": {
+        "url": "https://github.com/fpgawars/tools-openxc7/releases/download/2026-09-25/apio-xilinx-chipdb-xc7a100t-20260925.bin.tgz",
+        "file": "apio-xilinx-chipdb-xc7a100t-20260925.bin.tgz",
+        "size": 3799612,
+        "sha256": "86b8ea41db04a2307f1f077c7c49e3f6615d7110b37f1e49a6aabfbf533c0a12",
+        "strip": 0
+      },
       "dest": "apio/packages/openxc7/chipdb",
-      "verifyFiles": {},
-      "licenseFiles": ["licenses/prjxray-db-LICENSE.txt", "licenses/nextpnr-xilinx-COPYING.txt"]
+      "verifyFiles": {
+        "chipdb-xc7a100t.bin": "b4098ce6982235f4d1cf4295708751b0a73241cb22ca57d9183b9d5f6d4c57d9"
+      },
+      "licenseFiles": [
+        "licenses/prjxray-db-LICENSE.txt",
+        "licenses/nextpnr-xilinx-COPYING.txt"
+      ]
     }
   ]
 }

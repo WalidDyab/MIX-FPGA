@@ -33,6 +33,9 @@ export function renderNotices(manifest) {
             '',
         );
     }
+    if (manifest.programmer?.kind === 'bundled') {
+        lines.push('## Board programmer', '', `${manifest.programmer.name} ${manifest.programmer.testedVersion ?? ''} is included in this bundle. ${manifest.programmer.reason ?? ''}`.trim(), '');
+    }
     if (manifest.programmer?.kind === 'system') {
         lines.push(
             '## Not included: board programmer',

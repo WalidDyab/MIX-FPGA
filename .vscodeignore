@@ -19,6 +19,10 @@
 # The toolchain version this release requires (content hash per platform)
 !toolchains/bundle/requirement.json
 
+# License of NexysVHDL itself (Apache-2.0) and its notice
+!LICENSE
+!NOTICE
+
 # Student documentation, release notes and notices
 !CHANGELOG.md
 !THIRD_PARTY_NOTICES.md

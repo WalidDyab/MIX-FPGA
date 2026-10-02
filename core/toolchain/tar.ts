@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { chmod, lstat, mkdir, open, readdir, stat, utimes } from 'node:fs/promises';
+import { chmod, lstat, lutimes, mkdir, open, readdir, readlink, stat, symlink, utimes } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -10,29 +10,52 @@ import { createGunzip, createGzip } from 'node:zlib';
  * Minimal POSIX tar (ustar + pax path records) for the NexysVHDL toolchain
  * archive. Written here instead of depending on a tar package: the writer is
  * deterministic (sorted entries, no owner names) and the reader only accepts
- * regular files and directories with safe relative paths, so a damaged or
- * hostile archive can never write outside the target folder or create links.
+ * regular files, directories and relative symbolic links that stay inside the
+ * archive (macOS framework layouts and dylib aliases need them; see
+ * safeLinkTarget). Links are created only after every file has been written and
+ * nothing is ever written through one, so a damaged or hostile archive can never
+ * write outside the target folder.
  */
 
 const BLOCK = 512;
 
-/** One file of a content inventory. */
+/** One file (or symbolic link) of a content inventory. */
 export interface InventoryEntry {
     readonly path: string;
     readonly size: number;
     readonly sha256: string;
+    /** Symbolic links only: the relative link target (size 0, no sha256). */
+    readonly link?: string;
 }
 
 /**
- * Tree hash over "<path>\0<size>\0<sha256>\n" lines in sorted path order.
- * Identical to scripts/toolchain/lib.mjs inventory(): timestamps and modes do
- * not matter, content and names do.
+ * Tree hash over "<path>\0<size>\0<sha256>\n" lines (a symbolic link:
+ * "<path>\0->\0<target>\n") in sorted path order. Identical to
+ * scripts/toolchain/lib.mjs inventory(): timestamps and modes do not matter,
+ * content, names and link targets do. A tree without links hashes exactly as
+ * before links were supported.
  */
 export function treeHash(entries: readonly InventoryEntry[]): string {
     const sorted = [...entries].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
     const h = createHash('sha256');
-    for (const e of sorted) h.update(`${e.path}\0${e.size}\0${e.sha256}\n`);
+    for (const e of sorted) h.update(e.link !== undefined ? `${e.path}\0->\0${e.link}\n` : `${e.path}\0${e.size}\0${e.sha256}\n`);
     return h.digest('hex');
+}
+
+/**
+ * A symbolic-link target that provably stays inside the tree: relative,
+ * `../` only as a prefix and never above the tree root, then plain names.
+ * Because entries are never written through links and every link obeys this
+ * rule, resolving any chain of links ends inside the tree.
+ */
+export function safeLinkTarget(linkPath: string, target: string): string | undefined {
+    if (target === '' || target.startsWith('/') || target.includes('\\') || target.includes(':') || target.includes('\0')) return undefined;
+    const parts = target.split('/');
+    let up = 0;
+    while (parts[up] === '..') up++;
+    const rest = parts.slice(up);
+    if (rest.length === 0 || rest.some((s) => s === '' || s === '.' || s === '..' || /[<>"|?*\x00-\x1f]/.test(s))) return undefined;
+    return up <= linkPath.split('/').length - 1 ? target : undefined;
 }
 
 async function sha256File(path: string): Promise<string> {
@@ -41,7 +64,7 @@ async function sha256File(path: string): Promise<string> {
     return h.digest('hex');
 }
 
-/** Inventory of every regular file under `dir` (POSIX relative paths). Symbolic links are refused. */
+/** Inventory of every regular file and symbolic link under `dir` (POSIX relative paths; links are not followed). */
 export async function inventoryDirectory(dir: string, options: { exclude?: readonly string[]; onFile?: (path: string) => void } = {}): Promise<{ entries: InventoryEntry[]; bytes: number; treeSha256: string }> {
     const entries: InventoryEntry[] = [];
     const walk = async (d: string): Promise<void> => {
@@ -53,7 +76,8 @@ export async function inventoryDirectory(dir: string, options: { exclude?: reado
             else if (e.isFile()) {
                 options.onFile?.(rel);
                 entries.push({ path: rel, size: (await stat(full)).size, sha256: await sha256File(full) });
-            } else throw new Error(`unexpected non-regular file: ${full}`);
+            } else if (e.isSymbolicLink()) entries.push({ path: rel, size: 0, sha256: '', link: await readlink(full) });
+            else throw new Error(`unexpected non-regular file: ${full}`);
         }
     };
     await walk(dir);
@@ -68,9 +92,10 @@ function octal(value: number, width: number): string {
     return `${s.padStart(width - 1, '0')}\0`;
 }
 
-function header(name: string, size: number, mode: number, mtime: number, type: string): Buffer {
+function header(name: string, size: number, mode: number, mtime: number, type: string, linkname = ''): Buffer {
     const b = Buffer.alloc(BLOCK);
     b.write(name, 0, 100, 'utf8');
+    b.write(linkname, 157, 100, 'utf8');
     b.write(octal(mode, 8), 100, 'ascii');
     b.write(octal(0, 8), 108, 'ascii');
     b.write(octal(0, 8), 116, 'ascii');
@@ -91,9 +116,9 @@ function pad(size: number): Buffer {
     return Buffer.alloc(rest === 0 ? 0 : BLOCK - rest);
 }
 
-/** A pax "path" record; its length prefix counts itself. */
-function paxPath(path: string): Buffer {
-    const body = ` path=${path}\n`;
+/** A pax record ("path" or "linkpath"); its length prefix counts itself. */
+function paxRecord(key: string, value: string): Buffer {
+    const body = ` ${key}=${value}\n`;
     let len = Buffer.byteLength(body) + 1;
     for (;;) {
         const record = `${len}${body}`;
@@ -103,22 +128,29 @@ function paxPath(path: string): Buffer {
     }
 }
 
-function* entryHeader(name: string, size: number, mode: number, mtime: number, type: string): Generator<Buffer> {
-    if (Buffer.byteLength(name) > 99 || /[^\x20-\x7e]/.test(name)) {
-        const record = paxPath(name);
+const needsPax = (s: string) => Buffer.byteLength(s) > 99 || /[^\x20-\x7e]/.test(s);
+const shortName = (s: string) => s.slice(0, 99).replace(/[^\x20-\x7e]/g, '_');
+
+function* entryHeader(name: string, size: number, mode: number, mtime: number, type: string, linkname = ''): Generator<Buffer> {
+    const longName = needsPax(name);
+    const longLink = needsPax(linkname);
+    if (longName || longLink) {
+        const record = Buffer.concat([...(longName ? [paxRecord('path', name)] : []), ...(longLink ? [paxRecord('linkpath', linkname)] : [])]);
         yield header('PaxHeader', record.length, 0o644, mtime, 'x');
         yield record;
         yield pad(record.length);
-        yield header(name.slice(0, 99).replace(/[^\x20-\x7e]/g, '_'), size, mode, mtime, type);
-    } else yield header(name, size, mode, mtime, type);
+        yield header(longName ? shortName(name) : name, size, mode, mtime, type, longLink ? shortName(linkname) : linkname);
+    } else yield header(name, size, mode, mtime, type, linkname);
 }
 
 /**
  * Writes `dir` as a gzip-compressed tar: entries sorted by path, uid/gid 0,
  * no user names, modes reduced to 755/644, the files' own modification times.
+ * Symbolic links are stored as links (never followed) and must satisfy
+ * safeLinkTarget.
  */
 export async function writeTarGz(dir: string, outFile: string, onProgress?: (bytes: number) => void): Promise<void> {
-    const items: Array<{ rel: string; full: string; directory: boolean }> = [];
+    const items: Array<{ rel: string; full: string; directory: boolean; link?: string }> = [];
     const walk = async (d: string): Promise<void> => {
         for (const e of await readdir(d, { withFileTypes: true })) {
             const full = join(d, e.name);
@@ -127,7 +159,11 @@ export async function writeTarGz(dir: string, outFile: string, onProgress?: (byt
                 items.push({ rel: `${rel}/`, full, directory: true });
                 await walk(full);
             } else if (e.isFile()) items.push({ rel, full, directory: false });
-            else throw new Error(`cannot archive non-regular file ${full}`);
+            else if (e.isSymbolicLink()) {
+                const link = await readlink(full);
+                if (!safeLinkTarget(rel, link)) throw new Error(`cannot archive symbolic link ${full} -> ${link}: the target must be relative and inside the folder`);
+                items.push({ rel, full, directory: false, link });
+            } else throw new Error(`cannot archive non-regular file ${full}`);
         }
     };
     await walk(dir);
@@ -140,6 +176,10 @@ export async function writeTarGz(dir: string, outFile: string, onProgress?: (byt
             const mtime = Math.floor(st.mtimeMs / 1000);
             if (item.directory) {
                 yield* entryHeader(item.rel, 0, 0o755, mtime, '5');
+                continue;
+            }
+            if (item.link !== undefined) {
+                yield* entryHeader(item.rel, 0, 0o755, mtime, '2', item.link);
                 continue;
             }
             yield* entryHeader(item.rel, st.size, st.mode & 0o111 ? 0o755 : 0o644, mtime, '0');
@@ -209,9 +249,10 @@ export interface ExtractProgress {
 
 /**
  * Extracts a .tar.gz into `dest` (which must exist and be empty), returning
- * the content inventory computed while writing. Only regular files and
- * directories are accepted; any other entry type, unsafe path, duplicate or
- * malformed header aborts the extraction.
+ * the content inventory computed while writing. Only regular files,
+ * directories and safe relative symbolic links (safeLinkTarget) are accepted;
+ * any other entry type, unsafe path or link target, entry below a link,
+ * duplicate or malformed header aborts the extraction. Links are created last.
  */
 export async function extractTarGz(
     archive: string,
@@ -245,6 +286,13 @@ export async function extractTarGz(
         return out;
     };
 
+    const links: Array<{ rel: string; target: string; mtime: number }> = [];
+    const linkPaths = new Set<string>();
+    const throughLink = (rel: string) => {
+        const parts = rel.split('/');
+        for (let i = 1; i < parts.length; i++) if (linkPaths.has(parts.slice(0, i).join('/'))) return true;
+        return false;
+    };
     let pax: Record<string, string> = {};
     for (;;) {
         if (!(await fill(BLOCK))) throw new ArchiveError('archive is truncated');
@@ -256,6 +304,7 @@ export async function extractTarGz(
         const padded = Math.ceil(size / BLOCK) * BLOCK;
         const prefix = field(h, 345, 155);
         const name = pax['path'] ?? (prefix ? `${prefix}/${field(h, 0, 100)}` : field(h, 0, 100));
+        const linkname = pax['linkpath'] ?? field(h, 157, 100);
 
         if (type === 'x' || type === 'g') {
             if (size > 1 << 20) throw new ArchiveError('oversized pax header');
@@ -269,6 +318,7 @@ export async function extractTarGz(
         if (!rel) throw new ArchiveError(`unsafe path in archive: ${JSON.stringify(name)}`);
         if (seen.has(rel)) throw new ArchiveError(`duplicate entry in archive: ${rel}`);
         seen.add(rel);
+        if (throughLink(rel)) throw new ArchiveError(`entry below a symbolic link in archive: ${rel}`);
         const target = join(dest, ...rel.split('/'));
         const mtime = parseOctal(h, 136, 12);
 
@@ -276,7 +326,15 @@ export async function extractTarGz(
             await mkdir(target, { recursive: true });
             continue;
         }
-        if (type !== '0' && type !== '\0' && type !== '7') throw new ArchiveError(`unsupported entry type "${type}" for ${rel} (links are not allowed)`);
+        if (type === '2') {
+            if (size !== 0) throw new ArchiveError(`malformed symbolic link entry: ${rel}`);
+            if (!safeLinkTarget(rel, linkname)) throw new ArchiveError(`unsafe symbolic link in archive: ${rel} -> ${JSON.stringify(linkname)}`);
+            links.push({ rel, target: linkname, mtime });
+            linkPaths.add(rel);
+            entries.push({ path: rel, size: 0, sha256: '', link: linkname });
+            continue;
+        }
+        if (type !== '0' && type !== '\0' && type !== '7') throw new ArchiveError(`unsupported entry type "${type}" for ${rel} (hard links and special files are not allowed)`);
 
         await mkdir(join(target, '..'), { recursive: true });
         const fh = await open(target, 'wx');
@@ -302,5 +360,17 @@ export async function extractTarGz(
         options.onProgress?.({ compressedBytes: compressed, files: entries.length });
     }
     input.destroy();
+    // A link may not take the place of a folder that already received entries.
+    for (const rel of seen) if (throughLink(rel)) throw new ArchiveError(`entry below a symbolic link in archive: ${rel}`);
+    for (const l of links) {
+        const path = join(dest, ...l.rel.split('/'));
+        await mkdir(join(path, '..'), { recursive: true });
+        try {
+            await symlink(l.target, path);
+        } catch (err) {
+            throw new ArchiveError(`cannot create symbolic link ${l.rel}: ${(err as Error).message}`);
+        }
+        await lutimes(path, l.mtime, l.mtime).catch(() => undefined);
+    }
     return { entries, treeSha256: treeHash(entries) };
 }

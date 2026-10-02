@@ -180,13 +180,24 @@ async function main() {
     };
     await writeFile(join(staging, MANIFEST_NAME), `${JSON.stringify(manifest, null, 2)}\n`);
     await writeFile(join(staging, NOTICES_NAME), renderNotices(manifest));
-    // Full license texts for components whose archives ship none.
+    // Full license texts for components whose archives ship none: the shared
+    // texts, plus licenses-<target>/ for texts only this platform's archives need
+    // (kept apart so another platform's released toolchain content never changes).
     const licenseSrc = join(RECIPE_DIR, 'licenses');
     if (existsSync(licenseSrc)) await cp(licenseSrc, join(staging, 'licenses'), { recursive: true });
+    const targetLicenseSrc = join(RECIPE_DIR, `licenses-${target}`);
+    if (existsSync(targetLicenseSrc)) {
+        for (const f of await listFiles(targetLicenseSrc)) {
+            const to = join(staging, 'licenses', ...f.split('/'));
+            if (existsSync(to)) fail(`licenses-${target}/${f} would replace a shared license text`);
+            await mkdir(join(to, '..'), { recursive: true });
+            await cp(join(targetLicenseSrc, ...f.split('/')), to);
+        }
+    }
 
     // Files NexysVHDL generates get a fixed timestamp, so the packed archive is reproducible.
     const generated = [MANIFEST_NAME, NOTICES_NAME, `${recipe.apio.packagesDir}/installed_packages.json`, `${recipe.apio.remoteConfigDir}/${remoteConfigFile}`, ...(recipe.shims ?? []).map((s) => s.file)];
-    if (existsSync(licenseSrc)) generated.push(...(await listFiles(join(staging, 'licenses'))).map((f) => `licenses/${f}`));
+    if (existsSync(join(staging, 'licenses'))) generated.push(...(await listFiles(join(staging, 'licenses'))).map((f) => `licenses/${f}`));
     for (const rel of generated) await utimes(join(staging, ...rel.split('/')), GENERATED_MTIME, GENERATED_MTIME);
 
     await rm(out, { recursive: true, force: true });

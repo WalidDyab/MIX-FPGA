@@ -1,6 +1,6 @@
 # ADR-007: Separately versioned, bundled-only classroom toolchain
 
-Status: accepted for review (Phase 4B, Windows)
+Status: accepted for review (Phase 4B, Windows); macOS addendum for review
 
 ## Context
 
@@ -55,3 +55,14 @@ Things found while staging it:
   - The toolchain files, their immutability and the per-user store are unchanged.
   - The remaining limit is non-ASCII VHDL *file names*, which get a clear Check error.
 - Uninstalling the extension leaves the toolchain in the data root (documented). VS Code has no reliable hook to tell an uninstall from an update.
+
+## Addendum: macOS (Phase 4B Mac step, 2026-10-02)
+
+The decision applies unchanged to darwin-arm64 (store `~/Library/NexysVHDL`, same recipe/assembler/store/loader). Three points were needed for macOS; see `docs/phase4b-classroom-bundle.md` §17.
+
+1. **Symbolic links in the toolchain archive.** The official macOS archives contain relative links (PyInstaller's `Python` → `Python.framework/Versions/3.14/Python`, Qt framework `Versions/Current`, dylib and Python aliases). Copying them as files would make dyld load two copies of a library. The archive format therefore accepts a link only when its target provably stays inside the tree (relative, `../` only as a prefix and never above the root, then plain names); nothing is written through a link and links are created last. The content hash covers link targets; a tree without links hashes exactly as before, so the released Windows toolchain is unaffected.
+2. **No system linker.** GHDL's ahead-of-time LLVM build links each elaborated design with the system `cc`/`ld`, which only exist on a Mac with Xcode Command Line Tools and cannot be redistributed. The macOS toolchain uses the official LLVM-JIT build of the same GHDL 6.0.0 release, which elaborates in memory; simulation output, waveforms and synthesized Verilog were verified identical and the full installed workflow passed. (Approved by the owner, 2026-10-02.)
+3. **Home folders with spaces or non-English characters.** As on Windows, the real store stays where it is and the tools get an ASCII alias only when needed: a symbolic link in the user's private `$TMPDIR/NexysVHDL-links` (0700, ownership and target verified before reuse, recreated if purged), registered through the same `pathAlias` hook.
+4. **Platform-specific license texts** live in `toolchains/bundle/licenses-<target>/`, merged into the toolchain's `licenses/` for that target only, so adding a text for one platform never changes another platform's released content.
+
+No Python shim is needed on macOS (openXC7's wrappers run the package's own Python), and the programmer (openFPGALoader with its libusb/libftdi) is part of the toolchain; macOS needs no FPGA USB driver.

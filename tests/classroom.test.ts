@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { join, win32 } from 'node:path';
 import { describe, it } from 'node:test';
-import { type HostInfo, installToolchainArchive, type ToolchainRequirement, type ToolInvocation } from '../core';
+import { apioPathProblem, type HostInfo, installToolchainArchive, type ToolchainRequirement, type ToolInvocation } from '../core';
 import { summarizeEnvironment, boardRow } from '../extension/services/environment-summary';
 import type { WindowsHostEnvironment } from '../platform/windows/host-environment';
 import { createWindowsPlatformServices } from '../platform/windows';
@@ -28,10 +28,10 @@ function toolRunner(): FakeRunner {
 }
 
 /** A data root with toolchain 1.0 for `host` installed through the real installer. */
-async function installedDataRoot(t: Parameters<typeof tempDir>[0], target = 'win32-x64', programmer = false): Promise<{ dataRoot: string; requirement: ToolchainRequirement }> {
+async function installedDataRoot(t: Parameters<typeof tempDir>[0], target = 'win32-x64', programmer = false, options: Pick<Parameters<typeof writeFakeBundle>[1] & object, 'manifest'> = {}): Promise<{ dataRoot: string; requirement: ToolchainRequirement }> {
     const dir = await tempDir(t, 'nexys-classroom-');
     const bundle = join(dir, 'bundle');
-    await writeFakeBundle(bundle, { target, programmer });
+    await writeFakeBundle(bundle, { target, programmer, ...options });
     const { archive, requirement } = await fakeArchive(dir, bundle, { target });
     const dataRoot = join(dir, 'data');
     const r = await installToolchainArchive({ archive, dataRoot, target, requirement });
@@ -118,6 +118,45 @@ describe('classroom mode: the bundled toolchain only', () => {
         assert.equal(report.toolchain.tools.find((x) => x.tool === 'programmer')?.detected?.version, '1.1.1');
         assert.ok(runner.calls.every((c) => c.executable.startsWith(tc.root)), 'no Homebrew or PATH tool was run');
     });
+
+    it('macOS: a hostile shell environment never reaches a bundled tool (OS-only PATH, no Python/Apio settings, private Apio state)', async (t) => {
+        trapProcesses(t);
+        // The real darwin-arm64 manifest: no shims, only PYTHONDONTWRITEBYTECODE (toolchains/bundle/darwin-arm64.json).
+        const { dataRoot, requirement } = await installedDataRoot(t, 'darwin-arm64', true, { manifest: (m) => ({ ...m, environment: { pathPrepend: [], set: { PYTHONDONTWRITEBYTECODE: '1' } } }) });
+        const runner = toolRunner();
+        const hostile = {
+            HOME: '/Users/student',
+            // VS Code on macOS imports the login shell's environment: Homebrew, /usr/local, a global Apio, a developer Python.
+            PATH: '/opt/homebrew/bin:/usr/local/bin:/Applications/Apio:/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/bin:/bin',
+            APIO_HOME: '/Users/student/.apio',
+            APIO_PACKAGES: '/Users/student/.apio/packages',
+            APIO_REMOTE_CONFIG_URL: 'https://example.invalid/apio-{major}.{minor}.x.jsonc',
+            PYTHONHOME: '/opt/homebrew/opt/python@3.14',
+            PYTHONPATH: '/Users/student/.apio/packages/oss-cad-suite/lib/python3.11',
+            NEXYSVHDL_GHDL: '/opt/homebrew/bin/ghdl',
+            NEXYSVHDL_APIO: '/Applications/Apio/apio',
+        };
+        const ctx = await createContext({ host: MAC, env: hostile, runner, classroom: { requirement, dataRoot } });
+        const tc = ctx.classroom!.toolchain!;
+        assert.ok(tc, JSON.stringify(ctx.classroom!.diagnostics));
+        await ctx.runner.run({ executable: tc.executables.apio!, args: ['--version'] });
+        const env = runner.calls.at(-1)!.env!;
+        assert.equal(env['PATH'], '/usr/bin:/bin:/usr/sbin:/sbin');
+        for (const k of ['PYTHONHOME', 'PYTHONPATH']) assert.equal(env[k], undefined, k);
+        assert.equal(env['PYTHONDONTWRITEBYTECODE'], '1');
+        assert.equal(env['APIO_HOME'], join(dataRoot, 'state', 'darwin-arm64-1.0', 'apio-home'));
+        assert.equal(env['APIO_PACKAGES'], join(tc.root, 'apio', 'packages'));
+        assert.match(env['APIO_REMOTE_CONFIG_URL']!, /^file:\/\//);
+        assert.ok(!Object.values(env).some((v) => typeof v === 'string' && /\.apio|homebrew|\/usr\/local|Applications\/Apio/.test(v)), JSON.stringify(env));
+        assert.equal((await toolLocatorFor(ctx).locate('ghdl'))?.path, tc.executables.ghdl, 'NEXYSVHDL_GHDL is ignored');
+        assert.equal((await toolLocatorFor(ctx).locate('apio'))?.path, tc.executables.apio, 'NEXYSVHDL_APIO is ignored');
+    });
+
+    it('macOS: the per-user store ~/Library/NexysVHDL satisfies Apio\'s path rule, "Application Support" would not', () => {
+        assert.equal(apioPathProblem('/Users/student/Library/NexysVHDL/toolchains/darwin-arm64/1.0/apio/packages'), undefined);
+        assert.equal(apioPathProblem('/Users/student/Library/NexysVHDL/state/darwin-arm64-1.0/apio-home'), undefined);
+        assert.equal(apioPathProblem('/Users/student/Library/Application Support/NexysVHDL'), 'a space');
+    });
 });
 
 describe('classroom mode: Windows Digilent prerequisite', () => {
@@ -190,6 +229,29 @@ describe('student setup summary', () => {
     it('a bundled programmer (macOS) is not a system prerequisite', () => {
         const s = base(true, true);
         assert.equal(s.setup.find((r) => r.id === 'programmer')?.status, 'Ready (bundled)');
+        assert.equal(s.programmerGuide, undefined);
+    });
+
+    it('a bundled programmer (macOS) waits for the toolchain instead of showing a problem', () => {
+        const s = summarizeEnvironment({
+            adapter: { id: 'macos', displayName: 'macOS', status: '' },
+            toolchain: { overall: 'missing', tools: [] },
+            diagnostics: [],
+            providers: {},
+            programmer: { displayName: 'openFPGALoader', availability: { available: false, detail: 'not found' } },
+            programmerSetup: { name: 'Board programmer (openFPGALoader)', bundled: true },
+            classroom: {
+                requirement: { schemaVersion: 1, bundleVersion: '1.0', targets: { 'darwin-arm64': { status: 'validated', treeSha256: 'a'.repeat(64) } } },
+                target: 'darwin-arm64',
+                dataRoot: '/Users/student/Library/NexysVHDL',
+                diagnostics: [],
+                installed: { status: 'missing', paths: { dataRoot: '/Users/student/Library/NexysVHDL', versionDir: '/Users/student/Library/NexysVHDL/toolchains/darwin-arm64/1.0', stagingRoot: '', stateDir: '' }, diagnostics: [] },
+            },
+        } as never);
+        assert.deepEqual(s.setup.map((r) => `${r.label}: ${r.status}`), ['Bundled FPGA Toolchain: Not Installed', 'Board programmer (openFPGALoader): Not Installed']);
+        assert.equal(s.setup[1]!.state, 'setup-required');
+        assert.equal(s.setup[1]!.detail, 'installed with the FPGA toolchain');
+        assert.equal(s.problems.filter((p) => /programmer/i.test(p)).length, 0, 'the toolchain problem covers the bundled programmer');
         assert.equal(s.programmerGuide, undefined);
     });
 

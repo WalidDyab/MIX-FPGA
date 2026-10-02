@@ -2,7 +2,7 @@
 // never shipped to students). Node built-ins only.
 import { createHash } from 'node:crypto';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
-import { readdir, stat } from 'node:fs/promises';
+import { lstat, readdir, readlink, stat } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -71,6 +71,11 @@ export function validateRecipe(r, target) {
         if (!/^[0-9a-f]{64}$/.test(a.sha256 ?? '')) p.push(`${c.id}: archive.sha256 missing or malformed`);
         if (!Number.isInteger(a.size) || a.size <= 0) p.push(`${c.id}: archive.size missing`);
         if (!a.file || a.file.includes('/') || a.file.includes('\\')) p.push(`${c.id}: archive.file must be a plain file name`);
+        for (const f of c.licenseFiles ?? []) {
+            if (!f.startsWith('licenses/')) continue;
+            const name = f.slice('licenses/'.length);
+            if (!existsSync(join(RECIPE_DIR, 'licenses', name)) && !existsSync(join(RECIPE_DIR, `licenses-${target}`, name))) p.push(`${c.id}: license text ${f} not found in toolchains/bundle/licenses or licenses-${target}`);
+        }
     }
     if (!(r.components ?? []).length) p.push('no components');
     return p;
@@ -88,14 +93,17 @@ export async function sha256File(path) {
     return hash.digest('hex');
 }
 
-/** Every regular file under `dir`, as POSIX paths relative to `dir`, sorted. */
+/**
+ * Every regular file and symbolic link under `dir` (links are not followed),
+ * as POSIX paths relative to `dir`, sorted.
+ */
 export async function listFiles(dir) {
     const out = [];
     const walk = async (d) => {
         for (const e of await readdir(d, { withFileTypes: true })) {
             const full = join(d, e.name);
             if (e.isDirectory()) await walk(full);
-            else if (e.isFile()) out.push(relative(dir, full).split(sep).join('/'));
+            else if (e.isFile() || e.isSymbolicLink()) out.push(relative(dir, full).split(sep).join('/'));
             else throw new Error(`unexpected non-regular file in toolchain: ${full}`);
         }
     };
@@ -103,10 +111,16 @@ export async function listFiles(dir) {
     return out.sort();
 }
 
+/** The target of a symbolic link, or undefined for a regular file. */
+export async function linkTarget(path) {
+    return (await lstat(path)).isSymbolicLink() ? readlink(path) : undefined;
+}
+
 /**
  * Content inventory of a directory: file count, bytes, and a tree hash over
- * "<path>\0<size>\0<sha256>\n" lines (independent of timestamps, so two
- * stagings of the same archives hash identically).
+ * "<path>\0<size>\0<sha256>\n" lines, or "<path>\0->\0<target>\n" for a
+ * symbolic link (independent of timestamps, so two stagings of the same
+ * archives hash identically). Same definition as core/toolchain/tar.ts treeHash().
  */
 export async function inventory(dir, { exclude = [] } = {}) {
     const files = (await listFiles(dir)).filter((f) => !exclude.some((x) => f === x || f.startsWith(`${x}/`)));
@@ -115,6 +129,12 @@ export async function inventory(dir, { exclude = [] } = {}) {
     const hashes = {};
     for (const f of files) {
         const full = join(dir, ...f.split('/'));
+        const link = await linkTarget(full);
+        if (link !== undefined) {
+            hashes[f] = `-> ${link}`;
+            tree.update(`${f}\0->\0${link}\n`);
+            continue;
+        }
         const size = (await stat(full)).size;
         const h = await sha256File(full);
         hashes[f] = h;

@@ -1,17 +1,22 @@
-# Phase 4B — Self-contained classroom distribution (Windows)
+# Phase 4B — Self-contained classroom distribution (Windows and macOS)
 
 Date: 2026-10-02
-Branch: `phase4/classroom-bundle`, from `main` at `2d4d446` (Phase 4A). Not committed; for review.
-Host: Windows 11 Home 10.0.26200 x64, Node 24.13.0, VS Code 1.140.0.
+Windows: branch `phase4/classroom-bundle`, from `main` at `2d4d446` (Phase 4A), merged as `b1ecb1d`. Host: Windows 11 Home 10.0.26200 x64, Node 24.13.0, VS Code 1.140.0.
+macOS: branch `phase4/classroom-bundle-macos`, from `main` at `b1ecb1d`. Not committed; for review. Host: macOS 27.0 (26A428), Apple M4 (arm64), Node 24.21.0, VS Code 1.140.0. See §17.
 
 **Status.** The three readiness areas are independent; one does not imply another.
 
 | Readiness area | Windows status | Meaning |
 |---|---|---|
 | **Software/runtime** | **READY** | Packages are built: VSIX 0.5.0 plus the separately versioned Toolchain 1.0.<br>Installed-package validation passed on standard paths **and** on hostile paths (spaces, accented Latin, CJK in the profile, toolchain store and project folders), §10 and §16.<br>Tools come only from the bundle, and external tools stay untouched (process trace + snapshots).<br>A UI-only update reuses Toolchain 1.0. Results show data-sheet capacities. |
-| **Redistribution/license** | **NOT READY** | Open items, §7:<br>- the GPL/LGPL corresponding-source mechanism;<br>- the Graphviz EPL version;<br>- provenance of `serial_install.exe` in the drivers package;<br>- NexysVHDL's own license.<br>Do not distribute outside a controlled pilot until these are resolved. |
+| **Redistribution/license** | **NOT READY** | Open items, §7:<br>- the GPL/LGPL corresponding-source mechanism;<br>- the Graphviz EPL version;<br>- provenance of `serial_install.exe` in the drivers package.<br>(NexysVHDL's own license: **resolved**, Apache-2.0, §17.15.)<br>Do not distribute outside a controlled pilot until these are resolved. |
 | **Physical Program** | **DEFERRED** | No board was connected. Detection through the installed package works; the djtgcfg backend was physically validated in Phases 3B/3C. |
-| macOS | pending | Mac step (draft recipe prepared, §13). |
+
+| Readiness area | macOS (darwin-arm64) status | Meaning |
+|---|---|---|
+| **Software/runtime** | **READY** | VSIX 0.5.0 plus Toolchain 1.0 for darwin-arm64, built from official archives (deterministic content hash `f0402218…`).<br>Installed-package validation passed with standard and hostile (space, accented Latin, CJK) profile/project paths **and a hostile HOME** (§17.14), a hostile environment and decoy tools; every FPGA executable came from `~/Library/NexysVHDL/toolchains/darwin-arm64/1.0/`; `~/.apio` and the other installations stayed unchanged; UI-only update reused Toolchain 1.0. Needs **no** Homebrew, Python, Xcode Command Line Tools or USB driver (§17). |
+| **Redistribution/license** | **NOT READY** | NexysVHDL's own license is resolved (Apache-2.0, §17.15). Still open: the GPL/LGPL corresponding-source mechanism (shared) and the Mac-specific notices/obligations (§17.10). |
+| **Physical Program** | **DEFERRED** | No board was connected. Detection through the packaged extension and the bundled openFPGALoader works; the same openFPGALoader 1.1.1 build was physically validated on this Mac in Phase 3B. |
 
 ## 1. Goals and non-goals
 
@@ -170,7 +175,7 @@ npm run package:mac                                             # Mac step
 
 `THIRD_PARTY_NOTICES.md` exists at the repository/VSIX root (summary) and in the toolchain (per component, with license text locations, source links and archive hashes). NexysVHDL's own extension contains no third-party code.
 
-**Open obligation (blocking redistribution, not classroom testing).** The toolchain redistributes GPL/LGPL binaries. For GPLv2 §3, linking to upstream source is generally not enough on its own: the corresponding source must accompany the binaries or be offered through a written offer. NexysVHDL's product license is still `UNLICENSED` in `package.json` (owner decision).
+**Open obligation (blocking redistribution, not classroom testing).** The toolchain redistributes GPL/LGPL binaries. For GPLv2 §3, linking to upstream source is generally not enough on its own: the corresponding source must accompany the binaries or be offered through a written offer. NexysVHDL's own license is now **Apache-2.0** (`LICENSE`, `NOTICE`, `package.json`; §17.15); it covers NexysVHDL's own code only, never the redistributed toolchain components.
 
 **Recommendation:** publish a "corresponding source" archive per toolchain version (the upstream source tarballs at the exact tags/commits listed in the manifest) next to each classroom download, and have the license position reviewed. Until then, **do not call the artifact ready for redistribution.**
 
@@ -327,7 +332,7 @@ Largest parts of the installed toolchain:
 
 Unit tests run no external process and need no hardware (process trap, fake runners, fake bundles).
 
-## 13. macOS: what Mac Claude must do next
+## 13. macOS: the plan before the Mac step (done, see §17)
 
 Same branch, same code. On an Apple-silicon Mac:
 
@@ -351,7 +356,7 @@ Same branch, same code. On an Apple-silicon Mac:
 
 ## 14. Known limitations and concerns
 
-1. **Redistribution not cleared** (§7): GPL/LGPL corresponding-source step, graphviz license version, drivers `serial_install.exe` provenance, NexysVHDL's own license.
+1. **Redistribution not cleared** (§7): GPL/LGPL corresponding-source step, graphviz license version, drivers `serial_install.exe` provenance. (NexysVHDL's own license: resolved, Apache-2.0.)
 2. ~~User folders with spaces or non-ASCII characters~~: **fixed** (§16.1). The remaining limits:
    - a VHDL *file name* GHDL cannot record (e.g. CJK) gets a clear Check error;
    - on a machine that forbids creating `%ProgramData%\NexysVHDL\links`, an affected account gets `BUNDLE_PATH_ALIAS_FAILED` (Check and Simulate still work).
@@ -452,3 +457,189 @@ The VSIX was rebuilt: 232.4 KiB, 126 files, all `package:win` gates passed. Tool
 **External state** (fresh snapshot before both runs, compared after): `~/.apio` (21,424 files), the Digilent folders, the Adept DLLs and the developer GHDL are **unchanged in content and timestamps**. The driver store is unchanged, and the real `%LOCALAPPDATA%\NexysVHDL` was never created.
 
 The hostile-run junctions remain in `C:\ProgramData\NexysVHDL\links\` (two links into `%TEMP%\nxv hostile`) for review. Remove them with a non-recursive `rmdir` of each junction, which does not touch the targets.
+
+## 17. macOS (darwin-arm64) implementation and validation (2026-10-02)
+
+Branch `phase4/classroom-bundle-macos` from `main` at `b1ecb1d`. Host: macOS 27.0 (26A428), Apple M4, arm64; Node 24.21.0; VS Code 1.140.0 (`07f806f9`). The Windows/shared architecture (ADR-007) is reused unchanged: the same recipe format, assembler, packer, store, loader, classroom mode, setup model and packaging script. No Homebrew is installed on this Mac.
+
+### 17.1 Shared changes (platform-neutral, Windows behaviour unchanged)
+
+| Change | Why (genuine macOS requirement) | Windows impact |
+|---|---|---|
+| `tests/hostile-paths.test.ts`: the RTL source-link test builds its paths with the host's `resolve`/`join` instead of `win32.join` | The test hard-coded a Windows path and passed it through the host `resolve()`. On macOS that yields one folder name `C:\José…`, so the test failed (405/406 baseline). `ghdlSourceMap` itself was correct (verified with native POSIX paths). | none (test-only) |
+| `core/toolchain/tar.ts` + `scripts/toolchain/lib.mjs`/`compare.mjs`: relative **symbolic links** are archived, extracted and hashed | The official macOS archives contain 189 links: PyInstaller's `_internal/Python → Python.framework/Versions/3.14/Python` in Apio, and Qt framework `Versions/Current` links plus dylib/Python aliases in oss-cad-suite. Copying them as files would make dyld load two copies of the same library. Links are accepted only when `safeLinkTarget()` proves they stay inside the tree (relative, `../` only as a prefix and never above the root, then plain names); nothing is ever written through a link; links are created after all files; hard links and special files are still refused. Tree-hash line for a link: `path\0->\0target\n`. | none: a tree without links hashes exactly as before (test pins the legacy formula); the released Windows content hash `43b3fb80…` is unchanged (test) |
+| `scripts/toolchain/assemble.mjs`: `toolchains/bundle/licenses-<target>/` is merged into the toolchain's `licenses/` | macOS needs license texts Windows does not ship (LLVM, Python 3.14). Adding them to the shared folder would change the released Windows toolchain content on reassembly. A name collision with a shared text is refused. `validateRecipe` checks every `licenses/…` reference exists. | none (no `licenses-win32-x64/`) |
+| `scripts/toolchain/notices.mjs`: a "Board programmer" section for a bundled programmer | macOS bundles openFPGALoader | none (Windows programmer is `system`) |
+| `extension/services/environment-summary.ts`: a **bundled** programmer whose toolchain is not installed yet shows *Not Installed — installed with the FPGA toolchain* (setup-required) instead of *Problem*, and adds no separate programmer problem | Installed-package run: before installation the Mac setup row said "Board programmer (openFPGALoader) — Problem" | none (Windows programmer is not bundled) |
+| `tests/integration/run-installed.ts`: macOS branch (app bundle Electron/CLI, POSIX OS-only PATH, Mac hostile settings, `NEXYS_PATH_PREPEND`, `NEXYS_HOSTILE_GHDL`); inherited `VSCODE_*`/`ELECTRON_*` variables removed for both platforms. `installed-suite.ts`: module origin compared by real path (`/tmp` is `/private/tmp`); process step records the hostile settings | macOS validation | harness only |
+| `platform/macos/path-alias.ts` + registry entry in `platform/index.ts` (`pathAlias` for darwin-arm64, the same hook as Windows) | A home folder whose path has a space or non-ASCII character makes `~/Library/NexysVHDL` an Apio-refused path (§17.14) | none (Windows registration unchanged) |
+| `LICENSE`, `NOTICE`, `package.json` `license`, `.vscodeignore`, `scripts/package.mjs` (license gate: no `--skip-license`, LICENSE/NOTICE required, shipped `LICENSE.txt` must equal `LICENSE`; LICENSE/NOTICE in the distribution folder) | NexysVHDL's own license decision (§17.15) | the Windows VSIX/zip will also contain LICENSE and NOTICE; the Windows toolchain is unaffected |
+| `scripts/validation/watch-processes-macos.c` | macOS counterpart of `watch-processes.ps1`: libproc poller (2 ms), every (pid, executable) pair incl. bash→exec transitions and full argv, optional `all` mode for process-tree attribution | none |
+
+### 17.2 Toolchain 1.0 for macOS: exact components (verified)
+
+All archives downloaded from the official GitHub releases and checked against GitHub's published SHA-256 digests; each matches the recipe.
+
+| Component | Version | Official archive | SHA-256 | Evidence |
+|---|---|---|---|---|
+| GHDL | **6.0.0** (`6.0.0.r0.ge589c698c`), **LLVM JIT** backend, macOS 15 aarch64 | `ghdl/ghdl` v6.0.0 `ghdl-llvm-jit-6.0.0-macos15-aarch64.tar.gz` (37,155,806 B) | `c21312d5…31c7769` | §17.3 |
+| Apio | **1.7.0** (`pyinst-darwin-arm64-2026-09-27`, commit `ccede3ec`), Python 3.14.7 inside | `fpgawars/apio` 2026-09-27 `apio-cli-darwin-arm64-20260927-bundle.tgz` (18,884,126 B) | `96352962…fc77e15f` | 124/124 entries identical to the validated `/Applications/Apio` (installed from the same release's `.pkg`); the bundle adds `README.txt` |
+| Apio definitions | 2026.09.17 | `apio-definitions-20260917.tgz` | `34a2047d…be150` | 991/991 identical to `~/.apio/packages` |
+| oss-cad-suite (Yosys **0.63+173**, openFPGALoader **1.1.1**) | 2026.09.15 | `apio-oss-cad-suite-darwin-arm64-20260915.tgz` (506,883,485 B) | `5c8729c2…a31b9d2` | 24,987/24,987 identical |
+| verible | 2026.09.20 | `apio-verible-darwin-arm64-20260920.tgz` | `dba75c55…f111e4b` | 12/12 identical |
+| openXC7 (nextpnr-xilinx **e860c9c8**, prjxray-db `a90f27c1`, **parts-index schema 7**, Python 3.12.5) | **2026.09.25** | `apio-openxc7-darwin-arm64-20260925.tgz` (77,149,656 B) | `24469f14…e0ecf3e2` | 5,447 identical; the validated install additionally had 17 runtime `__pycache__` files (`cpython-312`, i.e. written by openXC7's own Python) |
+| chipdb xc7a100t | 2026-09-25 | `apio-xilinx-chipdb-xc7a100t-20260925.bin.tgz` (3,799,612 B) | `86b8ea41…3c0a12` | asset and `chipdb-xc7a100t.bin` (`b4098ce6…`) SHA-256 equal to `XILINX-PARTS-INDEX.json` |
+
+- **Apio packages on macOS:** Apio 1.7.0's own `packages.jsonc` restricts `drivers` and `graphviz` to `windows-amd64`, and the validated `~/.apio` has only definitions, oss-cad-suite, verible and openxc7. The Windows-derived draft listed six; the Mac recipe has these four, and the generated pinned remote config lists exactly them. Apio 1.7.0 accepts it (`apio packages list`: all OK, no download).
+- **openXC7 pin:** 2026-09-25 / schema 7 only; a test asserts that the 2026-09-27 (schema 8) package is never referenced. Because every package is pinned in a `file://` config inside the bundle and the loader refuses any mismatch, the Phase 3 incident (an unpinned Apio replacing openXC7) cannot recur.
+- **Draft corrections:** openXC7 version string `2026-09-25` (the draft's `2026.09.25` would never equal the release tag read from `BUILD-INFO.json`, so openXC7 would have shown as *incompatible*); chipdb asset name `…xc7a100t-20260925` (not `…xc7a100tcsg324…`); drivers/graphviz removed; `installedAt` from the validated install.
+- **Reproducibility:** two independent assemblies gave the same content hash `f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7` (31,699 entries: 31,510 files + 189 links, 2,758,218,326 B).
+
+### 17.3 Finding: GHDL-LLVM needs Xcode Command Line Tools — Toolchain 1.0 uses the official LLVM-JIT build of the same release
+
+The ahead-of-time **LLVM** build (`ghdl-llvm-6.0.0-macos15-aarch64`, validated in Phases 1–4A on this developer Mac) links every elaborated design into a native executable with `/usr/bin/cc` (the process trace showed `cc -o top_tb e~top_tb.o … libgrt.a` running Command Line Tools `clang`/`ld`). A student Mac has no Command Line Tools (`/usr/bin/cc` is only Apple's install-prompt stub), and Apple's linker/SDK cannot be redistributed.
+
+| Step (same project) | LLVM build without Command Line Tools (`DEVELOPER_DIR` invalid) | LLVM-JIT build without Command Line Tools |
+|---|---|---|
+| analyze `-a` | OK | OK |
+| elaborate `-e` (Check, Simulate) | **fails** (`xcrun: error`, `ghdl:error: compilation error`) | OK |
+| run `-r` (Simulate) | — | OK |
+| synthesize `--synth` (RTL, Build) | OK | OK |
+
+Equivalence (JIT without CLT vs the validated LLVM build): simulation output identical (`ALL TESTS PASSED (33 checks)`, stop at 660 ns); GHW identical; VCD identical apart from its `$date` line; synthesized Verilog **identical** (`0cea0f62…`), hence the same netlist for Yosys/nextpnr. The JIT `bin/ghdl` links only `libSystem`, `libz` and `libc++` (LLVM 22.1.0 and the GNAT runtime are static), so it is fully relocatable. **Decision (approved by the owner, 2026-10-02):** Toolchain 1.0 for macOS uses `ghdl-llvm-jit-6.0.0-macos15-aarch64` — the **same official GHDL 6.0.0 release** (`ghdl/ghdl` v6.0.0, `6.0.0.r0.ge589c698c`), its LLVM-JIT backend variant, not an upgrade — because it is preferable to requiring students to install Xcode Command Line Tools. The equivalence checks above and the full installed-package workflow (§17.7, §17.14) passed with it. The installed-package trace confirms no `cc`, `clang`, `ld`, `xcrun` or `ghdl1-llvm` process runs anymore.
+
+### 17.4 Python (the Windows `C:\Python314` question, on macOS)
+
+- Apio is a PyInstaller executable with its own Python 3.14.7 (`_internal/Python.framework`); it ran with PATH `/usr/sbin:/sbin` only (no `python3` reachable).
+- openXC7's `bin/fasm2frames`, `bin/bit2fasm` and `bin/.fasm-wrapped` are bash wrappers that `exec "$top/libexec/python3.12"` with `PYTHONHOME=$top`: no PATH Python is involved (different from Windows). `bin/xc7pll` (`#!/usr/bin/env python3`) and `bin/fasm` (Nix store paths) are never run by Apio's Xilinx flow.
+- **No Python shim is needed** (`shims: []`, `pathPrepend: []`).
+- **Proof:** in the installed run the only Python process was `…/1.0/apio/packages/openxc7/libexec/python3.12` (argv `… libexec/fasm2frames --part xc7a100tcsg324-1 --db-root …/prjxray-db/artix7 …`); no `/usr/bin/python3`, no Command Line Tools Python, no decoy `python`/`python3` (decoys first on PATH logged nothing). With `DYLD_PRINT_LIBRARIES`, the fasm2frames imports load images only from the toolchain and `/usr/lib`/`/System`; `sys.prefix` is the bundled openxc7 package. `hardware.frames` re-generated from the same `hardware.fasm` is byte-identical (`f7af759e…`). Verify Toolchain after the workflow: no `__pycache__` written (`PYTHONDONTWRITEBYTECODE=1`).
+
+### 17.5 Store, state and environment on macOS
+
+| | Path |
+|---|---|
+| Data root | `~/Library/NexysVHDL` (not "Application Support": Apio refuses a space; macOS short user names contain no spaces) |
+| Toolchain 1.0 (immutable) | `~/Library/NexysVHDL/toolchains/darwin-arm64/1.0/` + `.nexysvhdl-installed.json` |
+| Writable state | `~/Library/NexysVHDL/state/darwin-arm64-1.0/apio-home/` — after all runs only `cached-remote-config.json` (1,323 B) |
+| Tool environment | `PATH=/usr/bin:/bin:/usr/sbin:/sbin`; `APIO_HOME`, `APIO_PACKAGES`, `APIO_REMOTE_CONFIG_URL=file://…/apio/remote-config/apio-{major}.{minor}.x.jsonc`; `PYTHONDONTWRITEBYTECODE=1`; inherited `PATH`, `APIO_*`, `PYTHON*` removed |
+
+No administrator rights are needed. VS Code on macOS imports the login-shell environment, so the extension host sees the user's full PATH (here `/usr/local/bin`, `/Applications/Apio`, `~/.cargo/bin`, …) even when started with a reduced PATH; only the bundle environment above reaches the tools.
+
+### 17.6 Artifacts
+
+| Artifact | Size | SHA-256 |
+|---|---|---|
+| `nexysvhdl-0.5.0-darwin-arm64.vsix` | 241,351 B (235.7 KiB), 126 files; installed 936 KiB | `72169bf4…1eca24a` |
+| `nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz` | 657,363,463 B (626.9 MiB) | `d8cdf6e2…a2359d` |
+| Installed Toolchain 1.0 | 2,758,218,326 B (2.57 GiB; 2.65 GiB on disk), 31,699 entries | content `f0402218…` |
+| `NexysVHDL-0.5.0-darwin-arm64.zip` | 623,538,720 B (594.7 MiB) | `10cba252…5232669` |
+
+`npm run package:mac` passed every gate (requirement, archive + `.sha256`, assembled content = requirement, notices/licenses, typecheck + build, 23 resources, VSIX content audit, privacy audit, distribution folder + zip). Major sizes (installed): oss-cad-suite 1,760 MiB (libexec 867 — other FPGA families' nextpnr, solvers, GUIs; share 458; lib 433; Qt frameworks 59), openXC7 666 MiB (prjxray-db zynq7 259, artix7 187, spartan7 104), GHDL 106, chipdb 37, Apio 35, verible 24, definitions 2.5. Nothing pruned (§11 reasoning applies).
+
+### 17.7 Installed-package validation (real VSIX, private profile, no `--extensionDevelopmentPath`)
+
+Setup: private `--user-data-dir`/`--extensions-dir` under `/tmp/nxv` (the scratch path was too long for VS Code's 104-byte IPC socket limit), real `~/Library/NexysVHDL` store (absent before), the classroom ZIP "downloaded" with a `com.apple.quarantine` attribute (simulated: written with `xattr`, then extracted with `ditto`, which propagates it like Archive Utility), PATH = decoy folder + `/usr/bin:/bin:/usr/sbin:/sbin`, hostile `APIO_HOME=~/.apio`, `APIO_PACKAGES=~/.apio/packages`, `PYTHONHOME`, `PYTHONPATH`, `NEXYSVHDL_GHDL=<the working developer GHDL>`, `NEXYSVHDL_APIO=/Applications/Apio/apio`, `NEXYSVHDL_TOOLS_DIR=~/.apio/packages`, dead `HTTP(S)_PROXY`. Decoy `ghdl`/`apio`/`yosys`/`nextpnr-xilinx`/`openFPGALoader`/`python`/`python3`/`pip`/`fasm2frames`/`xc7frames2bit`/`iverilog` log any use.
+
+| Item | Result |
+|---|---|
+| Before install | *Setup required*; toolchain *Not Installed*; programmer *Not Installed — installed with the FPGA toolchain* |
+| Install FPGA Toolchain (quarantined archive) | `installed` in **29.2 s**; second attempt `already-installed`; no staging folder left |
+| After install | *Ready — Ready for design, build and programming*; GHDL 6.0.0, Apio 1.7.0, openXC7 2026-09-25, Yosys 0.63+173, nextpnr-xilinx e860c9c8, openFPGALoader 1.1.1, all `compatible`, all under `~/Library/NexysVHDL/toolchains/darwin-arm64/1.0/`; programmer *Ready (bundled)* |
+| Create Project / duplicate | `StudentDemo` created outside the repository / `ALREADY_EXISTS` |
+| Project detection, Project Files, hierarchy (automatic + manual), Set Top | pass |
+| Check / Problems | passed (top, top_tb); error at 32:26 shown and cleared |
+| Simulate / GHW / VCD / Waveform | `ALL TESTS PASSED (33 checks)` @ 660 ns; viewer, cursor (95 ns: count `8`/`1000`), zoom, pan, fit, reload on re-simulation |
+| Design / RTL Schematic | pass; AND(`u_blink`,`sw0`) → `led0` linked to `src/top.vhd:32:19` |
+| Build (Synthesis → Implementation → Bitstream, live stages) | **57 LUTs, 27 FFs**, 7 CARRY4, 1 BUFG; timing **PASS 391.54 MHz** (target 100), slack **+7.446 ns** (= Phase 4A Mac); bitstream 3,825,910 B; constraints from the raw XDC file |
+| Results capacities (board metadata) | LUTs 57 / 63,400; FF 27 / 126,800; BRAM 0 / 135; DSP 0 / 240; I/O 4 / 210 |
+| Hardware view | detection ran the bundled openFPGALoader (`--scan-usb`): no board; setup rows Toolchain *Ready*, Programmer *Ready (bundled)*, Board *Not Connected* |
+| VHDL highlighting | `.vhd` → `vhdl`, NexysVHDL grammar scopes (91/157, 101/173, 231/415) |
+| Verify Toolchain after the workflow | ok, 31,699 entries unchanged |
+| Modules | 102 from the installed extension, 0 elsewhere, no `.ts` |
+| Hostile paths: profile, extensions folder and project in `/tmp/nxv hostile/José García 学生/` | all of the above pass (57/27, 391.54 MHz, 33 checks, RTL link, Verify ok); 39 GHDL/Apio invocations, none with the hostile names in its command line; bitstream payload identical to the standard run (3,825,788 B, `8ce1601e…`; only the header time differs) |
+| UI-only update 0.5.0 → 0.5.1 (validation-only VSIX: version fields changed in a copy of the real VSIX; repository version unchanged) | 0.5.1 loaded from `emxplore.nexysvhdl-0.5.1`; toolchain *Ready* immediately at the same folder; marker byte-identical (`b37c6b1b…`), same mtime and inode; version folder inode/mtime unchanged; no file newer than the marker; no extraction in the trace |
+
+### 17.8 Process trace, PATH and external state
+
+- `watch-processes-macos.c` (`all` mode) recorded every process; analysis kept the descendants of the VS Code instance under test. **Toolchain 1.0 executables:** `ghdl/bin/ghdl`, `apio/bin/apio`, `oss-cad-suite/libexec/{yosys,yosys-abc,openFPGALoader,realpath}`, `openxc7/libexec/{nextpnr-xilinx,python3.12,xc7frames2bit}` (bash wrappers from the same packages). **Other:** `/bin/bash`, `/bin/sh`, `/usr/bin/env`, `/usr/bin/dirname`, `/usr/bin/locale` (macOS); VS Code's own helpers, its login-shell probe (`zsh -i -l -c`) and its Git extension (`git --version`, `git rev-parse` — NexysVHDL never runs git). **None** from `/opt/homebrew`, `/usr/local`, `~/.apio`, `/Applications/Apio`, the repository, the developer GHDL, Command Line Tools compilers/linkers or any Python other than openXC7's.
+- **No PATH fallback:** the decoy log is empty for all five phases; `NEXYSVHDL_GHDL` (a working GHDL) and `NEXYSVHDL_APIO` were ignored; the dead proxy caused no failure (no network use).
+- **External state** (`scripts/validation/snapshot.mjs`, before the clean run vs after all phases): `~/.apio` (31,271 files; its `cached-remote-config.json` still from 01:00, before this work) **unchanged in content and timestamps**; `/Applications/Apio` (120 files) unchanged; developer GHDL (249 files) unchanged; only `~/Library/NexysVHDL` was created. The rehearsal runs before the final build also left them unchanged.
+
+### 17.9 Relocation, permissions, signatures, Gatekeeper
+
+- **Relocation:** `otool -L` over all 631 Mach-O files of the installed store: dependencies are `@rpath`/`@executable_path`/`@loader_path` (inside the packages), `/usr/lib` or `/System/Library`; **none** in `/opt/homebrew`, `/usr/local`, `/Users`. Some upstream binaries still carry LC_RPATH entries of their CI machines (`/Users/runner/work/…`), which do not exist on a student Mac and are never needed. At runtime (`DYLD_PRINT_LIBRARIES`, started from the installed store) ghdl, apio, yosys, yosys-abc, openFPGALoader, nextpnr-xilinx, xc7frames2bit and openXC7's python3.12 load images only from the toolchain and the system.
+- **Permissions:** after pack → extract → install all 989 executable files keep their executable bit and all 189 links are identical (target and type); archive headers are uid/gid 0 without names; executables are 0755.
+- **Signatures (unchanged upstream):** all 631 Mach-O files are ad-hoc signed (402 `adhoc`, 229 `adhoc,linker-signed`), no Team ID, not notarized. `codesign --verify --strict` passes except PyInstaller's `Python.framework/Versions/3.14/Python` ("code has no resources but signature indicates they must be present"), identical in the validated `/Applications/Apio`; it loads and runs normally. Nothing was re-signed or stripped; no personal identity was used.
+- **Quarantine/Gatekeeper:**
+  - *Observed:* installing from a quarantined archive through the extension leaves **no** `com.apple.quarantine` on any of the 34,549 installed entries (VS Code does not set `LSFileQuarantineEnabled`; Node writes fresh files and copies no attributes); only `com.apple.provenance` is present, and every tool ran.
+  - *Observed (representative test on a copy):* the same `ghdl` binary with a quarantine attribute added is **killed by Gatekeeper** (SIGKILL, exit 137; `spctl --assess`: rejected), without the attribute it runs.
+  - *Consequence:* the supported flow (Install FPGA Toolchain… from the archive) works with a normally downloaded classroom ZIP; extracting the `.tar.gz` by hand (Archive Utility propagates quarantine) would produce blocked binaries, so the student guide says not to. *Assumption, not tested:* managed Macs with stricter policies (e.g. MDM rules that deny unnotarized code) may block ad-hoc signed tools; the clean long-term fix would be an institutional Developer ID signature + notarization of the toolchain, which re-signs upstream binaries and is a redistribution decision.
+
+### 17.10 License inventory (macOS) and redistribution blockers
+
+| Component | License | Corresponding-source obligation |
+|---|---|---|
+| GHDL 6.0.0 (LLVM-JIT build) | GPL-2.0-or-later; libgnat GPL-3.0 + GCC Runtime Library Exception; libgcc_s (exception); LLVM 22.1.0 statically linked: Apache-2.0 WITH LLVM-exception | GPL source (GHDL v6.0.0); LLVM: license + notice text (shipped) |
+| Apio 1.7.0 bundle | GPL-2.0; Python 3.14.7 PSF-2.0; OpenSSL 3.5.7 Apache-2.0; libusb-1.0 LGPL-2.1; zstd 1.5.7 BSD; Python packages per `*.dist-info` | GPL source (Apio `ccede3ec`), LGPL source for libusb |
+| oss-cad-suite 2026.09.15 | Yosys ISC; openFPGALoader Apache-2.0; libusb LGPL-2.1, libftdi LGPL-2.1/GPL-2.0; 59 `license/LICENSE.*` (16 contain GPL text, 8 contain LGPL text, e.g. iverilog, gtkwave, verilator, ghdl), each naming its source revision; Python 3.11 PSF; Graphviz EPL-1.0 (rev `da4c2ec6`); **Qt 5 frameworks (LGPL-3.0) without any license file in the package** | GPL/LGPL source per tool; Qt: LGPL notice + source |
+| openXC7 2026.09.25 | nextpnr-xilinx ISC, prjxray ISC, prjxray-db CC0-1.0, Python 3.12.5 PSF (`lib/python3.12/LICENSE.txt`) | none beyond notices |
+| chipdb, definitions, verible | CC0-derived / GPL-2.0 / Apache-2.0 | definitions: GPL source |
+
+Texts shipped in the toolchain's `licenses/`: the shared set plus `licenses-darwin-arm64/` (`LLVM-LICENSE.txt` from `llvmorg-22.1.0`, `PSF-2.0-Python-3.14.txt` from CPython `v3.14.7`). **Redistribution remains NOT READY:** the shared GPL/LGPL corresponding-source mechanism plus, for macOS, the Qt LGPL-3.0 notice/source for frameworks shipped without a license file, the LGPL libusb/libftdi and OpenSSL notices in the Apio bundle, and the GPL/LGPL corresponding source for the macOS components (GHDL incl. GNAT runtime, Apio, oss-cad-suite tools, libusb/libftdi, Qt). Resolved since: NexysVHDL's own license (Apache-2.0, §17.15) and the GHDL backend (approved, §17.3). The Windows-only drivers/graphviz-package items do not apply (not in the Mac bundle).
+
+### 17.11 Privacy
+
+Every file of the Mac toolchain (binaries included), the NexysVHDL-generated files, the VSIX (gate: 132 text files) and the distribution folder were searched: no `nohafahmy`, `WSClaude`, repository name, scratch path, user e-mail, token or developer path. `/Users/<name>` strings exist only in upstream binaries/sources (`runner` = GitHub CI, upstream authors' examples); "private key" hits are CPython's deliberately invalid test certificates and a PEM parser string in QtNetwork; `AKIA` occurs only inside Unicode/ICU data tables.
+
+### 17.12 Tests
+
+`npm test`: **414/414** at the first macOS review (406 baseline after the portability fix + 8); **420/420** after §17.14/§17.15 (+4 macOS alias, +2 license); typecheck clean. New: tar link round trip (frameworks, `../` aliases, long pax `linkpath`), link-target safety + writer refusal, unchanged legacy tree hash, six new extraction refusals (no/absolute/escaping/inner-`..` targets, writing through a link, link replacing a folder, hard link); build-script hash parity with links; macOS store install with links + verify + re-pointed link detected; macOS hostile shell environment never reaching a tool; `~/Library/NexysVHDL` vs "Application Support" path rule; bundled programmer waiting for the toolchain; macOS recipe pinned exactly (versions, JIT GHDL, Apio bundle, four packages, no openXC7 2026-09-27, official URLs, bundled programmer, no shims); requirement with both targets (Windows hash unchanged); license texts per target.
+
+### 17.13 Known limitations (macOS)
+
+1. ~~GHDL backend change needs owner approval~~: **approved** (§17.3).
+2. **Physical Program not run** in this phase (no board): DEFERRED.
+3. ~~A home folder with a space or non-ASCII character disables Build/RTL~~: **fixed** with a private ASCII alias (§17.14). Remaining: if `$TMPDIR` is missing, non-ASCII or not private to the user, no alias is made and Build/RTL report `BUNDLE_PATH_ALIAS_FAILED` (Check and Simulate still work); macOS may purge an old alias from `$TMPDIR`, and it is recreated the next time the toolchain is loaded (window reload or Refresh).
+4. Toolchain binaries are ad-hoc signed and not notarized (upstream): fine through the installer, blocked if extracted by hand; managed Macs with strict policies untested.
+5. The installed-validation profile had to live under `/tmp` because of the 104-byte socket path limit; this is a harness constraint, not a product one (VS Code's normal profile path is short).
+
+### 17.14 Home folders with spaces or non-English characters (follow-up, 2026-10-02)
+
+**Problem.** The store is `$HOME/Library/NexysVHDL`. macOS short user names cannot contain spaces, but a home folder can be moved or mounted elsewhere (e.g. `/Volumes/Home Drive/José García`). Apio refuses such `APIO_HOME`/`APIO_PACKAGES` paths, so Build and the RTL Schematic were disabled.
+
+**Feasibility (before implementing).** Toolchain 1.0 installed under `/tmp/nxv home/José García 学生/Library/NexysVHDL`, a project under `…/Mis Proyectos ñ/Demo`, Apio pointed at hand-made symbolic links in `$TMPDIR`: GHDL synthesis and `apio build` (Yosys, nextpnr-xilinx, fasm2frames, xc7frames2bit) → SUCCESS, 3,825,910 B. The oss-cad-suite wrappers `realpath` themselves back to the real (Unicode) path and Yosys works there; only Apio's own path check needs ASCII. No macOS reason prevents an alias.
+
+**Solution** (`platform/macos/path-alias.ts`, registered as the darwin `pathAlias` — the same core hook as the Windows junction; the loader calls it only when the real toolchain or state path is not Apio-safe):
+- The real, immutable Toolchain 1.0 and the writable state stay in `$HOME/Library/NexysVHDL` (Verify Toolchain hashes the real folder). Only the paths handed to the tools change.
+- Alias = symbolic link `$TMPDIR/NexysVHDL-links/<sha256(real target)[:16]>` → the real folder. `$TMPDIR` is the per-user Darwin temporary folder launchd gives every app (`/var/folders/<..>/T/`, ASCII, owned by the user, mode 0700).
+- Checks: `$TMPDIR` must be set, absolute, ASCII-safe, a directory owned by the user and not writable by group/others (a world-writable `/tmp` is refused); `NexysVHDL-links` is created 0700 and must be a real directory (not a link) owned by the user and not group/other-writable; an existing entry is reused only if it is the user's own symbolic link whose `readlink` and `realpath` equal the target; the user's own *dangling* link of that name is recreated; any other entry (another owner's, or a live link elsewhere) is never used and the next name is tried.
+- No administrator rights, no change to HOME, no `~/.apio`, no PATH fallback (the bundle environment is unchanged). Ephemeral: if macOS purges it from `$TMPDIR`, it is recreated on the next toolchain load.
+
+**Unit tests (`tests/hostile-paths.test.ts`, 4):** naming/0700 folder/reuse; a planted live link, another owner's link and own dangling link (only the last is replaced); refusal of a linked/foreign/group-writable alias folder and of a shared `$TMPDIR`, missing/unsafe `TMPDIR`, missing target; and a real-filesystem classroom test with HOME `…/Users/José García 学生/…` (spaces, accents, CJK): the real store stays the toolchain, every executable and `APIO_*` path is ASCII via the alias, the links point to the real toolchain/state folders, the folder is 0700, a second load reuses them.
+
+**Installed-package validation with a hostile HOME** (rebuilt VSIX 0.5.0, private profile/extensions *inside* the hostile home, `HOME=/tmp/nxv home/José García 学生` given to VS Code, the real `$TMPDIR`, quarantined download, hostile environment and decoys as in §17.7):
+
+| Item | Result |
+|---|---|
+| Data root / install | `<HOME>/Library/NexysVHDL`; Install FPGA Toolchain → `installed` (29.4 s) into the real hostile path |
+| Aliases | `$TMPDIR/NexysVHDL-links` (drwx------, user) with two user-owned links: `f9acc684…` → `…/José García 学生/Library/NexysVHDL/toolchains/darwin-arm64/1.0`, `01be80d7…` → `…/state/darwin-arm64-1.0` |
+| Environment | every tool path, `APIO_HOME`, `APIO_PACKAGES`, `APIO_REMOTE_CONFIG_URL` under `/var/folders/…/NexysVHDL-links/…`; PATH = OS folders only |
+| Show Environment | *Ready*; all six tools `compatible`; programmer *Ready (bundled)* |
+| Check → Problems → RTL Schematic → Simulate → Build | passed (top/top_tb) → error at 32:26 shown/cleared → AND → `led0` linked to `src/top.vhd:32:19` → 33 checks @ 660 ns → **57 LUT / 27 FF, PASS 391.54 MHz**, 3.6 MB bitstream |
+| Verify Toolchain after the workflow | ok, 31,699 entries (`f0402218…`) |
+| Process trace | every FPGA executable launched via the alias and resolving into the hostile-home Toolchain 1.0; no Homebrew, `/usr/local`, `~/.apio`, `/Applications/Apio`, compiler/linker or other Python; decoys unused |
+| External state | `~/.apio`, `/Applications/Apio`, developer GHDL **and the real `~/Library/NexysVHDL`** unchanged (content and timestamps); writable state only `cached-remote-config.json` |
+
+**Regression with the normal HOME** (same rebuilt VSIX, fresh profile): no alias is made (ASCII store); setup Ready (`already-installed`), Check/Simulate/RTL/Build pass (57/27, 391.54 MHz), Verify after the workflow ok (31,699). *Note:* a first regression run reported `TOOLCHAIN_MODIFIED`: 17 `prjxray/__pycache__/*.cpython-312.pyc` files had been written into the real store at 20:04 by a manual `fasm2frames` re-check run during the relocation audit (§17.4) **without** `PYTHONDONTWRITEBYTECODE` — not by NexysVHDL. Verify Toolchain detected it as designed; the 17 files were removed (no original file had changed) and the rerun verified clean.
+
+### 17.15 NexysVHDL's own license: Apache-2.0
+
+- `LICENSE`: the canonical Apache License 2.0 text (unmodified copy of `https://www.apache.org/licenses/LICENSE-2.0.txt`, SHA-256 `cfc7749b…bc523d30`, pinned by a test).
+- `NOTICE`: NexysVHDL, `Copyright 2026 Walid Dyab`, EMXplore as the project/publisher, the license, and an explicit statement that the separately distributed toolchain's components are **not** licensed under Apache-2.0 and keep their own licenses (GPL/LGPL included).
+- `package.json` `license: Apache-2.0` (was `UNLICENSED`); README "License" section; CHANGELOG; VSIX readme; `THIRD_PARTY_NOTICES.md` states that Apache-2.0 covers NexysVHDL's own code (and NexysVHDL-authored toolchain files such as the manifest, pinned Apio config and notices) and that third-party software is not relicensed.
+- Packaging: `vsce` now checks the license (no `--skip-license`); `.vscodeignore` ships `LICENSE` (vsce stores it as `extension/LICENSE.txt`) and `NOTICE`; `package:mac`/`package:win` require both, verify the shipped license text equals `LICENSE`, and copy both into the classroom folder/zip.
+- The toolchain archives are unchanged (no rebuild; Windows `43b3fb80…` and macOS `f0402218…` content hashes unchanged).
+- This resolves only NexysVHDL's own-license item. **Redistribution/license stays NOT READY** (§17.10).
+
+Rebuilt Mac artifacts after §17.14/§17.15: VSIX 243.0 KiB (248,794 B, 129 files, incl. `LICENSE.txt`, `NOTICE`; SHA-256 `5c1ae73a…`; runtime byte-identical to the VSIX validated in §17.14, only CHANGELOG and the student guide text differ); toolchain archive unchanged (`d8cdf6e2…`); classroom ZIP 594.7 MiB (adds LICENSE, NOTICE). Tests: **420/420**.
