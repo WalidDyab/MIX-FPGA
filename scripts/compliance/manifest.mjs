@@ -5,6 +5,9 @@
 //   - the curated review data (toolchains/compliance/curation.json);
 //   - the evidence inventories of each assembled payload
 //     (.artifacts/compliance/inventory-<platform>.json, scripts/compliance/inventory.mjs).
+//     Evidence can only be gathered where a payload is assembled: a platform
+//     whose inventory is absent keeps the evidence-derived fields of the
+//     committed manifest (re-validated against the current curation).
 // Build time only; never shipped. Fails when a copyleft item has no pinned source.
 //
 //   node scripts/compliance/manifest.mjs [--check]
@@ -25,7 +28,19 @@ export function requiresSource(licenses) {
     return licenses.some((l) => SOURCE_REQUIRED.test(l) && !/GCC-exception|LLVM-exception/.test(l));
 }
 
-export function buildManifest({ recipes, requirement, curation, inventories }) {
+/** Validates one curated native-library inventory entry; returns problems. */
+function checkLibraryEntry(target, e, sourceIds) {
+    const p = [];
+    for (const k of ['id', 'files', 'origin', 'version', 'licenses', 'usage', 'evidence']) if (e[k] === undefined) p.push(`${target} nativeLibraryInventory ${e.id ?? '?'}: missing ${k}`);
+    for (const s of e.sources ?? []) if (!sourceIds.has(s)) p.push(`${target} nativeLibraryInventory ${e.id}: unknown source ${s}`);
+    if (e.redistributed !== false && requiresSource(e.licenseElected ? [e.licenseElected] : (e.licenses ?? [])) && !(e.sources ?? []).length) {
+        p.push(`${target} nativeLibraryInventory ${e.id} (${(e.licenses ?? []).join(', ')}) requires source but has none`);
+    }
+    if (!['A', 'B', 'C'].includes(e.usage?.class)) p.push(`${target} nativeLibraryInventory ${e.id}: usage.class must be A, B or C`);
+    return p;
+}
+
+export function buildManifest({ recipes, requirement, curation, inventories, previous }) {
     const sourceByPin = new Map(curation.sources.filter((s) => s.kind === 'git').map((s) => [`${s.url} ${s.revision}`, s.id]));
     const sourceIds = new Set(curation.sources.map((s) => s.id));
     const unresolvedIds = new Set(curation.unresolved.map((u) => u.id));
@@ -66,14 +81,20 @@ export function buildManifest({ recipes, requirement, curation, inventories }) {
             };
         });
         const inv = inventories[target];
+        const carried = !inv ? previous?.targets?.[target] : undefined;
         const placeholderDirs = recipe.components.filter((c) => c.placeholder).map((c) => `${c.dest}/`);
-        const ossCadSuiteTools = (inv?.ossCadSuite ?? []).filter((t) => !placeholderDirs.some((d) => t.file.startsWith(d))).map((t) => {
-            const sources = t.sources.filter((s) => s.revision).map((s) => ({ url: s.url, revision: s.revision, source: sourceByPin.get(`${s.url} ${s.revision}`) ?? null }));
+        const toolRows = inv
+            ? inv.ossCadSuite.filter((t) => !placeholderDirs.some((d) => t.file.startsWith(d))).map((t) => ({ name: t.name, licenses: t.licenses, licenseFile: `apio/packages/oss-cad-suite/license/${t.file.split('/').pop()}`, pins: t.sources.filter((s) => s.revision) }))
+            : (carried?.ossCadSuiteTools ?? []).map((t) => ({ name: t.name, licenses: t.licenses, licenseFile: t.licenseFile, pins: t.sources }));
+        const ossCadSuiteTools = toolRows.map((t) => {
+            const sources = t.pins.map((s) => ({ url: s.url, revision: s.revision, source: sourceByPin.get(`${s.url} ${s.revision}`) ?? null }));
             const sourceRequired = requiresSource(t.licenses);
             if (sourceRequired && !sources.some((s) => s.source)) problems.push(`${target}: oss-cad-suite tool ${t.name} (${t.licenses.join(', ')}) has no pinned source in curation.json`);
-            return { name: t.name, licenses: t.licenses, licenseFile: `apio/packages/oss-cad-suite/license/${t.file.split('/').pop()}`, sources, sourceRequired };
+            return { name: t.name, licenses: t.licenses, licenseFile: t.licenseFile, sources, sourceRequired };
         });
-        if (!inv) problems.push(`${target}: missing evidence inventory .artifacts/compliance/${INVENTORY[target]}`);
+        if (!inv && !carried) problems.push(`${target}: missing evidence inventory .artifacts/compliance/${INVENTORY[target]}`);
+        const nativeLibraryInventory = curation.nativeLibraryInventory?.[target];
+        for (const e of nativeLibraryInventory ?? []) problems.push(...checkLibraryEntry(target, e, sourceIds));
         targets[target] = {
             displayPlatform: recipe.displayPlatform,
             bundleVersion: recipe.bundleVersion,
@@ -82,7 +103,8 @@ export function buildManifest({ recipes, requirement, curation, inventories }) {
             components,
             ossCadSuiteTools,
             apioPythonPackages: curation.apioPythonPackages[target],
-            nativeLibraries: inv ? inv.nativeLibraries.filter((l) => !placeholderDirs.some((d) => l.startsWith(d))).length : null,
+            nativeLibraries: inv ? inv.nativeLibraries.filter((l) => !placeholderDirs.some((d) => l.startsWith(d))).length : (carried?.nativeLibraries ?? null),
+            ...(nativeLibraryInventory ? { nativeLibraryInventory } : {}),
         };
     }
     for (const u of curation.unresolved) if (!u.resolution) problems.push(`unresolved ${u.id}: no resolution path`);
@@ -98,6 +120,7 @@ export function buildManifest({ recipes, requirement, curation, inventories }) {
             targets,
             sources: curation.sources,
             unresolved: curation.unresolved.map((u) => ({ blocking: u.blocking !== false, ...u })),
+            ...(curation.resolved?.length ? { resolved: curation.resolved } : {}),
         },
         problems,
     };
@@ -113,9 +136,11 @@ async function main() {
     const recipes = Object.fromEntries(SUPPORTED_TARGETS.map((t) => [t, readJson(join(RECIPE_DIR, `${t}.json`))]));
     const requirement = readJson(join(RECIPE_DIR, 'requirement.json'));
     const inventories = Object.fromEntries(SUPPORTED_TARGETS.map((t) => [t, existsSync(join(EVIDENCE_DIR, INVENTORY[t])) ? readJson(join(EVIDENCE_DIR, INVENTORY[t])) : undefined]));
-    const { manifest, problems } = buildManifest({ recipes, requirement, curation, inventories });
-    if (problems.length) fail(`compliance manifest:\n  ${problems.join('\n  ')}`);
     const out = join(COMPLIANCE_DIR, `toolchain-${curation.toolchainVersion}.json`);
+    const previous = existsSync(out) ? readJson(out) : undefined;
+    for (const t of SUPPORTED_TARGETS) if (!inventories[t] && previous?.targets?.[t]) console.log(`note: no ${INVENTORY[t]} here; ${t} evidence fields kept from the committed manifest`);
+    const { manifest, problems } = buildManifest({ recipes, requirement, curation, inventories, previous });
+    if (problems.length) fail(`compliance manifest:\n  ${problems.join('\n  ')}`);
     const text = `${JSON.stringify(manifest, null, 2)}\n`;
     if (args.check) {
         if (!existsSync(out) || readFileSync(out, 'utf8') !== text) fail(`${relative(REPO_ROOT, out)} is out of date: run node scripts/compliance/manifest.mjs`);

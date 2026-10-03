@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "toolchainVersion": "1.0",
   "tools": {
-    "git": "git version 2.53.0.windows.1",
-    "node": "v24.13.0"
+    "git": "git version 2.39.5 (Apple Git-154)",
+    "node": "v24.21.0"
   },
   "sources": {
     "ghdl-6.0.0": [
@@ -11,7 +11,7 @@
         "path": ".",
         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
         "file": "sources/ghdl-6.0.0.tar.gz",
-        "sha256": "612a9ba2abf797843afdbdfd65e3d772e4b8aae19253c7f5aebdb2dcf9c62f70",
+        "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
         "size": 7899777
       }
     ],
@@ -20,7 +20,7 @@
         "path": ".",
         "commit": "9fbb279c2bd793bb94e83d9b1523a420ed219f93",
         "file": "sources/apio-1.6.0.tar.gz",
-        "sha256": "0e236582996257977bd7e91ed99529a0ca0a879fb94c9808271dbde81f8d20a4",
+        "sha256": "ded5446d217c2f8368600d87d424947c95bf86a087739526156cc2a19cec9e83",
         "size": 6551408
       }
     ],
@@ -29,7 +29,7 @@
         "path": ".",
         "commit": "ccede3ecb88f809d1c5a6063a274ba1852bdc519",
         "file": "sources/apio-1.7.0.tar.gz",
-        "sha256": "195c0d66a8c5e38ef83bf375b429a7faa09547a8a2fe9175f1076beb3113d7bd",
+        "sha256": "92f434c5c852f0725fa43915e5a346f8dab8af034dbc5c4a801660f8d183124c",
         "size": 6554313
       }
     ],
@@ -38,7 +38,7 @@
         "path": ".",
         "commit": "2fd2c66575c775810aacfa1e174b377ec711f6a4",
         "file": "sources/apio-definitions-2026.09.17.tar.gz",
-        "sha256": "df53f98ba129a63dd7868e250182082f846ab81e8770216337974e66c3d3b95d",
+        "sha256": "68846b0de855f0b64c6cd6e0fabfe673a5f9aade290705714adfe901d692fc3d",
         "size": 1957117
       }
     ],
@@ -47,7 +47,7 @@
         "path": ".",
         "commit": "b246ed025634562f953daccef0c9d2f7995d30c3",
         "file": "sources/fpgawars-tools-oss-cad-suite.tar.gz",
-        "sha256": "5e8da49e9b0ed147e49054d23a7cc69f67b890025b62f227a586b9017f9d18b6",
+        "sha256": "43c61921e95d5a55c9e55141b40835b940e61cc22e290d6f1c8f438defa93492",
         "size": 136931
       }
     ],
@@ -56,7 +56,7 @@
         "path": ".",
         "commit": "ac8c7dba2517ce371959cd5d95cd9163a54c350d",
         "file": "sources/yosyshq-oss-cad-suite-build-2026-03-24.tar.gz",
-        "sha256": "07b9f38432b884596b067673749ead7fb346884e14a8d93d3a63e74a5e3f0815",
+        "sha256": "94093aadb7b0deb0f254198e9a2c240e36668d4d4b3bf0b303beb330e4c01529",
         "size": 244952
       }
     ],
@@ -65,7 +65,7 @@
         "path": ".",
         "commit": "8a01b11b7bac1e66c01d44f43c3a5290f65981a7",
         "file": "sources/fpgawars-tools-openxc7-win32.tar.gz",
-        "sha256": "f4cf3258a4efda2a3a7d3aa34ae85c9ad39667f0b373d4956afebcddf7183a14",
+        "sha256": "04f9b12ae2232eb8c2b9294ed5e1ed078a45c3b5924717fcded6a7a4a899aa48",
         "size": 1403813
       }
     ],
@@ -74,7 +74,7 @@
         "path": ".",
         "commit": "22b6a11dc3198c2c28ad6b9c482f23e7a08e2331",
         "file": "sources/fpgawars-tools-openxc7-darwin.tar.gz",
-        "sha256": "04b46b119405fbb6cf4ad7fb42351891ad30f1b5ecf14409c4f5579a68723fa8",
+        "sha256": "2c964b6d9e8ccbb5bdd0f477b2ae8b7dad8a944fa69f4cb4ca6fec2a021c1d73",
         "size": 1429872
       }
     ],
@@ -83,7 +83,7 @@
         "path": ".",
         "commit": "40263a6e2095ccba83071454191e09f14e9ee232",
         "file": "sources/mcfgthread-1.6-ga.1.tar.gz",
-        "sha256": "2c05b5e8cba8a940b755b19d6c958dce13199a005c9dabe011ecaec6eccb4f1d",
+        "sha256": "615124500fd482fa88894d4dbf3d0ec8656384dde93113cf0b67480ccb332ead",
         "size": 101979
       }
     ],
@@ -92,7 +92,7 @@
         "path": ".",
         "commit": "f9a537c93935d9d536b5ea29b54a226160b2b111",
         "file": "sources/oss-dfu-util.tar.gz",
-        "sha256": "f55c6bfdb758eaad3383a4f7b950a85b78d746a7455ffba0c7bf2f679203124e",
+        "sha256": "1449ba6690e0e34be0063957feb87baba30ee076271922ef87c247ee6d87ff77",
         "size": 73084
       }
     ],
@@ -101,7 +101,7 @@
         "path": ".",
         "commit": "10cfae614ed8be80b5bb64e8c2194e7dffcd297a",
         "file": "sources/oss-gtkwave.tar.gz",
-        "sha256": "cd37e1662c51312c0d94d531fa83ffe097fc470abf17145621ecd2f06fca2103",
+        "sha256": "947d16718e139e43f1495f3de6d56a2652e17de8293882b726a33adf33c954f4",
         "size": 9579568
       }
     ],
@@ -110,7 +110,7 @@
         "path": ".",
         "commit": "6767a079560f4528f4beeae82fb33361eb4bc92a",
         "file": "sources/oss-iverilog.tar.gz",
-        "sha256": "71c1c375a8972d516da21da65feeb9e08af9869d8a00696d3afa0ec7dcd82971",
+        "sha256": "c37c4f4ad72d7c209cbfe9c399c982260c4313d28735875c72643f8ba406679d",
         "size": 3112004
       }
     ],
@@ -119,7 +119,7 @@
         "path": ".",
         "commit": "5c2c58e03ea999534e8cb64906c8ae8b15536c30",
         "file": "sources/oss-libftdi.tar.gz",
-        "sha256": "fde24c7c3ef68cc0ae3d02418a921f002bed2d0b5aa60c92b6325171065703a6",
+        "sha256": "864a13ca2a3c61fd7ba44e8e4259143f34af2d73720dfe8818fcc27dc7cb7189",
         "size": 136596
       }
     ],
@@ -128,7 +128,7 @@
         "path": ".",
         "commit": "1383809f2aa5005ef20110fec84b66959518f697",
         "file": "sources/oss-libpoly.tar.gz",
-        "sha256": "a656ee54802ed1ef37d2d67ba1f07c21b9c1eb22fb6c5eeb37d1d379c63c79ee",
+        "sha256": "3890aaa39d4d2c74c84d741fec8cee259c9d1284ecd23909648667e690f99d97",
         "size": 611672
       }
     ],
@@ -137,7 +137,7 @@
         "path": ".",
         "commit": "c6a35c56016ea2ab2f19115d2ea1e85e0edae155",
         "file": "sources/oss-libusb.tar.gz",
-        "sha256": "831c54a72eb5d3eff88b6d1c4ff1a36a2e20ce310aa2fb39604c8ae1562b40bf",
+        "sha256": "256bd627c606087a30ca33b12038fad4fdf577a68fdcb36036d725cdbc9f49ff",
         "size": 359385
       }
     ],
@@ -146,28 +146,28 @@
         "path": ".",
         "commit": "b6ee13720688a9860f3397bb89ea171b0fc5ccce",
         "file": "sources/oss-openocd.tar.gz",
-        "sha256": "338d0c83643b4385e6ae166801d625e8b2f14ce70bb9217d17f0fc61f6d164cf",
+        "sha256": "7d5283d426ddd0a9d2728d73e80d0104377dce4bc54ba0b5a3dc23638e9942f2",
         "size": 3240407
       },
       {
         "path": "jimtcl",
         "commit": "1933e5457b9512d39ebbe11ed32578aada149f49",
         "file": "sources/oss-openocd--jimtcl.tar.gz",
-        "sha256": "c8e5a012b38b0930e7ebf761d672341db2e60bf2fc27f1e63f4c3081ceeab6b4",
+        "sha256": "759ae9824ed5cb024223d6a32c90e4708cf7ac7d4121c2ac1f08f3b61bd42836",
         "size": 4398088
       },
       {
         "path": "src/jtag/drivers/libjaylink",
         "commit": "0d23921a05d5d427332a142d154c213d0c306eb1",
         "file": "sources/oss-openocd--src-jtag-drivers-libjaylink.tar.gz",
-        "sha256": "b226ee7a4f1f924e60c753ff397e74b5137168603533e2f2eb961009fc8d7a93",
+        "sha256": "2825b4afd957d74b1adade67583f8e267db11e23be2280e94e9f114aa90d46d0",
         "size": 74784
       },
       {
         "path": "tools/git2cl",
         "commit": "8373c9f74993e218a08819cbcdbab3f3564bbeba",
         "file": "sources/oss-openocd--tools-git2cl.tar.gz",
-        "sha256": "c17a7ba724c36a0d4f53e1e534bae8bee98fc830cace89e433100f61f0927319",
+        "sha256": "3b89e7b077043c19275a815fde080c888e222983a1d187ae2107f3bd743009ca",
         "size": 13512
       }
     ],
@@ -176,7 +176,7 @@
         "path": ".",
         "commit": "3b328d2bb661284165cc155adf211718aefbdc2a",
         "file": "sources/oss-verilator.tar.gz",
-        "sha256": "46e76fe427bb7683944a9172f78bf9c9a51b084d280f40f41c67042b0be491bf",
+        "sha256": "f6f2f30adf45dafd9a8a06c3dce785d3c10f532b026b0b3c8f3c1c61cb9e398f",
         "size": 5652379
       }
     ],
@@ -185,7 +185,7 @@
         "path": ".",
         "commit": "016a6243de768046f4fba6f88a8659ce1a18d261",
         "file": "sources/oss-yices.tar.gz",
-        "sha256": "c08356432cb4be8bc118d3482a75b3921748b11b7f3c2391ffbecf8b319f6fe3",
+        "sha256": "c0fba9a51163521822a0f62cf700907f7184f60d3a8700be9e1f179fbd5e2627",
         "size": 9960392
       }
     ],
@@ -194,21 +194,21 @@
         "path": ".",
         "commit": "abeb7213b9f368d1357948bc1cf6ae28a444f5f7",
         "file": "sources/oss-surfer-win32.tar.gz",
-        "sha256": "24654667b7587989d1d88e04ece7b30eb5d9c22647f6511ea8da68febeeb8104",
+        "sha256": "ebf01e272eeaecf002245a8b674e3d9558926841ecf8b3eecf3428bc6678ac16",
         "size": 9695963
       },
       {
         "path": "f128",
         "commit": "e60de395f0d6454c1dc546b87f06a6358425b6b6",
         "file": "sources/oss-surfer-win32--f128.tar.gz",
-        "sha256": "4f17cd0106e27fdf2fa768de586050329c43e4ea9ab6d9307db4208c1d439d51",
+        "sha256": "d0efe6b2efe39e712764cd1b47c1057027a4320af2da7ff875655e783bb43972",
         "size": 13217
       },
       {
         "path": "instruction-decoder",
         "commit": "f016312216a88157d7594fabb6bc53d3d08c0999",
         "file": "sources/oss-surfer-win32--instruction-decoder.tar.gz",
-        "sha256": "9611cfff7498b1bb50ddbbc52caa349942d4a8a692ab88aad23ae40b10012650",
+        "sha256": "60d76fed1fb7af3f62a4b64da0dfb24506a851671ab5aa87ce5e215dd974792a",
         "size": 1100656
       }
     ],
@@ -217,21 +217,21 @@
         "path": ".",
         "commit": "0ab7f4722be9cb0420494609d58d813def7d4319",
         "file": "sources/oss-surfer-darwin.tar.gz",
-        "sha256": "ad795895a716f696f2381d6910e69428da13d68a282d20a21c90cbe5354997e9",
+        "sha256": "e6ba3a81699405c8be2c947f06cb783bd272b3a7b6491873b36c9bcbcb80cfdc",
         "size": 9749510
       },
       {
         "path": "f128",
         "commit": "e60de395f0d6454c1dc546b87f06a6358425b6b6",
         "file": "sources/oss-surfer-darwin--f128.tar.gz",
-        "sha256": "a03662350675087f32a4c41f165aa1f65e84bc9cb3a205bd34ce2082209610b8",
+        "sha256": "e7df4ee1db56ce907350d5874c594c8c7fe361cea1681758bb25caf1d82f9c06",
         "size": 13219
       },
       {
         "path": "instruction-decoder",
         "commit": "7c5adb7621a6f277ee13ec1a4babe32ce56cc0c3",
         "file": "sources/oss-surfer-darwin--instruction-decoder.tar.gz",
-        "sha256": "6478bd76113c4a9188de6e34b9821532a3f5d96af9c2d926cffb60e244137e6b",
+        "sha256": "3983c518d431294dbccf50189eb6a9e2c7f6c24ca91c51e60705ef3a511e66cd",
         "size": 1100669
       }
     ],
@@ -240,7 +240,7 @@
         "path": ".",
         "commit": "8b6667d1cdc3344c5c51ddbe7c2f80a132518491",
         "file": "sources/oss-black-iceprog.tar.gz",
-        "sha256": "bbe5cfaa83af40736e1357cb96b8dc8521994384689d38146d98ecd4f04d6848",
+        "sha256": "b4b07dbda6e41cd0836cb3695bdb02293103d295d4f0745a54e9dbab0fccaf8b",
         "size": 14319
       }
     ],
@@ -249,7 +249,7 @@
         "path": ".",
         "commit": "07a30ed39fb6a078f1bf7e9e88ce9ed712380ec2",
         "file": "sources/oss-ghdl-yosys-plugin.tar.gz",
-        "sha256": "22261f263637ba3c735c8b5f915bcd915cbf7f0093108cf4bc60c30a3b94b465",
+        "sha256": "752eafd9f40f10e782048b0f8b6faaf322e57fba73b4559170289a41ec5cb223",
         "size": 86817
       }
     ],
@@ -258,84 +258,84 @@
         "path": ".",
         "commit": "da4c2ec6f24ca1b6d1752c6b5bc4389e55682147",
         "file": "sources/oss-graphviz.tar.gz",
-        "sha256": "4223b6004c85d7c917f84d5b5147e426f054435768a123b6a0c9bc2468d5b300",
+        "sha256": "f04ad305b4421e054f0c0e1e23f8dba41b6b74adc05bfe9d1429537570921f77",
         "size": 35063973
       },
       {
         "path": "dependencies/criterion",
         "commit": "301d143ea42c024f22b673b69c72a4cb3c8d151f",
         "file": "sources/oss-graphviz--dependencies-criterion.tar.gz",
-        "sha256": "b8830b24688987206ce83c65bce22420ef6b0754d0477656c65308ea0c3d8183",
+        "sha256": "1f24edbbdca95321fafc3cff71dfecfaac8ebff8286f0975b7ec69bcb4975cd8",
         "size": 840640
       },
       {
         "path": "windows/dependencies/graphviz-build-utilities",
         "commit": "050fff84ce195e0740878748760fd801eeb07b23",
         "file": "sources/oss-graphviz--windows-dependencies-graphviz-build-utilities.tar.gz",
-        "sha256": "fb1ac97656a9ccf5da5adf5a05de18243ea7da4d2cd589a1e03e0413b3e22bcc",
+        "sha256": "5a6b48a272f3767d07c034755eff15717b7b67613eb8aa9f630f08f53eb6b3bc",
         "size": 3159931
       },
       {
         "path": "windows/dependencies/libraries",
         "commit": "141d3a21be904fa8dc2ae3ed01d36684db07a35d",
         "file": "sources/oss-graphviz--windows-dependencies-libraries.tar.gz",
-        "sha256": "826112ee6658daef83ff6557f9c14ab20a1f1cf5465aa25bed78a8a417a84885",
+        "sha256": "e803748cd7aaffb4b96aeac211b35461fdab4012ae85701d3232a8090d0c0883",
         "size": 15891083
       },
       {
         "path": "dependencies/criterion/dependencies/boxfort",
         "commit": "16b0041c7eb80b2308978e0654c4bb0a2bd36173",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-boxfort.tar.gz",
-        "sha256": "4340bf389ccbc536721abc51a156b7adacf7af7352e7555bd3e8e1f3c1feaaff",
+        "sha256": "0fcd54a2bb686e9e6107f60c158d3d27e2cfb8afa6fbb24dbca43871a6db2db3",
         "size": 40877
       },
       {
         "path": "dependencies/criterion/dependencies/debugbreak",
         "commit": "6b79ec8d8f8d4603111f580a0537f8f31c484c32",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-debugbreak.tar.gz",
-        "sha256": "664b93944fdede8490579ddd5eff8676616e1bd3446a7bb55fc2ad93cbb76514",
+        "sha256": "e967131acf7bdfc10ca3c6511a82b0a4c54ba312f10dc7a70339ad7804b6701c",
         "size": 5599
       },
       {
         "path": "dependencies/criterion/dependencies/dyncall",
         "commit": "51e79a84fd91881d7424b28271c6dda4e0d97c11",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-dyncall.tar.gz",
-        "sha256": "7a95e8ce99feaa16245f8901e357a8751f590434109e68f8cbc9c95eced47166",
+        "sha256": "b4e6ad99e480f8fc40208cf115b32e8acc870b4ada8fa59b4fd6bdbc250ad98b",
         "size": 424568
       },
       {
         "path": "dependencies/criterion/dependencies/klib",
         "commit": "cdb7e9236dc47abf8da7ebd702cc6f7f21f0c502",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-klib.tar.gz",
-        "sha256": "e05f56ee70bc7ff9b30050cdd667503174955336c3e8a70f1ff39717ed6466ab",
+        "sha256": "b7ab34a97f83ed24f198b5441f162e6ef90c3a2650126aebec30269a60df841f",
         "size": 99755
       },
       {
         "path": "dependencies/criterion/dependencies/libcsptr",
         "commit": "0d52904da5d7bd0a3eac3c47e9f9bb10cd78a26e",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-libcsptr.tar.gz",
-        "sha256": "eeeb0376e7506aa1a455e4954fd64bd7c998397772c5ca212b24e3c577eb2c32",
+        "sha256": "c092978201b4948298fee1c37a6c5cd538ca37e03e7c47d3cf2c41ff145490f3",
         "size": 18681
       },
       {
         "path": "dependencies/criterion/dependencies/nanomsg",
         "commit": "7e12a20e038234060d41d03c20721d08117f8607",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-nanomsg.tar.gz",
-        "sha256": "97b5b9c80e81734a06bdbcb7e7178052d9cb5dab02e9d90b21e03b0142465481",
+        "sha256": "26e38a7629186c916fb8d84c70efe5b4b08f0f71a40e0527385cc1198488836d",
         "size": 300648
       },
       {
         "path": "dependencies/criterion/dependencies/nanopb",
         "commit": "56f7c488df99ae655b47b5838055e48b886665a1",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-nanopb.tar.gz",
-        "sha256": "30d53347fd3ab54006754b7f3fa7c482b010eb28c5c13aa9f7d9272107944c73",
+        "sha256": "dae93da8eec85b974a610290aed7dcd11d9596958be99995b13f9e8b28998cb9",
         "size": 224351
       },
       {
         "path": "dependencies/criterion/dependencies/wingetopt",
         "commit": "76a5d1ab15f684d4c9479a32624d65b3bd1a726b",
         "file": "sources/oss-graphviz--dependencies-criterion-dependencies-wingetopt.tar.gz",
-        "sha256": "bfc2f528b722b635af69e166629ce4f35133971bae7ea700eaeb6e2bac4d7852",
+        "sha256": "dfeef763469ec51460d0d57733699657eacd552afa848a4b01b2905004f4a0fd",
         "size": 7259
       }
     ],
@@ -344,7 +344,7 @@
         "path": ".",
         "commit": "99e6abc7c0da18090730dff6eb264ac3c1cc7fd5",
         "file": "sources/oss-icefunprog.tar.gz",
-        "sha256": "b38e5c91b3321a005e13a11ee00c6bfd2202ca5319d36cffd847f7e55996fc03",
+        "sha256": "2d79b5ff7bfe133ce71db4d79f20e7de2888cd1b3c8129f0e0c50768cbe54692",
         "size": 14437
       }
     ],
@@ -353,7 +353,7 @@
         "path": ".",
         "commit": "e8f915033f7a941647ca5f884e80086a8e68282d",
         "file": "sources/oss-tinyfpgab.tar.gz",
-        "sha256": "15a600715048ab399cc648e91242618afb8a09a306fe5575201fe14678f1aef0",
+        "sha256": "148673247375dd91b07567a00bba4648980f127655bb562eb87395dfface43a8",
         "size": 297574
       }
     ],
@@ -362,7 +362,7 @@
         "path": ".",
         "commit": "97f6353540bf7c0d27f5612f202b48f41da75299",
         "file": "sources/oss-tinyprog.tar.gz",
-        "sha256": "b3f95afa6d4a9a5f036461ed4fe8acc222202cd5b1d124e0a53c416f30ee9876",
+        "sha256": "ee6eb5652ca44146c6683ab793482fb250740e98deeed20d82106da7773b3aaf",
         "size": 3713408
       }
     ],
@@ -371,7 +371,7 @@
         "path": ".",
         "commit": "6248c81c21a0fe825089311b17f2c302eea614a2",
         "file": "sources/oss-xdot.tar.gz",
-        "sha256": "6eecfb07f747c656861f1adfd7ea78762dc8626298708662d9a7ff40ea23dbae",
+        "sha256": "243a1012229914088a3245d31f2f6c8839090c835d5a479e348abc46dfdc766d",
         "size": 132602
       }
     ],
@@ -397,6 +397,749 @@
         "file": "sources/pycairo-1.25.1.tar.gz",
         "sha256": "7e2be4fbc3b4536f16db7a11982cbf713e75069a4d73d44fe5a49b68423f5c0c",
         "size": 347088
+      }
+    ],
+    "macports-distfile-atk-2.38.0.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/atk--atk-2.38.0.tar.xz",
+        "sha256": "ac4de2a4ef4bd5665052952fe169657e65e895c5057dffb3c2a810f6191a0c36",
+        "size": 303952
+      }
+    ],
+    "macports-port-atk-dbdd9e59fb7d": [
+      {
+        "path": ".",
+        "commit": "dbdd9e59fb7d01d64d6f0535cf751860db8eab35",
+        "file": "sources/macports-port-atk-dbdd9e59fb7d.tar.gz",
+        "sha256": "11ea0d24f6fcd8f393b763315430517514869b4cebb4a1fefafc0d85981711d1",
+        "size": 1163
+      }
+    ],
+    "macports-distfile-cairo-1.17.6.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/cairo--cairo-1.17.6.tar.xz",
+        "sha256": "4eebc4c2bad0402bc3f501db184417094657d111fb6c06f076a82ea191fe1faf",
+        "size": 35055900
+      }
+    ],
+    "macports-port-cairo-bb144e56ff42": [
+      {
+        "path": ".",
+        "commit": "bb144e56ff42da8c74cc12508cb458e744e08903",
+        "file": "sources/macports-port-cairo-bb144e56ff42.tar.gz",
+        "sha256": "48607e622bd96a890a1ebfc2f9ae6de6d31e3b074c11e428c93174aa14afec5d",
+        "size": 3535
+      }
+    ],
+    "macports-distfile-fribidi-1.0.13.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/fribidi--fribidi-1.0.13.tar.xz",
+        "sha256": "7fa16c80c81bd622f7b198d31356da139cc318a63fc7761217af4130903f54a2",
+        "size": 1170100
+      }
+    ],
+    "macports-port-fribidi-515d438c57b9": [
+      {
+        "path": ".",
+        "commit": "515d438c57b94a1b130602c8606f4981f69edf8c",
+        "file": "sources/macports-port-fribidi-515d438c57b9.tar.gz",
+        "sha256": "014afc55d012756d1cd9ea36c87ca2c7dc2a23d8856d526efedb7cfcb76d80dd",
+        "size": 1353
+      }
+    ],
+    "macports-distfile-gdbm-1.23.tar.gz": [
+      {
+        "path": ".",
+        "file": "sources/gdbm--gdbm-1.23.tar.gz",
+        "sha256": "74b1081d21fff13ae4bd7c16e5d6e504a4c26f7cde1dca0d963a484174bbcacd",
+        "size": 1115854
+      }
+    ],
+    "macports-port-gdbm-c6951fd11cdb": [
+      {
+        "path": ".",
+        "commit": "c6951fd11cdb43493d04ac24dba0fd10f8b4daa9",
+        "file": "sources/macports-port-gdbm-c6951fd11cdb.tar.gz",
+        "sha256": "498f3bda564481628e0dc290ee2fb14d2a188ab58e183d3f4680b636abaae05e",
+        "size": 1666
+      }
+    ],
+    "macports-distfile-gdk-pixbuf-2.42.10.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/gdk-pixbuf2--gdk-pixbuf-2.42.10.tar.xz",
+        "sha256": "ee9b6c75d13ba096907a2e3c6b27b61bcd17f5c7ebeab5a5b439d2f2e39fe44b",
+        "size": 6519776
+      }
+    ],
+    "macports-port-gdk-pixbuf2-d487547d1205": [
+      {
+        "path": ".",
+        "commit": "d487547d1205a10498fd68fd8dbaf6d7722fe929",
+        "file": "sources/macports-port-gdk-pixbuf2-d487547d1205.tar.gz",
+        "sha256": "60309db70c67cb7c47fa8c7c1a9fa1a91e4930e41cebe271028c884b0b0e937f",
+        "size": 2316
+      }
+    ],
+    "macports-distfile-gettext-0.21.1.tar.gz": [
+      {
+        "path": ".",
+        "file": "sources/gettext--gettext-0.21.1.tar.gz",
+        "sha256": "e8c3650e1d8cee875c4f355642382c1df83058bd5a11ee8555c0cf276d646d45",
+        "size": 25248473
+      }
+    ],
+    "macports-port-gettext-30239928d683": [
+      {
+        "path": ".",
+        "commit": "30239928d68396b097e79aa4acb70094870832af",
+        "file": "sources/macports-port-gettext-30239928d683.tar.gz",
+        "sha256": "001cd2606836c99a72b11a8f6784c9834aa0e6956bf1b58ee52c992e7db401e9",
+        "size": 2885
+      }
+    ],
+    "macports-distfile-glib-2.78.3.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/glib2--glib-2.78.3.tar.xz",
+        "sha256": "609801dd373796e515972bf95fc0b2daa44545481ee2f465c4f204d224b2bc21",
+        "size": 5321388
+      }
+    ],
+    "macports-port-glib2-69c4cab16d1b": [
+      {
+        "path": ".",
+        "commit": "69c4cab16d1b8f1e7ab06d95557bfb3de7185904",
+        "file": "sources/macports-port-glib2-69c4cab16d1b.tar.gz",
+        "sha256": "2f74196a5dc5f7b0204a33312680b9522f0d7dff3c6730444fbd63c8cd0b2380",
+        "size": 12210
+      }
+    ],
+    "macports-distfile-gmp-6.3.0.tar.bz2": [
+      {
+        "path": ".",
+        "file": "sources/gmp--gmp-6.3.0.tar.bz2",
+        "sha256": "ac28211a7cfb609bae2e2c8d6058d66c8fe96434f740cf6fe2e47b000d1c20cb",
+        "size": 2643888
+      }
+    ],
+    "macports-port-gmp-833eca2a8455": [
+      {
+        "path": ".",
+        "commit": "833eca2a8455dbabb9c527dc42990cb30330e68a",
+        "file": "sources/macports-port-gmp-833eca2a8455.tar.gz",
+        "sha256": "a6b012c0b6213f104520b75b5196169c28ad85261874162c35a671a8b88534c6",
+        "size": 2676
+      }
+    ],
+    "macports-distfile-gobject-introspection-1.78.1.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/gobject-introspection--gobject-introspection-1.78.1.tar.xz",
+        "sha256": "bd7babd99af7258e76819e45ba4a6bc399608fe762d83fde3cac033c50841bb4",
+        "size": 1060296
+      }
+    ],
+    "macports-port-gobject-introspection-c639ea597d70": [
+      {
+        "path": ".",
+        "commit": "c639ea597d705c17e0e7c8d0f30d69988a05ab22",
+        "file": "sources/macports-port-gobject-introspection-c639ea597d70.tar.gz",
+        "sha256": "9f13fd920dd6363ea01c6625392bd12cd5603b2855c9e039d4ea164757142dab",
+        "size": 4269
+      }
+    ],
+    "macports-distfile-graphite2-1.3.14.tgz": [
+      {
+        "path": ".",
+        "file": "sources/graphite2--graphite2-1.3.14.tgz",
+        "sha256": "f99d1c13aa5fa296898a181dff9b82fb25f6cc0933dbaa7a475d8109bd54209d",
+        "size": 6630061
+      }
+    ],
+    "macports-port-graphite2-967d1f217e27": [
+      {
+        "path": ".",
+        "commit": "967d1f217e27eb1f52a4e6904a030e12953b29a4",
+        "file": "sources/macports-port-graphite2-967d1f217e27.tar.gz",
+        "sha256": "f7e732b79826dc0ed07068415c250630d5ed1b61e55624fa9eb3cc002c069ab7",
+        "size": 1004
+      }
+    ],
+    "macports-distfile-gtk-mac-integration-3.0.1.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/gtk-osx-application--gtk-mac-integration-3.0.1.tar.xz",
+        "sha256": "f19e35bc4534963127bbe629b9b3ccb9677ef012fc7f8e97fd5e890873ceb22d",
+        "size": 349228
+      }
+    ],
+    "macports-port-gtk-osx-application-44838d98745f": [
+      {
+        "path": ".",
+        "commit": "44838d98745f3e6e0495db29aaba84c2cb43d589",
+        "file": "sources/macports-port-gtk-osx-application-44838d98745f.tar.gz",
+        "sha256": "5a68971febd52957666c987c56cd380563617ba4e077a6b101d8f43f283e552b",
+        "size": 2331
+      }
+    ],
+    "macports-distfile-gtk+-3.24.38.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/gtk3--gtk+-3.24.38.tar.xz",
+        "sha256": "ce11decf018b25bdd8505544a4f87242854ec88be054d9ade5f3a20444dd8ee7",
+        "size": 12398104
+      }
+    ],
+    "macports-port-gtk3-0c8486132d77": [
+      {
+        "path": ".",
+        "commit": "0c8486132d7745abed29490ffcaaf7172d966e3c",
+        "file": "sources/macports-port-gtk3-0c8486132d77.tar.gz",
+        "sha256": "e4cda65c539b6dc5f446d33729382af687a2e41faf5e180156002fe87f052b54",
+        "size": 5221
+      }
+    ],
+    "macports-distfile-lerc-4.0.0.tar.gz": [
+      {
+        "path": ".",
+        "file": "sources/lerc--lerc-4.0.0.tar.gz",
+        "sha256": "91431c2b16d0e3de6cbaea188603359f87caed08259a645fd5a3805784ee30a0",
+        "size": 4710408
+      }
+    ],
+    "macports-port-lerc-943f85650255": [
+      {
+        "path": ".",
+        "commit": "943f85650255e79d5da4c03864b000e29f6c2653",
+        "file": "sources/macports-port-lerc-943f85650255.tar.gz",
+        "sha256": "f4c9e5f341806d9890c59cd8494b478ec85fbfe80556b6a987c47c7c90758677",
+        "size": 1360
+      }
+    ],
+    "macports-distfile-libftdi1-1.5.tar.bz2": [
+      {
+        "path": ".",
+        "file": "sources/libftdi--libftdi1-1.5.tar.bz2",
+        "sha256": "7c7091e9c86196148bd41177b4590dccb1510bfe6cea5bf7407ff194482eb049",
+        "size": 116297
+      }
+    ],
+    "macports-port-libftdi-3bdf7f45e366": [
+      {
+        "path": ".",
+        "commit": "3bdf7f45e366506775548eeab8a5a4b259f23bd9",
+        "file": "sources/macports-port-libftdi-3bdf7f45e366.tar.gz",
+        "sha256": "008c41c16dc3cc5cd8c20260b4959aa8876c752949e6aa1d8df06eb600ad143e",
+        "size": 1274
+      }
+    ],
+    "macports-distfile-libiconv-1.17.tar.gz": [
+      {
+        "path": ".",
+        "file": "sources/libiconv--libiconv-1.17.tar.gz",
+        "sha256": "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313",
+        "size": 5413283
+      }
+    ],
+    "macports-port-libiconv-4aac31a17a1d": [
+      {
+        "path": ".",
+        "commit": "4aac31a17a1da3aa5a776d48862980724aacb399",
+        "file": "sources/macports-port-libiconv-4aac31a17a1d.tar.gz",
+        "sha256": "dd843d947c1125da457339b70862dd72cdc6bf336cd3a98f242329cdb84c8854",
+        "size": 21448
+      }
+    ],
+    "macports-distfile-libusb-1.0.26.tar.gz": [
+      {
+        "path": ".",
+        "file": "sources/libusb--libusb-1.0.26.tar.gz",
+        "sha256": "6e5fd904275b12ba5e9fcd4ffb1366028f410e632401dfb11703123a5cc2a1f2",
+        "size": 383960
+      }
+    ],
+    "macports-port-libusb-6b3c05d3a37d": [
+      {
+        "path": ".",
+        "commit": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392",
+        "file": "sources/macports-port-libusb-6b3c05d3a37d.tar.gz",
+        "sha256": "55cb6a05beaf818bef3ea64aa4e792cb4c7a66eee7116ba7f251f0009a3830b4",
+        "size": 1556
+      }
+    ],
+    "macports-distfile-pango-1.50.14.tar.xz": [
+      {
+        "path": ".",
+        "file": "sources/pango--pango-1.50.14.tar.xz",
+        "sha256": "1d67f205bfc318c27a29cfdfb6828568df566795df0cb51d2189cde7f2d581e8",
+        "size": 4273776
+      }
+    ],
+    "macports-port-pango-2dc9caa772eb": [
+      {
+        "path": ".",
+        "commit": "2dc9caa772eb6daffce44edf57f55ae49da8802b",
+        "file": "sources/macports-port-pango-2dc9caa772eb.tar.gz",
+        "sha256": "130bb0c7abe99c6643f2ac93fff57aadbe747feb36054f155b49693ee70a41b2",
+        "size": 2364
+      }
+    ],
+    "macports-distfile-readline82-001": [
+      {
+        "path": ".",
+        "file": "sources/readline--readline82-001",
+        "sha256": "bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7",
+        "size": 1198
+      }
+    ],
+    "macports-distfile-readline-8.2.tar.gz": [
+      {
+        "path": ".",
+        "file": "sources/readline--readline-8.2.tar.gz",
+        "sha256": "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35",
+        "size": 3043952
+      }
+    ],
+    "macports-port-readline-556ec864a7d9": [
+      {
+        "path": ".",
+        "commit": "556ec864a7d91fb89eb261b7ed380098e2c308dc",
+        "file": "sources/macports-port-readline-556ec864a7d9.tar.gz",
+        "sha256": "e56cee4e383c30e8b776e7f2dbd265807b793a8dc708dd50c1b1ae27e7a67d01",
+        "size": 1559
+      }
+    ],
+    "qt-5.15.3-qtactiveqt": [
+      {
+        "path": ".",
+        "file": "sources/qtactiveqt-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "c82a9269b32682598bf60e5d884b3ea23371d292a79c7f9ceaf141373b270d0b",
+        "size": 268404
+      }
+    ],
+    "qt-5.15.3-qtandroidextras": [
+      {
+        "path": ".",
+        "file": "sources/qtandroidextras-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "7406af8574ce5f23ec6f7c3ce27efc98ef1f8f6c6a9577febe0460cf83219192",
+        "size": 276256
+      }
+    ],
+    "qt-5.15.3-qtbase": [
+      {
+        "path": ".",
+        "file": "sources/qtbase-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "26394ec9375d52c1592bd7b689b1619c6b8dbe9b6f91fdd5c355589787f3a0b6",
+        "size": 50204364
+      }
+    ],
+    "qt-5.15.3-qtcharts": [
+      {
+        "path": ".",
+        "file": "sources/qtcharts-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "accf85cda64641d42f4cba098741c8b9df38f7de606a38c8663d754bb61623af",
+        "size": 4252036
+      }
+    ],
+    "qt-5.15.3-qtcoap": [
+      {
+        "path": ".",
+        "file": "sources/qtcoap-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "5dbe8b54b625837a0bf0252f3bbfa56054c219ff02c16a09257c02b6eaceb3cd",
+        "size": 173992
+      }
+    ],
+    "qt-5.15.3-qtconnectivity": [
+      {
+        "path": ".",
+        "file": "sources/qtconnectivity-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "f17fda1dac3248be2800af05ac0e2493920e63b61732050aed199bfd41f265c1",
+        "size": 2815220
+      }
+    ],
+    "qt-5.15.3-qtdatavis3d": [
+      {
+        "path": ".",
+        "file": "sources/qtdatavis3d-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "d7123fb7239d6512240efcd31ad5e288420be858bc8322f86fc70be16e46aad8",
+        "size": 5191636
+      }
+    ],
+    "qt-5.15.3-qtdeclarative": [
+      {
+        "path": ".",
+        "file": "sources/qtdeclarative-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "33f15a5caa451bddf8298466442ccf7ca65e4cf90453928ddbb95216c4374062",
+        "size": 21567896
+      }
+    ],
+    "qt-5.15.3-qtdoc": [
+      {
+        "path": ".",
+        "file": "sources/qtdoc-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "2ef04bade2ea964a59f7326ffd08d863fdcfeaea94b104ebf2dae33a1e791043",
+        "size": 5746620
+      }
+    ],
+    "qt-5.15.3-qtgamepad": [
+      {
+        "path": ".",
+        "file": "sources/qtgamepad-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "debdbff30f9bc9d2e65ab3b8dede9a2a0688ecffda394b30d481f32911fd0c3f",
+        "size": 387112
+      }
+    ],
+    "qt-5.15.3-qtgraphicaleffects": [
+      {
+        "path": ".",
+        "file": "sources/qtgraphicaleffects-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "e24e855f202bb24b4f8ea9df504e24f451a5af49875a18cf324faf5f1e628f6b",
+        "size": 14040888
+      }
+    ],
+    "qt-5.15.3-qtimageformats": [
+      {
+        "path": ".",
+        "file": "sources/qtimageformats-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "747619890cf129d1d98a6e3d157e689c6c2a723e724a41d738012a542a54e222",
+        "size": 1811496
+      }
+    ],
+    "qt-5.15.3-qtknx": [
+      {
+        "path": ".",
+        "file": "sources/qtknx-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "7964e3b23973e3893a357369f55df1a86275c6ec1cb67b8e49f6e2c756788f8d",
+        "size": 691256
+      }
+    ],
+    "qt-5.15.3-qtlocation": [
+      {
+        "path": ".",
+        "file": "sources/qtlocation-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "a69f28ccfd4ef8e69e0131b178d41d71264be836f2f55bd29731e908a22c6bbd",
+        "size": 6556680
+      }
+    ],
+    "qt-5.15.3-qtlottie": [
+      {
+        "path": ".",
+        "file": "sources/qtlottie-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "dae5a5e650c831a36b342b43863677673ec37fa7dc2f4acc51b4d30ca1cc1490",
+        "size": 82432
+      }
+    ],
+    "qt-5.15.3-qtmacextras": [
+      {
+        "path": ".",
+        "file": "sources/qtmacextras-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "9b4d040c7b36c0aa8e3c58f7384fc12ceb2bf7fe2ff6a365dc87c3f1528ad887",
+        "size": 69492
+      }
+    ],
+    "qt-5.15.3-qtmqtt": [
+      {
+        "path": ".",
+        "file": "sources/qtmqtt-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "b086ec5f8be776e1d88ace6e716498fa475975570c500570db62903b814ed05b",
+        "size": 219624
+      }
+    ],
+    "qt-5.15.3-qtmultimedia": [
+      {
+        "path": ".",
+        "file": "sources/qtmultimedia-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "2ebaa33720b808aa074fd15b9de506c1e89b670b39c7d4b62cb859e70ce606f0",
+        "size": 3828384
+      }
+    ],
+    "qt-5.15.3-qtnetworkauth": [
+      {
+        "path": ".",
+        "file": "sources/qtnetworkauth-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "fb9e6da60251dd04147006ad747f0d046f20677023f978c42cc7776150bee522",
+        "size": 141748
+      }
+    ],
+    "qt-5.15.3-qtopcua": [
+      {
+        "path": ".",
+        "file": "sources/qtopcua-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "4a484a27f17b7c8189d05189e39784c0af8beb32bf59b9a3a7114786cf96cbde",
+        "size": 840188
+      }
+    ],
+    "qt-5.15.3-qtpurchasing": [
+      {
+        "path": ".",
+        "file": "sources/qtpurchasing-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "0bfa41370c5fa22410625181bf4443c1534414e329ef48c9ee54c2c4e19ac2f4",
+        "size": 208772
+      }
+    ],
+    "qt-5.15.3-qtquick3d": [
+      {
+        "path": ".",
+        "file": "sources/qtquick3d-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "236a5645957d28b9980410bf7c3875f8de19d54a8f3916af6d5685fe3a08cead",
+        "size": 55738508
+      }
+    ],
+    "qt-5.15.3-qtquickcontrols2": [
+      {
+        "path": ".",
+        "file": "sources/qtquickcontrols2-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "3b95e9be58c3d918f4c4a805116459a403ae6c61e33edf71b319672c46af562f",
+        "size": 8286960
+      }
+    ],
+    "qt-5.15.3-qtquickcontrols": [
+      {
+        "path": ".",
+        "file": "sources/qtquickcontrols-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "4034afce2e8afde4c4cb5e3be3ce240d00647fa0d292f4cd1ac4454ce40230f0",
+        "size": 5982868
+      }
+    ],
+    "qt-5.15.3-qtquicktimeline": [
+      {
+        "path": ".",
+        "file": "sources/qtquicktimeline-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "9f2286314aeeccb7a095167e114c6e64593c9c748608149b7363f0034249e2cc",
+        "size": 102668
+      }
+    ],
+    "qt-5.15.3-qtremoteobjects": [
+      {
+        "path": ".",
+        "file": "sources/qtremoteobjects-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "5e34ded55199659afc3c7746cedb536ef8bde384aac7b20a0936192e466b123c",
+        "size": 374700
+      }
+    ],
+    "qt-5.15.3-qtscript": [
+      {
+        "path": ".",
+        "file": "sources/qtscript-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "f0043815d74f7103fdb4520bf1be2060a4e21c1e0cde7dfa30760750cd40343c",
+        "size": 2663512
+      }
+    ],
+    "qt-5.15.3-qtscxml": [
+      {
+        "path": ".",
+        "file": "sources/qtscxml-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "5d03d4b90ef9266c97771b3c254ea01103b169ccb1b329a349beb90da0747c4e",
+        "size": 434432
+      }
+    ],
+    "qt-5.15.3-qtsensors": [
+      {
+        "path": ".",
+        "file": "sources/qtsensors-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "4acbbb07fb1d782e1f6b092563ff227134ebb2746b6b5027aede28e3a117a59f",
+        "size": 2057388
+      }
+    ],
+    "qt-5.15.3-qtserialbus": [
+      {
+        "path": ".",
+        "file": "sources/qtserialbus-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "f8bfe4a7a7f685a123c76e8f9825e8f58677b4ba47b8c1eefc35db707ff89de5",
+        "size": 356520
+      }
+    ],
+    "qt-5.15.3-qtserialport": [
+      {
+        "path": ".",
+        "file": "sources/qtserialport-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "a12974e758d58508776ea8371610808cb047375d515301aec80c1307d4dbae32",
+        "size": 321572
+      }
+    ],
+    "qt-5.15.3-qtspeech": [
+      {
+        "path": ".",
+        "file": "sources/qtspeech-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "58a7cd3fcb5216f11684c7d87ba7571673297370ebe74cbffc2e211e534b852b",
+        "size": 101852
+      }
+    ],
+    "qt-5.15.3-qtsvg": [
+      {
+        "path": ".",
+        "file": "sources/qtsvg-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "3adc41dfcc67bbe3b8ff553bdac30ee75e270745536a58e54cdb741fa0505d89",
+        "size": 1886104
+      }
+    ],
+    "qt-5.15.3-qttools": [
+      {
+        "path": ".",
+        "file": "sources/qttools-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "463b2fe71a085e7ab4e39333ae360ab0ec857b966d7a08f752c427e5df55f90d",
+        "size": 8896764
+      }
+    ],
+    "qt-5.15.3-qttranslations": [
+      {
+        "path": ".",
+        "file": "sources/qttranslations-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "5d7869f670a135ad0986e266813b9dd5bbae2b09577338f9cdf8904d4af52db0",
+        "size": 1617284
+      }
+    ],
+    "qt-5.15.3-qtvirtualkeyboard": [
+      {
+        "path": ".",
+        "file": "sources/qtvirtualkeyboard-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "7a77f897d8be87c05921caaf17b9e63e6f50e471de3276750d70f6fe22d06382",
+        "size": 10959776
+      }
+    ],
+    "qt-5.15.3-qtwayland": [
+      {
+        "path": ".",
+        "file": "sources/qtwayland-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "686ada6c5525bfa7f39aa37e2a811a381374c2c4137a7d9883a19ff24209240b",
+        "size": 565004
+      }
+    ],
+    "qt-5.15.3-qtwebchannel": [
+      {
+        "path": ".",
+        "file": "sources/qtwebchannel-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "2fa019ebd2fa6805ca3011540ffa7d294727316191794a1612b00129845302eb",
+        "size": 209116
+      }
+    ],
+    "qt-5.15.3-qtwebglplugin": [
+      {
+        "path": ".",
+        "file": "sources/qtwebglplugin-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "fc6751b408cbb861b292c1da1ff20f38b1be4a55e154a5046d49bcf4308d3820",
+        "size": 74160
+      }
+    ],
+    "qt-5.15.3-qtwebsockets": [
+      {
+        "path": ".",
+        "file": "sources/qtwebsockets-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "97c9f6c537da79a2627dc1d1609e01182aaaa79e166c40be77cab27daed853d1",
+        "size": 259184
+      }
+    ],
+    "qt-5.15.3-qtwebview": [
+      {
+        "path": ".",
+        "file": "sources/qtwebview-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "187ab063897255e792f9ef0de23205b1a1a7d439a6bb4702a2e17909a810d31d",
+        "size": 133700
+      }
+    ],
+    "qt-5.15.3-qtwinextras": [
+      {
+        "path": ".",
+        "file": "sources/qtwinextras-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "272cca5cab8c8dceb1ac1f78d017c66adcd196f5f6a4064b0778fe4c113743f2",
+        "size": 763968
+      }
+    ],
+    "qt-5.15.3-qtx11extras": [
+      {
+        "path": ".",
+        "file": "sources/qtx11extras-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "a3a9b048da73bd944b407ee29ed9da9e009463329ca700c1452bc226715e3eb8",
+        "size": 143996
+      }
+    ],
+    "qt-5.15.3-qtxmlpatterns": [
+      {
+        "path": ".",
+        "file": "sources/qtxmlpatterns-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "603398f3f9900b401a271231eebc68079d6c5844e968088832f9ee2819cc7fad",
+        "size": 5211100
+      }
+    ],
+    "qt-5.15.3-tqtc-qt5": [
+      {
+        "path": ".",
+        "file": "sources/tqtc-qt5-everywhere-opensource-src-5.15.3.tar.xz",
+        "sha256": "2cd3cb3bea15c8b525ac4b47c60f608fbe20378483fcaa749bc6ce725a70bc8e",
+        "size": 1508388
+      }
+    ],
+    "mmicko-macos-resources-v3": [
+      {
+        "path": ".",
+        "commit": "364d180c8b3a1727a78f3db6f7a9d9c8034fee1e",
+        "file": "sources/mmicko-macos-resources-v3.tar.gz",
+        "sha256": "c6179fd7566029e7fadb0fb0223aef53db82b13f2f65cd86219600e598e2f66d",
+        "size": 6507
+      }
+    ],
+    "pypi-pygobject-3.46.0": [
+      {
+        "path": ".",
+        "file": "sources/PyGObject-3.46.0.tar.gz",
+        "sha256": "481437b05af0a66b7c366ea052710eb3aacbb979d22d30b797f7ec29347ab1e6",
+        "size": 723367
+      }
+    ],
+    "libusb-1.0.30": [
+      {
+        "path": ".",
+        "file": "sources/libusb-1.0.30.tar.bz2",
+        "sha256": "fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf",
+        "size": 656112
+      }
+    ],
+    "homebrew-core-libusb-formula-c1f707f5": [
+      {
+        "path": ".",
+        "file": "sources/homebrew-core-c1f707f5-libusb.rb",
+        "sha256": "7d30d0241b09b4efe210fe50673b9896cbe1c9d8c0ae90ba156a69c2ed84f56e",
+        "size": 2021
+      }
+    ],
+    "eigen-3.4.0": [
+      {
+        "path": ".",
+        "commit": "3147391d946bb4b6c68edd901f2add6ac1f31f8c",
+        "file": "sources/eigen-3.4.0.tar.gz",
+        "sha256": "5bebff3c26ba16edc4232c88e7380f68fcea167e64c53bbb2ab4672b54682210",
+        "size": 2679031
+      }
+    ],
+    "eigen-commit-d0e3791b": [
+      {
+        "path": ".",
+        "commit": "d0e3791b1a0e2db9edd5f1d1befdb2ac5a40efe0",
+        "file": "sources/eigen-commit-d0e3791b.tar.gz",
+        "sha256": "430159cedbad99ddcf69b0d0f4daa5dbb17ac85243ed36ab68ccad69c07c6c1e",
+        "size": 2699031
+      }
+    ],
+    "nixpkgs-574d1eac-recipes": [
+      {
+        "path": ".",
+        "commit": "574d1eac1c200690e27b8eb4e24887f8df7ac27c",
+        "file": "sources/nixpkgs-574d1eac-recipes.tar.gz",
+        "sha256": "7c6c8bcfd34d5238a814610a3e17097db9fc7047bb5d5c2af32e84e04ccfd2f9",
+        "size": 8533
+      }
+    ],
+    "macports-port-eigen3-53dd381abb03": [
+      {
+        "path": ".",
+        "commit": "53dd381abb03c180dab880977bc4aaa347b39118",
+        "file": "sources/macports-port-eigen3-53dd381abb03.tar.gz",
+        "sha256": "c51771fd6ddb9287d3db3de1d888b45f87e6d75270a4cbb0410de9fbc691bead",
+        "size": 4784
       }
     ]
   }

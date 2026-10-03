@@ -36,12 +36,26 @@ macOS Toolchain 1.0 (darwin-arm64), summary:
 | Component | Version | License (SPDX, as reviewed) | Source |
 |---|---|---|---|
 | GHDL (LLVM JIT, macOS 15 aarch64 build) | 6.0.0 | GPL-2.0-or-later; GNAT/GCC runtime GPL-3.0-or-later WITH GCC-exception-3.1; LLVM Apache-2.0 WITH LLVM-exception | ghdl/ghdl v6.0.0, in the source package |
-| Apio (macOS bundle, with Python 3.14.7, OpenSSL 3.5.7, libusb, zstd and Python packages) | 1.7.0 | Apio GPL-3.0-or-later; Python PSF-2.0; OpenSSL Apache-2.0; libusb LGPL-2.1-or-later; package licenses as on Windows | FPGAwars/apio `ccede3ec…`, in the source package |
+| Apio (macOS bundle, with Python 3.14.7, OpenSSL 3.5.7, zstd 1.5.7, libusb 1.0.30 and Python packages) | 1.7.0 | Apio GPL-3.0-or-later; Python PSF-2.0; OpenSSL Apache-2.0; zstd BSD-3-Clause; libusb LGPL-2.1-or-later; package licenses as on Windows | FPGAwars/apio `ccede3ec…`; libusb 1.0.30 release tarball and its Homebrew build formula; in the source package |
 | Apio definitions | 2026.09.17 | GPL-3.0 (license text without "or later") | in the source package |
-| Apio oss-cad-suite (Yosys 0.63+173, openFPGALoader 1.1.1 with libusb/libftdi/hidapi, Python 3.11, Qt 5 frameworks and the rest of the YosysHQ OSS CAD Suite) | 2026.09.15 | Yosys ISC; openFPGALoader Apache-2.0; per-tool licenses in `license/` (58 files, including GPL/LGPL/EPL/EUPL tools); Qt 5 LGPL-3.0; bundled third-party libraries under review | every GPL/LGPL/EPL/EUPL tool at its recorded revision, in the source package |
-| Apio openXC7 (nextpnr-xilinx e860c9c8, Project X-Ray tools and database, Python 3.12) | 2026.09.25 | nextpnr-xilinx ISC; Project X-Ray ISC; prjxray-db CC0-1.0; Python PSF-2.0; bundled libraries (libiconv LGPL) under review | FPGAwars/tools-openxc7 `22b6a11d…`, in the source package |
+| Apio oss-cad-suite (Yosys 0.63+173, openFPGALoader 1.1.1, Python 3.11, the rest of the YosysHQ OSS CAD Suite, and the libraries below) | 2026.09.15 | Yosys ISC; openFPGALoader Apache-2.0; per-tool licenses in `license/` (58 files); bundled libraries: see below | each GPL/LGPL/EUPL/EPL tool at its recorded revision, YosysHQ's build recipe, and the sources of the bundled libraries below; in the source package |
+| Apio openXC7 (nextpnr-xilinx e860c9c8, Project X-Ray tools and database, Python 3.12, Nix-built libraries) | 2026.09.25 | nextpnr-xilinx ISC; Project X-Ray ISC; prjxray-db CC0-1.0; Python PSF-2.0; bundled libraries permissive (see below); Eigen MPL-2.0 compiled into nextpnr-xilinx | FPGAwars/tools-openxc7 `22b6a11d…`, Eigen 3.4.0 and the nixpkgs recipes; in the source package |
 | openXC7 chip database xc7a100t | 2026-09-25 | CC0-1.0 (derived from prjxray-db) | — |
 | Apio verible (not used by NexysVHDL) | 2026.09.20 | Apache-2.0 | — |
+
+macOS bundled libraries (inside the Apio, oss-cad-suite and openXC7 packages; each one identified by comparing its code with the exact build input). Per-library detail — files, origin, version, license, whether NexysVHDL loads it, source archives — is `nativeLibraryInventory` in the compliance manifest; license texts the toolchain folder does not carry are in `toolchains/compliance/licenses/darwin-arm64/` and in the source package:
+
+| Libraries | Origin | License (SPDX) | Loaded by NexysVHDL's tools | Source |
+|---|---|---|---|---|
+| GNU readline 8.2 (patch 001) | MacPorts build in YosysHQ's macOS build environment | GPL-3.0-or-later | yes (Yosys) | readline-8.2 + patch 001 and the MacPorts recipe |
+| libusb 1.0.26, libftdi1 1.5, hidapi 0.12.0 | MacPorts | LGPL-2.1-or-later; LGPL-2.0 (library); hidapi under its BSD option | yes (openFPGALoader) | upstream archives and MacPorts recipes (hidapi: permissive option) |
+| libffi, ncurses, Tcl 8.6.13, zlib 1.3, realpath | MacPorts | MIT, X11, TCL, Zlib, BSD-2-Clause | yes (Yosys, wrappers) | not required (permissive) |
+| Qt 5.15.3 (58 frameworks, plugins) | Qt 5.15.3 open-source build in mmicko/macos-resources v3 | LGPL-3.0 / GPL-2.0 / GPL-3.0; Charts, Data Visualization, Quick 3D, Virtual Keyboard, Lottie, Network Authorization, WebGL plugin: GPL-3.0 only | no (GUI tools only) | official Qt 5.15.3 module sources and the documented build configuration |
+| GTK 3, GLib, Pango, ATK, Cairo, gdk-pixbuf, GObject-Introspection, fribidi, graphite2, gettext libintl, GNU libiconv 1.17, GMP 6.3.0, gdbm 1.23, gtk-mac-integration, PyGObject 3.46.0, pycairo 1.25.1 | MacPorts / YosysHQ build | LGPL-2.0/2.1/3.0 (Cairo/pycairo LGPL-2.1 or MPL-1.1; GMP LGPL-3.0 or GPL-2.0); gdbm GPL-3.0-or-later | no | upstream archives and MacPorts recipes / PyPI sdists |
+| Boost 1.76, ICU 74.1, OpenSSL 3.2.0, FreeType, HarfBuzz, fontconfig, libpng, libjpeg-turbo, libtiff, pixman, expat, brotli, bzip2, xz, zstd, pcre2, sqlite, Tk, lerc, libdeflate, libepoxy, OSSP uuid | MacPorts | permissive (BSL-1.0, Unicode-3.0, Apache-2.0, FTL, MIT, …) | no | not required (lerc included: MacPorts metadata says GPL-2+, upstream says Apache-2.0) |
+| libusb 1.0.30 (Apio) | Homebrew bottle collected by PyInstaller | LGPL-2.1-or-later | no (Apio USB commands only) | libusb-1.0.30 release tarball and Homebrew formula |
+| Python 3.14.7, OpenSSL 3.5.7, zstd 1.5.7 (Apio) | python.org macOS framework | PSF-2.0, Apache-2.0, BSD-3-Clause | yes | not required |
+| libc++ 16.0.6, Boost 1.81.0, antlr4 4.9.3, Apple libiconv 99, Python 3.12.5, libffi, bzip2, xz, zlib, zstd, fasm, PyYAML, simplejson (openXC7) | Nix, nixpkgs `574d1eac` | Apache-2.0 WITH LLVM-exception, BSL-1.0, BSD, PSF-2.0, MIT, 0BSD, Zlib, Apache-2.0 (Apple libiconv is BSD, not LGPL) | yes | not required; Eigen 3.4.0 (MPL-2.0, compiled into nextpnr-xilinx) source included |
 
 The macOS toolchain's own notice file still shows the earlier "GPL-2.0" label for Apio and the Apio definitions; the corrected identification is the one above (the validated macOS payload is not rebuilt for a label; see `docs/toolchain-1.0-redistribution.md`, "macOS follow-ups").
 
@@ -49,7 +63,7 @@ The macOS toolchain's own notice file still shows the earlier "GPL-2.0" label fo
 
 The source code of the toolchain components whose licenses require it is published as **`NexysVHDL-Toolchain-1.0-Sources.zip`**, built reproducibly by `npm run compliance:assemble` from the pinned revisions in `toolchains/compliance/toolchain-1.0.json` (archive hashes in `toolchains/compliance/sources-1.0.lock.json`). It is published next to each NexysVHDL release that includes the toolchain. Anyone who redistributes the toolchain should redistribute that package with it.
 
-**Status:** the license review of Toolchain 1.0 still has open items (third-party libraries bundled inside upstream packages whose exact source builds are not recorded upstream); until they are closed, the source package is a draft and Toolchain 1.0 is not cleared for redistribution by third parties. See `docs/toolchain-1.0-redistribution.md`.
+**Status:** the license review of Toolchain 1.0 still has open items, now on **Windows only** (Fedora MinGW libraries in the oss-cad-suite package, the Microsoft runtime in the Apio bundle and the MSYS2 build of mcfgthread in openXC7; see `docs/toolchain-1.0-redistribution.md`). The macOS items are resolved. Until the Windows items are closed, the source package is a draft and Toolchain 1.0 is not cleared for redistribution beyond a controlled pilot.
 
 ## 3. Not included
 

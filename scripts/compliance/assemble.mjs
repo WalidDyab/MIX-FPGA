@@ -6,23 +6,30 @@
 // from the pinned sources of toolchains/compliance/toolchain-<version>.json.
 // Build time only; the package is a release asset, never committed to Git.
 //
-//   npm run compliance:assemble [-- --draft] [-- --record] [-- --offline]
+//   npm run compliance:assemble [-- --draft] [-- --record | --record-new] [-- --offline]
 //
 // - Git sources are fetched by exact commit (never a branch or "latest") into a
 //   cache under .artifacts/compliance/git/, with their submodules at the exact
 //   commits the tree records, and archived with `git archive` (deterministic
-//   tar, gzip without timestamp). PyPI sources are downloaded from their pinned
-//   URL and must match the pinned SHA-256 and size.
+//   tar, gzip without timestamp). A git source with `paths` archives only those
+//   paths of the commit (e.g. one port directory of a ports tree; no
+//   submodules); sources with the same `cache` share one cache repository.
+// - PyPI sources (`pypi-sdist`) and other release files (`archive`: upstream
+//   tarballs, distribution mirrors) are downloaded from their pinned URL and
+//   must match the pinned SHA-256 and size (and `md5` when the publisher only
+//   publishes MD5 sums).
 // - toolchains/compliance/sources-<version>.lock.json records the SHA-256 of
 //   every produced archive. A run fails if any archive differs from the lock
-//   (reproducibility); --record (re)writes the lock instead.
+//   (reproducibility); --record (re)writes the lock instead; --record-new adds
+//   only sources the lock does not have yet and still verifies every existing
+//   entry (a new platform's sources, without re-recording another platform's).
 // - The run fails if any blocking item of the compliance manifest is still
 //   unresolved. --draft builds the package anyway, named ...-Sources-DRAFT.zip,
 //   marked as a draft in README.md and manifest.json; it must not be published.
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createWriteStream, existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { copyFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, open, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { get } from 'node:https';
 import { join, relative } from 'node:path';
 import { pipeline } from 'node:stream/promises';
@@ -94,11 +101,27 @@ function submodules(dir, commit, url) {
     });
 }
 
-async function gitArchive(dir, commit, prefix, out) {
-    const child = spawn('git', ['-c', 'core.autocrlf=false', 'archive', '--format=tar', `--prefix=${prefix}`, commit], { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'] });
+async function gitArchive(dir, commit, prefix, out, paths = []) {
+    const child = spawn('git', ['-c', 'core.autocrlf=false', 'archive', '--format=tar', `--prefix=${prefix}`, commit, ...(paths.length ? ['--', ...paths] : [])], { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'] });
     const done = new Promise((resolve, reject) => child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`git archive exited ${code}`)))));
     await pipeline(child.stdout, createGzip({ level: constants.Z_BEST_COMPRESSION }), createWriteStream(out));
     await done;
+    await normalizeGzipHeader(out);
+}
+
+/**
+ * zlib writes the compressing platform into the gzip header's OS byte (RFC 1952
+ * offset 9: e.g. 10 on Windows, 19 on macOS), the only platform-dependent byte
+ * of these archives (tar and deflate data are identical). Fix it to 255
+ * ("unknown") so the same commit gives the same archive bytes everywhere.
+ */
+async function normalizeGzipHeader(file) {
+    const fh = await open(file, 'r+');
+    try {
+        await fh.write(Buffer.from([0xff]), 0, 1, 9);
+    } finally {
+        await fh.close();
+    }
 }
 
 function download(url, to) {
@@ -122,13 +145,15 @@ async function buildSources(outDir) {
     const produced = {};
     for (const s of manifest.sources) {
         if (s.kind === 'git') {
-            const { dir, commit } = fetchCommit(s.id, s.url, s.revision);
+            const { dir, commit } = fetchCommit(s.cache ?? s.id, s.url, s.revision);
             const archives = [];
             const queue = [{ dir, commit, url: s.url, prefix: `${s.id}/`, file: `${s.id}.tar.gz`, path: '' }];
             while (queue.length) {
                 const a = queue.shift();
-                await gitArchive(a.dir, a.commit, a.prefix, join(outDir, a.file));
+                const paths = a.path === '' ? (s.paths ?? []) : [];
+                await gitArchive(a.dir, a.commit, a.prefix, join(outDir, a.file), paths);
                 archives.push({ path: a.path || '.', url: a.url, commit: a.commit, file: `sources/${a.file}`, sha256: await sha256File(join(outDir, a.file)), size: (await stat(join(outDir, a.file))).size });
+                if (paths.length) continue; // a path-limited archive of a large tree: no submodules
                 for (const sm of submodules(a.dir, a.commit, a.url)) {
                     const sub = fetchCommit(`${s.id}--${safeName(join(a.path, sm.path))}`, sm.url, sm.commit);
                     const path = a.path ? `${a.path}/${sm.path}` : sm.path;
@@ -137,10 +162,12 @@ async function buildSources(outDir) {
             }
             produced[s.id] = { kind: 'git', url: s.url, commit, archives };
             console.log(`  ${s.id}: ${archives.length} archive(s)`);
-        } else if (s.kind === 'pypi-sdist') {
-            const name = s.url.split('/').pop();
-            const cached = join(WORK, 'pypi', name);
-            await mkdir(join(WORK, 'pypi'), { recursive: true });
+        } else if (s.kind === 'pypi-sdist' || s.kind === 'archive') {
+            // The published file name, or `file` when the URL does not end in one (e.g. a raw file at a commit).
+            const name = s.file ?? s.url.split('/').pop();
+            const cacheDir = join(WORK, s.kind === 'pypi-sdist' ? 'pypi' : 'archives');
+            const cached = join(cacheDir, name);
+            await mkdir(cacheDir, { recursive: true });
             if (!existsSync(cached) || (await sha256File(cached)) !== s.sha256) {
                 if (args.offline) fail(`${s.id}: ${name} is not cached and --offline was given`);
                 console.log(`  downloading ${s.url}`);
@@ -149,8 +176,12 @@ async function buildSources(outDir) {
             const sha = await sha256File(cached);
             const size = (await stat(cached)).size;
             if (sha !== s.sha256 || size !== s.size) fail(`${s.id}: ${name} has SHA-256 ${sha} (${size} B); pinned ${s.sha256} (${s.size} B)`);
+            if (s.md5) {
+                const md5 = createHash('md5').update(readFileSync(cached)).digest('hex');
+                if (md5 !== s.md5) fail(`${s.id}: ${name} has MD5 ${md5}; the publisher lists ${s.md5}`);
+            }
             await copyFile(cached, join(outDir, name));
-            produced[s.id] = { kind: 'pypi-sdist', url: s.url, archives: [{ path: '.', file: `sources/${name}`, sha256: sha, size }] };
+            produced[s.id] = { kind: s.kind, url: s.url, archives: [{ path: '.', file: `sources/${name}`, sha256: sha, size }] };
             console.log(`  ${s.id}: ${name} verified`);
         } else {
             fail(`${s.id}: unknown source kind ${s.kind}`);
@@ -172,7 +203,7 @@ function readme(produced, blocking) {
         '',
         '- `manifest.json`: the compliance manifest (every component, license, binary archive, source and open item) plus the SHA-256 of every source archive in this package.',
         '- `sources/`: one `.tar.gz` per source (git sources: `git archive` of the pinned commit, plus one archive per submodule at the commit recorded by the parent tree; PyPI sources: the original sdist).',
-        '- `licenses/`: the license texts NexysVHDL ships in the toolchain folders.',
+        '- `licenses/`: the license texts NexysVHDL ships in the toolchain folders (`shared/`, `<platform>/`), and in `compliance/` additional texts of bundled libraries that a toolchain payload does not carry yet.',
         '- `patches/`: modifications NexysVHDL made to third-party source code (none).',
         '- `nexysvhdl/`: the NexysVHDL license and notice (they do not apply to the third-party components).',
         '',
@@ -216,6 +247,16 @@ async function main() {
     if (args.record) {
         writeFileSync(lockFile, `${JSON.stringify(lock, null, 2)}\n`);
         console.log(`Recorded ${relative(REPO_ROOT, lockFile)}`);
+    } else if (args['record-new']) {
+        const pinned = JSON.parse(readFileSync(lockFile, 'utf8'));
+        const diffs = Object.keys(pinned.sources).filter((id) => lock.sources[id] && JSON.stringify(lock.sources[id]) !== JSON.stringify(pinned.sources[id]));
+        for (const id of Object.keys(pinned.sources)) if (!lock.sources[id]) diffs.push(`${id} (no longer produced)`);
+        if (diffs.length) fail(`existing lock entries differ (not reproducible with ${lock.tools.git}, node ${process.version}?): ${diffs.join(', ')}`);
+        const added = Object.keys(lock.sources).filter((id) => !pinned.sources[id]);
+        // Keep the lock in manifest source order; existing entries are byte-for-byte the recorded ones.
+        const sources = Object.fromEntries(Object.keys(lock.sources).map((id) => [id, pinned.sources[id] ?? lock.sources[id]]));
+        writeFileSync(lockFile, `${JSON.stringify({ ...pinned, tools: { ...pinned.tools, ...(added.length ? { [`recordedNew-${process.platform}`]: lock.tools } : {}) }, sources }, null, 2)}\n`);
+        console.log(`All ${Object.keys(pinned.sources).length} existing sources match; recorded ${added.length} new source(s) in ${relative(REPO_ROOT, lockFile)}`);
     } else {
         if (!existsSync(lockFile)) fail(`no ${relative(REPO_ROOT, lockFile)}: run once with --record, review it, and commit it`);
         const pinned = JSON.parse(readFileSync(lockFile, 'utf8'));
@@ -234,6 +275,15 @@ async function main() {
             const target = d.name === 'licenses' ? 'shared' : d.name.slice('licenses-'.length);
             await mkdir(join(stage, 'licenses', target), { recursive: true });
             await copyFile(join(RECIPE_DIR, d.name, f), join(stage, 'licenses', target, f));
+        }
+    }
+    // License texts kept only for the release-level notices and this package (toolchains/compliance/licenses/):
+    // texts a payload does not ship yet, added without changing an already validated toolchain payload.
+    const complianceLicenses = join(COMPLIANCE_DIR, 'licenses');
+    if (existsSync(complianceLicenses)) {
+        for (const f of await listFiles(complianceLicenses)) {
+            await mkdir(join(stage, 'licenses', 'compliance', f, '..'), { recursive: true });
+            await copyFile(join(complianceLicenses, f), join(stage, 'licenses', 'compliance', f));
         }
     }
     await mkdir(join(stage, 'nexysvhdl'), { recursive: true });
