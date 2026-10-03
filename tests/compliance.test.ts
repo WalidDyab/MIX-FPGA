@@ -12,6 +12,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, it } from 'node:test';
+import { gunzipSync } from 'node:zlib';
+import { writeTarEntriesGz, type TarEntry } from '../core/toolchain/tar';
 import { REPO } from './helpers';
 
 interface Source { id: string; kind: string; url: string; revision?: string; sha256?: string; size?: number; md5?: string; paths?: string[]; cache?: string; file?: string; license: string }
@@ -213,6 +215,61 @@ describe('Toolchain 1.0 corresponding-source lock', () => {
         const r = spawnSync(process.execPath, [join(REPO, 'scripts', 'compliance', 'assemble.mjs'), '--offline'], { cwd: REPO, encoding: 'utf8' });
         assert.equal(r.status, 1);
         assert.match(r.stderr, /blocking open item/);
+    });
+});
+
+describe('deterministic path-limited source archives (no dependence on git archive)', () => {
+    it('same bytes for any entry order; exact file bytes (LF and CRLF kept); normalized metadata; gzip OS byte 255', async () => {
+        const dir = await mkdtemp(join(tmpdir(), 'nxv-gittar-'));
+        try {
+            const entries: TarEntry[] = [
+                { name: 'src/', type: 'directory', mode: 0o755 },
+                { name: 'src/port/', type: 'directory', mode: 0o755 },
+                { name: 'src/port/Portfile', type: 'file', mode: 0o644, data: Buffer.from('line one\nline two\n') },
+                { name: 'src/port/files/patch.diff', type: 'file', mode: 0o644, data: Buffer.from('a\r\nb\r\n') },
+                { name: 'src/port/files/', type: 'directory', mode: 0o755 },
+                { name: 'src/port/run.sh', type: 'file', mode: 0o755, data: Buffer.from('#!/bin/sh\n') },
+                { name: 'src/port/link', type: 'symlink', mode: 0o755, linkname: 'Portfile' },
+                { name: `src/port/${'long-name-'.repeat(12)}.txt`, type: 'file', mode: 0o644, data: Buffer.from('x') },
+            ];
+            await writeTarEntriesGz(entries, join(dir, 'a.tar.gz'), { mtime: 1657345000, comment: 'c'.repeat(40) });
+            await writeTarEntriesGz([...entries].reverse(), join(dir, 'b.tar.gz'), { mtime: 1657345000, comment: 'c'.repeat(40) });
+            const a = await readFile(join(dir, 'a.tar.gz'));
+            assert.equal(sha256(a), sha256(await readFile(join(dir, 'b.tar.gz'))), 'entry order does not matter');
+            assert.equal(a[9], 255, 'gzip OS byte');
+            assert.equal(a.readUInt32LE(4), 0, 'no gzip timestamp');
+            const tar = gunzipSync(a);
+            const names: string[] = [];
+            const contents: Record<string, Buffer> = {};
+            for (let o = 0; o + 512 <= tar.length; ) {
+                const h = tar.subarray(o, o + 512);
+                if (h.every((x) => x === 0)) break;
+                const size = parseInt(h.toString('latin1', 124, 136), 8);
+                const type = String.fromCharCode(h[156]!);
+                assert.equal(parseInt(h.toString('latin1', 108, 116), 8), 0, 'uid 0');
+                assert.equal(parseInt(h.toString('latin1', 116, 124), 8), 0, 'gid 0');
+                assert.equal(h.toString('latin1', 265, 329).replace(/\0/g, ''), '', 'no user or group names');
+                assert.equal(parseInt(h.toString('latin1', 136, 148), 8), 1657345000, 'one fixed timestamp');
+                const name = h.toString('utf8', 0, 100).replace(/\0.*$/s, '');
+                if (type === '0') contents[name] = Buffer.from(tar.subarray(o + 512, o + 512 + size));
+                if (type !== 'x' && type !== 'g') names.push(name);
+                o += 512 + Math.ceil(size / 512) * 512;
+            }
+            assert.deepEqual(contents['src/port/Portfile'], Buffer.from('line one\nline two\n'), 'LF kept');
+            assert.deepEqual(contents['src/port/files/patch.diff'], Buffer.from('a\r\nb\r\n'), 'CRLF kept');
+            assert.deepEqual(names.slice(0, 4), ['src/', 'src/port/', 'src/port/Portfile', 'src/port/files/'], 'sorted by path bytes');
+            await assert.rejects(writeTarEntriesGz([{ name: '../x', type: 'file', mode: 0o644 }], join(dir, 'c.tar.gz'), { mtime: 0 }));
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it('the assembler archives path-limited git sources with that writer, and plain git archives with LF line endings everywhere', async () => {
+        const script = await readFile(join(REPO, 'scripts', 'compliance', 'assemble.mjs'), 'utf8');
+        assert.match(script, /if \(paths\.length\) await gitTreeArchive\(/);
+        assert.match(script, /'ls-tree', '-r', '-z'/);
+        assert.match(script, /'cat-file', '--batch'/);
+        assert.match(script, /'core\.eol=lf', 'archive'/, 'text=auto files are never converted to CRLF by Git for Windows');
     });
 });
 

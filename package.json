@@ -602,8 +602,8 @@
     "toolchain:pack": "npm run build && node scripts/toolchain/pack.mjs",
     "toolchain:install": "npm run build && node scripts/toolchain/install.mjs",
     "compliance:manifest": "node scripts/compliance/manifest.mjs",
-    "compliance:assemble": "node scripts/compliance/assemble.mjs",
-    "compliance:check": "node scripts/compliance/manifest.mjs --check && node scripts/compliance/assemble.mjs --draft --offline",
+    "compliance:assemble": "npm run build && node scripts/compliance/assemble.mjs",
+    "compliance:check": "npm run build && node scripts/compliance/manifest.mjs --check && node scripts/compliance/assemble.mjs --draft --offline",
     "package:win": "node scripts/package.mjs --target win32-x64",
     "package:mac": "node scripts/package.mjs --target darwin-arm64"
   },

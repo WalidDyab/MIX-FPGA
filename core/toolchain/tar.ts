@@ -212,6 +212,64 @@ export async function writeTarGz(dir: string, outFile: string, onProgress?: (byt
     await pipeline(Readable.from(blocks()), createGzip({ level: 6 }), createWriteStream(outFile));
 }
 
+/** One entry for writeTarEntriesGz: a directory (name ends with "/"), a regular file or a symbolic link. */
+export interface TarEntry {
+    readonly name: string;
+    readonly type: 'directory' | 'file' | 'symlink';
+    readonly mode: number;
+    readonly data?: Buffer;
+    readonly linkname?: string;
+}
+
+const byteOrder = (a: string, b: string) => Buffer.compare(Buffer.from(a, 'utf8'), Buffer.from(b, 'utf8'));
+
+/**
+ * Writes in-memory entries as a byte-reproducible gzip-compressed tar,
+ * independent of the platform and of any external tool: entries sorted by the
+ * UTF-8 bytes of their path, one fixed timestamp, uid/gid 0 and no user or group
+ * names, the given modes, an optional pax global "comment" record (e.g. the
+ * source commit), gzip level 9 without file name or time, and the gzip header's
+ * OS byte fixed to 255 ("unknown"). Used for corresponding-source archives.
+ */
+export async function writeTarEntriesGz(entries: readonly TarEntry[], outFile: string, options: { mtime: number; comment?: string }): Promise<void> {
+    const names = new Set<string>();
+    for (const e of entries) {
+        if (names.has(e.name)) throw new Error(`duplicate tar entry ${e.name}`);
+        names.add(e.name);
+        if ((e.type === 'directory') !== e.name.endsWith('/')) throw new Error(`tar entry ${e.name}: only directory names end with "/"`);
+        if (e.name.startsWith('/') || e.name.includes('\\') || e.name.split('/').includes('..')) throw new Error(`unsafe tar entry name ${e.name}`);
+    }
+    const sorted = [...entries].sort((a, b) => byteOrder(a.name, b.name));
+    const { mtime, comment } = options;
+    function* blocks(): Generator<Buffer> {
+        if (comment !== undefined) {
+            const record = paxRecord('comment', comment);
+            yield header('pax_global_header', record.length, 0o644, mtime, 'g');
+            yield record;
+            yield pad(record.length);
+        }
+        for (const e of sorted) {
+            if (e.type === 'directory') yield* entryHeader(e.name, 0, e.mode, mtime, '5');
+            else if (e.type === 'symlink') yield* entryHeader(e.name, 0, e.mode, mtime, '2', e.linkname ?? '');
+            else {
+                const data = e.data ?? Buffer.alloc(0);
+                yield* entryHeader(e.name, data.length, e.mode, mtime, '0');
+                yield data;
+                yield pad(data.length);
+            }
+        }
+        yield Buffer.alloc(BLOCK * 2);
+    }
+    await pipeline(Readable.from(blocks()), createGzip({ level: 9 }), createWriteStream(outFile));
+    // zlib records the compressing platform in the OS byte (RFC 1952, offset 9); fix it so every platform agrees.
+    const fh = await open(outFile, 'r+');
+    try {
+        await fh.write(Buffer.from([0xff]), 0, 1, 9);
+    } finally {
+        await fh.close();
+    }
+}
+
 // ---------------------------------------------------------------- reader
 
 export class ArchiveError extends Error {}

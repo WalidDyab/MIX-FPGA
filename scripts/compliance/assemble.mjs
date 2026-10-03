@@ -32,6 +32,7 @@ import { createWriteStream, existsSync, readFileSync, writeFileSync } from 'node
 import { copyFile, mkdir, open, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { get } from 'node:https';
 import { join, relative } from 'node:path';
+import { createRequire } from 'node:module';
 import { pipeline } from 'node:stream/promises';
 import { constants, createGzip } from 'node:zlib';
 import { fail, listFiles, parseArgs, RECIPE_DIR, REPO_ROOT, sha256File } from '../toolchain/lib.mjs';
@@ -101,12 +102,70 @@ function submodules(dir, commit, url) {
     });
 }
 
-async function gitArchive(dir, commit, prefix, out, paths = []) {
-    const child = spawn('git', ['-c', 'core.autocrlf=false', 'archive', '--format=tar', `--prefix=${prefix}`, commit, ...(paths.length ? ['--', ...paths] : [])], { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'] });
+async function gitArchive(dir, commit, prefix, out) {
+    const child = spawn('git', ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf', 'archive', '--format=tar', `--prefix=${prefix}`, commit], { cwd: dir, stdio: ['ignore', 'pipe', 'inherit'] });
     const done = new Promise((resolve, reject) => child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`git archive exited ${code}`)))));
     await pipeline(child.stdout, createGzip({ level: constants.Z_BEST_COMPRESSION }), createWriteStream(out));
     await done;
     await normalizeGzipHeader(out);
+}
+
+/**
+ * A path-limited source (`paths`: e.g. one port directory of a ports tree),
+ * archived by NexysVHDL's own deterministic tar writer (core/toolchain/tar.ts
+ * writeTarEntriesGz) instead of `git archive`, whose tar serialization of a
+ * pathspec differs between git versions (git 2.39 and 2.53 gave different bytes
+ * for the same commit). Input comes only from git plumbing whose output format
+ * is stable: `ls-tree -r -z` (mode, object, path) and `cat-file --batch` (exact
+ * blob bytes, no end-of-line or attribute filtering). Output: the selected files
+ * at their exact content, plus every parent directory, under `prefix`; sorted by
+ * path bytes; uid/gid 0, no owner names; one timestamp, the pinned commit's
+ * committer time; modes 755 (directories, executables, links) / 644 (files); a pax
+ * global comment with the commit; gzip level 9 with OS byte 255.
+ */
+async function gitTreeArchive(dir, commit, prefix, out, paths) {
+    const listing = spawnSync('git', ['ls-tree', '-r', '-z', '--full-tree', commit, '--', ...paths], { cwd: dir, maxBuffer: 1 << 28 });
+    if (listing.status !== 0) fail(`git ls-tree ${commit} -- ${paths.join(' ')}: ${listing.stderr}`);
+    const items = listing.stdout
+        .toString('utf8')
+        .split('\0')
+        .filter(Boolean)
+        .map((line) => {
+            const m = /^(\d{6}) (\w+) ([0-9a-f]{40,64})\t(.+)$/s.exec(line);
+            if (!m) fail(`unexpected git ls-tree output: ${JSON.stringify(line)}`);
+            return { mode: m[1], type: m[2], oid: m[3], path: m[4] };
+        });
+    if (!items.length) fail(`${commit}: no files match ${paths.join(', ')}`);
+    for (const i of items) if (i.type !== 'blob' || !['100644', '100755', '120000'].includes(i.mode)) fail(`${commit}: ${i.path} is a ${i.type} (${i.mode}); only files and links are archived`);
+    const batch = spawnSync('git', ['cat-file', '--batch'], { cwd: dir, input: items.map((i) => `${i.oid}\n`).join(''), maxBuffer: 1 << 30 });
+    if (batch.status !== 0) fail(`git cat-file --batch: ${batch.stderr}`);
+    const blobs = new Map();
+    for (let p = 0; p < batch.stdout.length; ) {
+        const nl = batch.stdout.indexOf(10, p);
+        const [oid, type, size] = batch.stdout.toString('latin1', p, nl).split(' ');
+        if (type !== 'blob') fail(`git cat-file: ${oid} is ${type}`);
+        blobs.set(oid, batch.stdout.subarray(nl + 1, nl + 1 + Number(size)));
+        p = nl + 1 + Number(size) + 1;
+    }
+    const mtime = Number(git(dir, ['show', '-s', '--format=%ct', commit]).trim());
+    const dirs = new Set([prefix]);
+    const entries = items.map((i) => {
+        const parts = i.path.split('/');
+        for (let k = 1; k < parts.length; k++) dirs.add(`${prefix}${parts.slice(0, k).join('/')}/`);
+        const data = blobs.get(i.oid);
+        if (i.mode === '120000') return { name: prefix + i.path, type: 'symlink', mode: 0o755, linkname: data.toString('utf8') };
+        return { name: prefix + i.path, type: 'file', mode: i.mode === '100755' ? 0o755 : 0o644, data };
+    });
+    for (const d of dirs) entries.push({ name: d, type: 'directory', mode: 0o755 });
+    await tarWriter().writeTarEntriesGz(entries, out, { mtime, comment: commit });
+}
+
+let tarModule;
+function tarWriter() {
+    const file = join(REPO_ROOT, 'dist', 'core', 'toolchain', 'tar.js');
+    if (!existsSync(file)) fail('run `npm run build` first (dist/core/toolchain/tar.js is missing)');
+    tarModule ??= createRequire(import.meta.url)(file);
+    return tarModule;
 }
 
 /**
@@ -151,7 +210,8 @@ async function buildSources(outDir) {
             while (queue.length) {
                 const a = queue.shift();
                 const paths = a.path === '' ? (s.paths ?? []) : [];
-                await gitArchive(a.dir, a.commit, a.prefix, join(outDir, a.file), paths);
+                if (paths.length) await gitTreeArchive(a.dir, a.commit, a.prefix, join(outDir, a.file), paths);
+                else await gitArchive(a.dir, a.commit, a.prefix, join(outDir, a.file));
                 archives.push({ path: a.path || '.', url: a.url, commit: a.commit, file: `sources/${a.file}`, sha256: await sha256File(join(outDir, a.file)), size: (await stat(join(outDir, a.file))).size });
                 if (paths.length) continue; // a path-limited archive of a large tree: no submodules
                 for (const sm of submodules(a.dir, a.commit, a.url)) {
@@ -202,7 +262,7 @@ function readme(produced, blocking) {
         '## Contents',
         '',
         '- `manifest.json`: the compliance manifest (every component, license, binary archive, source and open item) plus the SHA-256 of every source archive in this package.',
-        '- `sources/`: one `.tar.gz` per source (git sources: `git archive` of the pinned commit, plus one archive per submodule at the commit recorded by the parent tree; PyPI sources: the original sdist).',
+        '- `sources/`: one `.tar.gz` per source (git sources: `git archive` of the pinned commit, plus one archive per submodule at the commit recorded by the parent tree; a source limited to some paths of a large tree: those paths, written by the NexysVHDL deterministic tar writer; release files and PyPI sources: the original file).',
         '- `licenses/`: the license texts NexysVHDL ships in the toolchain folders (`shared/`, `<platform>/`), and in `compliance/` additional texts of bundled libraries that a toolchain payload does not carry yet.',
         '- `patches/`: modifications NexysVHDL made to third-party source code (none).',
         '- `nexysvhdl/`: the NexysVHDL license and notice (they do not apply to the third-party components).',

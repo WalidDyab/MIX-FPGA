@@ -3,7 +3,11 @@
   "toolchainVersion": "1.0",
   "tools": {
     "git": "git version 2.39.5 (Apple Git-154)",
-    "node": "v24.21.0"
+    "node": "v24.21.0",
+    "recordedNew-win32": {
+      "git": "git version 2.53.0.windows.1",
+      "node": "v24.13.0"
+    }
   },
   "sources": {
     "ghdl-6.0.0": [
@@ -412,8 +416,8 @@
         "path": ".",
         "commit": "dbdd9e59fb7d01d64d6f0535cf751860db8eab35",
         "file": "sources/macports-port-atk-dbdd9e59fb7d.tar.gz",
-        "sha256": "11ea0d24f6fcd8f393b763315430517514869b4cebb4a1fefafc0d85981711d1",
-        "size": 1163
+        "sha256": "7117d2a87415dab46072eefe6afd01833933b24d3bdfa917e93293b9ee12e4e7",
+        "size": 1130
       }
     ],
     "macports-distfile-cairo-1.17.6.tar.xz": [
@@ -429,8 +433,8 @@
         "path": ".",
         "commit": "bb144e56ff42da8c74cc12508cb458e744e08903",
         "file": "sources/macports-port-cairo-bb144e56ff42.tar.gz",
-        "sha256": "48607e622bd96a890a1ebfc2f9ae6de6d31e3b074c11e428c93174aa14afec5d",
-        "size": 3535
+        "sha256": "5807503f68653afecec4a76dd32a02e181b3eb1d437d4ad0a793b449c4277ef6",
+        "size": 3501
       }
     ],
     "macports-distfile-fribidi-1.0.13.tar.xz": [
@@ -446,8 +450,8 @@
         "path": ".",
         "commit": "515d438c57b94a1b130602c8606f4981f69edf8c",
         "file": "sources/macports-port-fribidi-515d438c57b9.tar.gz",
-        "sha256": "014afc55d012756d1cd9ea36c87ca2c7dc2a23d8856d526efedb7cfcb76d80dd",
-        "size": 1353
+        "sha256": "44efea4b2ceabe35a5cfa325f5faa13578cd989d1edd038c17fcf476ae5eb53e",
+        "size": 1333
       }
     ],
     "macports-distfile-gdbm-1.23.tar.gz": [
@@ -463,8 +467,8 @@
         "path": ".",
         "commit": "c6951fd11cdb43493d04ac24dba0fd10f8b4daa9",
         "file": "sources/macports-port-gdbm-c6951fd11cdb.tar.gz",
-        "sha256": "498f3bda564481628e0dc290ee2fb14d2a188ab58e183d3f4680b636abaae05e",
-        "size": 1666
+        "sha256": "da580be28462b97db251a30170e7e2af26855eb5d5cf943d20bf255e2ccb7c97",
+        "size": 1643
       }
     ],
     "macports-distfile-gdk-pixbuf-2.42.10.tar.xz": [
@@ -480,8 +484,8 @@
         "path": ".",
         "commit": "d487547d1205a10498fd68fd8dbaf6d7722fe929",
         "file": "sources/macports-port-gdk-pixbuf2-d487547d1205.tar.gz",
-        "sha256": "60309db70c67cb7c47fa8c7c1a9fa1a91e4930e41cebe271028c884b0b0e937f",
-        "size": 2316
+        "sha256": "a9948975f7dc6444e3cf3cc00eefc1b20cf11a9867894114f80d8fd232847516",
+        "size": 2300
       }
     ],
     "macports-distfile-gettext-0.21.1.tar.gz": [
@@ -497,8 +501,8 @@
         "path": ".",
         "commit": "30239928d68396b097e79aa4acb70094870832af",
         "file": "sources/macports-port-gettext-30239928d683.tar.gz",
-        "sha256": "001cd2606836c99a72b11a8f6784c9834aa0e6956bf1b58ee52c992e7db401e9",
-        "size": 2885
+        "sha256": "d1e6a3cda9e1f3f2e62aa6fa1b5971c54e84c0b378713e24733fecd6a8d39238",
+        "size": 2838
       }
     ],
     "macports-distfile-glib-2.78.3.tar.xz": [
@@ -514,8 +518,8 @@
         "path": ".",
         "commit": "69c4cab16d1b8f1e7ab06d95557bfb3de7185904",
         "file": "sources/macports-port-glib2-69c4cab16d1b.tar.gz",
-        "sha256": "2f74196a5dc5f7b0204a33312680b9522f0d7dff3c6730444fbd63c8cd0b2380",
-        "size": 12210
+        "sha256": "c66a7b84448ced18e6b6d84c43114a7b86d7767ff6858082bbab68e2390af67e",
+        "size": 12213
       }
     ],
     "macports-distfile-gmp-6.3.0.tar.bz2": [
@@ -531,8 +535,8 @@
         "path": ".",
         "commit": "833eca2a8455dbabb9c527dc42990cb30330e68a",
         "file": "sources/macports-port-gmp-833eca2a8455.tar.gz",
-        "sha256": "a6b012c0b6213f104520b75b5196169c28ad85261874162c35a671a8b88534c6",
-        "size": 2676
+        "sha256": "2223fb00ff33c8bcfbc5fc42779bd9c837be12d54e586523d4dd5ab2af7ebddf",
+        "size": 2661
       }
     ],
     "macports-distfile-gobject-introspection-1.78.1.tar.xz": [
@@ -548,8 +552,8 @@
         "path": ".",
         "commit": "c639ea597d705c17e0e7c8d0f30d69988a05ab22",
         "file": "sources/macports-port-gobject-introspection-c639ea597d70.tar.gz",
-        "sha256": "9f13fd920dd6363ea01c6625392bd12cd5603b2855c9e039d4ea164757142dab",
-        "size": 4269
+        "sha256": "12d988dfaf1d278b9642d4fa8b45f497d7561f29f473ff35e39588eb47240edd",
+        "size": 4370
       }
     ],
     "macports-distfile-graphite2-1.3.14.tgz": [
@@ -565,8 +569,8 @@
         "path": ".",
         "commit": "967d1f217e27eb1f52a4e6904a030e12953b29a4",
         "file": "sources/macports-port-graphite2-967d1f217e27.tar.gz",
-        "sha256": "f7e732b79826dc0ed07068415c250630d5ed1b61e55624fa9eb3cc002c069ab7",
-        "size": 1004
+        "sha256": "4a9cd2ae0160dd0df07cde31a4eb4fe45bd12c3540dd5392f02be68ccb21c911",
+        "size": 972
       }
     ],
     "macports-distfile-gtk-mac-integration-3.0.1.tar.xz": [
@@ -582,8 +586,8 @@
         "path": ".",
         "commit": "44838d98745f3e6e0495db29aaba84c2cb43d589",
         "file": "sources/macports-port-gtk-osx-application-44838d98745f.tar.gz",
-        "sha256": "5a68971febd52957666c987c56cd380563617ba4e077a6b101d8f43f283e552b",
-        "size": 2331
+        "sha256": "4631d8ac955453140eaebb30ed6e27c7be004384e085817c2127b932578e153c",
+        "size": 2310
       }
     ],
     "macports-distfile-gtk+-3.24.38.tar.xz": [
@@ -599,8 +603,8 @@
         "path": ".",
         "commit": "0c8486132d7745abed29490ffcaaf7172d966e3c",
         "file": "sources/macports-port-gtk3-0c8486132d77.tar.gz",
-        "sha256": "e4cda65c539b6dc5f446d33729382af687a2e41faf5e180156002fe87f052b54",
-        "size": 5221
+        "sha256": "b423571d4bc8dfbe16a99f019b765e21fe1a9571ef74cbabf57d6893c11d7d40",
+        "size": 5163
       }
     ],
     "macports-distfile-lerc-4.0.0.tar.gz": [
@@ -616,8 +620,8 @@
         "path": ".",
         "commit": "943f85650255e79d5da4c03864b000e29f6c2653",
         "file": "sources/macports-port-lerc-943f85650255.tar.gz",
-        "sha256": "f4c9e5f341806d9890c59cd8494b478ec85fbfe80556b6a987c47c7c90758677",
-        "size": 1360
+        "sha256": "17cbf414f9490826a0d27674f0aeba5ed3475ad8d98f16bd8378e15e70874ce7",
+        "size": 1331
       }
     ],
     "macports-distfile-libftdi1-1.5.tar.bz2": [
@@ -633,8 +637,8 @@
         "path": ".",
         "commit": "3bdf7f45e366506775548eeab8a5a4b259f23bd9",
         "file": "sources/macports-port-libftdi-3bdf7f45e366.tar.gz",
-        "sha256": "008c41c16dc3cc5cd8c20260b4959aa8876c752949e6aa1d8df06eb600ad143e",
-        "size": 1274
+        "sha256": "7944a615c7f2f13c9dbdc9bed4fec34dca1aed9df18816df388fa8507bded56f",
+        "size": 1246
       }
     ],
     "macports-distfile-libiconv-1.17.tar.gz": [
@@ -650,8 +654,8 @@
         "path": ".",
         "commit": "4aac31a17a1da3aa5a776d48862980724aacb399",
         "file": "sources/macports-port-libiconv-4aac31a17a1d.tar.gz",
-        "sha256": "dd843d947c1125da457339b70862dd72cdc6bf336cd3a98f242329cdb84c8854",
-        "size": 21448
+        "sha256": "cc68e973db0bd1ed1e14bac44ec9ff67a9e7d5f371d4cfec4615d2b21d7dcb08",
+        "size": 21429
       }
     ],
     "macports-distfile-libusb-1.0.26.tar.gz": [
@@ -667,8 +671,8 @@
         "path": ".",
         "commit": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392",
         "file": "sources/macports-port-libusb-6b3c05d3a37d.tar.gz",
-        "sha256": "55cb6a05beaf818bef3ea64aa4e792cb4c7a66eee7116ba7f251f0009a3830b4",
-        "size": 1556
+        "sha256": "18b371927b2daf2275809f40bae6158a14d9ec97dabc605c1e4d4aceccf91d79",
+        "size": 1527
       }
     ],
     "macports-distfile-pango-1.50.14.tar.xz": [
@@ -684,8 +688,8 @@
         "path": ".",
         "commit": "2dc9caa772eb6daffce44edf57f55ae49da8802b",
         "file": "sources/macports-port-pango-2dc9caa772eb.tar.gz",
-        "sha256": "130bb0c7abe99c6643f2ac93fff57aadbe747feb36054f155b49693ee70a41b2",
-        "size": 2364
+        "sha256": "a987612cb3caa57827a25adf9cc0246c57f97e0710fcafcaf545067b648a7679",
+        "size": 2351
       }
     ],
     "macports-distfile-readline82-001": [
@@ -709,8 +713,8 @@
         "path": ".",
         "commit": "556ec864a7d91fb89eb261b7ed380098e2c308dc",
         "file": "sources/macports-port-readline-556ec864a7d9.tar.gz",
-        "sha256": "e56cee4e383c30e8b776e7f2dbd265807b793a8dc708dd50c1b1ae27e7a67d01",
-        "size": 1559
+        "sha256": "1b29eceff876048e36fa9459049e92f1e4dde49374523a37264fd5db8c45a11c",
+        "size": 1530
       }
     ],
     "qt-5.15.3-qtactiveqt": [
@@ -1129,8 +1133,8 @@
         "path": ".",
         "commit": "574d1eac1c200690e27b8eb4e24887f8df7ac27c",
         "file": "sources/nixpkgs-574d1eac-recipes.tar.gz",
-        "sha256": "7c6c8bcfd34d5238a814610a3e17097db9fc7047bb5d5c2af32e84e04ccfd2f9",
-        "size": 8533
+        "sha256": "5b9118f15a4b867b46338ccf7d0a0dae24d171142e5e7535f3a2d6b0ef30b82b",
+        "size": 8552
       }
     ],
     "macports-port-eigen3-53dd381abb03": [
@@ -1138,8 +1142,8 @@
         "path": ".",
         "commit": "53dd381abb03c180dab880977bc4aaa347b39118",
         "file": "sources/macports-port-eigen3-53dd381abb03.tar.gz",
-        "sha256": "c51771fd6ddb9287d3db3de1d888b45f87e6d75270a4cbb0410de9fbc691bead",
-        "size": 4784
+        "sha256": "4716c9b1baf7bb282ce8e43e0a011ed8289078b0de57402c51b8a46867dc7cc4",
+        "size": 4763
       }
     ]
   }
