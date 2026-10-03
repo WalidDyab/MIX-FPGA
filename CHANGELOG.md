@@ -18,7 +18,7 @@ First installable NexysVHDL package. Not published on the Visual Studio Marketpl
 - Simulate (self-checking testbenches) and the VCD **Waveform Viewer**.
 - **Design Schematic** (structure) and **RTL Schematic** (inferred registers, multiplexers, arithmetic, logic).
 - Build: **Synthesis → Implementation → Bitstream**, with timing (PASS/FAIL per clock, achieved MHz, worst slack) and resource use (LUT, FF, BRAM, DSP, I/O) in Results.
-- Hardware view (board detection) and Program FPGA (SRAM). Programming backends: Digilent Adept `djtgcfg` on Windows (requires the official Digilent support), openFPGALoader on macOS. Programming through this packaged extension is pending validation on a physical board.
+- Hardware view (board detection) and Program FPGA (SRAM). Programming backends: Digilent Adept `djtgcfg` on Windows (requires the official Digilent support), openFPGALoader on macOS. Programming a physical Nexys A7-100T was validated on both Windows x64 and Apple-silicon macOS (Phase 4B closeout).
 
 **Classroom setup**
 - The FPGA toolchain is a **separate, versioned artifact** (toolchain 1.0): installed once per user with *Install FPGA Toolchain…*, verified file by file against the validated content, and reused by later NexysVHDL updates. Toolchain versions install side by side and are never modified.

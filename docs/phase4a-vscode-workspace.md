@@ -7,7 +7,7 @@ Date: 2026-10-01/02
 | Area | Result |
 |---|---|
 | Phase 4A software / Extension Development Host validation | **PASS** (342/342 tests; real-toolchain EDH runs; visual review accepted by the user) |
-| Physical FPGA programming through the extension UI | **DEFERRED** until hardware is available (not failed; not yet validated) |
+| Physical FPGA programming through the extension UI | **DEFERRED** until hardware is available (not failed; not yet validated). *Superseded: physical programming passed on Windows and macOS in the Phase 4B closeout ([phase4b-classroom-bundle.md](phase4b-classroom-bundle.md) §21).* |
 
 Branch: `phase4/vscode-workspace` (from `main` at `4680caf`). Not merged.
 Host: Windows 11 Home 10.0.26200 x64, Node 24.13.0, npm 11.6.2, VS Code 1.139.1.
@@ -238,7 +238,7 @@ Result: **342 tests, 342 pass, 0 fail** (222 Phase 3 + 85 Phase 4A workspace + 3
 
 ## 18. Physical FPGA validation
 
-**DEFERRED** until hardware is available. The Nexys A7 was not available during Phase 4A, so Build → Program through the extension UI on a real board, with the user confirming the LED behaviour (LED0 blinks while SW0 is on; BTNC restarts the counter), has not been performed. This is recorded as deferred, not as a failure, and must not be read as a physical PASS.
+**DEFERRED** until hardware is available. The Nexys A7 was not available during Phase 4A, so Build → Program through the extension UI on a real board, with the user confirming the LED behaviour (LED0 blinks while SW0 is on; BTNC restarts the counter), has not been performed. This is recorded as deferred, not as a failure, and must not be read as a physical PASS. *(Phase 4A record. Superseded: physical programming passed on Windows and macOS in the Phase 4B closeout, [phase4b-classroom-bundle.md](phase4b-classroom-bundle.md) §21.)*
 
 What was validated without the board: Build through the extension UI with the real toolchain (bitstream produced, timing PASS 409.67 MHz), board detection through the shared ProgrammingService ("No Nexys A7 detected"), and the Program flow's guards in unit tests (no bitstream, failed build, stale bitstream, several boards). The programming backends themselves were validated on real hardware in Phase 3 (Windows and macOS).
 

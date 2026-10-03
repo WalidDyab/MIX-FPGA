@@ -10,13 +10,13 @@ macOS: branch `phase4/classroom-bundle-macos`, from `main` at `b1ecb1d`. Not com
 |---|---|---|
 | **Software/runtime** | **READY** | Packages are built: VSIX 0.5.0 plus the separately versioned Toolchain 1.0.<br>Installed-package validation passed on standard paths **and** on hostile paths (spaces, accented Latin, CJK in the profile, toolchain store and project folders), §10 and §16.<br>Tools come only from the bundle, and external tools stay untouched (process trace + snapshots).<br>A UI-only update reuses Toolchain 1.0. Results show data-sheet capacities. |
 | **Redistribution/license** | **READY** | The original §7 items were resolved by the Toolchain 1.0 review (§18); the 3 Windows blocking items by the Windows compliance review (§20, [review](toolchain-1.0-redistribution.md) §14): oss-cad-suite's Fedora MinGW libraries traced to exact Fedora 39 builds with their SRPMs; Apio's Microsoft runtime documented as Microsoft Distributable Code; openXC7's runtime traced to Nix (not MSYS2). Payload unchanged (`57f0f0da…`). `npm run compliance:assemble` builds the source package (strict). (NexysVHDL's own license: **resolved**, Apache-2.0, §17.15.) Engineering record, not a legal opinion. |
-| **Physical Program** | **DEFERRED** | No board was connected. Detection through the installed package works; the djtgcfg backend was physically validated in Phases 3B/3C. |
+| **Physical Program** | **PASS** | Programming a physical Nexys A7-100T through the official Digilent `djtgcfg` backend passed in the Phase 4B closeout (§21). (During the Phase 4B validation runs no board was connected and this area was DEFERRED; detection through the installed package worked.) |
 
 | Readiness area | macOS (darwin-arm64) status | Meaning |
 |---|---|---|
 | **Software/runtime** | **READY** | VSIX 0.5.0 plus Toolchain 1.0 for darwin-arm64, built from official archives (deterministic content hash `f0402218…`).<br>Installed-package validation passed with standard and hostile (space, accented Latin, CJK) profile/project paths **and a hostile HOME** (§17.14), a hostile environment and decoy tools; every FPGA executable came from `~/Library/NexysVHDL/toolchains/darwin-arm64/1.0/`; `~/.apio` and the other installations stayed unchanged; UI-only update reused Toolchain 1.0. Needs **no** Homebrew, Python, Xcode Command Line Tools or USB driver (§17). |
 | **Redistribution/license** | **READY** (overall, since §20) | **Mac redistribution blockers: RESOLVED** (§19): Qt 5.15.3 and the MacPorts libraries of oss-cad-suite, the openXC7 Nix libraries and Apio's libusb are traced to exact builds, with pinned, hash-verified corresponding source in `NexysVHDL-Toolchain-1.0-Sources` and per-component notices; Mac payload unchanged (`f0402218…`). The Windows blocking items were resolved afterwards (§20), so no blocking item remains (review §8). NexysVHDL's own license: resolved (Apache-2.0, §17.15). |
-| **Physical Program** | **DEFERRED** | No board was connected. Detection through the packaged extension and the bundled openFPGALoader works; the same openFPGALoader 1.1.1 build was physically validated on this Mac in Phase 3B. |
+| **Physical Program** | **PASS** | Programming a physical Nexys A7-100T through the bundled openFPGALoader 1.1.1 passed in the Phase 4B closeout (§21). (During the Phase 4B macOS validation runs no board was connected and this area was DEFERRED; detection through the packaged extension worked.) |
 
 ## 1. Goals and non-goals
 
@@ -372,9 +372,11 @@ Same branch, same code. On an Apple-silicon Mac:
 
 ## 15. Physical Program
 
-**DEFERRED.** No Nexys A7 was connected during this validation: Hardware view → "none". The Windows djtgcfg backend was physically validated in Phases 3B/3C. Detection through the installed package worked (`djtgcfg enum`, official install).
+**PASS** (Phase 4B closeout, §21) — on Windows x64 and on Apple-silicon macOS.
 
-To complete: connect the board, open the project in the installed profile, Build → Program, and confirm LED0 blinks with SW0 on and BTNC restarts it.
+Original record of the Windows validation run (superseded by §21): **DEFERRED.** No Nexys A7 was connected during this validation: Hardware view → "none". The Windows djtgcfg backend was physically validated in Phases 3B/3C. Detection through the installed package worked (`djtgcfg enum`, official install).
+
+Original completion step (superseded by §21): connect the board, open the project in the installed profile, Build → Program, and confirm LED0 blinks with SW0 on and BTNC restarts it.
 
 ## 16. Follow-up fixes before freeze (2026-10-02)
 
@@ -601,7 +603,7 @@ Every file of the Mac toolchain (binaries included), the NexysVHDL-generated fil
 ### 17.13 Known limitations (macOS)
 
 1. ~~GHDL backend change needs owner approval~~: **approved** (§17.3).
-2. **Physical Program not run** in this phase (no board): DEFERRED.
+2. ~~**Physical Program not run** in this phase (no board): DEFERRED.~~ Superseded: physical programming of a Nexys A7-100T **passed** in the Phase 4B closeout (§21).
 3. ~~A home folder with a space or non-ASCII character disables Build/RTL~~: **fixed** with a private ASCII alias (§17.14). Remaining: if `$TMPDIR` is missing, non-ASCII or not private to the user, no alias is made and Build/RTL report `BUNDLE_PATH_ALIAS_FAILED` (Check and Simulate still work); macOS may purge an old alias from `$TMPDIR`, and it is recreated the next time the toolchain is loaded (window reload or Refresh).
 4. Toolchain binaries are ad-hoc signed and not notarized (upstream): fine through the installer, blocked if extracted by hand; managed Macs with strict policies untested.
 5. The installed-validation profile had to live under `/tmp` because of the 104-byte socket path limit; this is a harness constraint, not a product one (VS Code's normal profile path is short).
@@ -653,7 +655,7 @@ Recorded in [`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md)
 - Windows Toolchain 1.0 content changed once, deliberately, before any external release (the earlier hash was an internal pre-release validation candidate; ADR-007 §6): the unused Apio *drivers* (incl. PJRC `serial_install.exe`) and *graphviz* packages became empty placeholders; every used component is byte-identical. 21,465 files / tree `43b3fb80…` → **21,208 files / tree `57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b`**; archive 709.6 MiB. Re-validated with the installed VSIX (see the review document).
 - macOS Toolchain 1.0 unchanged (tree `f0402218…`); Mac follow-ups listed in the review (§9).
 - Corresponding source: `npm run compliance:assemble` builds `NexysVHDL-Toolchain-1.0-Sources.zip` reproducibly from 30 pinned sources (48 archives); it refuses to build a releasable package while blocking items are open (`--draft` for review).
-- Status: Software/runtime READY; Redistribution/license **NOT READY** (6 blocking items at that review; 3, all Windows, after §19); Physical Program DEFERRED.
+- Status: Software/runtime READY; Redistribution/license **NOT READY** (6 blocking items at that review; 3, all Windows, after §19); Physical Program DEFERRED. *(Checkpoint status; superseded by §20 and §21.)*
 
 ## 19. macOS compliance review (2026-10-03)
 
@@ -662,7 +664,7 @@ Recorded in [`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md)
 - **Payload unchanged:** macOS Toolchain 1.0 tree `f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7`; Windows tree `57f0f0da…` and its Graphviz/drivers placeholders untouched. Nothing was pruned or replaced.
 - **Resolved Mac blockers (3):** oss-cad-suite Qt 5.15.3 frameworks and MacPorts libraries (mmicko/macos-resources v3; each MacPorts archive tied to its Portfile commit; 45 official Qt module archives), openXC7's Nix-built libraries (nixpkgs `574d1eac`; libiconv is Apple's BSD libiconv, not LGPL), Apio's libusb (1.0.30, Homebrew arm64_tahoe bottle, formula `c1f707f5`). Per-library records: `nativeLibraryInventory["darwin-arm64"]` (70 entries, usage classes A/B/C) in the compliance manifest; license texts in `toolchains/compliance/licenses/darwin-arm64/`.
 - **Source package:** 120 pinned sources (+90), 236 files, 475.1 MiB, SHA-256 `d69d833e…`, reproducible; the strict gate now refuses with **3 Windows-only** blocking items (was 6).
-- Status: Software/runtime **READY**; Mac redistribution blockers **RESOLVED**; Redistribution/license (overall) **NOT READY** — Windows blockers remain; Physical Program **DEFERRED**.
+- Status: Software/runtime **READY**; Mac redistribution blockers **RESOLVED**; Redistribution/license (overall) **NOT READY** — Windows blockers remain; Physical Program **DEFERRED**. *(Checkpoint status; superseded by §20 and §21.)*
 
 ## 20. Windows compliance review (2026-10-03)
 
@@ -674,4 +676,51 @@ Recorded in [`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md)
 - **Apio (Windows):** VC++ runtime 14.51.36247.0 (= python.org 3.14.7) and UCRT 10.0.26100.1742 (= Windows SDK redistributables): Microsoft Distributable Code, redistributed unmodified under Microsoft's Third Party Distribution terms; no source obligation; no payload change.
 - **openXC7 (Windows):** built by Nix (nixpkgs `574d1eac`), not MSYS2; mcfgthread 1.6.1 (= `v1.6-ga.1`, LGPL-3.0-or-later) source and recipe ship; GCC 13.3.0 runtime under the GCC exception; Eigen 3.4.0 (MPL-2.0) source pinned.
 - **Source package:** 153 sources, 352 files, 638.9 MiB, SHA-256 `69f496eb2b852f922ce0f1a7b8322ee467be2e23b1da665e35e6f170d1d095b6`, strict build (no draft), reproducible.
-- Status: Software/runtime **READY**; Redistribution/license **READY** (0 blocking items); Physical Program **DEFERRED**.
+- Status: Software/runtime **READY**; Redistribution/license **READY** (0 blocking items); Physical Program **DEFERRED**. *(Checkpoint status; Physical Program superseded by §21.)*
+
+## 21. Phase 4B closeout: physical programming (2026-10-03)
+
+Physical programming of a Digilent Nexys A7-100T **passed on both platforms** on **2026-10-03**, completing the one readiness area that the Phase 4B validation runs had left DEFERRED for lack of a connected board (§15, §17.13). Both runs used the normal installed VS Code (not the Extension Development Host), the packaged NexysVHDL extension and Toolchain 1.0 from its per-user store.
+
+**Design:** `Board_Test`, the NexysVHDL starter/demo project.
+
+**Expected and physically observed behaviour (both platforms):**
+
+| Input | Expected | Observed on Windows x64 | Observed on macOS |
+|---|---|---|---|
+| `SW0 = 0` | `LED0` off | confirmed | confirmed |
+| `SW0 = 1` | `LED0` blinks | confirmed | confirmed |
+| press `BTNC` | the counter / blink sequence resets and restarts | confirmed | confirmed |
+
+**Configuration and results:**
+
+| | Windows x64 | macOS, Apple silicon (darwin-arm64) |
+|---|---|---|
+| VS Code | normal installed VS Code (not the Extension Development Host) | normal installed VS Code (not the Extension Development Host) |
+| NexysVHDL extension | 0.5.0 | 0.5.0 |
+| Toolchain bundle | 1.0 | 1.0 |
+| Board | Digilent Nexys A7-100T, serial `210292BCFFE4` | Digilent Nexys A7-100T |
+| GHDL | 6.0.0 | 6.0.0 |
+| Apio | 1.6.0 | 1.7.0 |
+| openXC7 | 2026-09-24 | 2026-09-25 |
+| Yosys | 0.63+173 | 0.63+173 |
+| nextpnr-xilinx | 0eae9fb | e860c9c8 |
+| Programming backend | official Digilent Adept `djtgcfg` (installed from Digilent; not redistributed) | openFPGALoader 1.1.1, bundled in Toolchain 1.0 |
+| Check | PASS | PASS |
+| Simulate | PASS | PASS |
+| Build | PASS | PASS |
+| Hardware detection | PASS | PASS |
+| Program | PASS | PASS |
+| Physical behaviour (table above) | PASS | PASS |
+
+**Corresponding-source package.** `NexysVHDL-Toolchain-1.0-Sources.zip` — 352 files, 638.9 MiB, SHA-256 `69f496eb2b852f922ce0f1a7b8322ee467be2e23b1da665e35e6f170d1d095b6` — built by the strict `npm run compliance:assemble`; this exact hash was reproduced independently on Windows and on macOS ([`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md) §14.7).
+
+This closeout changes documentation only: no runtime code, build logic, Toolchain 1.0 binaries or manifests (Windows `57f0f0da…`, macOS `f0402218…`), or compliance source locks.
+
+**Phase 4B final status (both platforms):**
+
+- Software/runtime: **READY**
+- Redistribution/license: **READY**
+- Physical Program: **PASS**
+
+Earlier status lines in this document (§15, §17.13, §18–§20 and the readiness tables' notes) are checkpoint records; where they say DEFERRED they are superseded by this section.
