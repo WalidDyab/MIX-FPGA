@@ -168,8 +168,13 @@ describe('toolchain requirement and recipes', () => {
         assert.equal(req.bundleVersion, '1.0');
         assert.equal(req.targets['win32-x64'].status, 'validated');
         assert.equal(req.targets['win32-x64'].archive, 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz');
-        // The released Windows toolchain 1.0 is immutable: the macOS step must not change it.
-        assert.equal(req.targets['win32-x64'].treeSha256, '43b3fb80d30f7f87a61364ce636a57da1dcfd44ee07033746ca5854f133eaef9');
+        // Windows toolchain 1.0 pre-release payload. The earlier internal validation candidate 43b3fb80… was replaced
+        // before any external release (ADR-007 §6: immutable from release freeze; afterwards a change needs a new
+        // version): the unused drivers and graphviz packages became placeholders, every used component is byte-identical.
+        assert.equal(req.targets['win32-x64'].treeSha256, '57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b');
+        assert.equal(req.targets['win32-x64'].files, 21208);
+        // The macOS toolchain 1.0 validated on the Mac is unchanged by the Windows compliance work.
+        assert.equal(req.targets['darwin-arm64'].treeSha256, 'f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7');
         assert.equal(req.targets['darwin-arm64'].status, 'validated');
         assert.equal(req.targets['darwin-arm64'].archive, 'nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz');
         assert.match(req.targets['darwin-arm64'].treeSha256, /^[0-9a-f]{64}$/);
@@ -185,8 +190,13 @@ describe('toolchain requirement and recipes', () => {
         assert.deepEqual(win.versions, { ghdl: '6.0.0', apio: '1.6.0', openxc7: '2026-09-24', openxc7PartsIndexSchema: 5, yosys: '0.63+173', 'nextpnr-xilinx': '0eae9fb' });
         assert.equal(win.programmer.bundled, false, 'Digilent software is not redistributed');
         assert.ok(!JSON.stringify(win).match(/digilent\.com\/[^"\s]*\.(exe|msi|zip)/i), 'no Digilent installer is mirrored');
-        assert.ok(!win.components.some((c: { archive: { url: string } }) => /digilent/i.test(c.archive.url)), 'no Digilent component');
-        for (const c of win.components) assert.match(c.archive.url, /^https:\/\/github\.com\/(ghdl|fpgawars)\//i, `${c.id} comes from an official release`);
+        assert.ok(!win.components.some((c: { archive?: { url: string } }) => /digilent/i.test(c.archive?.url ?? '')), 'no Digilent component');
+        // Every redistributed component comes from an official release; the unused drivers and graphviz
+        // packages are empty placeholders (nothing redistributed, see tests/compliance.test.ts).
+        for (const c of win.components) {
+            if (c.placeholder) assert.equal(c.archive, undefined, `${c.id}: a placeholder redistributes nothing`);
+            else assert.match(c.archive.url, /^https:\/\/github\.com\/(ghdl|fpgawars)\//i, `${c.id} comes from an official release`);
+        }
     });
 
     it('the macOS recipe pins exactly the validated Apple-silicon toolchain (no upgrades, no Windows-only packages)', async () => {

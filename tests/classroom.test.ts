@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { join, win32 } from 'node:path';
+import { delimiter, join, win32 } from 'node:path';
 import { describe, it } from 'node:test';
 import { apioPathProblem, type HostInfo, installToolchainArchive, type ToolchainRequirement, type ToolInvocation } from '../core';
 import { summarizeEnvironment, boardRow } from '../extension/services/environment-summary';
@@ -141,7 +141,8 @@ describe('classroom mode: the bundled toolchain only', () => {
         assert.ok(tc, JSON.stringify(ctx.classroom!.diagnostics));
         await ctx.runner.run({ executable: tc.executables.apio!, args: ['--version'] });
         const env = runner.calls.at(-1)!.env!;
-        assert.equal(env['PATH'], '/usr/bin:/bin:/usr/sbin:/sbin');
+        // Joined with the host's delimiter: in production the environment is always built on the machine that runs the tools.
+        assert.equal(env['PATH'], ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(delimiter));
         for (const k of ['PYTHONHOME', 'PYTHONPATH']) assert.equal(env[k], undefined, k);
         assert.equal(env['PYTHONDONTWRITEBYTECODE'], '1');
         assert.equal(env['APIO_HOME'], join(dataRoot, 'state', 'darwin-arm64-1.0', 'apio-home'));

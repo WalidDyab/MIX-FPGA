@@ -34,7 +34,7 @@ nexysvhdl-toolchain-1.0-win32-x64.tar.gz     toolchain 1.0, 725 MiB; installed o
         │ Install FPGA Toolchain…  (extract → verify content hash → publish with one rename)
         ▼
 %LOCALAPPDATA%\NexysVHDL\
-  toolchains\win32-x64\1.0\                  immutable (21,465 files, 3.0 GB) + .nexysvhdl-installed.json
+  toolchains\win32-x64\1.0\                  immutable (21,208 files, 2.9 GB; 21,465 in the replaced pre-release candidate, §18) + .nexysvhdl-installed.json
   state\win32-x64-1.0\apio-home\             Apio's writable state (only cached-remote-config.json)
 ```
 
@@ -159,9 +159,11 @@ npm run package:mac                                             # Mac step
 - excluded content in the VSIX (TS sources, maps, tests, CLI, toolchain, archives, scratch, `.nexysvhdl`, VCD/GHW/bit);
 - a privacy finding.
 
-`pack` refuses to change the content of an already-released toolchain version.
+`pack` refuses to change the content of an already-validated toolchain version. Lifecycle (ADR-007 §6): a payload is immutable from release freeze / first external distribution; before that, a validated payload is an internal pre-release candidate that may be replaced deliberately (re-validated, `requirement.json` edited by hand); after release any change needs a new toolchain version. At runtime an installed version with another hash is always `TOOLCHAIN_VERSION_CONFLICT`, never modified.
 
 ## 7. License audit
+
+> **Superseded by the Toolchain 1.0 redistribution review** ([`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md), compliance manifest `toolchains/compliance/toolchain-1.0.json`). Corrections from that review: Apio is GPL-3.0-or-later and the definitions GPL-3.0 (not GPL-2.0); Windows Graphviz 12.1.2 is EPL-1.0; `serial_install.exe` is PJRC's proprietary Teensy installer; the Windows drivers and graphviz packages are no longer redistributed (empty placeholders; Windows tree `57f0f0da…`). The table below is the original Phase 4B audit.
 
 | Component | Declared license | Notes / obligation |
 |---|---|---|
@@ -356,7 +358,7 @@ Same branch, same code. On an Apple-silicon Mac:
 
 ## 14. Known limitations and concerns
 
-1. **Redistribution not cleared** (§7): GPL/LGPL corresponding-source step, graphviz license version, drivers `serial_install.exe` provenance. (NexysVHDL's own license: resolved, Apache-2.0.)
+1. **Redistribution not cleared:** see [`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md) §8 for the remaining open items (bundled third-party libraries without recorded source builds, Microsoft runtime terms). Resolved by that review: the corresponding-source package and its reproducible build, the graphviz license (package no longer redistributed on Windows), `serial_install.exe` (drivers package no longer redistributed). NexysVHDL's own license: resolved, Apache-2.0.
 2. ~~User folders with spaces or non-ASCII characters~~: **fixed** (§16.1). The remaining limits:
    - a VHDL *file name* GHDL cannot record (e.g. CJK) gets a clear Check error;
    - on a machine that forbids creating `%ProgramData%\NexysVHDL\links`, an affected account gets `BUNDLE_PATH_ALIAS_FAILED` (Check and Simulate still work).
@@ -643,3 +645,12 @@ Every file of the Mac toolchain (binaries included), the NexysVHDL-generated fil
 - This resolves only NexysVHDL's own-license item. **Redistribution/license stays NOT READY** (§17.10).
 
 Rebuilt Mac artifacts after §17.14/§17.15: VSIX 243.0 KiB (248,794 B, 129 files, incl. `LICENSE.txt`, `NOTICE`; SHA-256 `5c1ae73a…`; runtime byte-identical to the VSIX validated in §17.14, only CHANGELOG and the student guide text differ); toolchain archive unchanged (`d8cdf6e2…`); classroom ZIP 594.7 MiB (adds LICENSE, NOTICE). Tests: **420/420**.
+
+## 18. Toolchain 1.0 redistribution review (2026-10-03)
+
+Recorded in [`toolchain-1.0-redistribution.md`](toolchain-1.0-redistribution.md). Summary for this document:
+
+- Windows Toolchain 1.0 content changed once, deliberately, before any external release (the earlier hash was an internal pre-release validation candidate; ADR-007 §6): the unused Apio *drivers* (incl. PJRC `serial_install.exe`) and *graphviz* packages became empty placeholders; every used component is byte-identical. 21,465 files / tree `43b3fb80…` → **21,208 files / tree `57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b`**; archive 709.6 MiB. Re-validated with the installed VSIX (see the review document).
+- macOS Toolchain 1.0 unchanged (tree `f0402218…`); Mac follow-ups listed in the review (§9).
+- Corresponding source: `npm run compliance:assemble` builds `NexysVHDL-Toolchain-1.0-Sources.zip` reproducibly from 30 pinned sources (48 archives); it refuses to build a releasable package while blocking items are open (`--draft` for review).
+- Status: Software/runtime READY; Redistribution/license **NOT READY** (6 blocking items); Physical Program DEFERRED.

@@ -62,6 +62,11 @@
     },
     "installGuide": "https://digilent.com/reference/software/adept/start"
   },
+  "compliance": {
+    "manifest": "toolchains/compliance/toolchain-1.0.json",
+    "sourcePackage": "NexysVHDL-Toolchain-1.0-Sources.zip",
+    "nexysvhdl": "Copyright 2026 Walid Dyab; NexysVHDL is an EMXplore project"
+  },
   "components": [
     {
       "id": "ghdl",
@@ -93,8 +98,8 @@
       "name": "Apio",
       "version": "1.6.0",
       "description": "FPGA build manager (PyInstaller bundle with a private Python 3.14 runtime and SCons)",
-      "license": "GPL-2.0",
-      "licenseEvidence": "apio/LICENSE in the bundle (GNU GPL version 2). The PyInstaller bundle includes Python 3.14 (PSF-2.0) and Python packages whose license files are under apio/bin/_internal/*.dist-info.",
+      "license": "GPL-3.0-or-later (Apio); bundled Python 3.14 PSF-2.0, OpenSSL 3 Apache-2.0, libffi MIT, Microsoft Visual C++/UCRT runtime (Microsoft redistributable terms), and Python packages under their own licenses (see toolchains/compliance/toolchain-1.0.json)",
+      "licenseEvidence": "apio/bin/LICENSE in the bundle is the GNU GPL version 3 text; Apio 1.6.0 pyproject.toml at 9fbb279c declares \"License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)\" (Apio 1.7.0 declares license = \"GPL-3.0-or-later\"). Python package licenses: *.dist-info under apio/bin/_internal and the PyInstaller archive contents (see the compliance manifest).",
       "homepage": "https://github.com/FPGAwars/apio",
       "sourceCode": "https://github.com/FPGAwars/apio/tree/9fbb279c2bd793bb94e83d9b1523a420ed219f93",
       "archive": {
@@ -114,8 +119,8 @@
       "name": "Apio definitions package",
       "version": "2026.09.17",
       "description": "Apio board/FPGA/programmer definitions",
-      "license": "GPL-2.0",
-      "licenseEvidence": "LICENSE in the package.",
+      "license": "GPL-3.0",
+      "licenseEvidence": "LICENSE in the package is the GNU GPL version 3 text (no \"or later\" statement in the package).",
       "homepage": "https://github.com/FPGAwars/apio-definitions",
       "sourceCode": "https://github.com/FPGAwars/apio-definitions/tree/2fd2c66575c775810aacfa1e174b377ec711f6a4",
       "apioPackage": {
@@ -144,8 +149,8 @@
       "name": "Apio drivers package",
       "version": "2026.09.15",
       "description": "USB driver utilities (Zadig, lsusb, FTDI tools). Required by Apio's package check; never run by NexysVHDL.",
-      "license": "Mixed: Zadig GPL-3.0-or-later (libwdi LGPL-3.0); libusb/libftdi tools LGPL-2.1/GPL-2.0",
-      "licenseEvidence": "No license files in the package; licenses taken from the upstream projects (https://github.com/pbatard/libwdi, https://libusb.info, https://www.intra2net.com/en/developer/libftdi/). serial_install.exe provenance to be confirmed with FPGAwars/tools-drivers.",
+      "license": "Not redistributed (placeholder). Upstream content: Zadig GPL-3.0-or-later, libwdi LGPL-3.0, lsusb/lsftdi/ftdi_eeprom (libusb LGPL-2.1, libftdi LGPL-2.1/GPL-2.0), and serial_install.exe (PJRC Serial Installer, proprietary, terms unknown)",
+      "licenseEvidence": "See placeholder.evidence. Toolchain 1.0 ships an empty placeholder folder only.",
       "homepage": "https://github.com/FPGAwars/tools-drivers",
       "sourceCode": "https://github.com/FPGAwars/tools-drivers/tree/ec1dd4b70a1bfa0ae93286af695039e6af6ea148",
       "apioPackage": {
@@ -157,28 +162,36 @@
         "releaseTag": "2026-09-15",
         "packageTemplate": "apio-drivers-${PLATFORM}-${YYYYMMDD}.tgz"
       },
-      "archive": {
-        "url": "https://github.com/fpgawars/tools-drivers/releases/download/2026-09-15/apio-drivers-windows-amd64-20260915.tgz",
-        "file": "apio-drivers-windows-amd64-20260915.tgz",
-        "size": 6299744,
-        "sha256": "6c2fc7cf4599835e6743be1ceb32fccb0ca81deb79eee1f1ce7d7530eef3c4f6",
-        "strip": 0
-      },
       "dest": "apio/packages/drivers",
-      "licenseFiles": [
-        "licenses/GPL-3.0.txt",
-        "licenses/libwdi-COPYING.txt",
-        "licenses/LGPL-2.1.txt",
-        "licenses/GPL-2.0.txt"
-      ]
+      "placeholder": {
+        "reason": "Apio 1.6.0 requires a \"drivers\" package on windows-amd64 (apio/resources/packages.jsonc, restricted-to-platforms) before it runs any command, but only \"apio drivers ...\" uses it and NexysVHDL never runs that: NexysVHDL installs no USB drivers (Windows programming uses the official Digilent Adept support).",
+        "evidence": [
+          "apio/resources/packages.jsonc at Apio 9fbb279c: drivers restricted to windows-amd64, env adds %p/bin to PATH only.",
+          "PE import scan of all 655 PE files of Toolchain 1.0 (scripts/compliance/pe-imports.mjs): no file outside the package imports a DLL that only the drivers package provides (it provides none used elsewhere).",
+          "Installed-VSIX process traces (Phase 4B standard and hostile paths, and this phase): zadig, lsusb, lsftdi, ftdi_eeprom and serial_install never run.",
+          "serial_install.exe is PJRC's \"Serial Installer\" for Teensy ((C) 2014 PJRC.COM, LLC; http://www.pjrc.com/teensy/; Comodo code-signed), committed as a prebuilt binary to FPGAwars/tools-drivers (package/bin, first commit 2025-06-09) with no license file.",
+          "Experiment: Apio 1.6.0 with an empty drivers folder and a matching installed_packages.json entry reports \"All Apio packages are installed OK\" and runs with all network access blocked."
+        ]
+      },
+      "notRedistributed": {
+        "archive": {
+          "url": "https://github.com/fpgawars/tools-drivers/releases/download/2026-09-15/apio-drivers-windows-amd64-20260915.tgz",
+          "file": "apio-drivers-windows-amd64-20260915.tgz",
+          "size": 6299744,
+          "sha256": "6c2fc7cf4599835e6743be1ceb32fccb0ca81deb79eee1f1ce7d7530eef3c4f6",
+          "strip": 0
+        },
+        "contents": "bin/ftdi_eeprom.exe, bin/lsftdi.exe, bin/lsusb.exe, bin/serial_install.exe, bin/zadig.exe, share/zadig.ini"
+      },
+      "licenseFiles": []
     },
     {
       "id": "apio-graphviz",
       "name": "Apio graphviz package",
       "version": "2026.09.15",
       "description": "Graphviz (used by 'apio graph'; required by Apio's package check; not used by NexysVHDL)",
-      "license": "EPL (Graphviz upstream is EPL-2.0 today; the exact version for this 2026-09-15 build is to be confirmed with FPGAwars/tools-graphviz)",
-      "licenseEvidence": "No license file in the package; Graphviz upstream license https://graphviz.org/license/ . Bundled third-party DLLs (cairo, brotli, bz2, ...) carry their own upstream licenses.",
+      "license": "Not redistributed (placeholder). Upstream content: Graphviz 12.1.2 (EPL-1.0) official Windows build, with bundled third-party DLLs and the Microsoft Visual C++ runtime, shipped without license files",
+      "licenseEvidence": "See placeholder.evidence. Toolchain 1.0 ships an empty placeholder folder only.",
       "homepage": "https://github.com/FPGAwars/tools-graphviz",
       "sourceCode": "https://github.com/FPGAwars/tools-graphviz/tree/d1ddf4b2d2ba2a5e639051824e05eae0182e683b",
       "apioPackage": {
@@ -190,17 +203,28 @@
         "releaseTag": "2026-09-15",
         "packageTemplate": "apio-graphviz-${PLATFORM}-${YYYYMMDD}.tgz"
       },
-      "archive": {
-        "url": "https://github.com/fpgawars/tools-graphviz/releases/download/2026-09-15/apio-graphviz-windows-amd64-20260915.tgz",
-        "file": "apio-graphviz-windows-amd64-20260915.tgz",
-        "size": 9523332,
-        "sha256": "72ebcffb1b5faba67de10e9c2923a65b3d72851579daa2498f1682c5a69e87ca",
-        "strip": 0
-      },
       "dest": "apio/packages/graphviz",
-      "licenseFiles": [
-        "licenses/graphviz-LICENSE.txt"
-      ]
+      "placeholder": {
+        "reason": "Apio 1.6.0 requires a \"graphviz\" package on windows-amd64 before it runs any command, but only \"apio graph\" uses it and NexysVHDL never runs that (the RTL Schematic uses Yosys JSON and NexysVHDL's own renderer).",
+        "evidence": [
+          "apio/resources/packages.jsonc at Apio 9fbb279c: graphviz restricted to windows-amd64, env adds %p/bin to PATH only.",
+          "Upstream: FPGAwars/tools-graphviz d1ddf4b2 repackages GitLab graphviz-releases 12.1.2 windows_10_cmake_Release_Graphviz-12.1.2-win64.zip unmodified; Graphviz 12.1.2 LICENSE is EPL-1.0 (gitlab.com/graphviz/graphviz/-/raw/12.1.2/LICENSE). The package contains no license file and bundles msvcp140*/vcruntime140*/concrt140 (Microsoft Visual C++ runtime).",
+          "PE import scan: no file NexysVHDL runs imports a DLL that only the graphviz package provides. The only importer of msvcp140.dll is the (unused) verible package.",
+          "Installed-VSIX process traces: dot and the other Graphviz executables never run.",
+          "Experiment: Apio 1.6.0 with an empty graphviz folder reports all packages installed OK and runs with all network access blocked."
+        ]
+      },
+      "notRedistributed": {
+        "archive": {
+          "url": "https://github.com/fpgawars/tools-graphviz/releases/download/2026-09-15/apio-graphviz-windows-amd64-20260915.tgz",
+          "file": "apio-graphviz-windows-amd64-20260915.tgz",
+          "size": 9523332,
+          "sha256": "72ebcffb1b5faba67de10e9c2923a65b3d72851579daa2498f1682c5a69e87ca",
+          "strip": 0
+        },
+        "contents": "Graphviz 12.1.2 (100 files in bin/: dot.exe, gvc.dll, cgraph.dll, cairo/expat/... DLLs, Microsoft VC++ runtime DLLs), lib/, share/"
+      },
+      "licenseFiles": []
     },
     {
       "id": "apio-oss-cad-suite",

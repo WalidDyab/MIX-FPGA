@@ -11,9 +11,9 @@
     },
     "win32-x64": {
       "status": "validated",
-      "treeSha256": "43b3fb80d30f7f87a61364ce636a57da1dcfd44ee07033746ca5854f133eaef9",
-      "files": 21465,
-      "bytes": 3170712308,
+      "treeSha256": "57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b",
+      "files": 21208,
+      "bytes": 3141371862,
       "archive": "nexysvhdl-toolchain-1.0-win32-x64.tar.gz"
     }
   }

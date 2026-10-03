@@ -58,6 +58,23 @@ export function safeLinkTarget(linkPath: string, target: string): string | undef
     return up <= linkPath.split('/').length - 1 ? target : undefined;
 }
 
+/**
+ * A link target as read from the host filesystem, in archive (POSIX) form.
+ * Windows returns relative targets with backslash separators (a link created
+ * as "Versions/Current/Q" reads back as "Versions\Current\Q"); POSIX hosts
+ * return them unchanged. Only the host separator is converted, so a POSIX
+ * target containing a literal backslash is still refused by safeLinkTarget,
+ * and a Windows absolute or UNC target ("C:\x", "\\server\share") still fails
+ * it (drive colon / leading slash).
+ */
+export function posixLinkTarget(raw: string, separator: string = sep): string {
+    return separator === '/' ? raw : raw.split(separator).join('/');
+}
+
+async function readLinkTarget(path: string): Promise<string> {
+    return posixLinkTarget(await readlink(path));
+}
+
 async function sha256File(path: string): Promise<string> {
     const h = createHash('sha256');
     for await (const chunk of createReadStream(path)) h.update(chunk as Buffer);
@@ -76,7 +93,7 @@ export async function inventoryDirectory(dir: string, options: { exclude?: reado
             else if (e.isFile()) {
                 options.onFile?.(rel);
                 entries.push({ path: rel, size: (await stat(full)).size, sha256: await sha256File(full) });
-            } else if (e.isSymbolicLink()) entries.push({ path: rel, size: 0, sha256: '', link: await readlink(full) });
+            } else if (e.isSymbolicLink()) entries.push({ path: rel, size: 0, sha256: '', link: await readLinkTarget(full) });
             else throw new Error(`unexpected non-regular file: ${full}`);
         }
     };
@@ -160,7 +177,7 @@ export async function writeTarGz(dir: string, outFile: string, onProgress?: (byt
                 await walk(full);
             } else if (e.isFile()) items.push({ rel, full, directory: false });
             else if (e.isSymbolicLink()) {
-                const link = await readlink(full);
+                const link = await readLinkTarget(full);
                 if (!safeLinkTarget(rel, link)) throw new Error(`cannot archive symbolic link ${full} -> ${link}: the target must be relative and inside the folder`);
                 items.push({ rel, full, directory: false, link });
             } else throw new Error(`cannot archive non-regular file ${full}`);

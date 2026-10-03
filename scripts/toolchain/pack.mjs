@@ -58,7 +58,8 @@ if (args['update-requirement']) {
     if (req.bundleVersion !== recipe.bundleVersion) fail(`requirement.json requires toolchain ${req.bundleVersion}; change it deliberately before packing ${recipe.bundleVersion}`);
     const previous = req.targets[target];
     if (previous?.status === 'validated' && previous.treeSha256 !== inv.treeSha256) {
-        fail(`toolchain ${recipe.bundleVersion} for ${target} was already released with content ${previous.treeSha256}; a released version is immutable. Raise bundleVersion instead.`);
+        // ADR-007 lifecycle: immutable from release freeze; a pre-release candidate is replaced only by a deliberate, re-validated edit of requirement.json.
+        fail(`toolchain ${recipe.bundleVersion} for ${target} was already validated with content ${previous.treeSha256}. After release a payload change needs a new bundleVersion; before the first external release, replace the candidate deliberately (re-validate, then edit requirement.json).`);
     }
     req.targets[target] = { status: 'validated', treeSha256: inv.treeSha256, files: inv.entries.length, bytes: inv.bytes, archive: name };
     await writeFile(reqFile, `${JSON.stringify(req, null, 2)}\n`);

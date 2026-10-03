@@ -17,6 +17,7 @@ import {
     installToolchainArchive,
     inventoryDirectory,
     loadBundledToolchain,
+    posixLinkTarget,
     safeArchivePath,
     safeLinkTarget,
     storePaths,
@@ -236,6 +237,22 @@ describe('toolchain archive (tar.gz)', () => {
         assert.equal((await inventoryDirectory(dir)).treeSha256, legacy);
     });
 
+    it('link targets read on any host are archived in POSIX form, with the same safety rules', () => {
+        // Windows reads a link created as "Versions/Current/Q" back with backslashes.
+        assert.equal(posixLinkTarget('Versions\\Current\\Q', '\\'), 'Versions/Current/Q');
+        assert.equal(posixLinkTarget('..\\bin\\yosys-abc', '\\'), '../bin/yosys-abc');
+        assert.equal(safeLinkTarget('Q.framework/Q', posixLinkTarget('Versions\\Current\\Q', '\\')), 'Versions/Current/Q');
+        // POSIX hosts: unchanged; a literal backslash stays and is still refused.
+        assert.equal(posixLinkTarget('Versions/Current/Q', '/'), 'Versions/Current/Q');
+        assert.equal(posixLinkTarget('a\\b', '/'), 'a\\b');
+        assert.equal(safeLinkTarget('lib/x', posixLinkTarget('a\\b', '/')), undefined);
+        // Normalizing never makes an unsafe Windows target acceptable.
+        for (const raw of ['C:\\Windows\\System32\\cmd.exe', '\\\\server\\share\\x', '\\Windows\\x', '..\\..\\..\\outside', 'a\\..\\..\\b']) {
+            assert.equal(safeLinkTarget('lib/x', posixLinkTarget(raw, '\\')), undefined, raw);
+        }
+        assert.equal(posixLinkTarget('Versions/Current/Q'), sep === '/' ? 'Versions/Current/Q' : 'Versions/Current/Q', 'the host default is the host separator');
+    });
+
     it('round-trips relative symbolic links (macOS frameworks, dylib aliases) as links, inside the tree', async (t) => {
         const dir = await tempDir(t, 'nexys-tar-');
         const src = join(dir, 'src');
@@ -355,6 +372,20 @@ describe('toolchain store: separately versioned, immutable installs', () => {
         assert.equal(await readFile(join(versionDir, 'something.txt'), 'utf8'), 'keep me');
     });
 
+    it('an installed 1.0 with another content hash (e.g. the replaced pre-release candidate 43b3fb80…) is a version conflict, never changed in place', async (t) => {
+        const { dataRoot, archive, requirement } = await setup(t);
+        const versionDir = storePaths(dataRoot, 'win32-x64', '1.0').versionDir;
+        const candidate = '43b3fb80d30f7f87a61364ce636a57da1dcfd44ee07033746ca5854f133eaef9';
+        assert.notEqual(requirement.targets['win32-x64']!.treeSha256, candidate);
+        await writeFiles(versionDir, { 'apio/packages/graphviz/bin/dot.exe': 'candidate content', '.nexysvhdl-installed.json': JSON.stringify({ target: 'win32-x64', bundleVersion: '1.0', treeSha256: candidate }) });
+        const state = await installedToolchain(dataRoot, 'win32-x64', requirement);
+        assert.equal(state.status, 'conflict');
+        assert.equal(state.status === 'conflict' && state.diagnostics[0]!.code, 'TOOLCHAIN_VERSION_CONFLICT');
+        const r = await installToolchainArchive({ archive, dataRoot, target: 'win32-x64', requirement });
+        assert.equal(r.status, 'failed', 'the installer does not replace or repair an existing version folder');
+        assert.equal(await readFile(join(versionDir, 'apio', 'packages', 'graphviz', 'bin', 'dot.exe'), 'utf8'), 'candidate content');
+    });
+
     it('a macOS toolchain with framework and dylib links installs, verifies, and a re-pointed link is detected', async (t) => {
         const dir = await tempDir(t, 'nexys-store-');
         const bundle = join(dir, 'bundle');
@@ -367,9 +398,10 @@ describe('toolchain store: separately versioned, immutable installs', () => {
         const r = await installToolchainArchive({ archive, dataRoot, target: 'darwin-arm64', requirement });
         assert.equal(r.status, 'installed');
         const root = join(dataRoot, 'toolchains', 'darwin-arm64', '1.0');
-        assert.equal(await readlink(join(root, 'apio', 'bin', '_internal', 'Python')), 'Python.framework/Versions/3.14/Python');
+        assert.equal(posixLinkTarget(await readlink(join(root, 'apio', 'bin', '_internal', 'Python'))), 'Python.framework/Versions/3.14/Python');
         assert.equal(await readFile(join(root, 'apio', 'bin', '_internal', 'Python'), 'utf8'), 'python dylib');
-        assert.ok(((await stat(join(root, 'apio', 'packages', 'oss-cad-suite', 'bin', 'openFPGALoader'))).mode & 0o111) !== 0, 'executable bit survives pack and install');
+        // POSIX permission bits exist only on POSIX hosts (Windows stat() never reports them for such a file).
+        if (sep === '/') assert.ok(((await stat(join(root, 'apio', 'packages', 'oss-cad-suite', 'bin', 'openFPGALoader'))).mode & 0o111) !== 0, 'executable bit survives pack and install');
         assert.equal((await verifyInstalledToolchain(dataRoot, 'darwin-arm64', requirement)).ok, true);
         // Re-point a link (same files, different target): Verify Toolchain must notice.
         const link = join(root, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libusb-1.0.dylib');

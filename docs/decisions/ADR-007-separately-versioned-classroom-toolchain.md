@@ -40,7 +40,13 @@ Things found while staging it:
    - `PYTHONDONTWRITEBYTECODE=1`.
 
    A NexysVHDL-authored `shims/python.cmd` runs the CPython 3.11.6 that ships inside the official oss-cad-suite package. Its fasm2frames output was verified to be byte-identical to the validated Python 3.14.3 run.
-6. **Provenance.** The toolchain is assembled from the official release archives listed in `toolchains/bundle/<target>.json`, each checked by size and SHA-256. It is never copied from a developer's tool folders. Nothing is upgraded for uniformity across platforms.
+6. **Payload lifecycle (clarified 2026-10-03).**
+   - A toolchain payload becomes **immutable at release freeze / first external distribution** of that toolchain version.
+   - *Before* the first external release, the payload validated for a version is an **internal pre-release validation candidate**: it may be replaced by a new candidate of the same version, deliberately (assemble, re-validate, update `requirement.json` by hand; `pack --update-requirement` still refuses to overwrite a validated hash on its own).
+   - *After* release, any payload change requires a **new toolchain version** (e.g. 1.0.1 or 1.1), installed side by side.
+   - This is a build/release rule only. The **runtime integrity rule is unchanged**: if the installed folder of a version has a different content hash from the one the extension requires, NexysVHDL reports `TOOLCHAIN_VERSION_CONFLICT` and never modifies, repairs or replaces it in place.
+   - Applied once: Windows Toolchain 1.0 candidate `43b3fb80…` (21,465 files, internal validation only, never distributed externally) was replaced before release by `57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b` (21,208 files; the unused Apio drivers and graphviz packages became compatibility placeholders, see `docs/toolchain-1.0-redistribution.md`). macOS Toolchain 1.0 (`f0402218…`) is unchanged.
+7. **Provenance.** The toolchain is assembled from the official release archives listed in `toolchains/bundle/<target>.json`, each checked by size and SHA-256. It is never copied from a developer's tool folders. Nothing is upgraded for uniformity across platforms.
 
 ## Consequences
 

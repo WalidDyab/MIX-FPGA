@@ -66,6 +66,13 @@ export function validateRecipe(r, target) {
         ids.add(c.id);
         for (const k of ['name', 'version', 'license', 'licenseEvidence', 'homepage', 'sourceCode', 'dest']) if (!c[k]) p.push(`${c.id}: missing ${k}`);
         if (!safeRelative(c.dest ?? '')) p.push(`${c.id}: unsafe dest ${c.dest}`);
+        if (c.placeholder) {
+            // An Apio package Apio requires but nothing uses: an empty folder, nothing redistributed.
+            if (!c.apioPackage) p.push(`${c.id}: a placeholder must be an Apio package`);
+            if (!c.placeholder.reason || !Array.isArray(c.placeholder.evidence) || c.placeholder.evidence.length === 0) p.push(`${c.id}: a placeholder needs a reason and evidence`);
+            if (c.archive) p.push(`${c.id}: a placeholder must not have an archive`);
+            continue;
+        }
         const a = c.archive ?? {};
         if (!/^https:\/\//.test(a.url ?? '')) p.push(`${c.id}: archive.url must be https`);
         if (!/^[0-9a-f]{64}$/.test(a.sha256 ?? '')) p.push(`${c.id}: archive.sha256 missing or malformed`);
@@ -111,9 +118,15 @@ export async function listFiles(dir) {
     return out.sort();
 }
 
-/** The target of a symbolic link, or undefined for a regular file. */
+/**
+ * The target of a symbolic link in archive (POSIX) form, or undefined for a
+ * regular file. Same normalization as core/toolchain/tar.ts posixLinkTarget():
+ * Windows reads relative targets back with backslashes.
+ */
 export async function linkTarget(path) {
-    return (await lstat(path)).isSymbolicLink() ? readlink(path) : undefined;
+    if (!(await lstat(path)).isSymbolicLink()) return undefined;
+    const raw = await readlink(path);
+    return sep === '/' ? raw : raw.split(sep).join('/');
 }
 
 /**
@@ -173,7 +186,7 @@ export function apioInstalledPackages(recipe) {
             platform: recipe.apio.platformId,
             'loaded-by': recipe.apio.version,
             'loaded-at': recipe.apio.installedAt,
-            'loaded-from': c.archive.url,
+            'loaded-from': c.placeholder ? `nexysvhdl-placeholder:${c.notRedistributed?.archive?.file ?? c.apioPackage.name} (not redistributed; unused by NexysVHDL)` : c.archive.url,
         };
     }
     return out;

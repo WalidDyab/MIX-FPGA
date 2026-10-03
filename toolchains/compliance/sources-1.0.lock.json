@@ -1,0 +1,403 @@
+{
+  "schemaVersion": 1,
+  "toolchainVersion": "1.0",
+  "tools": {
+    "git": "git version 2.53.0.windows.1",
+    "node": "v24.13.0"
+  },
+  "sources": {
+    "ghdl-6.0.0": [
+      {
+        "path": ".",
+        "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+        "file": "sources/ghdl-6.0.0.tar.gz",
+        "sha256": "612a9ba2abf797843afdbdfd65e3d772e4b8aae19253c7f5aebdb2dcf9c62f70",
+        "size": 7899777
+      }
+    ],
+    "apio-1.6.0": [
+      {
+        "path": ".",
+        "commit": "9fbb279c2bd793bb94e83d9b1523a420ed219f93",
+        "file": "sources/apio-1.6.0.tar.gz",
+        "sha256": "0e236582996257977bd7e91ed99529a0ca0a879fb94c9808271dbde81f8d20a4",
+        "size": 6551408
+      }
+    ],
+    "apio-1.7.0": [
+      {
+        "path": ".",
+        "commit": "ccede3ecb88f809d1c5a6063a274ba1852bdc519",
+        "file": "sources/apio-1.7.0.tar.gz",
+        "sha256": "195c0d66a8c5e38ef83bf375b429a7faa09547a8a2fe9175f1076beb3113d7bd",
+        "size": 6554313
+      }
+    ],
+    "apio-definitions-2026.09.17": [
+      {
+        "path": ".",
+        "commit": "2fd2c66575c775810aacfa1e174b377ec711f6a4",
+        "file": "sources/apio-definitions-2026.09.17.tar.gz",
+        "sha256": "df53f98ba129a63dd7868e250182082f846ab81e8770216337974e66c3d3b95d",
+        "size": 1957117
+      }
+    ],
+    "fpgawars-tools-oss-cad-suite": [
+      {
+        "path": ".",
+        "commit": "b246ed025634562f953daccef0c9d2f7995d30c3",
+        "file": "sources/fpgawars-tools-oss-cad-suite.tar.gz",
+        "sha256": "5e8da49e9b0ed147e49054d23a7cc69f67b890025b62f227a586b9017f9d18b6",
+        "size": 136931
+      }
+    ],
+    "yosyshq-oss-cad-suite-build-2026-03-24": [
+      {
+        "path": ".",
+        "commit": "ac8c7dba2517ce371959cd5d95cd9163a54c350d",
+        "file": "sources/yosyshq-oss-cad-suite-build-2026-03-24.tar.gz",
+        "sha256": "07b9f38432b884596b067673749ead7fb346884e14a8d93d3a63e74a5e3f0815",
+        "size": 244952
+      }
+    ],
+    "fpgawars-tools-openxc7-win32": [
+      {
+        "path": ".",
+        "commit": "8a01b11b7bac1e66c01d44f43c3a5290f65981a7",
+        "file": "sources/fpgawars-tools-openxc7-win32.tar.gz",
+        "sha256": "f4cf3258a4efda2a3a7d3aa34ae85c9ad39667f0b373d4956afebcddf7183a14",
+        "size": 1403813
+      }
+    ],
+    "fpgawars-tools-openxc7-darwin": [
+      {
+        "path": ".",
+        "commit": "22b6a11dc3198c2c28ad6b9c482f23e7a08e2331",
+        "file": "sources/fpgawars-tools-openxc7-darwin.tar.gz",
+        "sha256": "04b46b119405fbb6cf4ad7fb42351891ad30f1b5ecf14409c4f5579a68723fa8",
+        "size": 1429872
+      }
+    ],
+    "mcfgthread-1.6-ga.1": [
+      {
+        "path": ".",
+        "commit": "40263a6e2095ccba83071454191e09f14e9ee232",
+        "file": "sources/mcfgthread-1.6-ga.1.tar.gz",
+        "sha256": "2c05b5e8cba8a940b755b19d6c958dce13199a005c9dabe011ecaec6eccb4f1d",
+        "size": 101979
+      }
+    ],
+    "oss-dfu-util": [
+      {
+        "path": ".",
+        "commit": "f9a537c93935d9d536b5ea29b54a226160b2b111",
+        "file": "sources/oss-dfu-util.tar.gz",
+        "sha256": "f55c6bfdb758eaad3383a4f7b950a85b78d746a7455ffba0c7bf2f679203124e",
+        "size": 73084
+      }
+    ],
+    "oss-gtkwave": [
+      {
+        "path": ".",
+        "commit": "10cfae614ed8be80b5bb64e8c2194e7dffcd297a",
+        "file": "sources/oss-gtkwave.tar.gz",
+        "sha256": "cd37e1662c51312c0d94d531fa83ffe097fc470abf17145621ecd2f06fca2103",
+        "size": 9579568
+      }
+    ],
+    "oss-iverilog": [
+      {
+        "path": ".",
+        "commit": "6767a079560f4528f4beeae82fb33361eb4bc92a",
+        "file": "sources/oss-iverilog.tar.gz",
+        "sha256": "71c1c375a8972d516da21da65feeb9e08af9869d8a00696d3afa0ec7dcd82971",
+        "size": 3112004
+      }
+    ],
+    "oss-libftdi": [
+      {
+        "path": ".",
+        "commit": "5c2c58e03ea999534e8cb64906c8ae8b15536c30",
+        "file": "sources/oss-libftdi.tar.gz",
+        "sha256": "fde24c7c3ef68cc0ae3d02418a921f002bed2d0b5aa60c92b6325171065703a6",
+        "size": 136596
+      }
+    ],
+    "oss-libpoly": [
+      {
+        "path": ".",
+        "commit": "1383809f2aa5005ef20110fec84b66959518f697",
+        "file": "sources/oss-libpoly.tar.gz",
+        "sha256": "a656ee54802ed1ef37d2d67ba1f07c21b9c1eb22fb6c5eeb37d1d379c63c79ee",
+        "size": 611672
+      }
+    ],
+    "oss-libusb": [
+      {
+        "path": ".",
+        "commit": "c6a35c56016ea2ab2f19115d2ea1e85e0edae155",
+        "file": "sources/oss-libusb.tar.gz",
+        "sha256": "831c54a72eb5d3eff88b6d1c4ff1a36a2e20ce310aa2fb39604c8ae1562b40bf",
+        "size": 359385
+      }
+    ],
+    "oss-openocd": [
+      {
+        "path": ".",
+        "commit": "b6ee13720688a9860f3397bb89ea171b0fc5ccce",
+        "file": "sources/oss-openocd.tar.gz",
+        "sha256": "338d0c83643b4385e6ae166801d625e8b2f14ce70bb9217d17f0fc61f6d164cf",
+        "size": 3240407
+      },
+      {
+        "path": "jimtcl",
+        "commit": "1933e5457b9512d39ebbe11ed32578aada149f49",
+        "file": "sources/oss-openocd--jimtcl.tar.gz",
+        "sha256": "c8e5a012b38b0930e7ebf761d672341db2e60bf2fc27f1e63f4c3081ceeab6b4",
+        "size": 4398088
+      },
+      {
+        "path": "src/jtag/drivers/libjaylink",
+        "commit": "0d23921a05d5d427332a142d154c213d0c306eb1",
+        "file": "sources/oss-openocd--src-jtag-drivers-libjaylink.tar.gz",
+        "sha256": "b226ee7a4f1f924e60c753ff397e74b5137168603533e2f2eb961009fc8d7a93",
+        "size": 74784
+      },
+      {
+        "path": "tools/git2cl",
+        "commit": "8373c9f74993e218a08819cbcdbab3f3564bbeba",
+        "file": "sources/oss-openocd--tools-git2cl.tar.gz",
+        "sha256": "c17a7ba724c36a0d4f53e1e534bae8bee98fc830cace89e433100f61f0927319",
+        "size": 13512
+      }
+    ],
+    "oss-verilator": [
+      {
+        "path": ".",
+        "commit": "3b328d2bb661284165cc155adf211718aefbdc2a",
+        "file": "sources/oss-verilator.tar.gz",
+        "sha256": "46e76fe427bb7683944a9172f78bf9c9a51b084d280f40f41c67042b0be491bf",
+        "size": 5652379
+      }
+    ],
+    "oss-yices": [
+      {
+        "path": ".",
+        "commit": "016a6243de768046f4fba6f88a8659ce1a18d261",
+        "file": "sources/oss-yices.tar.gz",
+        "sha256": "c08356432cb4be8bc118d3482a75b3921748b11b7f3c2391ffbecf8b319f6fe3",
+        "size": 9960392
+      }
+    ],
+    "oss-surfer-win32": [
+      {
+        "path": ".",
+        "commit": "abeb7213b9f368d1357948bc1cf6ae28a444f5f7",
+        "file": "sources/oss-surfer-win32.tar.gz",
+        "sha256": "24654667b7587989d1d88e04ece7b30eb5d9c22647f6511ea8da68febeeb8104",
+        "size": 9695963
+      },
+      {
+        "path": "f128",
+        "commit": "e60de395f0d6454c1dc546b87f06a6358425b6b6",
+        "file": "sources/oss-surfer-win32--f128.tar.gz",
+        "sha256": "4f17cd0106e27fdf2fa768de586050329c43e4ea9ab6d9307db4208c1d439d51",
+        "size": 13217
+      },
+      {
+        "path": "instruction-decoder",
+        "commit": "f016312216a88157d7594fabb6bc53d3d08c0999",
+        "file": "sources/oss-surfer-win32--instruction-decoder.tar.gz",
+        "sha256": "9611cfff7498b1bb50ddbbc52caa349942d4a8a692ab88aad23ae40b10012650",
+        "size": 1100656
+      }
+    ],
+    "oss-surfer-darwin": [
+      {
+        "path": ".",
+        "commit": "0ab7f4722be9cb0420494609d58d813def7d4319",
+        "file": "sources/oss-surfer-darwin.tar.gz",
+        "sha256": "ad795895a716f696f2381d6910e69428da13d68a282d20a21c90cbe5354997e9",
+        "size": 9749510
+      },
+      {
+        "path": "f128",
+        "commit": "e60de395f0d6454c1dc546b87f06a6358425b6b6",
+        "file": "sources/oss-surfer-darwin--f128.tar.gz",
+        "sha256": "a03662350675087f32a4c41f165aa1f65e84bc9cb3a205bd34ce2082209610b8",
+        "size": 13219
+      },
+      {
+        "path": "instruction-decoder",
+        "commit": "7c5adb7621a6f277ee13ec1a4babe32ce56cc0c3",
+        "file": "sources/oss-surfer-darwin--instruction-decoder.tar.gz",
+        "sha256": "6478bd76113c4a9188de6e34b9821532a3f5d96af9c2d926cffb60e244137e6b",
+        "size": 1100669
+      }
+    ],
+    "oss-black-iceprog": [
+      {
+        "path": ".",
+        "commit": "8b6667d1cdc3344c5c51ddbe7c2f80a132518491",
+        "file": "sources/oss-black-iceprog.tar.gz",
+        "sha256": "bbe5cfaa83af40736e1357cb96b8dc8521994384689d38146d98ecd4f04d6848",
+        "size": 14319
+      }
+    ],
+    "oss-ghdl-yosys-plugin": [
+      {
+        "path": ".",
+        "commit": "07a30ed39fb6a078f1bf7e9e88ce9ed712380ec2",
+        "file": "sources/oss-ghdl-yosys-plugin.tar.gz",
+        "sha256": "22261f263637ba3c735c8b5f915bcd915cbf7f0093108cf4bc60c30a3b94b465",
+        "size": 86817
+      }
+    ],
+    "oss-graphviz": [
+      {
+        "path": ".",
+        "commit": "da4c2ec6f24ca1b6d1752c6b5bc4389e55682147",
+        "file": "sources/oss-graphviz.tar.gz",
+        "sha256": "4223b6004c85d7c917f84d5b5147e426f054435768a123b6a0c9bc2468d5b300",
+        "size": 35063973
+      },
+      {
+        "path": "dependencies/criterion",
+        "commit": "301d143ea42c024f22b673b69c72a4cb3c8d151f",
+        "file": "sources/oss-graphviz--dependencies-criterion.tar.gz",
+        "sha256": "b8830b24688987206ce83c65bce22420ef6b0754d0477656c65308ea0c3d8183",
+        "size": 840640
+      },
+      {
+        "path": "windows/dependencies/graphviz-build-utilities",
+        "commit": "050fff84ce195e0740878748760fd801eeb07b23",
+        "file": "sources/oss-graphviz--windows-dependencies-graphviz-build-utilities.tar.gz",
+        "sha256": "fb1ac97656a9ccf5da5adf5a05de18243ea7da4d2cd589a1e03e0413b3e22bcc",
+        "size": 3159931
+      },
+      {
+        "path": "windows/dependencies/libraries",
+        "commit": "141d3a21be904fa8dc2ae3ed01d36684db07a35d",
+        "file": "sources/oss-graphviz--windows-dependencies-libraries.tar.gz",
+        "sha256": "826112ee6658daef83ff6557f9c14ab20a1f1cf5465aa25bed78a8a417a84885",
+        "size": 15891083
+      },
+      {
+        "path": "dependencies/criterion/dependencies/boxfort",
+        "commit": "16b0041c7eb80b2308978e0654c4bb0a2bd36173",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-boxfort.tar.gz",
+        "sha256": "4340bf389ccbc536721abc51a156b7adacf7af7352e7555bd3e8e1f3c1feaaff",
+        "size": 40877
+      },
+      {
+        "path": "dependencies/criterion/dependencies/debugbreak",
+        "commit": "6b79ec8d8f8d4603111f580a0537f8f31c484c32",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-debugbreak.tar.gz",
+        "sha256": "664b93944fdede8490579ddd5eff8676616e1bd3446a7bb55fc2ad93cbb76514",
+        "size": 5599
+      },
+      {
+        "path": "dependencies/criterion/dependencies/dyncall",
+        "commit": "51e79a84fd91881d7424b28271c6dda4e0d97c11",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-dyncall.tar.gz",
+        "sha256": "7a95e8ce99feaa16245f8901e357a8751f590434109e68f8cbc9c95eced47166",
+        "size": 424568
+      },
+      {
+        "path": "dependencies/criterion/dependencies/klib",
+        "commit": "cdb7e9236dc47abf8da7ebd702cc6f7f21f0c502",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-klib.tar.gz",
+        "sha256": "e05f56ee70bc7ff9b30050cdd667503174955336c3e8a70f1ff39717ed6466ab",
+        "size": 99755
+      },
+      {
+        "path": "dependencies/criterion/dependencies/libcsptr",
+        "commit": "0d52904da5d7bd0a3eac3c47e9f9bb10cd78a26e",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-libcsptr.tar.gz",
+        "sha256": "eeeb0376e7506aa1a455e4954fd64bd7c998397772c5ca212b24e3c577eb2c32",
+        "size": 18681
+      },
+      {
+        "path": "dependencies/criterion/dependencies/nanomsg",
+        "commit": "7e12a20e038234060d41d03c20721d08117f8607",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-nanomsg.tar.gz",
+        "sha256": "97b5b9c80e81734a06bdbcb7e7178052d9cb5dab02e9d90b21e03b0142465481",
+        "size": 300648
+      },
+      {
+        "path": "dependencies/criterion/dependencies/nanopb",
+        "commit": "56f7c488df99ae655b47b5838055e48b886665a1",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-nanopb.tar.gz",
+        "sha256": "30d53347fd3ab54006754b7f3fa7c482b010eb28c5c13aa9f7d9272107944c73",
+        "size": 224351
+      },
+      {
+        "path": "dependencies/criterion/dependencies/wingetopt",
+        "commit": "76a5d1ab15f684d4c9479a32624d65b3bd1a726b",
+        "file": "sources/oss-graphviz--dependencies-criterion-dependencies-wingetopt.tar.gz",
+        "sha256": "bfc2f528b722b635af69e166629ce4f35133971bae7ea700eaeb6e2bac4d7852",
+        "size": 7259
+      }
+    ],
+    "oss-icefunprog": [
+      {
+        "path": ".",
+        "commit": "99e6abc7c0da18090730dff6eb264ac3c1cc7fd5",
+        "file": "sources/oss-icefunprog.tar.gz",
+        "sha256": "b38e5c91b3321a005e13a11ee00c6bfd2202ca5319d36cffd847f7e55996fc03",
+        "size": 14437
+      }
+    ],
+    "oss-tinyfpgab": [
+      {
+        "path": ".",
+        "commit": "e8f915033f7a941647ca5f884e80086a8e68282d",
+        "file": "sources/oss-tinyfpgab.tar.gz",
+        "sha256": "15a600715048ab399cc648e91242618afb8a09a306fe5575201fe14678f1aef0",
+        "size": 297574
+      }
+    ],
+    "oss-tinyprog": [
+      {
+        "path": ".",
+        "commit": "97f6353540bf7c0d27f5612f202b48f41da75299",
+        "file": "sources/oss-tinyprog.tar.gz",
+        "sha256": "b3f95afa6d4a9a5f036461ed4fe8acc222202cd5b1d124e0a53c416f30ee9876",
+        "size": 3713408
+      }
+    ],
+    "oss-xdot": [
+      {
+        "path": ".",
+        "commit": "6248c81c21a0fe825089311b17f2c302eea614a2",
+        "file": "sources/oss-xdot.tar.gz",
+        "sha256": "6eecfb07f747c656861f1adfd7ea78762dc8626298708662d9a7ff40ea23dbae",
+        "size": 132602
+      }
+    ],
+    "pypi-certifi-2026.7.22": [
+      {
+        "path": ".",
+        "file": "sources/certifi-2026.7.22.tar.gz",
+        "sha256": "741e2c3b351ddf169a738da9f2c048608ff7f2c5cc02f1ebc6b118bb090d5d55",
+        "size": 138112
+      }
+    ],
+    "pypi-vcdvcd-2.6.0": [
+      {
+        "path": ".",
+        "file": "sources/vcdvcd-2.6.0.tar.gz",
+        "sha256": "96d8ce491729e8c8ad7034a5093601409d8a3f4a34023d0be3db28650ecbb128",
+        "size": 14037
+      }
+    ],
+    "pypi-pycairo-1.25.1": [
+      {
+        "path": ".",
+        "file": "sources/pycairo-1.25.1.tar.gz",
+        "sha256": "7e2be4fbc3b4536f16db7a11982cbf713e75069a4d73d44fe5a49b68423f5c0c",
+        "size": 347088
+      }
+    ]
+  }
+}

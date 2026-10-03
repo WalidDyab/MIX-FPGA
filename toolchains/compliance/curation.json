@@ -1,0 +1,903 @@
+{
+  "schemaVersion": 1,
+  "toolchainVersion": "1.0",
+  "statement": "NexysVHDL Toolchain 1.0 is an aggregation of separate third-party programs and data, each under its own license. It is NOT licensed under NexysVHDL's Apache License 2.0; that license covers only NexysVHDL's own code and the NexysVHDL-authored files of the toolchain (manifest, pinned Apio configuration, shims, placeholders, notices).",
+  "nexysvhdl": {
+    "license": "Apache-2.0",
+    "copyright": "Copyright 2026 Walid Dyab",
+    "project": "NexysVHDL is an EMXplore project",
+    "files": [
+      "LICENSE",
+      "NOTICE"
+    ],
+    "appliesTo": "NexysVHDL's own code and data (the VSIX) and the NexysVHDL-authored files inside Toolchain 1.0: toolchain-manifest.json, THIRD_PARTY_NOTICES.md, apio/remote-config/*, apio/packages/installed_packages.json, shims/*, placeholder READMEs"
+  },
+  "licenseClasses": {
+    "GPL-2.0": {
+      "kind": "strong copyleft",
+      "action": "Provide the license text and the complete corresponding source of the binaries (source shipped alongside, GPLv2 section 3(a)); keep notices."
+    },
+    "GPL-2.0-or-later": {
+      "kind": "strong copyleft",
+      "action": "As GPL-2.0."
+    },
+    "GPL-3.0": {
+      "kind": "strong copyleft",
+      "action": "Provide the license text and the complete Corresponding Source (GPLv3 section 6(a)/(d): alongside the object code or from the same place); keep notices."
+    },
+    "GPL-3.0-or-later": {
+      "kind": "strong copyleft",
+      "action": "As GPL-3.0."
+    },
+    "LGPL-2.0": {
+      "kind": "weak copyleft",
+      "action": "Provide the license text and the complete source of the library; keep notices; allow replacement of the library (shared libraries are shipped as separate files)."
+    },
+    "LGPL-2.1": {
+      "kind": "weak copyleft",
+      "action": "As LGPL-2.0."
+    },
+    "LGPL-3.0": {
+      "kind": "weak copyleft",
+      "action": "Provide LGPL-3.0 and GPL-3.0 texts and the Corresponding Source of the library; keep notices; libraries are shipped as replaceable shared libraries/frameworks."
+    },
+    "LGPL-3.0-or-later": {
+      "kind": "weak copyleft",
+      "action": "As LGPL-3.0."
+    },
+    "EUPL-1.2": {
+      "kind": "copyleft",
+      "action": "Provide the license; provide the source or indicate a repository where it is freely available (EUPL-1.2 article 5). NexysVHDL ships the source."
+    },
+    "EPL-1.0": {
+      "kind": "weak copyleft",
+      "action": "Provide the license; state that source code is available and how to obtain it (EPL-1.0 section 3). NexysVHDL ships the source."
+    },
+    "MPL-2.0": {
+      "kind": "file-level copyleft",
+      "action": "Provide the license; inform recipients how to obtain the Source Code Form (MPL-2.0 section 3.2)."
+    },
+    "GPL-3.0-or-later WITH GCC-exception-3.1": {
+      "kind": "runtime-library exception",
+      "action": "Provide GPL-3.0 and the GCC Runtime Library Exception texts. The exception (section 1) permits propagating Target Code formed by combining the Runtime Library with Independent Modules under terms of the distributor's choice; the corresponding source of the runtime itself is not required by the exception text. NexysVHDL still records its origin."
+    },
+    "Apache-2.0": {
+      "kind": "permissive",
+      "action": "Provide the license text and any NOTICE file the component carries."
+    },
+    "Apache-2.0 WITH LLVM-exception": {
+      "kind": "permissive",
+      "action": "Provide the license text (including the LLVM exceptions)."
+    },
+    "ISC": {
+      "kind": "permissive",
+      "action": "Keep the copyright and permission notice."
+    },
+    "MIT": {
+      "kind": "permissive",
+      "action": "Keep the copyright and permission notice."
+    },
+    "BSD-2-Clause": {
+      "kind": "permissive",
+      "action": "Keep the copyright notice, conditions and disclaimer in the documentation."
+    },
+    "BSD-3-Clause": {
+      "kind": "permissive",
+      "action": "Keep the copyright notice, conditions and disclaimer in the documentation."
+    },
+    "LicenseRef-Berkeley-permissive": {
+      "kind": "permissive",
+      "action": "Keep the copyright notice and the permission paragraph (UC Berkeley-style notice used by ABC and AVY)."
+    },
+    "PSF-2.0": {
+      "kind": "permissive",
+      "action": "Keep the PSF license agreement and copyright notice."
+    },
+    "Zlib": {
+      "kind": "permissive",
+      "action": "Keep the notice; do not misrepresent origin."
+    },
+    "BSL-1.0": {
+      "kind": "permissive",
+      "action": "Keep the license with source distributions; binaries need no notice (still listed)."
+    },
+    "CC0-1.0": {
+      "kind": "public-domain dedication (data)",
+      "action": "None required; attribution kept."
+    },
+    "LicenseRef-Microsoft-Redistributable": {
+      "kind": "proprietary redistributable",
+      "action": "Microsoft Visual C++ / Universal CRT runtime files redistributed as part of a third-party binary bundle; terms are Microsoft's redistributable terms granted to that bundle's producer. Review required."
+    },
+    "LicenseRef-PJRC-proprietary": {
+      "kind": "proprietary, terms unknown",
+      "action": "Not redistributed."
+    }
+  },
+  "sources": [
+    {
+      "id": "ghdl-6.0.0",
+      "kind": "git",
+      "url": "https://github.com/ghdl/ghdl",
+      "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+      "describes": "GHDL 6.0.0 (tag v6.0.0): Windows mcode build, macOS LLVM-JIT build, and the GHDL inside the macOS oss-cad-suite",
+      "license": "GPL-2.0-or-later"
+    },
+    {
+      "id": "apio-1.6.0",
+      "kind": "git",
+      "url": "https://github.com/FPGAwars/apio",
+      "revision": "9fbb279c2bd793bb94e83d9b1523a420ed219f93",
+      "describes": "Apio 1.6.0 (Windows bundle; build-info repo-commit) including its PyInstaller build configuration",
+      "license": "GPL-3.0-or-later"
+    },
+    {
+      "id": "apio-1.7.0",
+      "kind": "git",
+      "url": "https://github.com/FPGAwars/apio",
+      "revision": "ccede3ecb88f809d1c5a6063a274ba1852bdc519",
+      "describes": "Apio 1.7.0 (macOS bundle; build-info repo-commit)",
+      "license": "GPL-3.0-or-later"
+    },
+    {
+      "id": "apio-definitions-2026.09.17",
+      "kind": "git",
+      "url": "https://github.com/FPGAwars/apio-definitions",
+      "revision": "2fd2c66575c775810aacfa1e174b377ec711f6a4",
+      "describes": "Apio definitions package 2026.09.17 (both platforms)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "fpgawars-tools-oss-cad-suite",
+      "kind": "git",
+      "url": "https://github.com/FPGAwars/tools-oss-cad-suite",
+      "revision": "b246ed025634562f953daccef0c9d2f7995d30c3",
+      "describes": "FPGAwars packaging scripts that produced the 2026.09.15 oss-cad-suite packages (both platforms) from YosysHQ release 2026-03-24",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "yosyshq-oss-cad-suite-build-2026-03-24",
+      "kind": "git",
+      "url": "https://github.com/YosysHQ/oss-cad-suite-build",
+      "revision": "ac8c7dba2517ce371959cd5d95cd9163a54c350d",
+      "describes": "YosysHQ build scripts at release tag 2026-03-24 (the oss-cad-suite build both packages repackage)",
+      "license": "ISC"
+    },
+    {
+      "id": "fpgawars-tools-openxc7-win32",
+      "kind": "git",
+      "url": "https://github.com/FPGAwars/tools-openxc7",
+      "revision": "8a01b11b7bac1e66c01d44f43c3a5290f65981a7",
+      "describes": "FPGAwars build scripts for the Windows openXC7 2026.09.24 package",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "fpgawars-tools-openxc7-darwin",
+      "kind": "git",
+      "url": "https://github.com/FPGAwars/tools-openxc7",
+      "revision": "22b6a11dc3198c2c28ad6b9c482f23e7a08e2331",
+      "describes": "FPGAwars build scripts for the macOS openXC7 2026.09.25 package",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "mcfgthread-1.6-ga.1",
+      "kind": "git",
+      "url": "https://github.com/lhmouse/mcfgthread",
+      "revision": "40263a6e2095ccba83071454191e09f14e9ee232",
+      "describes": "MCF Gthread 1.6-ga.1 (upstream tag v1.6-ga.1 = this commit), source of libmcfgthread-1.dll in the Windows openXC7 package (MSYS2 build)",
+      "license": "LGPL-3.0-or-later"
+    },
+    {
+      "id": "oss-dfu-util",
+      "kind": "git",
+      "url": "https://git.code.sf.net/p/dfu-util/dfu-util",
+      "revision": "f9a537c93935d9d536b5ea29b54a226160b2b111",
+      "describes": "dfu-util (oss-cad-suite, both platforms)",
+      "license": "GPL-2.0"
+    },
+    {
+      "id": "oss-gtkwave",
+      "kind": "git",
+      "url": "https://github.com/gtkwave/gtkwave",
+      "revision": "10cfae614ed8be80b5bb64e8c2194e7dffcd297a",
+      "describes": "GTKWave (oss-cad-suite, both platforms)",
+      "license": "GPL-2.0"
+    },
+    {
+      "id": "oss-iverilog",
+      "kind": "git",
+      "url": "https://github.com/steveicarus/iverilog",
+      "revision": "6767a079560f4528f4beeae82fb33361eb4bc92a",
+      "describes": "Icarus Verilog (oss-cad-suite, both platforms)",
+      "license": "GPL-2.0"
+    },
+    {
+      "id": "oss-libftdi",
+      "kind": "git",
+      "url": "git://developer.intra2net.com/libftdi",
+      "revision": "5c2c58e03ea999534e8cb64906c8ae8b15536c30",
+      "describes": "libftdi1 (oss-cad-suite, both platforms; used by openFPGALoader on macOS)",
+      "license": "LGPL-2.0 (library) and GPL-2.0 (tools)"
+    },
+    {
+      "id": "oss-libpoly",
+      "kind": "git",
+      "url": "https://github.com/SRI-CSL/libpoly",
+      "revision": "1383809f2aa5005ef20110fec84b66959518f697",
+      "describes": "libpoly (oss-cad-suite, both platforms)",
+      "license": "LGPL-3.0"
+    },
+    {
+      "id": "oss-libusb",
+      "kind": "git",
+      "url": "https://github.com/libusb/libusb",
+      "revision": "c6a35c56016ea2ab2f19115d2ea1e85e0edae155",
+      "describes": "libusb (oss-cad-suite, both platforms; used by openFPGALoader on macOS)",
+      "license": "LGPL-2.1"
+    },
+    {
+      "id": "oss-openocd",
+      "kind": "git",
+      "url": "https://repo.or.cz/openocd.git",
+      "revision": "b6ee13720688a9860f3397bb89ea171b0fc5ccce",
+      "describes": "OpenOCD (oss-cad-suite, both platforms)",
+      "license": "GPL-2.0"
+    },
+    {
+      "id": "oss-verilator",
+      "kind": "git",
+      "url": "https://github.com/verilator/verilator",
+      "revision": "3b328d2bb661284165cc155adf211718aefbdc2a",
+      "describes": "Verilator (oss-cad-suite, both platforms)",
+      "license": "LGPL-3.0 (license file also contains GPL-3.0 text)"
+    },
+    {
+      "id": "oss-yices",
+      "kind": "git",
+      "url": "https://github.com/SRI-CSL/yices2",
+      "revision": "016a6243de768046f4fba6f88a8659ce1a18d261",
+      "describes": "Yices 2 (oss-cad-suite, both platforms)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "oss-surfer-win32",
+      "kind": "git",
+      "url": "https://gitlab.com/surfer-project/surfer",
+      "revision": "abeb7213b9f368d1357948bc1cf6ae28a444f5f7",
+      "describes": "Surfer waveform viewer (Windows oss-cad-suite)",
+      "license": "EUPL-1.2"
+    },
+    {
+      "id": "oss-surfer-darwin",
+      "kind": "git",
+      "url": "https://gitlab.com/surfer-project/surfer",
+      "revision": "0ab7f4722be9cb0420494609d58d813def7d4319",
+      "describes": "Surfer waveform viewer (macOS oss-cad-suite)",
+      "license": "EUPL-1.2"
+    },
+    {
+      "id": "oss-black-iceprog",
+      "kind": "git",
+      "url": "https://github.com/jpenalbae/black-iceprog",
+      "revision": "8b6667d1cdc3344c5c51ddbe7c2f80a132518491",
+      "describes": "black-iceprog (macOS oss-cad-suite)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "oss-ghdl-yosys-plugin",
+      "kind": "git",
+      "url": "https://github.com/ghdl/ghdl-yosys-plugin",
+      "revision": "07a30ed39fb6a078f1bf7e9e88ce9ed712380ec2",
+      "describes": "ghdl-yosys-plugin (macOS oss-cad-suite)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "oss-graphviz",
+      "kind": "git",
+      "url": "https://gitlab.com/graphviz/graphviz",
+      "revision": "da4c2ec6f24ca1b6d1752c6b5bc4389e55682147",
+      "describes": "Graphviz (macOS oss-cad-suite)",
+      "license": "EPL-1.0"
+    },
+    {
+      "id": "oss-icefunprog",
+      "kind": "git",
+      "url": "https://github.com/pitrz/icefunprog",
+      "revision": "99e6abc7c0da18090730dff6eb264ac3c1cc7fd5",
+      "describes": "icefunprog (macOS oss-cad-suite)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "oss-tinyfpgab",
+      "kind": "git",
+      "url": "https://github.com/tinyfpga/TinyFPGA-B-Series",
+      "revision": "e8f915033f7a941647ca5f884e80086a8e68282d",
+      "describes": "tinyfpgab programmer (macOS oss-cad-suite)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "oss-tinyprog",
+      "kind": "git",
+      "url": "https://github.com/tinyfpga/TinyFPGA-Bootloader",
+      "revision": "97f6353540bf7c0d27f5612f202b48f41da75299",
+      "describes": "tinyprog programmer (macOS oss-cad-suite)",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "oss-xdot",
+      "kind": "git",
+      "url": "https://github.com/jrfonseca/xdot.py",
+      "revision": "6248c81c21a0fe825089311b17f2c302eea614a2",
+      "describes": "xdot.py (macOS oss-cad-suite)",
+      "license": "LGPL-3.0"
+    },
+    {
+      "id": "pypi-certifi-2026.7.22",
+      "kind": "pypi-sdist",
+      "url": "https://files.pythonhosted.org/packages/a3/c2/24167ea9858356b47a87a50d39908bfdb72ceeefe0041586e704e5376b3a/certifi-2026.7.22.tar.gz",
+      "sha256": "741e2c3b351ddf169a738da9f2c048608ff7f2c5cc02f1ebc6b118bb090d5d55",
+      "size": 138112,
+      "describes": "certifi 2026.07.22 frozen into the Apio bundles (both platforms)",
+      "license": "MPL-2.0"
+    },
+    {
+      "id": "pypi-vcdvcd-2.6.0",
+      "kind": "pypi-sdist",
+      "url": "https://files.pythonhosted.org/packages/58/da/1f33971ea8db20650bce491015d46df50668a3f2564818ddb04fd1cbaad0/vcdvcd-2.6.0.tar.gz",
+      "sha256": "96d8ce491729e8c8ad7034a5093601409d8a3f4a34023d0be3db28650ecbb128",
+      "size": 14037,
+      "describes": "vcdvcd 2.6.0 frozen into the Apio bundles (both platforms)",
+      "license": "(Artistic-1.0-Perl OR GPL-1.0-or-later) AND MIT"
+    },
+    {
+      "id": "pypi-pycairo-1.25.1",
+      "kind": "pypi-sdist",
+      "url": "https://files.pythonhosted.org/packages/c7/7c/de4d40316ee563e4f15a0f05f28c8458833fbef80c4588b9dd51f39b78ee/pycairo-1.25.1.tar.gz",
+      "sha256": "7e2be4fbc3b4536f16db7a11982cbf713e75069a4d73d44fe5a49b68423f5c0c",
+      "size": 347088,
+      "describes": "pycairo 1.25.1 in the macOS oss-cad-suite Python (lib/python3.11/site-packages)",
+      "license": "LGPL-2.1-only OR MPL-1.1"
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "win32-oss-cad-suite-fedora-mingw-libraries",
+      "platform": "win32-x64",
+      "component": "apio-oss-cad-suite",
+      "description": "The Windows oss-cad-suite package bundles 161 third-party DLLs that are not covered by its license/ folder: Fedora MinGW (mingw64-*) RPM payloads from YosysHQ's Fedora build container (dnf install, unpinned). Their build strings show Fedora MinGW GCC 13.1.1-4.fc39 / 13.2.1-5.fc39 (some fc37/fc38). Versions from the binaries include Qt 5.15.11, GTK 3.24.38, GLib 2.77.1, OpenSSL 3.0.9, libusb 1.0.24, Python 3.11.6, ICU 73.",
+      "copyleft": "Includes LGPL (Qt 5 LGPL-3.0, GTK/GLib/Pango/ATK/Cairo/gdk-pixbuf LGPL-2.x, gettext libintl/libasprintf, iconv, fribidi, libidn2, ...) and GPL (GNU readline 8 + history GPL-3.0, gettext tools, libtermcap, dbus ...) libraries. GNU readline, libtermcap, libintl and iconv are loaded by Yosys, which NexysVHDL runs.",
+      "missing": "The exact Fedora package builds (name-version-release) are not recorded in the package or by YosysHQ (release 2026-03-24 publishes binaries only), so the corresponding source (Fedora SRPMs) and each library's license cannot be pinned from authoritative records.",
+      "resolution": "Either (a) map each DLL to its exact Fedora build (Koji) and add the SRPMs as pinned sources, (b) obtain the corresponding source/build manifest from YosysHQ (original distributor), or (c) in Toolchain 1.1, prune the oss-cad-suite payload to the files the Nexys A7 flow uses (Yosys and its runtime closure), then resolve the much smaller remaining set (readline, termcap, intl, iconv, tcl, libffi, zlib, Python 3.11, GCC runtime)."
+    },
+    {
+      "id": "win32-apio-microsoft-runtime",
+      "platform": "win32-x64",
+      "component": "apio",
+      "description": "The Apio 1.6.0 Windows PyInstaller bundle contains Microsoft Visual C++ and Universal CRT runtime files (VCRUNTIME140.dll, VCRUNTIME140_1.dll, ucrtbase.dll, 40 api-ms-win-*.dll).",
+      "copyleft": "No (proprietary redistributable).",
+      "missing": "Redistribution of these files is governed by Microsoft's redistributable terms granted to the producer of the bundle; NexysVHDL has no direct grant. Needs review (commonly redistributed with Python.org and PyInstaller applications).",
+      "resolution": "Legal review of Microsoft's redistributable terms for downstream redistribution of an unmodified bundle, or obtain an Apio bundle that relies on the OS-provided UCRT."
+    },
+    {
+      "id": "win32-openxc7-msys2-runtime",
+      "platform": "win32-x64",
+      "component": "apio-openxc7",
+      "description": "The Windows openXC7 package bundles MSYS2-built runtime DLLs: libstdc++-6, libgcc_s_seh-1 (GCC runtime, GCC Runtime Library Exception), libwinpthread-1, libmcfgthread-1 (MCF Gthread 1.6-ga.1, LGPL-3.0-or-later), libpython3.11 (PSF) and Python extension modules.",
+      "copyleft": "mcfgthread LGPL-3.0-or-later.",
+      "missing": "Upstream mcfgthread 1.6-ga.1 source is pinned; the MSYS2 package release (and its patches) that produced this DLL is not recorded.",
+      "resolution": "Identify the MSYS2 mingw-w64-*-mcfgthread package release (and the GCC/Python packages) from the tools-openxc7 build and add the MSYS2 source packages, or confirm with FPGAwars."
+    },
+    {
+      "id": "darwin-oss-cad-suite-bundled-libraries",
+      "platform": "darwin-arm64",
+      "component": "apio-oss-cad-suite",
+      "description": "The macOS oss-cad-suite package bundles Qt 5.15.3 (60 frameworks plus plugins) and about 75 dylibs not covered by its license/ folder (GTK 3, GLib, Pango, Cairo, HarfBuzz, ICU 74, GMP, GNU readline 8.2, gdbm, ncurses, libiconv, gettext libintl, OpenSSL 3, libusb, libftdi, hidapi, libgnat-14, ...), produced by YosysHQ's cross-darwin build environment.",
+      "copyleft": "Qt 5 LGPL-3.0 (the frameworks ship without any license file), GTK/GLib/... LGPL-2.x, GMP LGPL-3.0/GPL-2.0, GNU readline GPL-3.0, gdbm GPL-3.0, libiconv LGPL.",
+      "missing": "Exact upstream versions/builds and patches of these libraries are not recorded in the package; the corresponding sources cannot be pinned from authoritative records.",
+      "resolution": "As for Windows: map each library to its exact build input (YosysHQ cross-darwin image), obtain it from YosysHQ, or prune in Toolchain 1.1 (Qt-dependent tools such as sby-gui are not used by NexysVHDL). The Mac payload must not be changed from Windows; Mac Claude owns any Mac payload change."
+    },
+    {
+      "id": "darwin-openxc7-nix-libraries",
+      "platform": "darwin-arm64",
+      "component": "apio-openxc7",
+      "description": "The macOS openXC7 package bundles Nix-built libraries in lib/: libc++/libc++abi (Apache-2.0 WITH LLVM-exception), antlr4-runtime 4.9.3, Boost, bzip2, xz, zlib, zstd 1.5.6, libffi, libiconv and libcharset (LGPL), and Python 3.12.5.",
+      "copyleft": "libiconv/libcharset LGPL.",
+      "missing": "The exact nixpkgs derivations (and thus libiconv's version/patches) are not recorded.",
+      "resolution": "Identify the nixpkgs revision from tools-openxc7 22b6a11d (Nix store paths in the binaries) and add the libiconv source, or confirm with FPGAwars."
+    },
+    {
+      "id": "darwin-apio-bundled-libraries",
+      "platform": "darwin-arm64",
+      "component": "apio",
+      "description": "The Apio 1.7.0 macOS PyInstaller bundle contains libusb-1.0 (LGPL-2.1), OpenSSL 3.5.7 (Apache-2.0), zstd (BSD) and Python 3.14.7 (PSF).",
+      "copyleft": "libusb LGPL-2.1.",
+      "missing": "The libusb build version is not recorded in the dylib or in Apio's build info.",
+      "resolution": "Identify the libusb version used by Apio's macOS build workflow (apio ccede3ec .github/workflows) and add its source."
+    },
+    {
+      "id": "darwin-ghdl-gnat-runtime",
+      "platform": "darwin-arm64",
+      "component": "ghdl",
+      "description": "The macOS GHDL LLVM-JIT build ships libgnat-14 and libgcc_s (GCC runtime, GCC Runtime Library Exception) and links LLVM 22.1.0 statically (Apache-2.0 WITH LLVM-exception).",
+      "copyleft": "GPL-3.0-or-later WITH GCC-exception-3.1 for the runtime (exception applies).",
+      "missing": "Nothing blocking by the license texts; the GNAT/GCC 14 build origin is recorded only as 'GNAT 14' (Mac record).",
+      "resolution": "None required beyond license/exception texts; record the exact GCC version when convenient (Mac step).",
+      "blocking": false
+    },
+    {
+      "id": "surfer-rust-dependencies",
+      "platform": "win32-x64 and darwin-arm64",
+      "component": "apio-oss-cad-suite",
+      "description": "Surfer (EUPL-1.2) is a Rust program; its statically linked crates are fetched by Cargo at build time.",
+      "copyleft": "EUPL-1.2 for Surfer itself.",
+      "missing": "The source snapshot pins Surfer's revision (including Cargo.lock) but does not vendor the crate sources.",
+      "resolution": "EUPL-1.2 article 5 permits indicating a repository; for a self-contained package, run cargo vendor at the pinned revision and add it.",
+      "blocking": false
+    }
+  ],
+  "components": {
+    "win32-x64": {
+      "ghdl": {
+        "spdx": "GPL-2.0-or-later AND GPL-3.0-or-later WITH GCC-exception-3.1 AND Apache-2.0 AND MIT AND BSD-3-Clause AND Zlib",
+        "sources": [
+          "ghdl-6.0.0"
+        ],
+        "status": "ready",
+        "note": "GHDL GPL-2.0-or-later; IEEE 1076-2008 packages (lib/ghdl/src/ieee2008) Apache-2.0; MSYS2 UCRT64 runtime: libgnat-15 and libgcc_s_seh-1 (GCC 15.2.0, GCC Runtime Library Exception), libwinpthread-1 (mingw-w64 winpthreads, MIT and BSD-3-Clause), zlib1 (Zlib).",
+        "usage": "Check, Simulate (analysis, elaboration, simulation, waveforms) and VHDL-to-Verilog synthesis (ghdl --synth) for RTL Schematic and Build."
+      },
+      "apio": {
+        "spdx": "GPL-3.0-or-later AND PSF-2.0 AND Apache-2.0 AND MIT AND BSD-3-Clause AND BSD-2-Clause AND MPL-2.0 AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND LicenseRef-Microsoft-Redistributable",
+        "sources": [
+          "apio-1.6.0",
+          "pypi-certifi-2026.7.22",
+          "pypi-vcdvcd-2.6.0"
+        ],
+        "status": "unresolved",
+        "unresolved": [
+          "win32-apio-microsoft-runtime"
+        ],
+        "note": "PyInstaller bundle: Python 3.14 (PSF-2.0), OpenSSL 3 (Apache-2.0), libffi (MIT), Microsoft VC++/UCRT runtime, Python packages listed in apioPythonPackages.",
+        "usage": "Build (runs Yosys, nextpnr-xilinx and the Project X-Ray tools through SCons); macOS Program (openFPGALoader through Apio)."
+      },
+      "apio-definitions": {
+        "spdx": "GPL-3.0-only",
+        "sources": [
+          "apio-definitions-2026.09.17"
+        ],
+        "status": "ready",
+        "note": "LICENSE is the GPL version 3 text with no \"or later\" grant: recorded conservatively as GPL-3.0-only.",
+        "usage": "Board, FPGA and programmer definitions read by Apio for every command."
+      },
+      "apio-drivers": {
+        "spdx": "NONE",
+        "sources": [],
+        "status": "not-redistributed",
+        "usage": "Not used; Apio 1.6.0 requires the folder on Windows. Placeholder only."
+      },
+      "apio-graphviz": {
+        "spdx": "NONE",
+        "sources": [],
+        "status": "not-redistributed",
+        "usage": "Not used; Apio 1.6.0 requires the folder on Windows. Placeholder only."
+      },
+      "apio-oss-cad-suite": {
+        "spdx": "LicenseRef-NexysVHDL-aggregate",
+        "sources": [
+          "fpgawars-tools-oss-cad-suite",
+          "yosyshq-oss-cad-suite-build-2026-03-24"
+        ],
+        "status": "unresolved",
+        "unresolved": [
+          "win32-oss-cad-suite-fedora-mingw-libraries",
+          "surfer-rust-dependencies"
+        ],
+        "note": "Per-tool licenses and sources: ossCadSuiteTools. Bundled third-party libraries: unresolved.",
+        "usage": "Yosys synthesis (Build, RTL Schematic netlist) and, on macOS, openFPGALoader (Program). Most other tools in the package are not used by NexysVHDL."
+      },
+      "apio-verible": {
+        "spdx": "Apache-2.0",
+        "sources": [],
+        "status": "ready",
+        "note": "Permissive; no source obligation. Verible imports msvcp140.dll, which no longer ships in the toolchain once the graphviz package is a placeholder; Verible is not used by NexysVHDL.",
+        "usage": "Not used by NexysVHDL (Apio lint/format); required by Apio's package check."
+      },
+      "apio-openxc7": {
+        "spdx": "ISC AND CC0-1.0 AND Apache-2.0 AND MIT AND PSF-2.0 AND LGPL-3.0-or-later AND GPL-3.0-or-later WITH GCC-exception-3.1 AND BSD-2-Clause AND BSD-3-Clause AND Zlib AND blessing",
+        "sources": [
+          "fpgawars-tools-openxc7-win32",
+          "mcfgthread-1.6-ga.1"
+        ],
+        "status": "unresolved",
+        "unresolved": [
+          "win32-openxc7-msys2-runtime"
+        ],
+        "note": "nextpnr-xilinx ISC; Project X-Ray tools ISC; prjxray-db CC0-1.0; fasm Apache-2.0; Python 3.11 PSF-2.0 and Python packages (MIT, Apache-2.0); MSYS2 runtime: libstdc++/libgcc_s (GCC RLE), libmcfgthread (LGPL-3.0-or-later), libwinpthread, OpenSSL 3 (Apache-2.0), SQLite (blessing), libffi, expat, xz, bzip2, zlib, mpdecimal.",
+        "usage": "Build: nextpnr-xilinx place and route, Project X-Ray fasm2frames and xc7frames2bit bitstream generation."
+      },
+      "openxc7-chipdb-xc7a100tcsg324": {
+        "spdx": "CC0-1.0",
+        "sources": [],
+        "status": "ready",
+        "note": "Generated from prjxray-db (CC0-1.0) by nextpnr-xilinx tooling (ISC).",
+        "usage": "Build: nextpnr-xilinx chip database for the Nexys A7-100T FPGA."
+      }
+    },
+    "darwin-arm64": {
+      "ghdl": {
+        "spdx": "GPL-2.0-or-later AND GPL-3.0-or-later WITH GCC-exception-3.1 AND Apache-2.0 WITH LLVM-exception AND Apache-2.0",
+        "sources": [
+          "ghdl-6.0.0"
+        ],
+        "status": "ready",
+        "unresolved": [
+          "darwin-ghdl-gnat-runtime"
+        ],
+        "note": "GHDL GPL-2.0-or-later; libgnat-14 and libgcc_s (GCC Runtime Library Exception); LLVM 22.1.0 linked statically (Apache-2.0 WITH LLVM-exception); IEEE 1076-2008 packages Apache-2.0.",
+        "usage": "Check, Simulate (analysis, elaboration, simulation, waveforms) and VHDL-to-Verilog synthesis (ghdl --synth) for RTL Schematic and Build."
+      },
+      "apio": {
+        "spdx": "GPL-3.0-or-later AND PSF-2.0 AND Apache-2.0 AND LGPL-2.1-or-later AND MIT AND BSD-3-Clause AND BSD-2-Clause AND MPL-2.0 AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND Apache-2.0 WITH LLVM-exception",
+        "sources": [
+          "apio-1.7.0",
+          "pypi-certifi-2026.7.22",
+          "pypi-vcdvcd-2.6.0"
+        ],
+        "status": "unresolved",
+        "unresolved": [
+          "darwin-apio-bundled-libraries"
+        ],
+        "note": "PyInstaller bundle: Python 3.14.7 (PSF-2.0), OpenSSL 3.5.7 (Apache-2.0), libusb-1.0 (LGPL-2.1-or-later), zstd (BSD-3-Clause), Python packages listed in apioPythonPackages. The macOS recipe and payload still label Apio \"GPL-2.0\": corrected here; payload text unchanged (Mac follow-up).",
+        "usage": "Build (runs Yosys, nextpnr-xilinx and the Project X-Ray tools through SCons); macOS Program (openFPGALoader through Apio)."
+      },
+      "apio-definitions": {
+        "spdx": "GPL-3.0-only",
+        "sources": [
+          "apio-definitions-2026.09.17"
+        ],
+        "status": "ready",
+        "note": "As on Windows. The macOS recipe and payload still label it \"GPL-2.0\": corrected here; payload text unchanged (Mac follow-up).",
+        "usage": "Board, FPGA and programmer definitions read by Apio for every command."
+      },
+      "apio-oss-cad-suite": {
+        "spdx": "LicenseRef-NexysVHDL-aggregate",
+        "sources": [
+          "fpgawars-tools-oss-cad-suite",
+          "yosyshq-oss-cad-suite-build-2026-03-24",
+          "pypi-pycairo-1.25.1"
+        ],
+        "status": "unresolved",
+        "unresolved": [
+          "darwin-oss-cad-suite-bundled-libraries",
+          "surfer-rust-dependencies"
+        ],
+        "note": "Per-tool licenses and sources: ossCadSuiteTools. Includes openFPGALoader 1.1.1 (Apache-2.0) with libusb (LGPL-2.1), libftdi (LGPL-2.0 library, GPL-2.0 tools) and hidapi, used for Program.",
+        "usage": "Yosys synthesis (Build, RTL Schematic netlist) and, on macOS, openFPGALoader (Program). Most other tools in the package are not used by NexysVHDL."
+      },
+      "apio-verible": {
+        "spdx": "Apache-2.0",
+        "sources": [],
+        "status": "ready",
+        "note": "Permissive; no source obligation. Not used by NexysVHDL.",
+        "usage": "Not used by NexysVHDL (Apio lint/format); required by Apio's package check."
+      },
+      "apio-openxc7": {
+        "spdx": "ISC AND CC0-1.0 AND Apache-2.0 AND MIT AND PSF-2.0 AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 AND BSD-3-Clause AND LGPL-2.0-or-later AND Zlib",
+        "sources": [
+          "fpgawars-tools-openxc7-darwin"
+        ],
+        "status": "unresolved",
+        "unresolved": [
+          "darwin-openxc7-nix-libraries"
+        ],
+        "note": "nextpnr-xilinx ISC; Project X-Ray tools ISC; prjxray-db CC0-1.0; Python 3.12 PSF-2.0; Nix-built libraries (libc++, antlr4-runtime, Boost, bzip2, xz, zlib, zstd, libffi, libiconv/libcharset).",
+        "usage": "Build: nextpnr-xilinx place and route, Project X-Ray fasm2frames and xc7frames2bit bitstream generation."
+      },
+      "openxc7-chipdb-xc7a100t": {
+        "spdx": "CC0-1.0",
+        "sources": [],
+        "status": "ready",
+        "note": "Generated from prjxray-db (CC0-1.0) by nextpnr-xilinx tooling (ISC).",
+        "usage": "Build: nextpnr-xilinx chip database for the Nexys A7-100T FPGA."
+      }
+    }
+  },
+  "apioPythonPackages": {
+    "evidence": "PyInstaller archive table of contents of apio.exe / apio (CArchive and PYZ, read without executing), versions from the modules' own __version__ constants or *.dist-info and from Apio's pyproject.toml pins at the recorded commit; licenses from each project's PyPI metadata or license file. Python standard library: PSF-2.0.",
+    "win32-x64": {
+      "python": "3.14 (python314.dll)",
+      "packages": [
+        {
+          "name": "apio",
+          "version": "Apio itself",
+          "license": "GPL-3.0-or-later"
+        },
+        {
+          "name": "SCons",
+          "version": "4.8.1",
+          "license": "MIT"
+        },
+        {
+          "name": "attrs",
+          "version": "26.1.0",
+          "license": "MIT"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.07.22",
+          "license": "MPL-2.0"
+        },
+        {
+          "name": "charset_normalizer",
+          "version": "3.5.1",
+          "license": "MIT"
+        },
+        {
+          "name": "click",
+          "version": "8.2.1",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "colorama",
+          "version": "0.4.6",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "configobj",
+          "version": "5.0.9",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "debugpy",
+          "version": "1.8.19",
+          "license": "MIT"
+        },
+        {
+          "name": "google.protobuf (protobuf)",
+          "version": "6.33.0",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "idna",
+          "version": "not recorded in the bundle",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "json5",
+          "version": "0.15.0",
+          "license": "Apache-2.0"
+        },
+        {
+          "name": "jsonschema",
+          "version": "4.26.0",
+          "license": "MIT"
+        },
+        {
+          "name": "jsonschema_specifications",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "markdown_it (markdown-it-py)",
+          "version": "4.2.0",
+          "license": "MIT"
+        },
+        {
+          "name": "mdurl",
+          "version": "0.1.2",
+          "license": "MIT"
+        },
+        {
+          "name": "packaging",
+          "version": "25.0",
+          "license": "Apache-2.0 OR BSD-2-Clause"
+        },
+        {
+          "name": "pygments",
+          "version": "2.21.0",
+          "license": "BSD-2-Clause"
+        },
+        {
+          "name": "referencing",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "requests",
+          "version": "2.33.1",
+          "license": "Apache-2.0"
+        },
+        {
+          "name": "rich",
+          "version": "14.0.0",
+          "license": "MIT"
+        },
+        {
+          "name": "rpds (rpds-py)",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "serial (pyserial)",
+          "version": "3.5",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "setuptools",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "urllib3",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "usb (pyusb)",
+          "version": "not recorded in the bundle",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "vcdvcd",
+          "version": "2.6.0",
+          "license": "(Artistic-1.0-Perl OR GPL-1.0-or-later) AND MIT"
+        },
+        {
+          "name": "wheel",
+          "version": "0.45.1",
+          "license": "MIT"
+        }
+      ]
+    },
+    "darwin-arm64": {
+      "python": "3.14.7",
+      "packages": [
+        {
+          "name": "apio",
+          "version": "Apio itself",
+          "license": "GPL-3.0-or-later"
+        },
+        {
+          "name": "SCons",
+          "version": "4.8.1",
+          "license": "MIT"
+        },
+        {
+          "name": "attrs",
+          "version": "26.1.0",
+          "license": "MIT"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.07.22",
+          "license": "MPL-2.0"
+        },
+        {
+          "name": "charset_normalizer",
+          "version": "3.5.1",
+          "license": "MIT"
+        },
+        {
+          "name": "click",
+          "version": "8.2.1",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "colorama",
+          "version": "0.4.6",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "configobj",
+          "version": "5.0.9",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "debugpy",
+          "version": "1.8.19",
+          "license": "MIT"
+        },
+        {
+          "name": "google.protobuf (protobuf)",
+          "version": "6.33.5",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "idna",
+          "version": "not recorded in the bundle",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "json5",
+          "version": "0.15.0",
+          "license": "Apache-2.0"
+        },
+        {
+          "name": "jsonschema",
+          "version": "4.26.0",
+          "license": "MIT"
+        },
+        {
+          "name": "jsonschema_specifications",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "markdown_it (markdown-it-py)",
+          "version": "4.2.0",
+          "license": "MIT"
+        },
+        {
+          "name": "mdurl",
+          "version": "0.1.2",
+          "license": "MIT"
+        },
+        {
+          "name": "packaging",
+          "version": "25.0",
+          "license": "Apache-2.0 OR BSD-2-Clause"
+        },
+        {
+          "name": "pygments",
+          "version": "2.21.0",
+          "license": "BSD-2-Clause"
+        },
+        {
+          "name": "referencing",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "requests",
+          "version": "2.33.1",
+          "license": "Apache-2.0"
+        },
+        {
+          "name": "rich",
+          "version": "14.0.0",
+          "license": "MIT"
+        },
+        {
+          "name": "rpds (rpds-py)",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "serial (pyserial)",
+          "version": "3.5",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "setuptools",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "urllib3",
+          "version": "not recorded in the bundle",
+          "license": "MIT"
+        },
+        {
+          "name": "usb (pyusb)",
+          "version": "not recorded in the bundle",
+          "license": "BSD-3-Clause"
+        },
+        {
+          "name": "vcdvcd",
+          "version": "2.6.0",
+          "license": "(Artistic-1.0-Perl OR GPL-1.0-or-later) AND MIT"
+        },
+        {
+          "name": "wheel",
+          "version": "0.46.2",
+          "license": "MIT"
+        }
+      ]
+    }
+  },
+  "digilent": {
+    "policy": "Not redistributed. NexysVHDL does not include, mirror or download Digilent Adept Runtime, Adept Utilities (djtgcfg) or Digilent drivers. On Windows it detects the user's official Digilent installation and points to Digilent's official download page.",
+    "installGuide": "https://digilent.com/reference/software/adept/start",
+    "license": "Proprietary (Digilent); no redistribution permission."
+  }
+}

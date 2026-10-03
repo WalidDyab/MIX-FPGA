@@ -41,6 +41,21 @@ const recipe = loadRecipe(target);
 const out = join(TOOLCHAIN_DIR, target);
 const staging = join(TOOLCHAIN_DIR, `.staging-${target}`);
 const GENERATED_MTIME = new Date('2026-09-26T00:00:00Z');
+const PLACEHOLDER_FILE = 'NEXYSVHDL-PLACEHOLDER.txt';
+
+function placeholderText(c) {
+    const a = c.notRedistributed?.archive;
+    return [
+        `NexysVHDL placeholder for the Apio "${c.apioPackage.name}" package (NexysVHDL toolchain ${recipe.bundleVersion}, ${target}).`,
+        '',
+        'This folder is intentionally empty: the package is NOT redistributed with NexysVHDL.',
+        '',
+        c.placeholder.reason,
+        '',
+        ...(a ? [`Upstream package (not included): ${a.file}`, `  ${a.url}`, `  sha256 ${a.sha256}`] : []),
+        '',
+    ].join('\r\n');
+}
 
 function tarExecutable() {
     // Windows 10+ ships bsdtar as System32\tar.exe; a Git-for-Windows/MSYS GNU tar on PATH cannot read zip.
@@ -84,6 +99,13 @@ async function main() {
 
     const components = [];
     for (const c of recipe.components) {
+        if (c.placeholder) {
+            const dest = join(staging, ...c.dest.split('/'));
+            await mkdir(dest, { recursive: true });
+            await writeFile(join(dest, PLACEHOLDER_FILE), placeholderText(c));
+            console.log(`  ${c.id}: placeholder (not redistributed)`);
+            continue;
+        }
         const file = await verifyArchive(c);
         console.log(`  ${c.id} ${c.version}: ${c.archive.file} verified`);
         const dest = join(staging, ...c.dest.split('/'));
@@ -143,7 +165,8 @@ async function main() {
             sourceCode: c.sourceCode,
             path: c.dest,
             licenseFiles: c.licenseFiles ?? [],
-            archive: c.archive,
+            ...(c.archive ? { archive: c.archive } : {}),
+            ...(c.placeholder ? { placeholder: { reason: c.placeholder.reason }, notRedistributed: c.notRedistributed } : {}),
             ...(c.apioPackage ? { apioPackage: { name: c.apioPackage.name, releaseTag: c.apioPackage.releaseTag } } : {}),
             content: { files: inv.files, bytes: inv.bytes, treeSha256: inv.treeSha256 },
         });
@@ -177,6 +200,8 @@ async function main() {
         shims: (recipe.shims ?? []).map((s) => ({ file: s.file, target: s.target })),
         programmer: recipe.programmer,
         components,
+        // Only in recipes reviewed for redistribution (see notices.mjs); absent, the manifest is unchanged.
+        ...(recipe.compliance ? { compliance: recipe.compliance } : {}),
     };
     await writeFile(join(staging, MANIFEST_NAME), `${JSON.stringify(manifest, null, 2)}\n`);
     await writeFile(join(staging, NOTICES_NAME), renderNotices(manifest));
@@ -196,7 +221,7 @@ async function main() {
     }
 
     // Files NexysVHDL generates get a fixed timestamp, so the packed archive is reproducible.
-    const generated = [MANIFEST_NAME, NOTICES_NAME, `${recipe.apio.packagesDir}/installed_packages.json`, `${recipe.apio.remoteConfigDir}/${remoteConfigFile}`, ...(recipe.shims ?? []).map((s) => s.file)];
+    const generated = [...recipe.components.filter((c) => c.placeholder).map((c) => `${c.dest}/${PLACEHOLDER_FILE}`), MANIFEST_NAME, NOTICES_NAME, `${recipe.apio.packagesDir}/installed_packages.json`, `${recipe.apio.remoteConfigDir}/${remoteConfigFile}`, ...(recipe.shims ?? []).map((s) => s.file)];
     if (existsSync(join(staging, 'licenses'))) generated.push(...(await listFiles(join(staging, 'licenses'))).map((f) => `licenses/${f}`));
     for (const rel of generated) await utimes(join(staging, ...rel.split('/')), GENERATED_MTIME, GENERATED_MTIME);
 
