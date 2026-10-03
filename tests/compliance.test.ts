@@ -409,16 +409,17 @@ describe('macOS bundled native libraries (Mac compliance review)', () => {
         assert.ok(!existsSync(join(REPO, 'toolchains', 'bundle', 'licenses-darwin-arm64', 'SOURCES.md')));
     });
 
-    it('the three macOS blockers are resolved with evidence; only the three Windows blockers remain', async () => {
+    it('the three macOS blockers are resolved with evidence (and, since the Windows review, no blocker remains)', async () => {
         const c = await curation();
         const blocking = c.unresolved.filter((u) => u.blocking !== false).map((u) => u.id).sort();
-        assert.deepEqual(blocking, ['win32-apio-microsoft-runtime', 'win32-openxc7-msys2-runtime', 'win32-oss-cad-suite-fedora-mingw-libraries']);
-        assert.deepEqual(c.resolved.map((r) => r.id).sort(), ['darwin-apio-bundled-libraries', 'darwin-openxc7-nix-libraries', 'darwin-oss-cad-suite-bundled-libraries']);
-        for (const r of c.resolved) assert.ok(r.platform === 'darwin-arm64' && r.resolution.length > 100, r.id);
+        assert.deepEqual(blocking, []);
+        const mac = c.resolved.filter((r) => r.platform === 'darwin-arm64');
+        assert.deepEqual(mac.map((r) => r.id).sort(), ['darwin-apio-bundled-libraries', 'darwin-openxc7-nix-libraries', 'darwin-oss-cad-suite-bundled-libraries']);
+        for (const r of mac) assert.ok(r.resolution.length > 100, r.id);
         for (const id of ['apio', 'apio-oss-cad-suite', 'apio-openxc7']) assert.equal(c.components['darwin-arm64']![id]!.status, 'ready', id);
         const m = await json<{ unresolved: Unresolved[]; resolved: Array<{ id: string }> }>('toolchains', 'compliance', 'toolchain-1.0.json');
         assert.deepEqual(m.unresolved.filter((u) => u.blocking !== false).map((u) => u.id).sort(), blocking);
-        assert.equal(m.resolved.length, 3);
+        assert.equal(m.resolved.length, 6);
     });
 
     it('every copyleft macOS library has its exact source pinned; dual-licensed ones name the elected permissive option', async () => {
@@ -525,9 +526,11 @@ describe('macOS bundled native libraries (Mac compliance review)', () => {
         const c = await curation();
         const nexysLicense = sha256(await readFile(join(REPO, 'LICENSE')));
         const claim = /NexysVHDL('s)? (license|Apache)|licensed (by|under) NexysVHDL|Copyright 2026 Walid Dyab/i;
-        for (const e of c.nativeLibraryInventory['darwin-arm64']!) {
-            for (const l of e.licenses) assert.doesNotMatch(l, /NexysVHDL/, e.id);
-            assert.doesNotMatch(e.licenseEvidence, claim, e.id);
+        for (const t of TARGETS) {
+            for (const e of c.nativeLibraryInventory[t]!) {
+                for (const l of e.licenses) assert.doesNotMatch(l, /NexysVHDL/, e.id);
+                assert.doesNotMatch(e.licenseEvidence, claim, e.id);
+            }
         }
         for (const s of c.sources) assert.doesNotMatch(s.license, /NexysVHDL/, s.id);
         // Known copyleft libraries keep their copyleft license.
@@ -538,10 +541,11 @@ describe('macOS bundled native libraries (Mac compliance review)', () => {
         // NexysVHDL's own LICENSE is never used as a third-party license text: a text identical to the
         // canonical Apache-2.0 file (e.g. fasm's LICENSE) must come from the component's upstream source.
         const root = join(REPO, 'toolchains', 'compliance', 'licenses');
-        const origins = await readFile(join(root, 'darwin-arm64', 'SOURCES.md'), 'utf8');
         for (const e of await readdir(root, { recursive: true, withFileTypes: true })) {
             if (!e.isFile() || sha256(await readFile(join(e.parentPath, e.name))) !== nexysLicense) continue;
-            const rel = join(e.parentPath, e.name).slice(join(root, 'darwin-arm64').length + 1).split(/[\\/]/).join('/');
+            const [platform, ...rest] = join(e.parentPath, e.name).slice(root.length + 1).split(/[\\/]/);
+            const rel = rest.join('/');
+            const origins = await readFile(join(root, platform!, 'SOURCES.md'), 'utf8');
             const row = origins.split('\n').find((l) => l.startsWith(`| ${rel} |`)) ?? '';
             assert.match(row, /https:\/\/(raw\.githubusercontent\.com|gitlab\.com|github\.com)\/(?!.*NexysVHDL)/, `${rel}: an upstream origin`);
         }
@@ -609,5 +613,198 @@ describe('macOS bundled native libraries (Mac compliance review)', () => {
         }
         const none = buildManifest({ recipes, requirement, curation: await curation(), inventories: {} });
         assert.ok(none.problems.some((p) => /missing evidence inventory/.test(p)), 'without inventory or previous manifest it fails');
+    });
+});
+
+describe('Windows bundled runtime libraries (Windows compliance review)', () => {
+    const inventory = async () => (await curation()).nativeLibraryInventory['win32-x64']!;
+    type WinEntry = LibraryEntry & {
+        origin: LibraryEntry['origin'] & { image?: { repository: string; tag: string; layer: string }; rpm?: { nevra: string; sha256header: string; url: string }; srpm?: { file: string; url: string; sha256: string; size: number; shipped: boolean } };
+        redistribution?: { permittedBy: string; conditionsForNexysVHDL: string[]; sourceObligation: string; evidence: string[] };
+    };
+    const winInventory = async () => (await inventory()) as WinEntry[];
+    // As scripts/compliance/manifest.mjs requiresSource(): runtime-library exceptions do not require source.
+    const needsSource = (e: LibraryEntry) => (e.licenseElected ? [e.licenseElected] : e.licenses).some((l) => COPYLEFT.test(l) && !/GCC-exception|LLVM-exception/.test(l));
+
+    it('the three Windows blockers are resolved with evidence; no blocking item remains and both payloads are unchanged', async () => {
+        const c = await curation();
+        assert.deepEqual(c.unresolved.filter((u) => u.blocking !== false), []);
+        const win = c.resolved.filter((r) => r.platform === 'win32-x64');
+        assert.deepEqual(win.map((r) => r.id).sort(), ['win32-apio-microsoft-runtime', 'win32-openxc7-msys2-runtime', 'win32-oss-cad-suite-fedora-mingw-libraries']);
+        for (const r of win) assert.ok(r.resolution.length > 300, r.id);
+        for (const id of ['apio', 'apio-oss-cad-suite', 'apio-openxc7']) assert.equal(c.components['win32-x64']![id]!.status, 'ready', id);
+        const req = await json<{ targets: Record<string, { treeSha256: string }> }>('toolchains', 'bundle', 'requirement.json');
+        assert.equal(req.targets['win32-x64']!.treeSha256, '57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b');
+        assert.equal(req.targets['darwin-arm64']!.treeSha256, 'f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7');
+    });
+
+    it('oss-cad-suite: every Fedora MinGW library is an exact Fedora 39 build (NEVRA, RPM header SHA-256, Koji URL, SRPM SHA-256) from the pinned build image', async () => {
+        const inv = await winInventory();
+        const fedora = inv.filter((e) => e.origin.kind === 'fedora-rpm');
+        assert.equal(fedora.length, 46);
+        let files = 0;
+        for (const e of fedora) {
+            files += e.files.length;
+            assert.equal(e.origin.image!.repository, 'docker.io/yosyshq/cross-windows-x64', e.id);
+            assert.match(e.origin.image!.layer, /^sha256:833898617f146dc44d1f319bc87603390a1a143e3776505411e0b2445bf9ca86 /, e.id);
+            assert.match(e.origin.rpm!.nevra, /^mingw64-.+-[^-]+-[^-]+\.fc3[89]\.(noarch|x86_64)$/, e.id);
+            assert.match(e.origin.rpm!.sha256header, /^[0-9a-f]{64}$/, e.id);
+            assert.match(e.origin.rpm!.url, /^https:\/\/kojipkgs\.fedoraproject\.org\/packages\/.+\.(noarch|x86_64)\.rpm$/, e.id);
+            assert.match(e.origin.srpm!.url, /^https:\/\/kojipkgs\.fedoraproject\.org\/packages\/.+\/src\/.+\.fc3[89]\.src\.rpm$/, e.id);
+            assert.match(e.origin.srpm!.sha256, /^[0-9a-f]{64}$/, e.id);
+            for (const f of e.files) assert.match(f, /^apio\/packages\/oss-cad-suite\/(lib|bin)\/[^/]+\.dll$/, `${e.id}: ${f}`);
+        }
+        // 159 Fedora DLLs + the 2 YosysHQ builds = every DLL of the package's lib/ and bin/.
+        assert.equal(files, 159);
+        assert.deepEqual(inv.find((e) => e.id === 'ocs-yosyshq-libyices')!.files, ['apio/packages/oss-cad-suite/bin/libyices.dll']);
+        assert.ok(inv.find((e) => e.id === 'ocs-yosyshq-python-3.11.6')!.files.includes('apio/packages/oss-cad-suite/lib/libpython3.11.dll'));
+    });
+
+    it('every copyleft Windows library (Fedora, static GMP, openXC7 runtime) ships its exact source; GCC runtime libraries rely on the GCC exception', async () => {
+        const c = await curation();
+        const ids = new Map(c.sources.map((s) => [s.id, s]));
+        for (const e of await winInventory()) {
+            for (const s of e.sources) assert.ok(ids.has(s), `${e.id}: source ${s}`);
+            assert.ok(['A', 'B', 'C'].includes(e.usage.class), e.id);
+            if (needsSource(e)) assert.ok(e.sources.length, `${e.id} (${e.licenses.join(', ')}) requires source`);
+        }
+        const inv = await winInventory();
+        // Fedora: a copyleft package ships its exact SRPM (Koji URL, SHA-256, size), named after the NEVRA.
+        for (const e of inv.filter((x) => x.origin.kind === 'fedora-rpm' && x.origin.srpm!.shipped)) {
+            const s = ids.get(e.sources[0]!)!;
+            assert.equal(s.kind, 'archive');
+            assert.equal(s.url, e.origin.srpm!.url, e.id);
+            assert.equal(s.sha256, e.origin.srpm!.sha256, e.id);
+            assert.equal(s.file, `fedora39--${e.origin.srpm!.file}`, e.id);
+        }
+        for (const id of ['ocs-fedora-readline', 'ocs-fedora-termcap', 'ocs-fedora-gettext', 'ocs-fedora-glib2', 'ocs-fedora-gtk3', 'ocs-fedora-qt5-qtbase', 'ocs-fedora-libusbx', 'ocs-fedora-libftdi', 'ocs-fedora-cairo', 'ocs-fedora-pango', 'ocs-fedora-atk', 'ocs-fedora-fribidi', 'ocs-fedora-gdk-pixbuf', 'ocs-fedora-libidn2']) {
+            assert.ok(inv.find((e) => e.id === id)!.origin.srpm!.shipped, `${id}: SRPM shipped`);
+        }
+        // The GCC runtime is under the GCC Runtime Library Exception: SRPM pinned, not required.
+        for (const id of ['ocs-fedora-libgcc', 'ocs-fedora-libstdcxx', 'ox-win-gcc-runtime']) {
+            assert.match(inv.find((e) => e.id === id)!.licenses[0]!, /WITH GCC-exception-3\.1$/, id);
+        }
+        // Readline is GPL-3.0-or-later by its own text (Fedora's tag says GPL-2.0-or-later).
+        const readline = inv.find((e) => e.id === 'ocs-fedora-readline')!;
+        assert.deepEqual(readline.licenses, ['GPL-3.0-or-later']);
+        assert.equal(readline.usage.class, 'A', 'Yosys loads readline');
+        // yosys.exe and vvp.exe are distributed linked with GPL-only readline/termcap: their sources ship too.
+        for (const id of ['ocs-fedora-readline', 'ocs-fedora-termcap']) {
+            for (const s of ['oss-yosys', 'oss-iverilog']) assert.ok(inv.find((e) => e.id === id)!.sources.includes(s), `${id}: ${s}`);
+        }
+        assert.equal(ids.get('oss-yosys')!.revision, '66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2');
+        // Static GMP 6.1.2: the Fedora SRPM, the build recipe and every program it is linked into.
+        const gmp = inv.find((e) => e.id === 'ocs-static-gmp')!;
+        for (const s of ['fedora-srpm-mingw-gmp-6.1.2-16.fc39', 'yosyshq-oss-cad-suite-build-2026-03-24', 'oss-cvc4', 'oss-cvc5', 'oss-bitwuzla', 'oss-pono', 'oss-yices', 'libantlr3c-3.4']) assert.ok(gmp.sources.includes(s), `GMP relinking material: ${s}`);
+        assert.equal(ids.get('fedora-srpm-mingw-gmp-6.1.2-16.fc39')!.url, 'https://kojipkgs.fedoraproject.org/packages/mingw-gmp/6.1.2/16.fc39/src/mingw-gmp-6.1.2-16.fc39.src.rpm');
+    });
+
+    it('openXC7: Nix-built MinGW runtime (nixpkgs 574d1eac), mcfgthread 1.6.1 = v1.6-ga.1 (LGPL-3.0-or-later) with source and recipe', async () => {
+        const c = await curation();
+        const inv = await winInventory();
+        const mcf = inv.find((e) => e.id === 'ox-win-mcfgthread')!;
+        assert.deepEqual(mcf.licenses, ['LGPL-3.0-or-later']);
+        assert.equal(mcf.usage.class, 'A');
+        assert.match(mcf.origin.nixpkgs!, /^NixOS\/nixpkgs 574d1eac1c200690e27b8eb4e24887f8df7ac27c/);
+        const src = c.sources.find((s) => s.id === 'mcfgthread-1.6-ga.1')!;
+        assert.equal(src.revision, '40263a6e2095ccba83071454191e09f14e9ee232');
+        const recipe = c.sources.find((s) => s.id === 'nixpkgs-574d1eac-windows-recipes')!;
+        assert.equal(recipe.revision, '574d1eac1c200690e27b8eb4e24887f8df7ac27c');
+        assert.ok(recipe.paths!.includes('pkgs/os-specific/windows/mcfgthreads'));
+        assert.deepEqual(mcf.sources.sort(), ['mcfgthread-1.6-ga.1', 'nixpkgs-574d1eac-windows-recipes']);
+        for (const [id, version] of [['ox-win-gcc-runtime', '13.3.0'], ['ox-win-winpthreads', '11.0.1'], ['ox-win-python-3.11.9', '3.11.9'], ['ox-win-openssl', '3.0.14'], ['ox-win-eigen-compiled-in', '3.4.0']] as const) {
+            assert.equal(inv.find((e) => e.id === id)!.version, version, id);
+        }
+        // The openXC7 runtime is not MSYS2 (the earlier assumption): the resolution says so.
+        assert.match(c.resolved.find((r) => r.id === 'win32-openxc7-msys2-runtime')!.resolution, /^Not MSYS2: .*Nix/);
+        // Every DLL of the openXC7 package is inventoried.
+        const all = inv.filter((e) => e.component === 'apio-openxc7').flatMap((e) => e.files);
+        for (const f of ['bin/libmcfgthread-1.dll', 'bin/libgcc_s_seh-1.dll', 'bin/libstdc++-6.dll', 'bin/libwinpthread-1.dll', 'bin/libpython3.11.dll', 'lib/python3.11/lib-dynload/libcrypto-3-x64.dll', 'lib/python3.11/lib-dynload/zlib1.dll']) {
+            assert.ok(all.includes(`apio/packages/openxc7/${f}`), f);
+        }
+    });
+
+    it('Apio: the Microsoft runtime files are identified exactly, with the authoritative redistribution terms and no source obligation', async () => {
+        const inv = await winInventory();
+        const vc = inv.find((e) => e.id === 'apio-win-vcruntime')!;
+        assert.deepEqual(vc.files, ['apio/bin/_internal/VCRUNTIME140.dll', 'apio/bin/_internal/VCRUNTIME140_1.dll']);
+        assert.equal(vc.version, '14.51.36247.0');
+        const ucrt = inv.find((e) => e.id === 'apio-win-ucrt')!;
+        assert.equal(ucrt.files.length, 43);
+        assert.ok(ucrt.files.includes('apio/bin/_internal/ucrtbase.dll'));
+        assert.equal(ucrt.version, '10.0.26100.1742');
+        assert.equal(ucrt.usage.class, 'C', 'the system UCRT is always used on Windows 10/11');
+        for (const e of [vc, ucrt]) {
+            assert.match(e.licenses[0]!, /^LicenseRef-Microsoft-/);
+            assert.equal(e.redistribution!.sourceObligation.startsWith('none'), true, e.id);
+            assert.match(e.redistribution!.permittedBy, /^Microsoft → /, e.id);
+            assert.ok(e.redistribution!.conditionsForNexysVHDL.some((x) => /unmodified/.test(x)), e.id);
+            assert.ok(e.redistribution!.evidence.some((x) => /MicrosoftDocs\/cpp-docs f2355df9/.test(x)), `${e.id}: pinned Microsoft documentation`);
+            assert.ok(e.licenseTexts.length >= 1, e.id);
+        }
+        assert.match(vc.licenseEvidence, /Third Party Distribution/);
+        assert.match(ucrt.licenseEvidence, /Third Party Distribution/);
+        // The Python runtime is byte-identical to python.org 3.14.7.
+        assert.match(inv.find((e) => e.id === 'apio-win-python-runtime')!.origin.archive!, /python-3\.14\.7-embed-amd64\.zip \(SHA-256 d297e5ff/);
+    });
+
+    it('every Windows compliance license text is referenced, present and recorded with its SHA-256 and origin', async () => {
+        const inv = await winInventory();
+        const root = join(REPO, 'toolchains', 'compliance', 'licenses');
+        const sources = await readFile(join(root, 'win32-x64', 'SOURCES.md'), 'utf8');
+        const referenced = new Set<string>();
+        for (const e of inv) {
+            for (const t of e.licenseTexts) {
+                if (t.startsWith('compliance:')) {
+                    const rel = t.slice('compliance:'.length);
+                    referenced.add(rel);
+                    const data = await readFile(join(root, ...rel.split('/')));
+                    if (rel.startsWith('win32-x64/')) assert.ok(sources.includes(`| ${rel.replace(/^win32-x64\//, '')} | \`${sha256(data).slice(0, 16)}…\``), `${rel} recorded in SOURCES.md`);
+                } else {
+                    assert.match(t, /^payload:(licenses\/|apio\/packages\/)/, `${e.id}: ${t}`);
+                    if (t.startsWith('payload:licenses/')) assert.ok(existsSync(join(REPO, 'toolchains', 'bundle', 'licenses', t.slice('payload:licenses/'.length))), t);
+                }
+            }
+        }
+        for (const e of await readdir(join(root, 'win32-x64'), { recursive: true, withFileTypes: true })) {
+            if (e.isFile() && e.name !== 'SOURCES.md') assert.ok(referenced.has(join(e.parentPath, e.name).slice(root.length + 1).split(/[\\/]/).join('/')), `${e.name} is referenced`);
+        }
+        // Compliance-only texts never enter a payload.
+        assert.ok(!existsSync(join(REPO, 'toolchains', 'bundle', 'licenses-win32-x64')));
+    });
+
+    it('the RPM header reader returns the signature-header SHA-256 of an RPM file', async () => {
+        const { rpmHeaderSha256 } = (await import(pathToFileURL(join(REPO, 'scripts', 'compliance', 'rpm-header-sha256.mjs')).href)) as { rpmHeaderSha256(b: Buffer): string | undefined };
+        // Lead (96 bytes) + signature header with one STRING entry, tag 273.
+        const value = Buffer.from(`${'ab'.repeat(32)}\0`);
+        const head = Buffer.alloc(16);
+        head.writeUInt32BE(0x8eade801, 0);
+        head.writeUInt32BE(1, 8);
+        head.writeUInt32BE(value.length, 12);
+        const entry = Buffer.alloc(16);
+        entry.writeUInt32BE(273, 0);
+        entry.writeUInt32BE(6, 4);
+        const lead = Buffer.alloc(96);
+        lead.writeUInt32BE(0xedabeedb, 0);
+        assert.equal(rpmHeaderSha256(Buffer.concat([lead, head, entry, value])), 'ab'.repeat(32));
+        assert.throws(() => rpmHeaderSha256(Buffer.alloc(200)));
+    });
+
+    it('the PE import graph classifies libraries A (loaded by a used program), B (other programs only) and C (unreferenced)', async () => {
+        const { classify } = (await import(pathToFileURL(join(REPO, 'scripts', 'compliance', 'pe-closure.mjs')).href)) as { classify(i: Map<string, string[]>, l: Map<string, string>, u: string[]): Record<string, { usage: string }> };
+        const imports = new Map([
+            ['bin/yosys.exe', ['libreadline8.dll', 'kernel32.dll']],
+            ['lib/libreadline8.dll', ['libtermcap-0.dll']],
+            ['bin/gtkwave.exe', ['libgtk-3-0.dll']],
+            ['lib/libgtk-3-0.dll', []],
+            ['lib/libtermcap-0.dll', []],
+            ['lib/libunused.dll', []],
+        ]);
+        const libs = new Map([['libreadline8.dll', 'lib/libreadline8.dll'], ['libtermcap-0.dll', 'lib/libtermcap-0.dll'], ['libgtk-3-0.dll', 'lib/libgtk-3-0.dll'], ['libunused.dll', 'lib/libunused.dll']]);
+        const r = classify(imports, libs, ['bin/yosys.exe']);
+        assert.equal(r['lib/libreadline8.dll']!.usage, 'A');
+        assert.equal(r['lib/libtermcap-0.dll']!.usage, 'A', 'transitively loaded');
+        assert.equal(r['lib/libgtk-3-0.dll']!.usage, 'B');
+        assert.equal(r['lib/libunused.dll']!.usage, 'C');
     });
 });

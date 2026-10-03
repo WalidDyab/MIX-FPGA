@@ -10,7 +10,7 @@ Target platforms:
 
 ## License
 
-NexysVHDL itself is licensed under the [Apache License, Version 2.0](LICENSE) (see also [NOTICE](NOTICE)). The separately distributed FPGA toolchain redistributes third-party tools (GHDL, Apio, Yosys, nextpnr-xilinx, openXC7, openFPGALoader, …) that remain under their own licenses, including the GNU GPL and LGPL: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The toolchain is an aggregation of those programs, not an Apache-2.0 work; its license review, corresponding-source package and open items are in [docs/toolchain-1.0-redistribution.md](docs/toolchain-1.0-redistribution.md) (redistribution by third parties is not yet cleared).
+NexysVHDL itself is licensed under the [Apache License, Version 2.0](LICENSE) (see also [NOTICE](NOTICE)). The separately distributed FPGA toolchain redistributes third-party tools (GHDL, Apio, Yosys, nextpnr-xilinx, openXC7, openFPGALoader, …) that remain under their own licenses, including the GNU GPL and LGPL: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The toolchain is an aggregation of those programs, not an Apache-2.0 work; its license review and corresponding-source package (`NexysVHDL-Toolchain-1.0-Sources.zip`, built by `npm run compliance:assemble`) are in [docs/toolchain-1.0-redistribution.md](docs/toolchain-1.0-redistribution.md).
 
 ## For students
 
@@ -56,7 +56,7 @@ npm run toolchain:assemble -- --target win32-x64 --download   # official archive
 npm run toolchain:pack -- --target win32-x64                  # -> .artifacts/dist/nexysvhdl-toolchain-1.0-win32-x64.tar.gz
 npm run package:win                                           # VSIX + classroom distribution folder/zip
 npm run toolchain:install                                     # install the toolchain for this user (developers; students use the extension)
-npm run compliance:assemble -- --draft                        # corresponding-source package (draft until the review has no blocking item)
+npm run compliance:assemble                                   # corresponding-source package NexysVHDL-Toolchain-1.0-Sources.zip (release asset)
 ```
 
 To try the extension from source: run the **Run NexysVHDL Extension** launch configuration (F5). It uses the same per-user toolchain store as the installed package (`npm run toolchain:install`). See [docs/phase4b-classroom-bundle.md](docs/phase4b-classroom-bundle.md), [docs/decisions/ADR-007-separately-versioned-classroom-toolchain.md](docs/decisions/ADR-007-separately-versioned-classroom-toolchain.md) and [docs/architecture.md](docs/architecture.md).

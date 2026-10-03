@@ -13,3 +13,6 @@
 
 # Third-party license texts are kept byte-identical to upstream (no whitespace normalization or checks).
 toolchains/bundle/licenses/** -whitespace -text
+# Compliance-only license texts: upstream wording kept (trailing spaces included), stored with LF line endings;
+# toolchains/compliance/licenses/*/SOURCES.md records the SHA-256 of each stored file.
+toolchains/compliance/licenses/** -whitespace

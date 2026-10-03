@@ -1145,6 +1145,296 @@
         "sha256": "4716c9b1baf7bb282ce8e43e0a011ed8289078b0de57402c51b8a46867dc7cc4",
         "size": 4763
       }
+    ],
+    "fedora-srpm-hidapi-0.14.0-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--hidapi-0.14.0-2.fc39.src.rpm",
+        "sha256": "7881dcdf845a760df7973544a614bc8249495e6a8ec9aecc1c812390654a123e",
+        "size": 346633
+      }
+    ],
+    "fedora-srpm-mingw-atk-2.38.0-4.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-atk-2.38.0-4.fc39.src.rpm",
+        "sha256": "b842d36957ebfd9d7ea252303f6f9b7d12a74f2b63d5b825193096671888d74f",
+        "size": 327527
+      }
+    ],
+    "fedora-srpm-mingw-cairo-1.17.8-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-cairo-1.17.8-2.fc39.src.rpm",
+        "sha256": "218480e4c582c7ef6ae35a2c1443b5acb14394cc50aedaaca66b10906b20b6c7",
+        "size": 33423071
+      }
+    ],
+    "fedora-srpm-mingw-dbus-1.14.8-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-dbus-1.14.8-2.fc39.src.rpm",
+        "sha256": "a226081f5276cc4088e0589e94283c02d0f813f4befeb5aac1a36866f737a986",
+        "size": 1394822
+      }
+    ],
+    "fedora-srpm-mingw-dlfcn-1.4.1-1.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-dlfcn-1.4.1-1.fc39.src.rpm",
+        "sha256": "3e7fc8d3c102bfacbcc130c2836af3a828e41453ec07fc19a8ad792ae026ef34",
+        "size": 44384
+      }
+    ],
+    "fedora-srpm-mingw-freetype-2.13.1-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-freetype-2.13.1-2.fc39.src.rpm",
+        "sha256": "c4a980ea5af07298513f7fa1666e120baa67b26803e7fddbac87138541d48a34",
+        "size": 2534603
+      }
+    ],
+    "fedora-srpm-mingw-fribidi-1.0.13-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-fribidi-1.0.13-2.fc39.src.rpm",
+        "sha256": "2c1227c5f5afe2ae1bfa6d0ea3378a0039bce9595c19615b52f10f35e4f9d540",
+        "size": 1184764
+      }
+    ],
+    "fedora-srpm-mingw-gdk-pixbuf-2.42.10-3.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-gdk-pixbuf-2.42.10-3.fc39.src.rpm",
+        "sha256": "535ac795c505e1fbe0e88825c2acf2ed99e8912025aeb8d9c5349ce394804125",
+        "size": 6547212
+      }
+    ],
+    "fedora-srpm-mingw-gettext-0.22-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-gettext-0.22-2.fc39.src.rpm",
+        "sha256": "0f820ae7f838a5af7fdce3a07e662666c5ff1d89cc6765d18811a94b178dc9af",
+        "size": 10038218
+      }
+    ],
+    "fedora-srpm-mingw-glib2-2.77.1-1.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-glib2-2.77.1-1.fc39.src.rpm",
+        "sha256": "71f4d08d9342ebc66a6ed2f22e0b401a526296e1b66ae0d1871ec596aaef5d42",
+        "size": 5361695
+      }
+    ],
+    "fedora-srpm-mingw-gmp-6.1.2-16.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-gmp-6.1.2-16.fc39.src.rpm",
+        "sha256": "76e40690475d8177e48144fa3c08dc92055e3493cbc8fc71a6be690e6e51b906",
+        "size": 1966137
+      }
+    ],
+    "fedora-srpm-mingw-gtk3-3.24.38-2.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-gtk3-3.24.38-2.fc39.src.rpm",
+        "sha256": "b04e030c64e3b26800d52e8e22635f7129cd842b33033afc4902c876826ffe3b",
+        "size": 12442848
+      }
+    ],
+    "fedora-srpm-mingw-libconfuse-3.2.2-13.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-libconfuse-3.2.2-13.fc39.src.rpm",
+        "sha256": "6b787749acea720cbdc5fcc8c522bd79644c7f6a62d00c42c5808e02a2132b7e",
+        "size": 769830
+      }
+    ],
+    "fedora-srpm-mingw-libftdi-1.4-8.fc38": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-libftdi-1.4-8.fc38.src.rpm",
+        "sha256": "4c50e2e5ab3da3275b9e1a4bd6981668e7d2fdbec06ba579826f7f365532cf27",
+        "size": 125685
+      }
+    ],
+    "fedora-srpm-mingw-libidn2-2.3.7-1.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-libidn2-2.3.7-1.fc39.src.rpm",
+        "sha256": "42a3ac3b929c6a1b97d9f2b22de1d0c0bbef234b48adf2c86c9487565cbbb0a9",
+        "size": 2162419
+      }
+    ],
+    "fedora-srpm-mingw-libusbx-1.0.24-8.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-libusbx-1.0.24-8.fc39.src.rpm",
+        "sha256": "c1b02f24e25d66368769503a0c3e2f0a82c7dfe8899e0e43709ffd9ffb385217",
+        "size": 622829
+      }
+    ],
+    "fedora-srpm-mingw-pango-1.51.0-1.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-pango-1.51.0-1.fc39.src.rpm",
+        "sha256": "5b0327ef1ad07facf42528bec2f8848517b2278570055e51118b01feb043c202",
+        "size": 1976491
+      }
+    ],
+    "fedora-srpm-mingw-qt5-qtbase-5.15.11-1.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-qt5-qtbase-5.15.11-1.fc39.src.rpm",
+        "sha256": "ac022fb4a373026f1b8c2ba56f51c9ba2c99ce4c380d3dcfd42e7f8b60268e4d",
+        "size": 51327849
+      }
+    ],
+    "fedora-srpm-mingw-readline-8.2-3.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-readline-8.2-3.fc39.src.rpm",
+        "sha256": "cee00d83e51e815c5dd51193c9a446dbd02fd2d392f3a38cb18b20044dead455",
+        "size": 3061185
+      }
+    ],
+    "fedora-srpm-mingw-termcap-1.3.1-34.fc39": [
+      {
+        "path": ".",
+        "file": "sources/fedora39--mingw-termcap-1.3.1-34.fc39.src.rpm",
+        "sha256": "b5b0b4b5064868d36005f4ad77a252e93078cdc942819111bfe9dc61468d85a4",
+        "size": 459681
+      }
+    ],
+    "oss-cvc4": [
+      {
+        "path": ".",
+        "commit": "3dda54ba7e6952060766775c56969ab920430a8a",
+        "file": "sources/oss-cvc4.tar.gz",
+        "sha256": "13c0855cc27bf49c78e23d00669006da8877e62737b1569898e2f97afa8f647a",
+        "size": 7500146
+      }
+    ],
+    "oss-cvc5": [
+      {
+        "path": ".",
+        "commit": "77d0bec48a745e3c4acd65085f9c59bdfceed6c0",
+        "file": "sources/oss-cvc5.tar.gz",
+        "sha256": "da31aba651f61deca26aa85f241b2b6ff35625f75cf2a13faa852dc798f3119e",
+        "size": 7862039
+      }
+    ],
+    "oss-bitwuzla": [
+      {
+        "path": ".",
+        "commit": "6e46391816b4baf8c9fc0b8c0c1d2fbe63b6f30e",
+        "file": "sources/oss-bitwuzla.tar.gz",
+        "sha256": "be2baa75b9b0ed291e3d22eded099515b47dd02634a0af39cdc2941982faa617",
+        "size": 1476178
+      }
+    ],
+    "oss-pono": [
+      {
+        "path": ".",
+        "commit": "b243cef7ea0c98840e7e012f5ce30f3430b1edcc",
+        "file": "sources/oss-pono.tar.gz",
+        "sha256": "14ef926638fd04cafe242c1c2de37b3e38213d61abb5021320b9e4f8fa7a5c47",
+        "size": 3237756
+      }
+    ],
+    "oss-smt-switch": [
+      {
+        "path": ".",
+        "commit": "f2d7d3d6dfccc0b4d6b604563acd34629bac884d",
+        "file": "sources/oss-smt-switch.tar.gz",
+        "sha256": "7fe058d5d670cfa325b11f1ac23b0fe2dce0f654e00de1438a14daa18c415eff",
+        "size": 268019
+      }
+    ],
+    "oss-boolector": [
+      {
+        "path": ".",
+        "commit": "43dae91c1070e5e2633e036ebd75ffb13fe261e1",
+        "file": "sources/oss-boolector.tar.gz",
+        "sha256": "fc535192b29587663dc544552e48760e7cc14804b232340c8953d10b99cce6bc",
+        "size": 1490352
+      }
+    ],
+    "oss-cadical": [
+      {
+        "path": ".",
+        "commit": "e7369b4b04fafe8b4b139d5e181528f5006d0816",
+        "file": "sources/oss-cadical.tar.gz",
+        "sha256": "9adabd04929f7bacf21a59e4cbe572ab9be7352464210e68dd100aa507333bab",
+        "size": 686856
+      }
+    ],
+    "oss-lingeling": [
+      {
+        "path": ".",
+        "commit": "89a167d0d2efe98d983c87b5b84175b40ea55842",
+        "file": "sources/oss-lingeling.tar.gz",
+        "sha256": "22a277dae776e4b2e0200adbe5068c1bd185d9407388884638265b58b2e89985",
+        "size": 246641
+      }
+    ],
+    "oss-btor2tools": [
+      {
+        "path": ".",
+        "commit": "d381aefa4560d245a371c1915b1fb89b691d9489",
+        "file": "sources/oss-btor2tools.tar.gz",
+        "sha256": "90708eb647f3e2fb4805cae0a40197f7315fb36b756ed7d55b4e1620edb4ddca",
+        "size": 86875
+      }
+    ],
+    "oss-symfpu": [
+      {
+        "path": ".",
+        "commit": "8fbe139bf0071cbe0758d2f6690a546c69ff0053",
+        "file": "sources/oss-symfpu.tar.gz",
+        "sha256": "163676e45a531ea8f418509033c33bb3f3d7bbb812a5fdafea46e607ac85d84b",
+        "size": 36674
+      }
+    ],
+    "libantlr3c-3.4": [
+      {
+        "path": ".",
+        "file": "sources/libantlr3c-3.4.tar.gz",
+        "sha256": "ca914a97f1a2d2f2c8e1fca12d3df65310ff0286d35c48b7ae5f11dcc8b2eb52",
+        "size": 546039
+      }
+    ],
+    "nixpkgs-574d1eac-windows-recipes": [
+      {
+        "path": ".",
+        "commit": "574d1eac1c200690e27b8eb4e24887f8df7ac27c",
+        "file": "sources/nixpkgs-574d1eac-windows-recipes.tar.gz",
+        "sha256": "0dc2a78b66838162c859e43183d9665e64747b64d3aec42934b1ee33540d61db",
+        "size": 1264
+      }
+    ],
+    "oss-yosys": [
+      {
+        "path": ".",
+        "commit": "66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2",
+        "file": "sources/oss-yosys.tar.gz",
+        "sha256": "649a106a04cf19e5688993707694a8e855636d60b5d8a90310c4ec208cf54e5d",
+        "size": 3588239
+      },
+      {
+        "path": "abc",
+        "commit": "b4a657e75b16b68c514a7326642ea074f8460939",
+        "file": "sources/oss-yosys--abc.tar.gz",
+        "sha256": "3bb0aa3128e6c047d56ba4e00c0d770d7947a612052d96621d3abd53739e54aa",
+        "size": 7217295
+      },
+      {
+        "path": "libs/cxxopts",
+        "commit": "4bf61f08697b110d9e3991864650a405b3dd515d",
+        "file": "sources/oss-yosys--libs-cxxopts.tar.gz",
+        "sha256": "b9bda1476317d87d9ed79889aec48de43b10808b682d3f5f8b278542007d58fc",
+        "size": 159461
+      }
     ]
   }
 }
