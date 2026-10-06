@@ -12,6 +12,22 @@ export interface SimulationSettings {
     readonly sources: readonly string[];
     /** Entity name of the testbench to run by default. */
     readonly testbench?: string;
+    /**
+     * Finite simulation length passed to GHDL as `--stop-time`, e.g. `1us`
+     * (an integer and a unit: fs, ps, ns, us, ms, sec). Absent: the
+     * testbench runs until it ends itself (`std.env.stop`), as before.
+     */
+    readonly stopTime?: string;
+}
+
+/** Time units GHDL accepts in `--stop-time`. */
+export const STOP_TIME_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 'sec'] as const;
+
+/** Normalizes `1 us` / `1US` to `1us`, or undefined when it is not an integer followed by a GHDL time unit. */
+export function normalizeStopTime(text: string): string | undefined {
+    const m = /^\s*(\d+)\s*(fs|ps|ns|us|ms|sec)\s*$/i.exec(text);
+    if (!m || /^0+$/.test(m[1]!)) return undefined;
+    return `${m[1]!.replace(/^0+(?=\d)/, '')}${m[2]!.toLowerCase()}`;
 }
 
 export interface ToolchainSettings {

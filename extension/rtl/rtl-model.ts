@@ -427,7 +427,10 @@ export function buildRtlModel(netlist: YosysNetlist, options: RtlBuildOptions = 
         const t = netlist.modules[n]!.attributes?.['top'];
         return t === 1 || t === '1' || (typeof t === 'string' && /^0*1$/.test(t));
     });
-    const top = options.top && netlist.modules[options.top.toLowerCase()] ? options.top.toLowerCase() : (flagged ?? names[0]!);
+    // VHDL names are case-insensitive, Verilog module names are not: match the configured top however GHDL spelled it.
+    const wanted = options.top?.toLowerCase();
+    const named = wanted === undefined ? undefined : (names.find((n) => n === options.top) ?? names.find((n) => n.toLowerCase() === wanted));
+    const top = named ?? flagged ?? names[0]!;
     const moduleNames = new Set(names);
     const sources = options.verilog !== undefined ? ghdlSourceMap(options.verilog, options.projectRoot, options.verilogDir) : undefined;
     const modules = new Map<string, RtlModuleView>();

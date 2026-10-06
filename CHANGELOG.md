@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Phase 6 pilot hardening (not yet versioned)
+
+- **Fixed:** a top entity with capital letters (`DigitDisplay`) no longer fails synthesis with `GHDL_SYNTH_NO_TOP`; the module spelling GHDL emits is used for Yosys, RTL schematic and Build.
+- **Fixed:** Check, Simulate, Build, RTL schematic and Program can no longer run at the same time on one project (duplicate requests answer "Build is already running").
+- **Simulation length:** optional `simulation.stopTime` (GHDL `--stop-time`), set from the Project view; a testbench that never ends now gets an explanation instead of a bare time-out. Projects without it behave exactly as before.
+- **Design view:** Project Files and Design Hierarchy are one view with Files and Hierarchy modes, and a **+ Add File** workflow (source, simulation testbench, constraint; create new or copy from the computer).
+- **Waveform:** per-signal Display As (Binary, Hex, Unsigned Decimal, Signed Decimal), remembered per workspace.
+- **Optional appearance:** NexysVHDL Classroom color theme, applied to the project folder only.
+
 ## 0.5.0 — Classroom Preview (requires NexysVHDL toolchain 1.0)
 
 First installable NexysVHDL package. Not published on the Visual Studio Marketplace; distributed to classes as a download.

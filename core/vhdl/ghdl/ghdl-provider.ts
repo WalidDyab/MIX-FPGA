@@ -6,7 +6,7 @@ import { type Diagnostic, errorDiag, hasErrors, type LogRef } from '../../result
 import type { OperationResult } from '../../results/operation';
 import { sha256File } from '../../util/hash';
 import type { SimulationOptions, SimulationResult, SynthesisOptions, SynthesisResult, VhdlCheckResult, VhdlContext, VhdlProvider } from '../types';
-import { listVerilogModules, parseGhdlOutput } from './ghdl-output';
+import { listVerilogModules, parseGhdlOutput, resolveTopModule } from './ghdl-output';
 
 /** VHDL-2008 flag; the only standard supported for now. */
 const STD = '--std=08';
@@ -146,11 +146,15 @@ export class GhdlVhdlProvider implements VhdlProvider {
 
         const wave = join(workdir, `${options.testbench}.ghw`);
         const args = ['-r', STD, '--workdir=.', options.testbench, '--assert-level=error'];
+        if (options.stopTime) args.push(`--stop-time=${options.stopTime}`);
         if (options.waveform) args.push(`--wave=${options.testbench}.ghw`);
         const vcdPath = join(workdir, VCD_FILE);
         if (options.vcd) args.push(`--vcd=${VCD_FILE}`);
         const r = await this.exec(ctx, workdir, args, logs, `ghdl-run-${options.testbench}`, SIM_TIMEOUT_MS);
         diagnostics.push(...r.diagnostics);
+        if (r.run.outcome === 'timed-out') {
+            diagnostics.push(errorDiag('vhdl', 'SIM_NO_END', `The simulation was still running after ${SIM_TIMEOUT_MS / 1000} s. A testbench with a free-running clock never ends by itself: finish it with "std.env.stop;" (VHDL-2008), or set a Simulation Stop Time for this project.`));
+        }
 
         const parsed = parseGhdlOutput(`${r.run.stdout}\n${r.run.stderr}`);
         const passed = r.ok && !hasErrors(r.diagnostics);
@@ -202,13 +206,15 @@ export class GhdlVhdlProvider implements VhdlProvider {
 
         const verilog = s.run.stdout;
         const modules = listVerilogModules(verilog);
-        if (!modules.includes(top.toLowerCase())) {
-            return fail([...s.diagnostics, errorDiag('vhdl', 'GHDL_SYNTH_NO_TOP', `GHDL output has no module "${top.toLowerCase()}".`)]);
+        const topModule = resolveTopModule(modules, top);
+        if (topModule === undefined) {
+            return fail([...s.diagnostics, errorDiag('vhdl', 'GHDL_SYNTH_NO_TOP', `GHDL output has no module "${top}" (matched without regard to upper/lower case). Modules found: ${modules.join(', ') || 'none'}.`)]);
         }
         await writeFile(out, verilog, 'utf8');
         return {
             status: 'succeeded',
             top,
+            topModule,
             modules,
             generatedVerilog: { kind: 'generated-verilog', path: out, canonical: false, sizeBytes: Buffer.byteLength(verilog) },
             diagnostics: s.diagnostics,

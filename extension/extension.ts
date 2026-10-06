@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { AppearanceManager, KEEP_MINE, type ThemeSettings, USE_CLASSROOM } from './appearance/appearance-manager';
 import { registerCommands } from './commands/commands';
 import { ProblemsPublisher } from './diagnostics/vscode-diagnostics';
 import { findProjectRoot } from './project/detect';
@@ -10,9 +11,8 @@ import { CoreBackend } from './services/backend';
 import type { Logger } from './services/events';
 import { NexysVhdlService } from './services/nexys-service';
 import { StatusBar } from './status/status-bar';
-import { FilesView } from './views/files-view';
+import { DESIGN_MODE_KEY, DesignView } from './views/design-view';
 import { HardwareView } from './views/hardware-view';
-import { HierarchyView } from './views/hierarchy-view';
 import { ProjectView } from './views/project-view';
 import { ResultsView } from './views/results-view';
 import { WorkflowView } from './views/workflow-view';
@@ -44,29 +44,45 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
     const service = new NexysVhdlService({ backend, logger, checkOnSave: () => config().get<boolean>('checkOnSave', true) });
     const schematic = new SchematicPanel(service);
     const rtl = new RtlPanel(service);
-    const waveform = new WaveformPanel(service, context.extensionUri);
+    const waveform = new WaveformPanel(service, context.extensionUri, context.workspaceState);
     context.subscriptions.push(rtl, waveform);
     context.subscriptions.push(output, { dispose: () => service.dispose() }, schematic, new ProblemsPublisher(service), new StatusBar(service));
 
+    const design = new DesignView(service, context.workspaceState);
     const views: Array<[string, vscode.TreeDataProvider<unknown> & vscode.Disposable]> = [
         ['nexysvhdl.project', new ProjectView(service)],
-        ['nexysvhdl.files', new FilesView(service)],
-        ['nexysvhdl.hierarchy', new HierarchyView(service)],
+        ['nexysvhdl.design', design],
         ['nexysvhdl.workflow', new WorkflowView(service)],
         ['nexysvhdl.hardware', new HardwareView(service)],
         ['nexysvhdl.results', new ResultsView(service)],
     ];
+    const setContext = (key: string, value: unknown) => void vscode.commands.executeCommand('setContext', key, value);
     for (const [id, provider] of views) {
-        context.subscriptions.push(provider, vscode.window.createTreeView(id, { treeDataProvider: provider, showCollapseAll: id === 'nexysvhdl.hierarchy' }));
+        const tree = vscode.window.createTreeView(id, { treeDataProvider: provider, showCollapseAll: id === 'nexysvhdl.design' });
+        context.subscriptions.push(provider, tree);
+        if (provider === design) {
+            const showMode = (mode: string) => {
+                tree.description = mode === 'hierarchy' ? 'Hierarchy' : 'Files';
+                setContext(DESIGN_MODE_KEY, mode);
+            };
+            showMode(design.mode);
+            context.subscriptions.push(design.onDidChangeMode(showMode));
+        }
     }
 
-    registerCommands(context, { service, backend, schematic, rtl, waveform, output, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? '') });
+    // Optional classroom appearance: workspace scope only, the user's own theme is never written.
+    const themeSettings: ThemeSettings = {
+        workspaceTheme: () => vscode.workspace.getConfiguration('workbench').inspect<string>('colorTheme')?.workspaceValue,
+        setWorkspaceTheme: (theme) => Promise.resolve(vscode.workspace.getConfiguration('workbench').update('colorTheme', theme, vscode.ConfigurationTarget.Workspace)),
+    };
+    const appearance = new AppearanceManager(themeSettings, context.workspaceState, context.globalState);
 
-    const setContext = (key: string, value: unknown) => void vscode.commands.executeCommand('setContext', key, value);
+    registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? '') });
+
     let toolchainPrompted = false;
     context.subscriptions.push(
         service.onDidChange((k) => {
-            if (k === 'workflow') setContext('nexysvhdl.busy', service.busy !== undefined);
+            if (k === 'workflow' || k === 'busy') setContext('nexysvhdl.busy', service.busyAction !== undefined);
             if (k === 'environment') {
                 const state = service.environment?.toolchain?.state ?? 'unknown';
                 setContext('nexysvhdl.toolchainState', state);
@@ -105,6 +121,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         if (!root || root === service.projectRoot) return;
         await service.open(root);
         watch(root);
+        if (appearance.shouldAsk(config().get<boolean>('promptForClassroomAppearance', true))) {
+            void vscode.window
+                .showInformationMessage('NexysVHDL has an optional Classroom appearance (navy and orange). It applies to this project folder only; your VS Code theme stays as it is everywhere else.', USE_CLASSROOM, KEEP_MINE)
+                .then((choice) => appearance.answer(choice));
+        }
         void service.refreshEnvironment();
         if (config().get<boolean>('detectBoardsOnOpen', true)) void service.detectBoards();
     };

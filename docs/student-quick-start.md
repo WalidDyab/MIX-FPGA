@@ -16,13 +16,14 @@ BlinkDemo/
 
 To work on a course project instead, use **Open NexysVHDL Project** on its folder (it must contain `nexysvhdl.json`).
 
+**Adding files.** Click **+ Add File** at the top of the **Design** view. Choose *Source* (a `.vhd` design file → `src/`), *Simulation Testbench* (a `.vhd` file → `sim/`) or *Constraint* (an `.xdc` file → `constraints/`), then *Create New* (a VHDL-2008 skeleton) or *Copy From Computer* (a copy is placed inside the project, so the project folder stays complete and portable). If the name already exists you choose *Replace* or *Rename*. Only `.vhd` and `.xdc` files are accepted here; rename a `.vhdl` file to `.vhd` first.
+
 ## 2. The NexysVHDL sidebar
 
 | View | Shows |
 |---|---|
 | Project | board, VHDL standard, top entity, constraints, testbench, environment |
-| Project Files | your files by role (`TOP`, `TESTBENCH`, `IN USE`) |
-| Design Hierarchy | which entity instantiates which |
+| Design | **Files** (your files by role: `TOP`, `TESTBENCH`, `IN USE`, with **+ Add File**) and **Hierarchy** (which entity instantiates which); switch modes with the buttons in the view's title bar |
 | Workflow | Check, Simulate, Build (Synthesis → Implementation → Bitstream), Program |
 | Hardware | the connected board |
 | Results | timing, resources, bitstream, logs |
@@ -32,6 +33,8 @@ To work on a course project instead, use **Open NexysVHDL Project** on its folde
 - **Check** analyzes all VHDL. Mistakes appear in **Problems**; it also runs when you save.
 - **Simulate** runs `sim/top_tb.vhd`; it should end with `ALL TESTS PASSED`.
 - **Open Waveform** shows the signals; click to read values at a time.
+- **Display As**: next to every bus in the waveform, choose *Binary*, *Hex*, *Unsigned Decimal* or *Signed Decimal*. A `std_logic_vector` is only read as signed if you choose *Signed Decimal*. Signals with undefined bits (`U`, `X`, `Z`, `W`, `L`, `H`, `-`) show that letter instead of a number. The choices are remembered for the project.
+- A testbench with a free-running clock must end itself with `std.env.stop;` (testbenches made by *+ Add File* do). If it does not, click **Simulation length** in the Project view and choose a fixed stop time such as `1us`.
 
 ## 4. Look at the hardware
 
@@ -72,6 +75,10 @@ If a port has no pin, **Build** stops before implementation and Problems shows w
 3. **Program FPGA**. With the starter design: switch **SW0** on → **LED0** blinks; hold **BTNC** → the LED stops; release → it blinks again.
 
 The FPGA forgets the design when the board is switched off (SRAM programming).
+
+## Optional appearance
+
+NexysVHDL offers an optional navy-and-orange color theme the first time you open a project. It applies to that project folder only and never changes your VS Code theme elsewhere. Switch any time with **NexysVHDL: Use NexysVHDL Classroom Appearance** and **NexysVHDL: Use My VS Code Appearance**.
 
 ## What NexysVHDL does not do (Classroom Preview)
 

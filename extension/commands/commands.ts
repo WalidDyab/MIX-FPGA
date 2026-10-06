@@ -1,8 +1,29 @@
 import { stat } from 'node:fs/promises';
-import { join, relative, sep } from 'node:path';
+import { basename, join, relative, sep } from 'node:path';
 import * as vscode from 'vscode';
-import { type Diagnostic, PROJECT_FILE_NAME } from '../../core';
+import type { AppearanceManager } from '../appearance/appearance-manager';
+import { type Diagnostic, normalizeStopTime, PROJECT_FILE_NAME, STOP_TIME_UNITS } from '../../core';
+import {
+    ADD_FILE_KINDS,
+    type AddFileKind,
+    type AddFileMode,
+    checkCopySource,
+    copyIntoProject,
+    entityNameOf,
+    findExisting,
+    isSameFile,
+    kindInfo,
+    normalizeFileName,
+    sourceSkeleton,
+    suggestFreeName,
+    targetPath,
+    testbenchSkeleton,
+    validateCopyName,
+    validateFileName,
+    writeNewFile,
+} from '../project/add-file';
 import { classifyProjectPath } from '../project/project-layout';
+import { starterXdc } from '../project/templates';
 import { createProject, validateProjectName } from '../project/scaffold';
 import type { RtlPanel } from '../rtl/rtl-panel';
 import type { SchematicPanel } from '../schematic/schematic-panel';
@@ -12,6 +33,7 @@ import { boardRow, type SetupRow } from '../services/environment-summary';
 import { NexysError, type NexysVhdlService } from '../services/nexys-service';
 import { BUILD_STAGES } from '../services/workflow-state';
 import type { Node } from '../views/base';
+import type { DesignView } from '../views/design-view';
 import type { HierarchyPayload } from '../views/hierarchy-view';
 
 export interface CommandDeps {
@@ -20,6 +42,8 @@ export interface CommandDeps {
     readonly schematic: SchematicPanel;
     readonly rtl: RtlPanel;
     readonly waveform: WaveformPanel;
+    readonly design: DesignView;
+    readonly appearance: AppearanceManager;
     readonly output: vscode.OutputChannel;
     readonly extensionVersion: string;
 }
@@ -59,7 +83,7 @@ async function openFolder(root: string): Promise<void> {
 }
 
 export function registerCommands(context: vscode.ExtensionContext, deps: CommandDeps): void {
-    const { service, backend, schematic, rtl, waveform, output, extensionVersion } = deps;
+    const { service, backend, schematic, rtl, waveform, design, appearance, output, extensionVersion } = deps;
 
     /** Wraps a handler: NexysErrors become friendly messages, anything else is logged too. The handler's result is returned. */
     const register = (id: string, handler: (...args: never[]) => unknown) => {
@@ -203,10 +227,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         if (name) await service.setTestbench(name);
     });
 
-    register('nexysvhdl.useConstraintsFile', async (node?: Node) => {
-        requireRoot();
-        const path = typeof node?.payload === 'string' ? node.payload : undefined;
-        if (!path) return;
+    /** Makes `path` the active XDC, first confirming the removal of a `pins` mapping. Returns whether it was applied. */
+    const activateConstraints = async (path: string): Promise<boolean> => {
         let replacePins = false;
         if (service.project?.config.pins) {
             const ok = await vscode.window.showWarningMessage(
@@ -214,15 +236,241 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                 { modal: true },
                 'Use XDC File',
             );
-            if (!ok) return;
+            if (!ok) return false;
             replacePins = true;
         }
         await service.useConstraints(path, replacePins);
+        return true;
+    };
+
+    register('nexysvhdl.useConstraintsFile', async (node?: Node) => {
+        requireRoot();
+        const path = typeof node?.payload === 'string' ? node.payload : undefined;
+        if (path) await activateConstraints(path);
+    });
+
+    // ------------------------------------------------------------- design view
+
+    register('nexysvhdl.useClassroomAppearance', async () => {
+        requireRoot();
+        await appearance.useClassroom();
+        vscode.window.setStatusBarMessage('$(check) NexysVHDL Classroom appearance is on for this project folder', 4000);
+    });
+
+    register('nexysvhdl.useMyAppearance', async () => {
+        requireRoot();
+        await appearance.useMine();
+        vscode.window.setStatusBarMessage('$(check) Back to your own VS Code appearance', 4000);
+    });
+
+    register('nexysvhdl.design.showFiles', () => design.setMode('files'));
+    register('nexysvhdl.design.showHierarchy', () => design.setMode('hierarchy'));
+
+    // ------------------------------------------------------------- add file
+
+    /**
+     * "+ Add File": what (Source / Simulation Testbench / Constraint), how
+     * (Create New / Copy From Computer), then the rules in project/add-file.ts.
+     * Interactive by default; scripted use (tests, lab setup) may pass
+     * { kind, mode, name?, from?, collision?, activate? } to skip the dialogs.
+     */
+    interface AddFileScript {
+        kind: AddFileKind;
+        mode: AddFileMode;
+        name?: string;
+        from?: string;
+        /** Answer to the name-collision question. */
+        collision?: 'replace' | 'rename' | 'cancel';
+        /** New name used when the collision answer is 'rename'. */
+        renameTo?: string;
+        /** Answer to "make the new XDC active?". */
+        activate?: boolean;
+        open?: boolean;
+    }
+    register('nexysvhdl.addFile', async (script?: AddFileScript) => {
+        const root = requireRoot();
+        const infoOf = (k: AddFileKind) => kindInfo(k);
+
+        // 1. What?
+        let kind = script?.kind;
+        if (!kind) {
+            const pick = await vscode.window.showQuickPick(
+                ADD_FILE_KINDS.map((k) => ({ label: k.label, description: k.description, fileKind: k.kind })),
+                { title: 'Add File (1 of 2): what are you adding?', placeHolder: 'Source, Simulation Testbench or Constraint' },
+            );
+            if (!pick) return undefined;
+            kind = pick.fileKind;
+        }
+        // 2. How?
+        let mode = script?.mode;
+        if (!mode) {
+            const pick = await vscode.window.showQuickPick(
+                [
+                    { label: '$(new-file) Create New', description: 'start from a skeleton', mode: 'new' as const },
+                    { label: '$(file-symlink-file) Copy From Computer', description: `copy an existing ${infoOf(kind).extension} file into the project`, mode: 'copy' as const },
+                ],
+                { title: `Add File (2 of 2): ${infoOf(kind).label}`, placeHolder: 'Create a new file, or copy one from your computer' },
+            );
+            if (!pick) return undefined;
+            mode = pick.mode;
+        }
+        const folder = infoOf(kind).folder;
+
+        // 3. Which file name (and, for a copy, which file)?
+        let fileName: string;
+        let from: string | undefined;
+        if (mode === 'new') {
+            const typed =
+                script?.name ??
+                (await vscode.window.showInputBox({
+                    title: `New ${infoOf(kind).label.toLowerCase()} (created in ${folder}/)`,
+                    prompt: kind === 'constraints' ? 'File name (the .xdc extension is added for you)' : 'File name = entity name (the .vhd extension is added for you)',
+                    placeHolder: kind === 'constraints' ? 'my_pins' : kind === 'simulation' ? 'alu_tb' : 'alu',
+                    validateInput: (v) => validateFileName(kind!, v),
+                }));
+            if (typed === undefined) return undefined;
+            const problem = validateFileName(kind, typed);
+            if (problem) throw new NexysError(problem);
+            fileName = normalizeFileName(kind, typed);
+        } else {
+            for (;;) {
+                const chosen =
+                    script?.from ??
+                    (
+                        await vscode.window.showOpenDialog({
+                            canSelectFiles: true,
+                            canSelectFolders: false,
+                            canSelectMany: false,
+                            openLabel: 'Copy Into Project',
+                            title: `Choose the ${infoOf(kind).extension} file to copy into ${folder}/`,
+                            filters: { [kind === 'constraints' ? 'XDC constraints' : 'VHDL files']: [infoOf(kind).extension.slice(1)] },
+                        })
+                    )?.[0]?.fsPath;
+                if (!chosen) return undefined;
+                const wrong = checkCopySource(kind, chosen);
+                if (!wrong) {
+                    from = chosen;
+                    fileName = basename(chosen);
+                    break;
+                }
+                if (script) throw new NexysError(wrong);
+                const again = await vscode.window.showErrorMessage(wrong, 'Choose Another File');
+                if (!again) return undefined;
+            }
+        }
+
+        // 4. Bad name or a file of that name already there? Replace / Rename / Cancel.
+        let replace = false;
+        let sameFile = false;
+        let scriptedAnswer = script?.collision;
+        for (;;) {
+            const rel = targetPath(kind, fileName);
+            if (from && isSameFile(from, root, rel)) {
+                sameFile = true; // the chosen file already is the project's copy
+                break;
+            }
+            const badName = mode === 'copy' ? validateCopyName(kind, fileName) : validateFileName(kind, fileName);
+            const existing = badName ? undefined : await findExisting(root, kind, fileName);
+            if (!badName && !existing) break;
+            let choice: string | undefined;
+            if (badName) choice = 'Rename';
+            else if (script) choice = scriptedAnswer === 'replace' ? 'Replace' : scriptedAnswer === 'rename' ? 'Rename' : undefined;
+            else choice = await vscode.window.showWarningMessage(`${existing} already exists. Replace it, or add this file under another name?`, { modal: true }, 'Replace', 'Rename');
+            if (choice === 'Replace') {
+                replace = true;
+                break;
+            }
+            if (choice !== 'Rename') return undefined;
+            const suggestion = await suggestFreeName(root, kind, badName ? fileName.replace(/[^A-Za-z0-9_.-]/g, '_') : fileName);
+            const renamed = script
+                ? (script.renameTo ?? suggestion)
+                : await vscode.window.showInputBox({
+                      title: badName ? `Rename the file: ${badName}` : `Rename the file (${existing} already exists)`,
+                      prompt: 'New file name',
+                      value: suggestion,
+                      validateInput: async (v) => {
+                          const problem = mode === 'copy' ? validateCopyName(kind!, v) : validateFileName(kind!, v);
+                          if (problem) return problem;
+                          return (await findExisting(root, kind!, v)) ? 'A file with that name already exists.' : undefined;
+                      },
+                  });
+            if (renamed === undefined) return undefined;
+            fileName = normalizeFileName(kind, renamed);
+            scriptedAnswer = 'cancel'; // a scripted rename that still collides is a failure, not a loop
+        }
+        const rel = targetPath(kind, fileName);
+
+        // 5. Write or copy it into the project, so the project stays portable.
+        if (!sameFile) {
+            if (mode === 'copy') await copyIntoProject(root, rel, from!, replace);
+            else {
+                let content: string;
+                if (kind === 'source') content = sourceSkeleton(entityNameOf(fileName));
+                else if (kind === 'simulation') content = testbenchSkeleton(entityNameOf(fileName));
+                else {
+                    const board = (await backend.boards()).get(service.project?.config.board ?? '');
+                    content = board ? starterXdc(service.project!.config.name, board, { starterPorts: false }) : '## Pin and clock constraints. Add set_property and create_clock lines here.\n';
+                }
+                await writeNewFile(root, rel, content, replace);
+            }
+        }
+        output.appendLine(`Added ${rel} (${mode === 'copy' ? (sameFile ? 'already in the project' : `copied from ${from}`) : 'created'}${replace ? ', replaced the existing file' : ''}).`);
+
+        // 6. Project model, active constraints, editor.
+        const outcome = await service.fileAdded(kind, rel);
+        let activated = outcome.constraints === 'activated';
+        if (outcome.constraints === 'ask') {
+            const current = service.project?.config.constraints;
+            const use = `Use ${basename(rel)}`;
+            const yes = script
+                ? script.activate === true
+                : (await vscode.window.showInformationMessage(
+                      `${basename(rel)} was added. ${current ? `The project currently uses ${basename(current)} for pin constraints.` : 'The project currently generates its constraints from "pins".'} Make ${basename(rel)} the active constraints file?`,
+                      use,
+                      'Keep Current',
+                  )) === use;
+            if (yes) activated = await activateConstraints(rel);
+        }
+        if (script?.open !== false) await vscode.window.showTextDocument(vscode.Uri.file(join(root, ...rel.split('/'))));
+        vscode.window.setStatusBarMessage(`$(check) Added ${rel}${activated ? ' (active constraints)' : ''}`, 4000);
+        return { path: rel, kind, mode, replaced: replace, activated, ...(outcome.testbench ? { testbench: outcome.testbench } : {}) };
+    });
+
+    /** Finite simulation length for GHDL's --stop-time. Scripted: { value: '1us' } or { value: null } to clear. */
+    register('nexysvhdl.setSimulationStopTime', async (scripted?: { value: string | null }) => {
+        requireRoot();
+        const current = service.project?.config.simulation?.stopTime;
+        let value: string | undefined;
+        if (scripted) value = scripted.value ?? undefined;
+        else {
+            const pick = await vscode.window.showQuickPick(
+                [
+                    { label: 'Run until the testbench stops itself', description: `default${current ? '' : ' (current)'} — the testbench ends with std.env.stop`, fixed: false },
+                    { label: 'Stop after a fixed time…', description: current ? `current: ${current}` : 'for a testbench with a free-running clock that never ends', fixed: true },
+                ],
+                { title: 'NexysVHDL: simulation length', placeHolder: 'How long should Simulate run?' },
+            );
+            if (!pick) return undefined;
+            if (pick.fixed) {
+                const typed = await vscode.window.showInputBox({
+                    title: 'NexysVHDL: stop the simulation after',
+                    prompt: `A whole number and a unit: ${STOP_TIME_UNITS.join(', ')}. Examples: 500ns, 1us, 2ms`,
+                    value: current ?? '1us',
+                    validateInput: (v) => (normalizeStopTime(v) ? undefined : `Use a whole number and one of: ${STOP_TIME_UNITS.join(', ')} (for example 1us).`),
+                });
+                if (typed === undefined) return undefined;
+                value = typed;
+            }
+        }
+        const written = await service.setStopTime(value);
+        vscode.window.setStatusBarMessage(written ? `$(check) Simulation stops after ${written}` : '$(check) Simulation runs until the testbench stops', 4000);
+        return written;
     });
 
     // ------------------------------------------------------------- workflow
 
     register('nexysvhdl.check', async () => {
+        service.ensureFree('check');
         await saveProjectFiles(requireRoot());
         const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Checking VHDL' }, () => service.check());
         if (result.status === 'succeeded') {
@@ -236,6 +484,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     });
 
     register('nexysvhdl.simulate', async () => {
+        service.ensureFree('simulate');
         await saveProjectFiles(requireRoot());
         let outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Simulating' }, () => service.simulate());
         if (outcome.kind === 'needs-testbench') {
@@ -256,12 +505,24 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             void vscode.window.showWarningMessage('The simulator is not set up on this computer.', 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
         } else if (r.status === 'succeeded' && r.passed) {
             void vscode.window.showInformationMessage(`Simulation passed: ${service.workflow.simulate.summary ?? ''}`, ...(r.vcd ? ['Open Waveform'] : []), 'View Log').then(after);
+        } else if (r.diagnostics.some((d) => d.code === 'SIM_NO_END')) {
+            void vscode.window
+                .showErrorMessage(
+                    'The simulation never ended. A testbench with a free-running clock must stop itself with "std.env.stop;", or you can give the simulation a fixed length.',
+                    'Set Stop Time…',
+                    'View Log',
+                )
+                .then((c) => {
+                    if (c === 'View Log') output.show();
+                    else if (c) void vscode.commands.executeCommand('nexysvhdl.setSimulationStopTime');
+                });
         } else {
             void vscode.window.showErrorMessage(`Simulation failed: ${firstError(r.diagnostics) ?? r.messages[r.messages.length - 1] ?? 'see the log'}`, ...(r.vcd ? ['Open Waveform'] : []), 'View Log', 'Show Problems').then(after);
         }
     });
 
     register('nexysvhdl.build', async () => {
+        service.ensureFree('build');
         await saveProjectFiles(requireRoot());
         const result = await vscode.window.withProgress(
             { location: vscode.ProgressLocation.Notification, title: 'NexysVHDL Build', cancellable: true },
@@ -305,6 +566,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
 
     register('nexysvhdl.program', async (opts?: { serial?: string; allowStale?: boolean }) => {
         requireRoot();
+        service.ensureFree('program');
         let options = { ...(opts ?? {}) };
         for (;;) {
             const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'NexysVHDL: Programming FPGA…' }, () => service.program(options));

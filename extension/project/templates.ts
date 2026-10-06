@@ -169,8 +169,9 @@ end architecture sim;
  * design's ports, followed by every other board resource commented out.
  * Written in ordinary Vivado style so students can read and edit it.
  */
-export function starterXdc(projectName: string, board: BoardDefinition): string {
-    const used = new Map<string, string>(STARTER_PORTS.map((p) => [p.resource, p.port]));
+export function starterXdc(projectName: string, board: BoardDefinition, options: { starterPorts?: boolean } = {}): string {
+    // `starterPorts: false` is the blank file of "Add File": every resource commented out, none tied to the starter design.
+    const used = new Map<string, string>((options.starterPorts === false ? [] : STARTER_PORTS).map((p) => [p.resource, p.port]));
     for (const r of used.keys()) {
         if (!findResource(board, r)) throw new Error(`${board.name} has no "${r}" resource for the starter design.`);
     }

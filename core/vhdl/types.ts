@@ -21,6 +21,8 @@ export interface SimulationOptions {
     readonly waveform: boolean;
     /** Also write a VCD waveform (`sim/waveform.vcd`), the format the VS Code viewer reads. */
     readonly vcd?: boolean;
+    /** GHDL `--stop-time` value, e.g. `1us`. Absent: run until the testbench ends itself. */
+    readonly stopTime?: string;
 }
 
 export interface SimulationResult extends OperationResult {
@@ -38,6 +40,12 @@ export interface SimulationResult extends OperationResult {
 
 export interface SynthesisResult extends OperationResult {
     readonly top: string;
+    /**
+     * The top module exactly as GHDL spelled it in the netlist (e.g. `DigitDisplay`
+     * for the VHDL entity `digitdisplay`): Verilog names are case-sensitive, so
+     * Yosys and every later step must use this, not `top`.
+     */
+    readonly topModule?: string;
     /** Verilog netlist produced from the VHDL; input to implementation. */
     readonly generatedVerilog?: BuildArtifact;
     /** Module names in the netlist (hierarchy check). */

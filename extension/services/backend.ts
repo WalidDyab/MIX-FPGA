@@ -14,6 +14,8 @@ import {
     type SimulationResult,
     validateProject,
     type VhdlCheckResult,
+    busyDiagnostic,
+    withProjectLock,
 } from '../../core';
 import { stat } from 'node:fs/promises';
 import { loadCanonicalBitstream, workspacePaths } from '../../runtime/bitstream';
@@ -114,7 +116,14 @@ export class CoreBackend implements NexysBackend {
         return b ? { path: b.path, modifiedMs: b.modifiedMs, ...(b.sizeBytes !== undefined ? { sizeBytes: b.sizeBytes } : {}) } : undefined;
     }
 
-    async program(project: Project, serialNumber: string | undefined, signal?: AbortSignal): Promise<ProgrammingResult> {
+    /** Programming shares the project's single-flight guard with Check/Simulate/Build/RTL (a Build rewrites the bitstream). */
+    program(project: Project, serialNumber: string | undefined, signal?: AbortSignal): Promise<ProgrammingResult> {
+        return withProjectLock(project.root, 'program', () => this.runProgram(project, serialNumber, signal), (running) => ({
+            status: 'failed', destination: 'volatile', diagnostics: [busyDiagnostic(running)], logs: [], durationMs: 0,
+        }));
+    }
+
+    private async runProgram(project: Project, serialNumber: string | undefined, signal?: AbortSignal): Promise<ProgrammingResult> {
         const ctx = await this.ctx();
         const failed = (code: string, message: string): ProgrammingResult => ({
             status: 'failed', destination: 'volatile', diagnostics: [errorDiag('programming', code, message)], logs: [], durationMs: 0,

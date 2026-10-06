@@ -3,7 +3,7 @@ import { isAbsolute, relative, resolve } from 'node:path';
 import type { BoardRegistry } from '../board/board-registry';
 import { generateXdc } from '../board/constraints';
 import { type Diagnostic, errorDiag, warningDiag } from '../results/diagnostic';
-import type { Project } from './types';
+import { normalizeStopTime, type Project, STOP_TIME_UNITS } from './types';
 
 const IDENTIFIER = /^[A-Za-z][A-Za-z0-9_]*$/;
 
@@ -102,6 +102,9 @@ export async function validateProject(project: Project, boards: BoardRegistry): 
 
     if (c.simulation?.testbench !== undefined && !IDENTIFIER.test(c.simulation.testbench)) {
         d.push(errorDiag('project', 'PROJECT_TESTBENCH_INVALID', `Testbench "${c.simulation.testbench}" is not a valid VHDL identifier.`, loc));
+    }
+    if (c.simulation?.stopTime !== undefined && (typeof c.simulation.stopTime !== 'string' || normalizeStopTime(c.simulation.stopTime) === undefined)) {
+        d.push(errorDiag('project', 'PROJECT_STOP_TIME_INVALID', `Simulation stop time "${String(c.simulation.stopTime)}" is not valid; use a whole number and a unit, e.g. "1us" (units: ${STOP_TIME_UNITS.join(', ')}).`, loc));
     }
     if (c.simulation?.testbench !== undefined && simSources.length === 0) {
         d.push(warningDiag('project', 'PROJECT_TESTBENCH_NO_SOURCES', 'A testbench is selected but no simulation sources are listed.', loc));

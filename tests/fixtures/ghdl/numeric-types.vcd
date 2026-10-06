@@ -1,0 +1,45 @@
+$date
+  Tue Oct  6 10:03:21 2026
+$end
+$version
+  GHDL v0
+$end
+$timescale
+  1 fs
+$end
+$scope module standard $end
+$upscope $end
+$scope module textio $end
+$upscope $end
+$scope module std_logic_1164 $end
+$upscope $end
+$scope module numeric_std $end
+$upscope $end
+$scope module t $end
+$var integer 32 ! i $end
+$var integer 32 " n $end
+$var reg 8 # s[7:0] $end
+$var reg 64 $ u[63:0] $end
+$var reg 4 % v[3:0] $end
+$var reg 1 & b $end
+$comment e is not handled $end
+$var reg 1 ' bo $end
+$var real 64 ( r $end
+$upscope $end
+$enddefinitions $end
+#0
+b11111111111111111111111111111011 !
+b111 "
+b11111101 #
+b1111111111111111111111111111111111111111111111111111111111111111 $
+bUUUU %
+U&
+1'
+r1.5 (
+#5000000
+b1111111111111111111111111111111 !
+b01LH %
+W&
+#10000000
+b0101 %
+1&

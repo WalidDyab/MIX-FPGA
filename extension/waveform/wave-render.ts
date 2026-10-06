@@ -6,7 +6,46 @@
  * that draws.
  */
 
-export type Radix = 'bin' | 'hex';
+export type Radix = 'bin' | 'hex' | 'udec' | 'sdec';
+
+/** The four ways a signal can be shown ("Display As"), with the labels students see. */
+export const RADIX_CHOICES: ReadonlyArray<{ readonly radix: Radix; readonly label: string }> = [
+    { radix: 'bin', label: 'Binary' },
+    { radix: 'hex', label: 'Hex' },
+    { radix: 'udec', label: 'Unsigned Decimal' },
+    { radix: 'sdec', label: 'Signed Decimal' },
+];
+
+export function isRadix(v: unknown): v is Radix {
+    return v === 'bin' || v === 'hex' || v === 'udec' || v === 'sdec';
+}
+
+/**
+ * Radix choices as stored for a workspace: the "Buses" default and per-signal
+ * overrides keyed by the signal's hierarchical path. Anything malformed in a
+ * stored value is dropped.
+ */
+export interface RadixState {
+    readonly buses: Radix;
+    readonly signals: Readonly<Record<string, Radix>>;
+}
+
+export function sanitizeRadixState(value: unknown): RadixState {
+    const v = (typeof value === 'object' && value !== null ? value : {}) as { buses?: unknown; signals?: unknown };
+    const signals: Record<string, Radix> = {};
+    if (typeof v.signals === 'object' && v.signals !== null) {
+        for (const [path, radix] of Object.entries(v.signals as Record<string, unknown>)) if (isRadix(radix)) signals[path] = radix;
+    }
+    return { buses: isRadix(v.buses) ? v.buses : 'hex', signals };
+}
+
+/**
+ * The radix a signal is shown in: its own choice, else (integer-typed
+ * signals) signed decimal, else the "Buses" default.
+ */
+export function effectiveRadix(state: RadixState, path: string, varType: string | undefined): Radix {
+    return state.signals[path] ?? (varType === 'integer' ? 'sdec' : state.buses);
+}
 
 /** Index of the last change at or before `t`, or -1 before the first change. Binary search. */
 export function indexAt(times: readonly number[], t: number): number {
@@ -29,18 +68,49 @@ export function valueAt(times: readonly number[], values: readonly string[], t: 
     return i < 0 ? undefined : values[i];
 }
 
-/** Formats a value (MSB-first 0/1/x/z string) as binary or hexadecimal; scalars stay as is. */
-export function formatValue(value: string | undefined, width: number, radix: Radix): string {
+export interface FormatOptions {
+    /** The value with VHDL metavalues kept apart (`u x 0 1 z w l h -`), when it has any. */
+    readonly raw?: string;
+}
+
+/** `0`/`1` only: a number can be read from it. */
+const NUMERIC = /^[01]+$/;
+
+/** One digit for a group of bits that is not all 0/1: the shared metavalue letter, or X for a mix. */
+function metaDigit(group: string): string {
+    const first = group[0]!.toLowerCase();
+    return [...group].every((c) => c.toLowerCase() === first) ? first.toUpperCase() : 'X';
+}
+
+/**
+ * Formats a value (MSB-first bit string) as binary, hexadecimal, unsigned or
+ * signed decimal. Scalars stay as they are. Decimal uses BigInt, so vectors
+ * of any width are exact (a 64-bit counter does not overflow). A value with
+ * a VHDL metavalue (U X Z W L H -) never becomes a number: decimal shows the
+ * metavalue (`U`, `Z`, ...) or `X` when the bits disagree, hexadecimal shows
+ * it per nibble and binary shows the bits as they are. `raw` carries the
+ * metavalues the drawing form `value` folded away (L and H count as
+ * metavalues too: weakly driven bits are not shown as numbers).
+ */
+export function formatValue(value: string | undefined, width: number, radix: Radix, options: FormatOptions = {}): string {
     if (value === undefined) return '—';
-    if (width <= 1 || !/^[01xz]+$/.test(value)) return value;
-    if (radix === 'bin') return value;
-    const padded = value.padStart(Math.ceil(value.length / 4) * 4, value[0] === 'x' || value[0] === 'z' ? value[0] : '0');
+    const bits = options.raw ?? value;
+    if (width <= 1) return options.raw ? options.raw.toUpperCase() : value;
+    if (!/^[01xzuwlh-]+$/i.test(bits)) return value; // real numbers and other text
+    const numeric = NUMERIC.test(bits);
+    if (radix === 'bin') return numeric ? bits : options.raw ? bits.toUpperCase() : bits;
+    if (radix === 'udec' || radix === 'sdec') {
+        if (!numeric) return metaDigit(bits);
+        const unsigned = BigInt('0b' + bits);
+        if (radix === 'udec' || bits[0] === '0') return unsigned.toString();
+        return (unsigned - (BigInt(1) << BigInt(bits.length))).toString();
+    }
+    const pad = /[^01]/.test(bits[0]!) ? bits[0]! : '0';
+    const padded = bits.padStart(Math.ceil(bits.length / 4) * 4, pad);
     let out = '';
     for (let i = 0; i < padded.length; i += 4) {
         const nib = padded.slice(i, i + 4);
-        if (/^[01]{4}$/.test(nib)) out += parseInt(nib, 2).toString(16).toUpperCase();
-        else if (nib === 'zzzz') out += 'Z';
-        else out += 'X';
+        out += NUMERIC.test(nib) ? parseInt(nib, 2).toString(16).toUpperCase() : metaDigit(nib);
     }
     return out;
 }
@@ -50,6 +120,8 @@ export interface Segment {
     readonly x0: number;
     readonly x1: number;
     readonly value: string;
+    /** The value with VHDL metavalues kept apart; only when `raws` was passed to traceSegments. */
+    readonly raw?: string;
     readonly dense?: boolean;
 }
 
@@ -59,7 +131,7 @@ export interface Segment {
  * dense segment, so drawing cost depends on the canvas width, not on the
  * number of simulation events.
  */
-export function traceSegments(times: readonly number[], values: readonly string[], t0: number, t1: number, width: number, minPx = 2): Segment[] {
+export function traceSegments(times: readonly number[], values: readonly string[], t0: number, t1: number, width: number, minPx = 2, raws?: readonly string[]): Segment[] {
     const out: Segment[] = [];
     if (times.length === 0 || t1 <= t0 || width <= 0) return out;
     const scale = width / (t1 - t0);
@@ -68,20 +140,24 @@ export function traceSegments(times: readonly number[], values: readonly string[
     if (times[i]! > t1) return out;
     let x0 = Math.max(0, px(times[i]!));
     let value = values[i]!;
+    let raw = raws?.[i];
     let dense = false;
+    const seg = (x1: number): Segment => ({ x0, x1, value, ...(raw !== undefined ? { raw } : {}), ...(dense ? { dense: true } : {}) });
     for (i = i + 1; i < times.length && times[i]! <= t1; i++) {
         const x = px(times[i]!);
         if (x - x0 < minPx) {
             dense = true;
             value = values[i]!;
+            raw = raws?.[i];
             continue;
         }
-        out.push(dense ? { x0, x1: x, value, dense: true } : { x0, x1: x, value });
+        out.push(seg(x));
         x0 = x;
         value = values[i]!;
+        raw = raws?.[i];
         dense = false;
     }
-    out.push(dense ? { x0, x1: width, value, dense: true } : { x0, x1: width, value });
+    out.push(seg(width));
     return out;
 }
 

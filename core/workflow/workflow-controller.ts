@@ -6,12 +6,13 @@ import { checkPortConstraints, normalizeXdcForImplementation, verilogTopPorts } 
 import type { BoardDefinition } from '../board/types';
 import type { ImplementationProvider, ImplementationResult } from '../implementation/types';
 import { validateProject } from '../project/validation';
-import type { Project } from '../project/types';
+import { normalizeStopTime, type Project } from '../project/types';
 import { type Diagnostic, errorDiag, hasErrors, type LogRef, type OperationStatus } from '../results/diagnostic';
 import { notConfigured } from '../results/operation';
 import type { RtlAnalysisResult, RtlProvider } from '../rtl/types';
 import type { SimulationResult, SynthesisResult, VhdlCheckResult, VhdlContext, VhdlProvider } from '../vhdl/types';
 import type { BuildWorkspace, WorkspaceManager } from '../workspace/build-workspace';
+import { busyDiagnostic, withProjectLock } from './project-lock';
 import type { BoardInfo, BuildOptions, BuildProgress, BuildResult, StepResult, WorkflowStep } from './types';
 
 export interface WorkflowDependencies {
@@ -27,6 +28,13 @@ export interface WorkflowDependencies {
 
 export function boardInfo(board: BoardDefinition): BoardInfo {
     return { id: board.id, name: board.name, device: board.fpga.device, part: board.fpga.part };
+}
+
+/** GHDL `--stop-time` from the project, when it sets one (absent: run until the testbench ends itself). */
+function stopTimeOption(project: Project): { stopTime?: string } {
+    const configured = project.config.simulation?.stopTime;
+    const stopTime = typeof configured === 'string' ? normalizeStopTime(configured) : undefined;
+    return stopTime ? { stopTime } : {};
 }
 
 /** Prepared, validated inputs shared by every workflow operation. */
@@ -103,6 +111,7 @@ export class WorkflowController {
         project: Project,
         board: BoardDefinition,
         verilogPath: string,
+        topModule: string,
     ): Promise<{ xdc: string; diagnostics: Diagnostic[]; source: NonNullable<BuildResult['constraintsSource']> }> {
         const file = project.config.constraints;
         let xdc: string;
@@ -122,7 +131,7 @@ export class WorkflowController {
         const source = file !== undefined ? ({ kind: 'file', file } as const) : ({ kind: 'generated' } as const);
         if (hasErrors(diagnostics)) return { xdc, diagnostics, source };
 
-        const ports = verilogTopPorts(await readFile(verilogPath, 'utf8').catch(() => ''), project.config.top);
+        const ports = verilogTopPorts(await readFile(verilogPath, 'utf8').catch(() => ''), topModule);
         // An unreadable or port-less netlist header is not judged here; implementation reports real problems.
         if (ports && ports.length > 0) diagnostics.push(...checkPortConstraints(ports, xdc, file));
         return { xdc, diagnostics, source };
@@ -133,7 +142,13 @@ export class WorkflowController {
      * RtlProvider's generic netlist. No implementation, placement, routing or
      * bitstream. Everything is written inside the build workspace.
      */
-    async rtl(project: Project, signal?: AbortSignal): Promise<RtlAnalysisResult> {
+    rtl(project: Project, signal?: AbortSignal): Promise<RtlAnalysisResult> {
+        return withProjectLock(project.root, 'rtl', () => this.runRtl(project, signal), (running) => ({
+            status: 'failed', diagnostics: [busyDiagnostic(running)], logs: [], durationMs: 0, top: project.config.top,
+        }));
+    }
+
+    private async runRtl(project: Project, signal?: AbortSignal): Promise<RtlAnalysisResult> {
         const run = new Run();
         const top = project.config.top;
         const done = (extra: Partial<RtlAnalysisResult> = {}): RtlAnalysisResult => ({
@@ -148,12 +163,19 @@ export class WorkflowController {
         const synth = await this.deps.vhdl.synthesize(ctx, { outputDir: prepared.workspace.paths.rtl });
         if (!run.record('synthesize', synth.status, synth.diagnostics, synth.durationMs, synth.logs) || !synth.generatedVerilog) return done();
         const verilog = synth.generatedVerilog;
-        const r = await this.deps.rtl.elaborate({ project, workspace: prepared.workspace, verilog, top, ...(signal ? { signal } : {}) });
+        // Yosys is case-sensitive: use the module exactly as GHDL spelled it in the netlist.
+        const r = await this.deps.rtl.elaborate({ project, workspace: prepared.workspace, verilog, top: synth.topModule ?? top.toLowerCase(), ...(signal ? { signal } : {}) });
         run.record('rtl', r.status, r.diagnostics, r.durationMs, r.logs);
         return done({ verilog, ...(r.netlist ? { netlist: r.netlist } : {}) });
     }
 
-    async check(project: Project, signal?: AbortSignal): Promise<VhdlCheckResult> {
+    check(project: Project, signal?: AbortSignal): Promise<VhdlCheckResult> {
+        return withProjectLock(project.root, 'check', () => this.runCheck(project, signal), (running) => ({
+            status: 'failed', diagnostics: [busyDiagnostic(running)], logs: [], durationMs: 0, elaborated: [],
+        }));
+    }
+
+    private async runCheck(project: Project, signal?: AbortSignal): Promise<VhdlCheckResult> {
         const run = new Run();
         const prepared = await this.prepare(project, run);
         if (!prepared) return { status: 'failed', diagnostics: run.diagnostics, logs: [], durationMs: run.elapsed(), elaborated: [] };
@@ -161,7 +183,14 @@ export class WorkflowController {
         return this.deps.vhdl.check(this.context(project, prepared.workspace, signal));
     }
 
-    async simulate(project: Project, testbench?: string, signal?: AbortSignal): Promise<SimulationResult> {
+    simulate(project: Project, testbench?: string, signal?: AbortSignal): Promise<SimulationResult> {
+        return withProjectLock(project.root, 'simulate', () => this.runSimulate(project, testbench, signal), (running) => ({
+            status: 'failed', diagnostics: [busyDiagnostic(running)], logs: [], durationMs: 0,
+            testbench: testbench ?? project.config.simulation?.testbench ?? '', passed: false, messages: [],
+        }));
+    }
+
+    private async runSimulate(project: Project, testbench?: string, signal?: AbortSignal): Promise<SimulationResult> {
         const run = new Run();
         const tb = testbench ?? project.config.simulation?.testbench;
         const base = { testbench: tb ?? '', passed: false, messages: [] as string[] };
@@ -177,10 +206,16 @@ export class WorkflowController {
             };
         }
         if (!this.deps.vhdl) return notConfigured<SimulationResult>('VHDL', 'VHDL_PROVIDER_NOT_CONFIGURED', base);
-        return this.deps.vhdl.simulate(this.context(project, prepared.workspace, signal), { testbench: tb, waveform: true, vcd: true });
+        return this.deps.vhdl.simulate(this.context(project, prepared.workspace, signal), { testbench: tb, waveform: true, vcd: true, ...stopTimeOption(project) });
     }
 
-    async build(project: Project, options: BuildOptions = {}): Promise<BuildResult> {
+    build(project: Project, options: BuildOptions = {}): Promise<BuildResult> {
+        return withProjectLock(project.root, 'build', () => this.runBuild(project, options), (running) => ({
+            success: false, steps: [], diagnostics: [busyDiagnostic(running)], logs: [], durationMs: 0,
+        }));
+    }
+
+    private async runBuild(project: Project, options: BuildOptions): Promise<BuildResult> {
         const run = new Run(options.onProgress);
         const finish = (extra: Partial<BuildResult> = {}): BuildResult => ({
             success:
@@ -218,7 +253,7 @@ export class WorkflowController {
                 return finish(info);
             }
             run.start('simulate');
-            const sim = await vhdl.simulate(ctx, { testbench: tb, waveform: true });
+            const sim = await vhdl.simulate(ctx, { testbench: tb, waveform: true, ...stopTimeOption(project) });
             const status: OperationStatus = sim.status === 'succeeded' && !sim.passed ? 'failed' : sim.status;
             if (!run.record('simulate', status, sim.diagnostics, sim.durationMs, sim.logs)) return finish(info);
         } else {
@@ -235,7 +270,8 @@ export class WorkflowController {
         const verilog = { generatedVerilog: synth.generatedVerilog };
 
         run.start('constraints');
-        const constraints = await this.constraints(project, board, synth.generatedVerilog.path);
+        const topModule = synth.topModule ?? project.config.top;
+        const constraints = await this.constraints(project, board, synth.generatedVerilog.path, topModule);
         const withConstraints = { ...info, ...verilog, constraintsSource: constraints.source };
         if (!run.record('constraints', hasErrors(constraints.diagnostics) ? 'failed' : 'succeeded', constraints.diagnostics)) {
             return finish(withConstraints);
@@ -254,6 +290,7 @@ export class WorkflowController {
             workspace,
             verilog: synth.generatedVerilog,
             xdc: constraints.xdc,
+            ...(synth.topModule ? { topModule: synth.topModule } : {}),
             ...(options.signal ? { signal: options.signal } : {}),
             onStage: (stage) => run.emit({ kind: 'implementation-stage', stage }),
         });

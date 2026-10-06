@@ -16,10 +16,12 @@ const ACTIONS: Record<WorkflowAction, { label: string; command: string; tooltip:
     program: { label: 'Program', command: 'nexysvhdl.program', tooltip: 'Load the bitstream into the FPGA (SRAM: lost when the board is switched off).' },
 };
 
+const BUSY_TEXT: Record<WorkflowAction | 'rtl', string> = { check: 'Check is running', simulate: 'Simulation is running', build: 'Build is running', program: 'Programming is running', rtl: 'RTL schematic is generating' };
+
 /** WORKFLOW: Check, Simulate, Build (Synthesis / Implementation / Bitstream), Program. */
 export class WorkflowView extends ServiceTree {
     constructor(service: NexysVhdlService) {
-        super(service, ['workflow', 'project', 'results', 'rtl']);
+        super(service, ['workflow', 'project', 'results', 'rtl', 'busy']);
     }
 
     private action(id: WorkflowAction, status: ActionStatus, expanded = false): Node {
@@ -29,7 +31,10 @@ export class WorkflowView extends ServiceTree {
         n.iconPath = stateIcon(status.state);
         n.description = status.summary ?? '';
         n.tooltip = `${a.tooltip}${status.summary ? `\n\n${status.summary}` : ''}`;
-        n.contextValue = `nexysvhdl.action.${id}`;
+        // While any pipeline operation runs, the other actions are visibly unavailable and lose their inline buttons.
+        const holder = this.service.busyAction;
+        n.contextValue = holder ? 'nexysvhdl.action.busy' : `nexysvhdl.action.${id}`;
+        if (holder && holder !== id && !status.summary) n.description = `wait — ${BUSY_TEXT[holder]}`;
         n.command = { title: a.label, command: a.command };
         return n;
     }

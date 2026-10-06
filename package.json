@@ -37,13 +37,8 @@
           "name": "Project"
         },
         {
-          "id": "nexysvhdl.files",
-          "name": "Project Files",
-          "when": "nexysvhdl.hasProject"
-        },
-        {
-          "id": "nexysvhdl.hierarchy",
-          "name": "Design Hierarchy",
+          "id": "nexysvhdl.design",
+          "name": "Design",
           "when": "nexysvhdl.hasProject"
         },
         {
@@ -105,6 +100,40 @@
         "title": "Refresh Hierarchy",
         "category": "NexysVHDL",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "nexysvhdl.addFile",
+        "title": "Add File…",
+        "category": "NexysVHDL",
+        "icon": "$(add)"
+      },
+      {
+        "command": "nexysvhdl.design.showFiles",
+        "title": "Design: Show Files",
+        "category": "NexysVHDL",
+        "icon": "$(files)"
+      },
+      {
+        "command": "nexysvhdl.design.showHierarchy",
+        "title": "Design: Show Hierarchy",
+        "category": "NexysVHDL",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "nexysvhdl.setSimulationStopTime",
+        "title": "Set Simulation Stop Time…",
+        "category": "NexysVHDL",
+        "icon": "$(watch)"
+      },
+      {
+        "command": "nexysvhdl.useClassroomAppearance",
+        "title": "Use NexysVHDL Classroom Appearance",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.useMyAppearance",
+        "title": "Use My VS Code Appearance",
+        "category": "NexysVHDL"
       },
       {
         "command": "nexysvhdl.openProjectSettings",
@@ -273,19 +302,19 @@
         },
         {
           "command": "nexysvhdl.check",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject && !nexysvhdl.busy"
         },
         {
           "command": "nexysvhdl.simulate",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject && !nexysvhdl.busy"
         },
         {
           "command": "nexysvhdl.build",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject && !nexysvhdl.busy"
         },
         {
           "command": "nexysvhdl.program",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject && !nexysvhdl.busy"
         },
         {
           "command": "nexysvhdl.cancel",
@@ -322,6 +351,30 @@
         {
           "command": "nexysvhdl.openWaveform",
           "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.addFile",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.design.showFiles",
+          "when": "nexysvhdl.hasProject && nexysvhdl.designMode == hierarchy"
+        },
+        {
+          "command": "nexysvhdl.design.showHierarchy",
+          "when": "nexysvhdl.hasProject && nexysvhdl.designMode != hierarchy"
+        },
+        {
+          "command": "nexysvhdl.setSimulationStopTime",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.useClassroomAppearance",
+          "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.useMyAppearance",
+          "when": "nexysvhdl.hasProject"
         }
       ],
       "view/title": [
@@ -333,26 +386,6 @@
         {
           "command": "nexysvhdl.refreshProject",
           "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
-          "group": "navigation@2"
-        },
-        {
-          "command": "nexysvhdl.refreshProject",
-          "when": "view == nexysvhdl.files",
-          "group": "navigation"
-        },
-        {
-          "command": "nexysvhdl.openSchematic",
-          "when": "view == nexysvhdl.hierarchy",
-          "group": "navigation@1"
-        },
-        {
-          "command": "nexysvhdl.openRtlSchematic",
-          "when": "view == nexysvhdl.hierarchy",
-          "group": "navigation@1"
-        },
-        {
-          "command": "nexysvhdl.refreshHierarchy",
-          "when": "view == nexysvhdl.hierarchy",
           "group": "navigation@2"
         },
         {
@@ -379,6 +412,41 @@
           "command": "nexysvhdl.openWaveform",
           "when": "view == nexysvhdl.workflow",
           "group": "navigation@2"
+        },
+        {
+          "command": "nexysvhdl.addFile",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode != hierarchy",
+          "group": "navigation@0"
+        },
+        {
+          "command": "nexysvhdl.design.showHierarchy",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode != hierarchy",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.refreshProject",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode != hierarchy",
+          "group": "navigation@2"
+        },
+        {
+          "command": "nexysvhdl.design.showFiles",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode == hierarchy",
+          "group": "navigation@0"
+        },
+        {
+          "command": "nexysvhdl.openSchematic",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode == hierarchy",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.openRtlSchematic",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode == hierarchy",
+          "group": "navigation@2"
+        },
+        {
+          "command": "nexysvhdl.refreshHierarchy",
+          "when": "view == nexysvhdl.design && nexysvhdl.designMode == hierarchy",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -436,6 +504,11 @@
           "command": "nexysvhdl.selectBoard",
           "when": "viewItem == nexysvhdl.board.selectable",
           "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.addFile",
+          "when": "view == nexysvhdl.design && viewItem == nexysvhdl.group",
+          "group": "nexysvhdl@0"
         }
       ]
     },
@@ -451,6 +524,11 @@
           "type": "boolean",
           "default": true,
           "description": "Look for connected boards when a project is opened."
+        },
+        "nexysvhdl.promptForClassroomAppearance": {
+          "type": "boolean",
+          "default": true,
+          "description": "Offer the optional NexysVHDL Classroom appearance (a navy and orange color theme) the first time a project folder is opened. It is only ever applied to that project folder, never to your global VS Code theme."
         }
       }
     },
@@ -506,12 +584,12 @@
           {
             "id": "edit",
             "title": "Edit VHDL",
-            "description": "Write your design in src/ and your testbench in sim/. The Design Hierarchy updates when you save.\n[Show Project Files](command:nexysvhdl.files.focus)",
+            "description": "Write your design in src/ and your testbench in sim/. Use + Add File in the Design view to create or copy files. The hierarchy updates when you save.\n[Show Design](command:nexysvhdl.design.focus)",
             "media": {
               "markdown": "resources/walkthrough/edit.md"
             },
             "completionEvents": [
-              "onView:nexysvhdl.files"
+              "onView:nexysvhdl.design"
             ]
           },
           {
@@ -589,6 +667,13 @@
             ]
           }
         ]
+      }
+    ],
+    "themes": [
+      {
+        "label": "NexysVHDL Classroom",
+        "uiTheme": "vs-dark",
+        "path": "./resources/themes/nexysvhdl-classroom-color-theme.json"
       }
     ]
   },

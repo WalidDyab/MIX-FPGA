@@ -56,7 +56,7 @@ describe('package manifest (Classroom Preview)', () => {
             ...p.contributes.walkthroughs.flatMap((w) => w.steps.flatMap((s) => commandLinks(s.description))),
             ...Object.values(p.contributes.menus).flatMap((m) => m.map((x) => x.command)),
         ];
-        const builtIn = new Set(['nexysvhdl.files.focus']);
+        const builtIn = new Set(['nexysvhdl.design.focus']);
         for (const l of links) assert.ok(contributed.has(l) || builtIn.has(l), `${l} is contributed`);
     });
 

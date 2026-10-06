@@ -60,8 +60,8 @@ export class ApioImplementationProvider implements ImplementationProvider {
             return fail([errorDiag('implementation', 'APIO_BOARD_UNKNOWN', `Board "${req.board.id}" has no Apio board id.`)]);
         }
 
-        // GHDL emits lower-case module names; VHDL identifiers are case-insensitive.
-        const top = req.project.config.top.toLowerCase();
+        // VHDL identifiers are case-insensitive, Verilog's are not: use the module as GHDL spelled it.
+        const top = req.topModule ?? req.project.config.top.toLowerCase();
         const staged = await req.workspace.stageImplementation([
             { name: STAGED.verilog, sourcePath: req.verilog.path },
             { name: STAGED.xdc, content: req.xdc },

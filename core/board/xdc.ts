@@ -58,7 +58,8 @@ export interface NetlistPort {
  * Returns undefined when the header cannot be read with confidence. Pure.
  */
 export function verilogTopPorts(verilog: string, top: string): NetlistPort[] | undefined {
-    const header = new RegExp(`^\\s*module\\s+${top.toLowerCase().replace(/[^\w$]/g, '')}\\s*\\(([^)]*)\\)\\s*;`, 'm').exec(verilog);
+    // Matched without regard to case: `top` may be the VHDL spelling of a differently-cased Verilog module.
+    const header = new RegExp(`^\\s*module\\s+${top.replace(/[^\w$]/g, '')}\\s*\\(([^)]*)\\)\\s*;`, 'im').exec(verilog);
     if (!header) return undefined;
     const body = header[1]!.trim();
     if (body === '') return [];

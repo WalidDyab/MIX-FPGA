@@ -17,7 +17,7 @@ export const RTL_NETLIST = 'rtl.json';
  * and the module hierarchy is retained.
  */
 export function rtlYosysScript(verilogFile: string, top: string): string {
-    return `read_verilog ${verilogFile}; hierarchy -check -top ${top.toLowerCase()}; proc; opt_clean; write_json ${RTL_NETLIST}`;
+    return `read_verilog ${verilogFile}; hierarchy -check -top ${top}; proc; opt_clean; write_json ${RTL_NETLIST}`;
 }
 
 /**

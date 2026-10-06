@@ -22,7 +22,7 @@ const LOCATED = /^((?:[A-Za-z]:)?[^:\r\n]+):(\d+):(\d+):(.*)$/;
 const RUNTIME = /^@([^:]+):\((report|assertion) (note|warning|error|failure)\):\s?(.*)$/;
 const COMPILE = /^(error|warning|note):\s?(.*)$/;
 const TOOL_ERROR = /^(?:.*[\\/])?ghdl(?:\.exe)?:error:\s*(.*)$/i;
-const STOPPED = /simulation (?:stopped|finished) @(\S+)/;
+const STOPPED = /simulation (?:stopped|finished)(?: by --stop-time)? @(\S+)/;
 
 const LEVEL_SEVERITY: Record<GhdlRuntimeMessage['level'], DiagnosticSeverity> = {
     note: 'info',
@@ -76,6 +76,17 @@ export function parseGhdlOutput(text: string): ParsedGhdlOutput {
     }
 
     return stoppedAt === undefined ? { diagnostics, runtime } : { diagnostics, runtime, stoppedAt };
+}
+
+/**
+ * The module GHDL emitted for the VHDL top entity. VHDL basic identifiers are
+ * case-insensitive but Verilog module names are not, so the configured top
+ * (`digitdisplay`) is matched case-insensitively and the module's actual
+ * spelling (`DigitDisplay`) is returned for every later tool. An exact match
+ * wins over a case-insensitive one.
+ */
+export function resolveTopModule(modules: readonly string[], top: string): string | undefined {
+    return modules.find((m) => m === top) ?? modules.find((m) => m.toLowerCase() === top.toLowerCase());
 }
 
 /** Module names declared in a Verilog netlist, in order. */

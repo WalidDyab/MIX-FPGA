@@ -51,5 +51,6 @@ export * from './programming/programming-service';
 
 export * from './workflow/types';
 export * from './workflow/workflow-controller';
+export * from './workflow/project-lock';
 
 export * from './util/hash';

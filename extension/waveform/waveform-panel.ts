@@ -6,9 +6,13 @@ import { sha256File, type SimulationResult } from '../../core';
 import type { NexysVhdlService } from '../services/nexys-service';
 import { formatSimTime } from '../services/workflow-state';
 import { parseVcd } from './vcd-parser';
+import { sanitizeRadixState } from './wave-render';
 import { renderWaveHtml, toWaveData, type WaveIdentity } from './waveform-html';
 
-type Message = { type: 'ready' } | { type: 'state'; [k: string]: unknown };
+type Message = { type: 'ready' } | { type: 'state'; [k: string]: unknown } | { type: 'radix'; state: unknown };
+
+/** Workspace-state key of the remembered Display As choices. */
+export const RADIX_STATE_KEY = 'nexysvhdl.waveform.radix';
 
 /**
  * Waveform viewer webview. Always shows the VCD of the latest Simulate
@@ -28,6 +32,8 @@ export class WaveformPanel implements vscode.Disposable {
     constructor(
         private readonly service: NexysVhdlService,
         private readonly extensionUri: vscode.Uri,
+        /** Remembers Display As choices for this workspace (absent in tests). */
+        private readonly memory?: vscode.Memento,
     ) {
         this.sub = service.onDidChange((k) => {
             if (this.panel && k === 'results' && this.service.simulationRun !== this.shownRun) void this.load();
@@ -58,6 +64,7 @@ export class WaveformPanel implements vscode.Disposable {
         this.panel.webview.onDidReceiveMessage((m: Message) => {
             if (m.type === 'ready') void this.load();
             else if (m.type === 'state') this.lastWebviewState = m;
+            else if (m.type === 'radix') void this.memory?.update(RADIX_STATE_KEY, sanitizeRadixState(m.state));
         });
         const nonce = randomBytes(16).toString('base64');
         const rendererUri = this.panel.webview.asWebviewUri(vscode.Uri.joinPath(scripts, 'wave-render.js')).toString();
@@ -109,7 +116,7 @@ export class WaveformPanel implements vscode.Disposable {
         this.shown = identity;
         this.panel.title = `Waveform: ${sim.testbench}`;
         const warning = sim.status === 'succeeded' && sim.passed ? undefined : 'This simulation failed; the waveform shows what happened up to the failure.';
-        void this.panel.webview.postMessage({ type: 'load', data, identity, ...(warning ? { warning } : {}) });
+        void this.panel.webview.postMessage({ type: 'load', data, identity, radix: sanitizeRadixState(this.memory?.get(RADIX_STATE_KEY)), ...(warning ? { warning } : {}) });
     }
 
     dispose(): void {

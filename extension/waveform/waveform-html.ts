@@ -7,8 +7,9 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 export interface WaveData {
     readonly timescaleFs: number;
     readonly endTime: number;
-    readonly signals: ReadonlyArray<{ readonly path: string; readonly name: string; readonly width: number; readonly code: string; readonly scope: string }>;
-    readonly traces: Readonly<Record<string, { readonly times: readonly number[]; readonly values: readonly string[] }>>;
+    readonly signals: ReadonlyArray<{ readonly path: string; readonly name: string; readonly width: number; readonly code: string; readonly scope: string; readonly varType: string }>;
+    /** `raw` (VHDL metavalues kept apart, see VcdTrace.raw) is present only for traces that have any. */
+    readonly traces: Readonly<Record<string, { readonly times: readonly number[]; readonly values: readonly string[]; readonly raw?: readonly string[] }>>;
     readonly tree: WaveTreeNode;
     /** Signal indices shown initially. */
     readonly initial: readonly number[];
@@ -48,12 +49,15 @@ export function toWaveData(model: VcdModel): WaveData {
         for (const c of n.scopes) add(c, depth + 1);
     };
     for (const top of tree.scopes) add(top, 1);
-    const traces: Record<string, { times: number[]; values: string[] }> = {};
-    for (const [code, t] of model.traces) traces[code] = { times: t.times, values: t.values };
+    const traces: Record<string, { times: number[]; values: string[]; raw?: string[] }> = {};
+    for (const [code, t] of model.traces) {
+        const raw = model.raw.get(code);
+        traces[code] = raw ? { times: t.times, values: t.values, raw: [...raw] } : { times: t.times, values: t.values };
+    }
     return {
         timescaleFs: model.timescaleFs,
         endTime: model.endTime,
-        signals: model.signals.map((s) => ({ path: s.path, name: s.name + (s.width > 1 && s.msb !== undefined ? `[${s.msb}:${s.lsb}]` : ''), width: s.width, code: s.code, scope: s.scope.join('.') })),
+        signals: model.signals.map((s) => ({ path: s.path, name: s.name + (s.width > 1 && s.msb !== undefined ? `[${s.msb}:${s.lsb}]` : ''), width: s.width, code: s.code, scope: s.scope.join('.'), varType: s.varType })),
         traces,
         tree,
         initial,
@@ -90,11 +94,12 @@ export function renderWaveHtml(input: WavePageInput): string {
   #tree details { margin-left: 8px; } #tree summary { cursor: pointer; font-weight: 600; }
   #tree label { display: block; margin-left: 14px; white-space: nowrap; cursor: pointer; }
   #wave { flex: 1; display: flex; min-width: 0; overflow-y: auto; }
-  @media (max-width: 700px) { #tree { display: none; } #names { width: 150px !important; } }
-  #names { width: 220px; flex: none; border-right: 1px solid var(--vscode-panel-border, #ccc); }
+  @media (max-width: 700px) { #tree { display: none; } #names { width: 220px !important; } }
+  #names { width: 380px; flex: none; border-right: 1px solid var(--vscode-panel-border, #ccc); }
   .axis-spacer { height: 26px; border-bottom: 1px solid var(--vscode-panel-border, #ccc); display: flex; align-items: center; padding: 0 6px; color: var(--vscode-descriptionForeground, #666); }
   .row { height: 24px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-bottom: 1px solid var(--vscode-editorWidget-background, #eee); white-space: nowrap; overflow: hidden; }
-  .row .nm { overflow: hidden; text-overflow: ellipsis; } .row .val { font-family: var(--vscode-editor-font-family, monospace); color: var(--vscode-charts-orange, #c25e00); margin-left: 6px; }
+  .row .nm { overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .row select.rx { flex: none; margin-left: 6px; padding: 0 2px; font-size: 11px; max-width: 124px; } .row .val { font-family: var(--vscode-editor-font-family, monospace); color: var(--vscode-charts-orange, #c25e00); margin-left: 6px; }
   #cvwrap { flex: 1; min-width: 0; position: relative; }
   canvas { display: block; cursor: crosshair; }
 </style></head>
@@ -106,7 +111,7 @@ export function renderWaveHtml(input: WavePageInput): string {
   <button id="zout" title="Zoom out">−</button>
   <button id="left" title="Pan left">◀</button>
   <button id="right" title="Pan right">▶</button>
-  <label>Buses <select id="radix"><option value="hex">hex</option><option value="bin">binary</option></select></label>
+  <label title="How buses are shown unless a signal has its own Display As choice">Buses <select id="radix"><option value="hex">Hex</option><option value="bin">Binary</option><option value="udec">Unsigned Decimal</option><option value="sdec">Signed Decimal</option></select></label>
   <span>Cursor: <b id="ctime">—</b></span>
   <span class="ident" id="ident"></span>
 </header>
@@ -125,26 +130,40 @@ export function renderWaveHtml(input: WavePageInput): string {
   const W = exports;
   const vscode = typeof acquireVsCodeApi === 'function' ? acquireVsCodeApi() : { postMessage: () => {} };
   const AXIS = 26, ROW = 24;
-  let data = null, visible = [], t0 = 0, t1 = 1, cursor = 0, radix = 'hex';
+  let data = null, visible = [], t0 = 0, t1 = 1, cursor = 0;
+  // Display As: the Buses default plus per-signal choices (keyed by signal path), remembered per workspace by the extension.
+  let rstate = { buses: 'hex', signals: {} };
+  const RX_LABEL = { bin: 'Binary', hex: 'Hex', udec: 'Unsigned Decimal', sdec: 'Signed Decimal' };
   const cv = document.getElementById('cv'), wrap = document.getElementById('cvwrap');
   const ctx = cv.getContext('2d');
   const css = (name, fallback) => getComputedStyle(document.body).getPropertyValue(name).trim() || fallback;
   const fmtT = (t) => data ? W.formatTime(t, data.timescaleFs) : String(t);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-  function valueOf(i, t) { const s = data.signals[i], tr = data.traces[s.code]; return W.formatValue(W.valueAt(tr.times, tr.values, t), s.width, radix); }
+  const radixOf = (s) => W.effectiveRadix(rstate, s.path, s.varType);
+  function fmt(s, value, raw) { return W.formatValue(value, s.width, radixOf(s), raw ? { raw: raw } : {}); }
+  function valueOf(i, t) {
+    const s = data.signals[i], tr = data.traces[s.code], k = W.indexAt(tr.times, t);
+    return fmt(s, k < 0 ? undefined : tr.values[k], k < 0 || !tr.raw ? undefined : tr.raw[k]);
+  }
+  function saveRadix() { vscode.postMessage({ type: 'radix', state: rstate }); }
 
   function report() {
     if (!data) return vscode.postMessage({ type: 'state', loaded: false });
-    const values = {};
-    for (const i of visible) values[data.signals[i].path] = valueOf(i, cursor);
-    vscode.postMessage({ type: 'state', loaded: true, t0, t1, cursor, radix, visible: visible.map((i) => data.signals[i].path), values });
+    const values = {}, radixes = {};
+    for (const i of visible) { values[data.signals[i].path] = valueOf(i, cursor); radixes[data.signals[i].path] = radixOf(data.signals[i]); }
+    vscode.postMessage({ type: 'state', loaded: true, t0, t1, cursor, radix: rstate.buses, visible: visible.map((i) => data.signals[i].path), values, radixes });
   }
 
   function rows() {
     document.getElementById('rows').innerHTML = visible.map((i) => {
       const s = data.signals[i];
-      return '<div class="row" title="' + esc(s.path) + '"><span class="nm">' + esc(s.name) + '</span><span class="val">' + esc(valueOf(i, cursor)) + '</span></div>';
+      // Buses and integers can be shown in any radix: one-bit signals have nothing to choose.
+      const choose = s.width > 1 || s.varType === 'integer';
+      const own = rstate.signals[s.path] || '';
+      const sel = choose ? '<select class="rx" data-i="' + i + '" title="Display As"><option value=""' + (own ? '' : ' selected') + '>Auto</option>' +
+        Object.keys(RX_LABEL).map((r) => '<option value="' + r + '"' + (own === r ? ' selected' : '') + '>' + RX_LABEL[r] + '</option>').join('') + '</select>' : '';
+      return '<div class="row" title="' + esc(s.path) + '"><span class="nm">' + esc(s.name) + '</span>' + sel + '<span class="val">' + esc(valueOf(i, cursor)) + '</span></div>';
     }).join('');
     document.getElementById('ctime').textContent = fmtT(cursor);
   }
@@ -171,7 +190,7 @@ export function renderWaveHtml(input: WavePageInput): string {
     visible.forEach((i, r) => {
       const s = data.signals[i], tr = data.traces[s.code];
       const top = AXIS + r * ROW + 4, bot = top + ROW - 8, mid = (top + bot) / 2;
-      const segs = W.traceSegments(tr.times, tr.values, t0, t1, w);
+      const segs = W.traceSegments(tr.times, tr.values, t0, t1, w, 2, tr.raw);
       for (const g of segs) {
         if (g.dense) { ctx.fillStyle = s.width > 1 ? bus : hi; ctx.globalAlpha = 0.35; ctx.fillRect(g.x0, top, g.x1 - g.x0, bot - top); ctx.globalAlpha = 1; continue; }
         const v = g.value;
@@ -193,7 +212,7 @@ export function renderWaveHtml(input: WavePageInput): string {
           ctx.beginPath();
           ctx.moveTo(g.x0, mid); ctx.lineTo(g.x0 + e, top); ctx.lineTo(g.x1 - e, top); ctx.lineTo(g.x1, mid);
           ctx.lineTo(g.x1 - e, bot); ctx.lineTo(g.x0 + e, bot); ctx.closePath(); ctx.stroke();
-          const label = W.formatValue(v, s.width, radix);
+          const label = fmt(s, v, g.raw);
           if (ctx.measureText(label).width < g.x1 - g.x0 - 10) { ctx.fillStyle = fg; ctx.fillText(label, Math.max(g.x0, 0) + 6, mid + 4); }
         }
       }
@@ -233,7 +252,15 @@ export function renderWaveHtml(input: WavePageInput): string {
   document.getElementById('zout').onclick = () => zoom(0.5);
   document.getElementById('left').onclick = () => pan(-0.25);
   document.getElementById('right').onclick = () => pan(0.25);
-  document.getElementById('radix').onchange = (e) => { radix = e.target.value; draw(); };
+  document.getElementById('radix').onchange = (e) => { rstate = { buses: e.target.value, signals: rstate.signals }; saveRadix(); draw(); };
+  function setSignalRadix(i, r) {
+    const signals = Object.assign({}, rstate.signals), path = data.signals[i].path;
+    if (r) signals[path] = r; else delete signals[path];
+    rstate = { buses: rstate.buses, signals: signals }; saveRadix(); draw();
+  }
+  document.getElementById('rows').addEventListener('change', (e) => {
+    if (e.target.classList && e.target.classList.contains('rx')) setSignalRadix(Number(e.target.dataset.i), e.target.value);
+  });
   const timeAt = (clientX) => { const r = cv.getBoundingClientRect(); return t0 + (clientX - r.left) / r.width * (t1 - t0); };
   let drag;
   cv.addEventListener('mousedown', (e) => { drag = { x: e.clientX, t0, t1, moved: false }; });
@@ -254,6 +281,7 @@ export function renderWaveHtml(input: WavePageInput): string {
     const banner = document.getElementById('banner');
     if (m.type === 'load') {
       data = m.data; visible = data.initial.slice(); cursor = 0;
+      if (m.radix) { rstate = W.sanitizeRadixState(m.radix); document.getElementById('radix').value = rstate.buses; }
       banner.hidden = !m.warning; banner.textContent = m.warning || '';
       const id = m.identity;
       document.getElementById('ident').textContent = id.testbench + ' · run ' + id.run + ' · ' + id.finishedAt + (id.stoppedAt ? ' · stopped at ' + id.stoppedAt : '') + ' · ' + id.file + (id.sha256 ? ' (' + id.sha256.slice(0, 8) + ')' : '');
@@ -267,7 +295,11 @@ export function renderWaveHtml(input: WavePageInput): string {
     } else if (m.type === 'command') {
       if (m.action === 'fit') fit(); else if (m.action === 'zoomIn') zoom(2); else if (m.action === 'zoomOut') zoom(0.5);
       else if (m.action === 'pan') pan(m.fraction || 0.25); else if (m.action === 'cursor') setCursor(m.time);
-      else if (m.action === 'radix') { radix = m.radix; document.getElementById('radix').value = radix; draw(); }
+      else if (m.action === 'radix') { rstate = { buses: m.radix, signals: rstate.signals }; document.getElementById('radix').value = m.radix; saveRadix(); draw(); }
+      else if (m.action === 'signalRadix' && data) {
+        const i = data.signals.findIndex((x) => x.path === m.path);
+        if (i >= 0) setSignalRadix(i, m.radix || '');
+      }
     }
   });
   vscode.postMessage({ type: 'ready' });

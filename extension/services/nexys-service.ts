@@ -5,11 +5,13 @@ import {
     type Diagnostic,
     errorDiag,
     type LogRef,
+    normalizeStopTime,
     type Project,
     PROJECT_FILE_NAME,
     type ProgrammingResult,
     type RtlAnalysisResult,
     type SimulationResult,
+    STOP_TIME_UNITS,
     updateProjectFile,
     type VhdlCheckResult,
 } from '../../core';
@@ -39,7 +41,13 @@ import {
     type WorkflowState,
 } from './workflow-state';
 
-export type ChangeKind = 'project' | 'workflow' | 'hardware' | 'environment' | 'results' | 'problems' | 'rtl';
+/** What holds the project's single-flight claim: a workflow action or RTL generation. */
+export type PipelineAction = WorkflowAction | 'rtl';
+
+const ACTION_LABEL: Record<PipelineAction, string> = { check: 'Check', simulate: 'Simulation', build: 'Build', program: 'Programming', rtl: 'RTL schematic generation' };
+
+/** `busy`: the project's single-flight claim changed (UIs disable or mark the other actions). */
+export type ChangeKind = 'project' | 'workflow' | 'hardware' | 'environment' | 'results' | 'problems' | 'rtl' | 'busy';
 
 /**
  * RTL schematic state. Generated lazily (only when the student opens the
@@ -141,6 +149,8 @@ export class NexysVhdlService {
     private chain: Promise<void> = Promise.resolve();
     private abort: AbortController | undefined;
     private autoCheckQueued = false;
+    /** Single-flight claim: set synchronously, so two simultaneous requests can never both start. */
+    private claimed: PipelineAction | undefined;
     private runningCheck: { auto: boolean; promise: Promise<VhdlCheckResult> } | undefined;
 
     constructor(options: ServiceOptions) {
@@ -160,6 +170,15 @@ export class NexysVhdlService {
 
     get busy(): WorkflowAction | undefined {
         return this.workflow.running;
+    }
+
+    /**
+     * The operation that currently owns the project, including the moments
+     * before it shows as running (and RTL generation). UIs use this to
+     * disable or mark the other actions.
+     */
+    get busyAction(): PipelineAction | undefined {
+        return this.claimed ?? this.workflow.running;
     }
 
     private emit(...kinds: ChangeKind[]): void {
@@ -249,8 +268,8 @@ export class NexysVhdlService {
 
     private autoCheck(): void {
         if (!this.project) return;
-        if (this.busy) {
-            this.autoCheckQueued = this.busy === 'check';
+        if (this.busyAction) {
+            this.autoCheckQueued = this.busyAction === 'check';
             return;
         }
         void this.check({ auto: true }).catch(() => undefined);
@@ -374,6 +393,24 @@ export class NexysVhdlService {
         await this.refreshNow();
     }
 
+    /**
+     * Sets (or, with undefined, clears) the finite simulation length passed to
+     * GHDL as `--stop-time`. Clearing restores the default: run until the
+     * testbench ends itself. Returns the normalized value written.
+     */
+    async setStopTime(value: string | undefined): Promise<string | undefined> {
+        const snap = this.requireProject();
+        const stopTime = value === undefined ? undefined : normalizeStopTime(value);
+        if (value !== undefined && stopTime === undefined) {
+            throw new NexysError(`"${value}" is not a valid stop time. Use a whole number and a unit, for example 1us (units: ${STOP_TIME_UNITS.join(', ')}).`);
+        }
+        const { stopTime: _old, ...rest } = snap.project.config.simulation ?? { sources: [] };
+        await updateProjectFile(snap.file, { simulation: { ...rest, sources: rest.sources ?? [], ...(stopTime ? { stopTime } : {}) } });
+        this.log.info(stopTime ? `Simulation stop time set to ${stopTime}.` : 'Simulation stop time cleared: the testbench runs until it stops itself.');
+        await this.refreshNow();
+        return stopTime;
+    }
+
     /** Uses an XDC file for constraints. `replacePins` must be true to drop an existing pin mapping. */
     async useConstraints(path: string, replacePins = false): Promise<void> {
         const snap = this.requireProject();
@@ -382,6 +419,36 @@ export class NexysVhdlService {
         this.log.info(`Constraints file set to ${path}.`);
         this.lastBuild = undefined;
         await this.refreshNow();
+    }
+
+    /**
+     * Brings the project in step with a file the Add File workflow just put in
+     * `src/`, `sim/` or `constraints/`. Source lists in nexysvhdl.json follow
+     * the folder contract through the normal refresh. A first testbench becomes
+     * the selected one. An XDC becomes active only if the project had none; with
+     * an active XDC (or `pins`) the answer is `ask`: the caller asks the
+     * student and then calls useConstraints().
+     */
+    async fileAdded(kind: 'source' | 'simulation' | 'constraints', path: string): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; testbench?: string }> {
+        await this.refreshNow();
+        const snap = this.requireProject();
+        const config = snap.project.config;
+        if (kind === 'simulation' && !config.simulation?.testbench) {
+            const entity = snap.index.entitiesInFile(path).find((e) => e.ports.length === 0);
+            if (entity) {
+                await this.setTestbench(entity.name);
+                return { testbench: entity.name };
+            }
+        }
+        if (kind === 'constraints') {
+            if (config.constraints === path) return { constraints: 'already-active' };
+            if (config.constraints === undefined && !config.pins) {
+                await this.useConstraints(path);
+                return { constraints: 'activated' };
+            }
+            return { constraints: 'ask' };
+        }
+        return {};
     }
 
     /** Testbench candidates: simulation entities without ports. */
@@ -404,9 +471,49 @@ export class NexysVhdlService {
         if (this.runningCheck?.auto) await this.runningCheck.promise.catch(() => undefined);
     }
 
-    private async begin(action: WorkflowAction): Promise<{ project: Project; signal: AbortSignal }> {
+    /**
+     * Takes the project's claim or throws the friendly "already running"
+     * message. Nothing awaits between the test and the set, so of several
+     * simultaneous requests exactly one wins. (The core's own guard stops
+     * duplicates that bypass this service.)
+     */
+    /**
+     * Throws the friendly "already running" message if another operation owns
+     * the project. Commands call this before opening progress UI so a
+     * duplicate click does not even flash a progress notification.
+     */
+    ensureFree(action: PipelineAction): void {
+        const holder = this.busyAction;
+        if (holder && !(holder === 'check' && action === 'check')) {
+            throw new NexysError(holder === action ? `${ACTION_LABEL[action]} is already running.` : `${ACTION_LABEL[holder]} is still running.`);
+        }
+    }
+
+    private async acquire(action: PipelineAction): Promise<void> {
         if (action !== 'check') await this.settleAutoCheck();
-        if (this.busy) throw new NexysError(`${this.busy[0]!.toUpperCase()}${this.busy.slice(1)} is still running.`);
+        this.ensureFree(action);
+        this.claimed = action;
+        this.emit('busy');
+    }
+
+    private release(action: PipelineAction): void {
+        if (this.claimed === action) {
+            this.claimed = undefined;
+            this.emit('busy');
+        }
+    }
+
+    /** Runs `fn` while holding the claim; released on success, failure, cancellation and exceptions. */
+    private async exclusive<T>(action: PipelineAction, fn: () => Promise<T>): Promise<T> {
+        await this.acquire(action);
+        try {
+            return await fn();
+        } finally {
+            this.release(action);
+        }
+    }
+
+    private async begin(action: WorkflowAction): Promise<{ project: Project; signal: AbortSignal }> {
         await this.whenIdle();
         await this.refreshNow();
         const snap = this.requireProject();
@@ -439,7 +546,8 @@ export class NexysVhdlService {
         for (const l of logs) this.log.info(`  log ${l.label}: ${l.path}`);
     }
 
-    private async run<T>(action: WorkflowAction, op: (project: Project, signal: AbortSignal) => Promise<T>): Promise<T> {
+    /** Runs `op` for an action the caller already claimed with exclusive(). */
+    private async runClaimed<T>(action: WorkflowAction, op: (project: Project, signal: AbortSignal) => Promise<T>): Promise<T> {
         const { project, signal } = await this.begin(action);
         try {
             return await op(project, signal);
@@ -468,57 +576,64 @@ export class NexysVhdlService {
     }
 
     private async runCheck(): Promise<VhdlCheckResult> {
-        const result = await this.run('check', (p, s) => this.backend.check(p, s));
-        if (this.end()) {
-            this.setWorkflow(actionCancelled(this.workflow, 'check'));
-            return result;
-        }
-        this.lastCheck = result;
-        this.problems.set('vhdl', result.diagnostics);
-        this.setWorkflow(checkFinished(this.workflow, result));
-        this.logResult(`Check ${result.status}`, result.diagnostics, result.logs, result.durationMs);
-        this.emit('results', 'problems');
-        if (this.autoCheckQueued) {
+        const result = await this.exclusive('check', async () => {
+            const r = await this.runClaimed('check', (p, s) => this.backend.check(p, s));
+            if (this.end()) {
+                this.setWorkflow(actionCancelled(this.workflow, 'check'));
+                return { result: r, cancelled: true };
+            }
+            this.lastCheck = r;
+            this.problems.set('vhdl', r.diagnostics);
+            this.setWorkflow(checkFinished(this.workflow, r));
+            this.logResult(`Check ${r.status}`, r.diagnostics, r.logs, r.durationMs);
+            this.emit('results', 'problems');
+            return { result: r, cancelled: false };
+        });
+        if (!result.cancelled && this.autoCheckQueued) {
             this.autoCheckQueued = false;
             this.autoCheck();
         }
-        return result;
+        return result.result;
     }
 
     async simulate(testbench?: string): Promise<SimulateOutcome> {
         const snap = this.requireProject();
         const tb = testbench ?? snap.project.config.simulation?.testbench;
         if (!tb) return { kind: 'needs-testbench', candidates: this.testbenchCandidates() };
-        const result = await this.run('simulate', (p, s) => this.backend.simulate(p, tb, s));
-        if (this.end()) {
-            this.setWorkflow(actionCancelled(this.workflow, 'simulate'));
-            return { kind: 'done', result };
-        }
-        this.lastSimulation = result;
-        this.simulationRun++;
-        this.lastSimulationAt = new Date();
-        this.problems.set('vhdl', result.diagnostics);
-        this.setWorkflow(simulateFinished(this.workflow, result));
-        this.logResult(`Simulation ${result.testbench}: ${result.status === 'succeeded' ? (result.passed ? 'PASSED' : 'FAILED') : result.status}`, result.diagnostics, result.logs, result.durationMs);
-        for (const m of result.messages) this.log.info(`  ${m}`);
-        this.emit('results', 'problems');
-        return { kind: 'done', result };
+        return this.exclusive('simulate', async () => {
+            const result = await this.runClaimed('simulate', (p, s) => this.backend.simulate(p, tb, s));
+            if (this.end()) {
+                this.setWorkflow(actionCancelled(this.workflow, 'simulate'));
+                return { kind: 'done' as const, result };
+            }
+            this.lastSimulation = result;
+            this.simulationRun++;
+            this.lastSimulationAt = new Date();
+            this.problems.set('vhdl', result.diagnostics);
+            this.setWorkflow(simulateFinished(this.workflow, result));
+            this.logResult(`Simulation ${result.testbench}: ${result.status === 'succeeded' ? (result.passed ? 'PASSED' : 'FAILED') : result.status}`, result.diagnostics, result.logs, result.durationMs);
+            for (const m of result.messages) this.log.info(`  ${m}`);
+            this.emit('results', 'problems');
+            return { kind: 'done' as const, result };
+        });
     }
 
-    async build(): Promise<BuildResult> {
-        const result = await this.run('build', (p, s) => this.backend.build(p, (progress) => this.setWorkflow(buildProgressed(this.workflow, progress)), s));
-        if (this.end()) {
-            this.setWorkflow(actionCancelled(this.workflow, 'build'));
+    build(): Promise<BuildResult> {
+        return this.exclusive('build', async () => {
+            const result = await this.runClaimed('build', (p, s) => this.backend.build(p, (progress) => this.setWorkflow(buildProgressed(this.workflow, progress)), s));
+            if (this.end()) {
+                this.setWorkflow(actionCancelled(this.workflow, 'build'));
+                return result;
+            }
+            this.lastBuild = result;
+            this.problems.set('vhdl', result.diagnostics.filter((d) => d.source === 'vhdl'));
+            this.problems.set('build', result.diagnostics.filter((d) => d.source !== 'vhdl' && d.source !== 'project'));
+            this.setWorkflow(buildFinished(this.workflow, result));
+            this.log.info(`  steps: ${result.steps.map((st) => `${st.step}=${st.status}`).join(', ')}`);
+            this.logResult(`Build ${result.success ? 'SUCCEEDED' : 'FAILED'}`, result.diagnostics, result.logs, result.durationMs);
+            this.emit('results', 'problems');
             return result;
-        }
-        this.lastBuild = result;
-        this.problems.set('vhdl', result.diagnostics.filter((d) => d.source === 'vhdl'));
-        this.problems.set('build', result.diagnostics.filter((d) => d.source !== 'vhdl' && d.source !== 'project'));
-        this.setWorkflow(buildFinished(this.workflow, result));
-        this.log.info(`  steps: ${result.steps.map((st) => `${st.step}=${st.status}`).join(', ')}`);
-        this.logResult(`Build ${result.success ? 'SUCCEEDED' : 'FAILED'}`, result.diagnostics, result.logs, result.durationMs);
-        this.emit('results', 'problems');
-        return result;
+        });
     }
 
     /** Newest modification time among the files that determine the bitstream. */
@@ -540,11 +655,13 @@ export class NexysVhdlService {
      * shared ProgrammingService. Asks (via the outcome) instead of guessing
      * when the bitstream is older than the sources or several boards are connected.
      */
-    async program(options: { serial?: string; allowStale?: boolean } = {}): Promise<ProgramOutcome> {
+    program(options: { serial?: string; allowStale?: boolean } = {}): Promise<ProgramOutcome> {
+        return this.exclusive('program', () => this.runProgram(options));
+    }
+
+    private async runProgram(options: { serial?: string; allowStale?: boolean }): Promise<ProgramOutcome> {
         const snap = this.requireProject();
         const project = snap.project;
-        await this.settleAutoCheck();
-        if (this.busy) throw new NexysError(`${this.busy[0]!.toUpperCase()}${this.busy.slice(1)} is still running.`);
         if (this.lastBuild && !this.lastBuild.success) {
             const message = 'The last build failed. Fix the problems and run Build again before programming.';
             this.setWorkflow(programBlocked(this.workflow, 'Last build failed'));
@@ -568,7 +685,7 @@ export class NexysVhdlService {
             // 'single' and 'none': the shared service selects the only board or reports none.
         }
 
-        const result = await this.run('program', (p, s) => this.backend.program(p, serial, s));
+        const result = await this.runClaimed('program', (p, s) => this.backend.program(p, serial, s));
         if (this.end()) {
             this.setWorkflow(actionCancelled(this.workflow, 'program'));
             return { kind: 'done', result };
@@ -599,8 +716,11 @@ export class NexysVhdlService {
         return run;
     }
 
-    private async runRtl(): Promise<RtlState> {
-        await this.settleAutoCheck();
+    private runRtl(): Promise<RtlState> {
+        return this.exclusive('rtl', () => this.runRtlClaimed());
+    }
+
+    private async runRtlClaimed(): Promise<RtlState> {
         await this.whenIdle();
         const snap = this.requireProject();
         if (this.workflow.check.state !== 'passed') {

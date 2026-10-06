@@ -58,6 +58,8 @@ export interface ImplementationRequest {
     readonly verilog: BuildArtifact;
     /** Constraints: generated from board data + pin mapping, or the project's own XDC (normalized). */
     readonly xdc: string;
+    /** Top module exactly as it is spelled in `verilog` (Verilog names are case-sensitive). Default: the project's top, lower-cased. */
+    readonly topModule?: string;
     readonly signal?: AbortSignal;
     /** Called when the backend starts a stage (progress display only). */
     readonly onStage?: (stage: ImplementationStage) => void;

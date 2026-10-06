@@ -55,6 +55,10 @@ export class ProjectView extends ServiceTree {
             const tb = info('Testbench', c.simulation.testbench, 'beaker');
             tb.command = { title: 'Set Testbench', command: 'nexysvhdl.setTestbench' };
             nodes.push(tb);
+            const stop = info('Simulation length', c.simulation.stopTime ? `stops at ${c.simulation.stopTime}` : 'until the testbench stops', 'watch');
+            stop.tooltip = 'How long Simulate runs. By default the testbench decides (it ends with std.env.stop). Click to set a fixed stop time such as 1us.';
+            stop.command = { title: 'Set Simulation Stop Time', command: 'nexysvhdl.setSimulationStopTime' };
+            nodes.push(stop);
         }
 
         const env = this.service.environment;

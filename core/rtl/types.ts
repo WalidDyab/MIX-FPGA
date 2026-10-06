@@ -8,6 +8,7 @@ export interface RtlRequest {
     readonly workspace: BuildWorkspace;
     /** GHDL netlist (Verilog) of the design, inside `workspace.paths.rtl`. */
     readonly verilog: BuildArtifact;
+    /** Top module exactly as it is spelled in `verilog` (Verilog names are case-sensitive). */
     readonly top: string;
     readonly signal?: AbortSignal;
 }

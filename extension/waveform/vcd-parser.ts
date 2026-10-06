@@ -53,6 +53,14 @@ export interface VcdModel {
     readonly root: VcdScope;
     readonly signals: readonly VcdSignal[];
     readonly traces: ReadonlyMap<string, VcdTrace>;
+    /**
+     * For the traces that have any VHDL metavalue other than x and z: the same
+     * changes (index for index with `values`) with the metavalues kept apart
+     * (`u x 0 1 z w l h -`, lower case, MSB first). `values` is the drawing
+     * form (L is 0, H is 1, U/W/- are x); this is what a number display must
+     * check so that it never turns a metavalue into a digit.
+     */
+    readonly raw: ReadonlyMap<string, readonly string[]>;
     /** Last time stamp in the file (timescale units). */
     readonly endTime: number;
     /** Problems that did not stop parsing (e.g. a change for an undeclared code). */
@@ -89,6 +97,20 @@ function scalarValue(c: string): string {
     }
 }
 
+/** A scalar as the dump wrote it, lower case, restricted to the VHDL std_logic alphabet. */
+function scalarRaw(c: string): string {
+    const l = c.toLowerCase();
+    return 'uxzwlh01-'.includes(l) ? l : 'x';
+}
+
+/** Like extendVector but keeps the VHDL metavalues (`u w l h -`) instead of folding them into 0/1/x. */
+export function extendVectorRaw(bits: string, width: number): string {
+    const b = [...bits].map(scalarRaw).join('');
+    if (b.length >= width) return b.slice(b.length - width);
+    const fill = b[0] === 'x' || b[0] === 'z' ? b[0] : '0';
+    return fill.repeat(width - b.length) + b;
+}
+
 /** A vector value at full width: VCD left-extends with 0, or with x/z when the leftmost bit is x/z. */
 export function extendVector(bits: string, width: number): string {
     const b = [...bits.toLowerCase()].map((c) => (c === '0' || c === '1' || c === 'x' || c === 'z' ? c : scalarValue(c))).join('');
@@ -102,6 +124,7 @@ export function parseVcd(text: string): VcdModel {
     const stack: VcdScope[] = [root];
     const signals: VcdSignal[] = [];
     const traces = new Map<string, VcdTrace>();
+    const raws = new Map<string, string[]>();
     const warnings: string[] = [];
     let timescale = { fs: 1, text: '1 fs' };
     let date: string | undefined;
@@ -119,25 +142,29 @@ export function parseVcd(text: string): VcdModel {
         }
         throw new Error('unterminated $ section');
     };
-    const change = (code: string, value: string) => {
+    const change = (code: string, value: string, raw: string = value) => {
         const tr = traces.get(code);
         if (!tr) {
             if (warnings.length < 20) warnings.push(`value change for undeclared identifier "${code}" at ${time}`);
             return;
         }
         const last = tr.values.length - 1;
+        const rw = raws.get(code)!;
         if (last >= 0 && tr.times[last] === time) {
             // Several changes at one time: the last one wins; drop it if it now repeats the previous value.
             tr.values[last] = value;
-            if (last > 0 && tr.values[last - 1] === value) {
+            rw[last] = raw;
+            if (last > 0 && tr.values[last - 1] === value && rw[last - 1] === raw) {
                 tr.values.pop();
+                rw.pop();
                 tr.times.pop();
             }
             return;
         }
-        if (last >= 0 && tr.values[last] === value) return; // redundant transition
+        if (last >= 0 && tr.values[last] === value && rw[last] === raw) return; // redundant transition
         tr.times.push(time);
         tr.values.push(value);
+        rw.push(raw);
     };
 
     for (let t = it.next(); !t.done; t = it.next()) {
@@ -185,7 +212,10 @@ export function parseVcd(text: string): VcdModel {
                     };
                     stack[stack.length - 1]!.signals.push(signal);
                     signals.push(signal);
-                    if (!traces.has(code)) traces.set(code, { width, times: [], values: [] });
+                    if (!traces.has(code)) {
+                        traces.set(code, { width, times: [], values: [] });
+                        raws.set(code, []);
+                    }
                     break;
                 }
                 case '$enddefinitions':
@@ -215,18 +245,25 @@ export function parseVcd(text: string): VcdModel {
             const code = it.next().value;
             if (code === undefined) throw new Error('vector change without identifier');
             const tr = traces.get(code);
-            change(code, extendVector(tok.slice(1), tr?.width ?? tok.length - 1));
+            const width = tr?.width ?? tok.length - 1;
+            const value = extendVector(tok.slice(1), width);
+            const raw = extendVectorRaw(tok.slice(1), width);
+            change(code, value, raw === value ? value : raw);
         } else if (c === 'r' || c === 'R') {
             const code = it.next().value;
             if (code === undefined) throw new Error('real change without identifier');
             change(code, tok.slice(1));
         } else if (/[01xXzZuUwWlLhH-]/.test(c)) {
-            change(tok.slice(1), scalarValue(c));
+            const value = scalarValue(c);
+            const raw = scalarRaw(c);
+            change(tok.slice(1), value, raw === value ? value : raw);
         } else {
             if (warnings.length < 20) warnings.push(`unrecognised token "${tok}" at ${time}`);
         }
     }
-    return { ...(date ? { date } : {}), ...(version ? { version } : {}), timescaleFs: timescale.fs, timescale: timescale.text, root, signals, traces, endTime, warnings };
+    const withMeta = new Map<string, readonly string[]>();
+    for (const [code, rw] of raws) if (rw.some((r, i) => r !== traces.get(code)!.values[i])) withMeta.set(code, rw);
+    return { ...(date ? { date } : {}), ...(version ? { version } : {}), timescaleFs: timescale.fs, timescale: timescale.text, root, signals, traces, raw: withMeta, endTime, warnings };
 }
 
 /** Removes scopes that (recursively) declare no signals, e.g. GHDL's package scopes. */
