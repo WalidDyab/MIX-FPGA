@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { AppearanceManager, KEEP_MINE, type ThemeSettings, USE_CLASSROOM } from './appearance/appearance-manager';
 import { registerCommands } from './commands/commands';
+import { routeUri } from './commands/uri-routes';
 import { ProblemsPublisher } from './diagnostics/vscode-diagnostics';
 import { findProjectRoot } from './project/detect';
 import { RtlPanel } from './rtl/rtl-panel';
@@ -76,6 +77,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         setWorkspaceTheme: (theme) => Promise.resolve(vscode.workspace.getConfiguration('workbench').update('colorTheme', theme, vscode.ConfigurationTarget.Workspace)),
     };
     const appearance = new AppearanceManager(themeSettings, context.workspaceState, context.globalState);
+
+    // The NexysVHDL launcher asks for existing commands through vscode://emxplore.nexysvhdl/<route>.
+    context.subscriptions.push(
+        vscode.window.registerUriHandler({
+            handleUri: (uri) => {
+                const command = routeUri(uri.path);
+                if (command) void vscode.commands.executeCommand(command);
+                else output.appendLine(`Ignored an unknown link: ${uri.path}`);
+            },
+        }),
+    );
 
     registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? '') });
 

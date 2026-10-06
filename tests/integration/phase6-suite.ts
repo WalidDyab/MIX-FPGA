@@ -34,6 +34,8 @@ export async function run(): Promise<void> {
     const ext = vscode.extensions.getExtension<NexysVhdlApi>(EXTENSION_ID)!;
     const out = process.env['NEXYS_EDH_REPORT']!;
     try {
+        step('extensionPath', ext.extensionPath);
+        step('extensionVersion', (ext.packageJSON as { version: string }).version);
         const { service, waveform } = await ext.activate();
         await waitFor('project', () => service.snapshot?.project);
         const s = () => service.snapshot!;

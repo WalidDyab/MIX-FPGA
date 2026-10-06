@@ -18,7 +18,8 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:nexysvhdl.json"
+    "workspaceContains:nexysvhdl.json",
+    "onUri"
   ],
   "contributes": {
     "viewsContainers": {
