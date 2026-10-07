@@ -88,8 +88,10 @@ async function createPhase(): Promise<void> {
         step('createProject.nameValidation', { 'my project': o.validateInput?.('my project') ?? null, EdhDemo: o.validateInput?.('EdhDemo') ?? null });
         return 'EdhDemo';
     });
+    // Two pickers: the board, then the template. Taking the first item of each is "accept the defaults".
+    let picks = 0;
     stub('showQuickPick', async (items: readonly vscode.QuickPickItem[]) => {
-        step('createProject.boards', items.map((i) => i.label));
+        step(picks++ % 2 === 0 ? 'createProject.boards' : 'createProject.templates', items.map((i) => i.label));
         return items[0];
     });
     stub('showInformationMessage', async (message: string) => {
@@ -105,7 +107,17 @@ async function createPhase(): Promise<void> {
     const after = await tree(parent);
     step('createProject.added', after.filter((p) => !before.includes(p)));
     step('createProject.projectTree', await tree(join(parent, 'EdhDemo')));
-    step('createProject.nexysvhdlJson', JSON.parse(await readFile(join(parent, 'EdhDemo', 'nexysvhdl.json'), 'utf8')));
+    const created = JSON.parse(await readFile(join(parent, 'EdhDemo', 'nexysvhdl.json'), 'utf8')) as { top: string; sources: string[]; simulation?: { sources: string[] } };
+    step('createProject.nexysvhdlJson', created);
+    // A normal new project is the Empty project (the first, recommended template): empty src/ and sim/, no starter files.
+    const templates = report['createProject.templates'] as string[];
+    const projectTree = await tree(join(parent, 'EdhDemo'));
+    step('createProject.emptyByDefault', {
+        firstTemplateIsEmpty: /^\$\(file-directory\) Empty project \(recommended\)$/.test(templates[0] ?? ''),
+        starterStillOffered: templates.some((t) => /Starter project/.test(t)),
+        noSourceFiles: !projectTree.some((p) => /^(src|sim)\/.+/.test(p)),
+        noTopOrLists: created.top === '' && created.sources.length === 0 && (created.simulation?.sources.length ?? 0) === 0,
+    });
     // Second attempt with the same name must be refused without touching the folder.
     await vscode.commands.executeCommand('nexysvhdl.createProject');
     step('createProject.duplicateError', errors);
