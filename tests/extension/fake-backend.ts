@@ -53,8 +53,19 @@ export class FakeBackend implements NexysBackend {
         await this.gate;
         return this.checkResult;
     }
-    async simulate(_project: Project, testbench: string | undefined): Promise<SimulationResult> {
+    /** When set, simulate() runs "forever" until the AbortSignal fires, then returns what the real provider returns for Stop. */
+    simulateUntilAborted: { vcdPath?: string } | undefined;
+    async simulate(_project: Project, testbench: string | undefined, signal?: AbortSignal): Promise<SimulationResult> {
         this.calls.push(`simulate:${testbench}`);
+        if (this.simulateUntilAborted) {
+            await new Promise<void>((resolve) => (signal?.aborted ? resolve() : signal?.addEventListener('abort', () => resolve(), { once: true })));
+            const vcd = this.simulateUntilAborted.vcdPath;
+            return {
+                status: 'failed', passed: false, cancelled: true, testbench: testbench ?? '', messages: [], logs: [], durationMs: 5,
+                diagnostics: [{ severity: 'info', source: 'vhdl', code: 'SIM_STOPPED_BY_USER', message: 'Simulation stopped by user.' }],
+                ...(vcd ? { vcd: { kind: 'waveform' as const, path: vcd, canonical: false } } : {}),
+            };
+        }
         await this.gate;
         return { ...this.simResult, testbench: testbench ?? '' };
     }

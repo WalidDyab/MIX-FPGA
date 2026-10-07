@@ -48,14 +48,18 @@ export class DesignView extends ServiceTree {
         this.refresh();
     }
 
-    protected roots(): Node[] {
-        if (!this.service.snapshot) return [];
-        if (this.current === 'hierarchy') return this.hierarchy.getChildren();
+    /** The one primary file action, shown first in both modes. It runs the same command: Add File. */
+    private addFileNode(): Node {
         const add = info('+ Add File', 'source · testbench · constraint', 'add');
         add.id = 'design:add-file';
-        add.tooltip = 'Create a new VHDL source, testbench or XDC constraints file, or copy one into the project.';
+        add.tooltip = 'Create a new VHDL source, testbench or XDC constraints file, or copy files into the project.';
         add.command = { title: 'Add File', command: 'nexysvhdl.addFile' };
-        return [add, ...this.files.getChildren()];
+        return add;
+    }
+
+    protected roots(): Node[] {
+        if (!this.service.snapshot) return [];
+        return [this.addFileNode(), ...(this.current === 'hierarchy' ? this.hierarchy : this.files).getChildren()];
     }
 
     override dispose(): void {

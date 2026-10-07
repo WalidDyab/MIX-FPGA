@@ -109,6 +109,16 @@
         "icon": "$(add)"
       },
       {
+        "command": "nexysvhdl.removeFromProject",
+        "title": "Remove from Project",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.restoreToProject",
+        "title": "Add Back to Project",
+        "category": "NexysVHDL"
+      },
+      {
         "command": "nexysvhdl.design.showFiles",
         "title": "Design: Show Files",
         "category": "NexysVHDL",
@@ -173,6 +183,18 @@
         "title": "Simulate",
         "category": "NexysVHDL",
         "icon": "$(play)"
+      },
+      {
+        "command": "nexysvhdl.runSimulation",
+        "title": "Run Simulation",
+        "category": "NexysVHDL",
+        "icon": "$(play)"
+      },
+      {
+        "command": "nexysvhdl.stopSimulation",
+        "title": "Stop Simulation",
+        "category": "NexysVHDL",
+        "icon": "$(debug-stop)"
       },
       {
         "command": "nexysvhdl.build",
@@ -376,6 +398,22 @@
         {
           "command": "nexysvhdl.useMyAppearance",
           "when": "nexysvhdl.hasProject"
+        },
+        {
+          "command": "nexysvhdl.removeFromProject",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.restoreToProject",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.runSimulation",
+          "when": "false"
+        },
+        {
+          "command": "nexysvhdl.stopSimulation",
+          "when": "nexysvhdl.hasProject && nexysvhdl.busy"
         }
       ],
       "view/title": [
@@ -510,6 +548,16 @@
           "command": "nexysvhdl.addFile",
           "when": "view == nexysvhdl.design && viewItem == nexysvhdl.group",
           "group": "nexysvhdl@0"
+        },
+        {
+          "command": "nexysvhdl.removeFromProject",
+          "when": "view == nexysvhdl.design && viewItem =~ /^nexysvhdl\\.(source|simulation|constraints)$/",
+          "group": "nexysvhdl@8"
+        },
+        {
+          "command": "nexysvhdl.restoreToProject",
+          "when": "view == nexysvhdl.design && viewItem == nexysvhdl.removed",
+          "group": "nexysvhdl@1"
         }
       ]
     },

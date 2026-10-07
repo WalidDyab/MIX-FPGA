@@ -29,6 +29,8 @@ export interface SimulationResult extends OperationResult {
     readonly testbench: string;
     /** True only if the simulation ran to completion without assertion errors. */
     readonly passed: boolean;
+    /** The student stopped the run (Stop): not a failure, and `vcd` holds whatever was recorded until then. */
+    readonly cancelled?: boolean;
     /** Simulation time at which it stopped, as reported (e.g. `280ns`). */
     readonly stoppedAt?: string;
     readonly waveform?: BuildArtifact;

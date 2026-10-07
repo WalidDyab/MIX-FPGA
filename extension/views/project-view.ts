@@ -37,7 +37,10 @@ export class ProjectView extends ServiceTree {
         const top = info('Top', c.top, 'symbol-class');
         top.tooltip = 'Top-level entity for synthesis. Click to change.';
         top.command = { title: 'Set Top Entity', command: 'nexysvhdl.setTopEntity' };
-        if (!snap.index.entity(c.top)) {
+        if (typeof c.top !== 'string' || c.top.trim() === '') {
+            top.description = 'not set: click to choose';
+            top.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'));
+        } else if (!snap.index.entity(c.top)) {
             top.description = `${c.top} (not found)`;
             top.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'));
         }

@@ -7,6 +7,8 @@
 - **Simulation length:** optional `simulation.stopTime` (GHDL `--stop-time`), set from the Project view; a testbench that never ends now gets an explanation instead of a bare time-out. Projects without it behave exactly as before.
 - **Design view:** Project Files and Design Hierarchy are one view with Files and Hierarchy modes, and a **+ Add File** workflow (source, simulation testbench, constraint; create new or copy from the computer).
 - **Waveform:** per-signal Display As (Binary, Hex, Unsigned Decimal, Signed Decimal), remembered per workspace.
+- **Remove from Project** (right-click in Design → Files): the file stays on disk; a removed top entity, testbench or active XDC is cleared explicitly. **Add File → Copy From Computer** takes several files at once (one refresh). **New Project** offers an Empty project (empty src/ and sim/) besides the Starter. Clicking a file reuses its open editor. The waveform signal list has draggable splitters (remembered per workspace).
+- **Simulation workspace:** Simulate opens the one waveform viewer at once. The viewer has Run, Stop and Run for (a duration, stored as simulation.stopTime); each Run starts the testbench again at time 0. Stop ends GHDL and keeps the partial waveform. Design → Hierarchy has + Add File too.
 - **Optional appearance:** NexysVHDL Classroom color theme, applied to the project folder only.
 
 ## 0.5.0 — Classroom Preview (requires NexysVHDL toolchain 1.0)

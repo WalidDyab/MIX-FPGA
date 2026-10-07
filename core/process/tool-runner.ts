@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { StringDecoder } from 'node:string_decoder';
+import { terminateProcessTree } from '../host';
 
 /**
  * One external tool invocation. Arguments are passed as an array and never
@@ -99,7 +100,7 @@ export class NodeToolRunner implements ToolRunner {
 
             const onAbort = () => {
                 outcome = 'cancelled';
-                child.kill();
+                terminateProcessTree(child);
             };
             invocation.signal?.addEventListener('abort', onAbort, { once: true });
 
@@ -108,7 +109,7 @@ export class NodeToolRunner implements ToolRunner {
                     ? undefined
                     : setTimeout(() => {
                           outcome = 'timed-out';
-                          child.kill();
+                          terminateProcessTree(child);
                       }, invocation.timeoutMs);
 
             const collect = (into: Buffer[]) => {

@@ -75,6 +75,20 @@ export interface ProjectSnapshot {
     readonly hierarchy: HierarchyModel;
     /** Display name of the project's board, when supported. */
     readonly boardName?: string;
+    /** Files removed from the project that still exist on disk (project-relative), so they can be added back. */
+    readonly excluded: readonly string[];
+}
+
+/** What "Remove from Project" changed beyond the file lists, so the UI can say it explicitly. */
+export interface RemovedFromProject {
+    readonly path: string;
+    readonly kind: 'source' | 'simulation' | 'constraints';
+    /** The file declared the top entity: `top` was cleared. */
+    readonly topEntity?: string;
+    /** The file declared the selected testbench: the selection was cleared. */
+    readonly testbench?: string;
+    /** The file was the active XDC: the project now has no constraints file. */
+    readonly constraints?: boolean;
 }
 
 /** A problem the student must act on; its message is shown as is. */
@@ -149,6 +163,8 @@ export class NexysVhdlService {
     private chain: Promise<void> = Promise.resolve();
     private abort: AbortController | undefined;
     private autoCheckQueued = false;
+    /** Stop was pressed before the tool process existed. */
+    private stopRequested = false;
     /** Single-flight claim: set synchronously, so two simultaneous requests can never both start. */
     private claimed: PipelineAction | undefined;
     private runningCheck: { auto: boolean; promise: Promise<VhdlCheckResult> } | undefined;
@@ -202,6 +218,15 @@ export class NexysVhdlService {
         this.lastCheck = this.lastSimulation = this.lastBuild = this.lastProgram = undefined;
         this.rtl = { status: 'idle' };
         this.problems.clear();
+        // Nothing of the previous project may survive into this one (design identity, results, waveform run, queued checks).
+        this.designSignature = '';
+        this.designRevision++;
+        this.simulationRun = 0; // the waveform panel sees a different run and clears itself
+        this.lastSimulationAt = undefined;
+        this.rtlRunning = undefined;
+        this.runningCheck = undefined;
+        this.autoCheckQueued = false;
+        this.emit('workflow', 'results', 'rtl', 'problems');
         this.log.info(`Opened project folder ${root}`);
         await this.refreshNow();
     }
@@ -302,7 +327,8 @@ export class NexysVhdlService {
         const root = this.root;
         if (!root) return;
         const file = join(root, PROJECT_FILE_NAME);
-        const scanned = await scanProjectFiles(root);
+        const scannedAll = await scanProjectFiles(root);
+        let scanned = scannedAll;
         let loaded = await this.backend.loadProject(root);
         if (!loaded.ok) {
             const loadDiagnostics = loaded.diagnostics.map((d) => (d.location ? d : { ...d, location: { file: PROJECT_FILE_NAME } }));
@@ -310,7 +336,7 @@ export class NexysVhdlService {
             this.snapshot = {
                 root, file, loadDiagnostics, validation: [], scanned,
                 files: buildProjectFilesModel(scanned, { sources: [] }),
-                index, hierarchy: buildHierarchy(index, ''),
+                index, hierarchy: buildHierarchy(index, ''), excluded: [],
             };
             this.problems.set('project', loadDiagnostics);
             this.emit('project', 'problems');
@@ -318,10 +344,14 @@ export class NexysVhdlService {
         }
 
         let project = loaded.project;
+        // Files the student removed from the project stay on disk but are invisible to the design.
+        const excludeSet = new Set((Array.isArray(project.config.exclude) ? project.config.exclude : []).filter((x): x is string => typeof x === 'string'));
+        const keep = (list: readonly string[]) => list.filter((p) => !excludeSet.has(p));
+        scanned = { sources: keep(scannedAll.sources), simulation: keep(scannedAll.simulation), constraints: keep(scannedAll.constraints) };
         const listed = (p: Project) => [
             ...(Array.isArray(p.config.sources) ? p.config.sources : []),
             ...(Array.isArray(p.config.simulation?.sources) ? p.config.simulation!.sources : []),
-        ].filter((x): x is string => typeof x === 'string');
+        ].filter((x): x is string => typeof x === 'string' && !excludeSet.has(x));
         const simListed = new Set(Array.isArray(project.config.simulation?.sources) ? project.config.simulation!.sources : []);
         const roleOf = (p: string): FileRole => (classifyProjectPath(p) === 'simulation' || simListed.has(p) ? 'simulation' : 'source');
 
@@ -335,7 +365,7 @@ export class NexysVhdlService {
         for (const p of paths) parsed.set(p, await this.parseFile(p, roleOf(p)));
 
         // Folder contract -> source lists in nexysvhdl.json (dependency order).
-        const patch = computeSourceSync(project.config, scanned, parsed, outside);
+        const patch = computeSourceSync(project.config, scanned, parsed, outside, excludeSet);
         if (patch) {
             try {
                 await updateProjectFile(project.file, patch);
@@ -368,7 +398,9 @@ export class NexysVhdlService {
             this.designSignature = signature;
             this.designRevision++;
         }
-        this.snapshot = { root, file, project, loadDiagnostics: [], validation, scanned, files, index, hierarchy, ...(boardName ? { boardName } : {}) };
+        const excluded: string[] = [];
+        for (const p of [...excludeSet].sort()) if (await this.exists(p)) excluded.push(p);
+        this.snapshot = { root, file, project, loadDiagnostics: [], validation, scanned, files, index, hierarchy, excluded, ...(boardName ? { boardName } : {}) };
         this.problems.set('project', validation);
         this.emit('project', 'problems');
     }
@@ -429,26 +461,138 @@ export class NexysVhdlService {
      * an active XDC (or `pins`) the answer is `ask`: the caller asks the
      * student and then calls useConstraints().
      */
-    async fileAdded(kind: 'source' | 'simulation' | 'constraints', path: string): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; testbench?: string }> {
+    async fileAdded(kind: 'source' | 'simulation' | 'constraints', path: string): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; testbench?: string; top?: string; topCandidates?: string[] }> {
+        const r = await this.filesAdded(kind, [path]);
+        const { candidates: _c, ...rest } = r;
+        return rest;
+    }
+
+    /**
+     * The batch form of fileAdded: one project update and one refresh for any
+     * number of files, so the hierarchy is recomputed once, after the whole batch.
+     * Files that were removed from the project earlier are added back. A project
+     * without a top entity gets the first entity of the first added source.
+     * Several XDC files never switch the active one silently: `candidates` lists them.
+     */
+    async filesAdded(
+        kind: 'source' | 'simulation' | 'constraints',
+        paths: readonly string[],
+    ): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; candidates?: string[]; testbench?: string; top?: string; topCandidates?: string[] }> {
+        const before = this.requireProject();
+        const excluded = Array.isArray(before.project.config.exclude) ? before.project.config.exclude : [];
+        if (excluded.some((p) => paths.includes(p))) {
+            const left = excluded.filter((p) => !paths.includes(p));
+            await updateProjectFile(before.file, { exclude: left.length > 0 ? left : undefined });
+        }
         await this.refreshNow();
-        const snap = this.requireProject();
+        let snap = this.requireProject();
         const config = snap.project.config;
+        const out: { constraints?: 'activated' | 'already-active' | 'ask'; candidates?: string[]; testbench?: string; top?: string; topCandidates?: string[] } = {};
+        if (kind === 'source' && (typeof config.top !== 'string' || config.top.trim() === '')) {
+            // Only an unambiguous addition sets the top: exactly one entity was added. With several
+            // candidates (several files, or several entities in one file) the student chooses; until
+            // then the project shows the "No top entity is set" warning. Names compare case-insensitively.
+            const candidates = new Map<string, string>();
+            for (const p of paths) for (const e of snap.index.entitiesInFile(p)) if (!candidates.has(e.name.toLowerCase())) candidates.set(e.name.toLowerCase(), e.name);
+            if (candidates.size === 1) {
+                const name = [...candidates.values()][0]!;
+                await updateProjectFile(snap.file, { top: name });
+                this.log.info(`Top entity set to ${name} (the project had none and exactly one entity was added).`);
+                out.top = name;
+                await this.refreshNow();
+                snap = this.requireProject();
+            } else if (candidates.size > 1) {
+                out.topCandidates = [...candidates.values()];
+                this.log.info(`The project has no top entity; ${candidates.size} entities were added (${out.topCandidates.join(', ')}): choose one with Set Top Entity.`);
+            }
+        }
         if (kind === 'simulation' && !config.simulation?.testbench) {
-            const entity = snap.index.entitiesInFile(path).find((e) => e.ports.length === 0);
-            if (entity) {
-                await this.setTestbench(entity.name);
-                return { testbench: entity.name };
+            for (const p of paths) {
+                const entity = snap.index.entitiesInFile(p).find((e) => e.ports.length === 0);
+                if (entity) {
+                    await this.setTestbench(entity.name);
+                    out.testbench = entity.name;
+                    break;
+                }
             }
         }
         if (kind === 'constraints') {
-            if (config.constraints === path) return { constraints: 'already-active' };
-            if (config.constraints === undefined && !config.pins) {
-                await this.useConstraints(path);
-                return { constraints: 'activated' };
+            if (config.constraints !== undefined && paths.includes(config.constraints)) out.constraints = 'already-active';
+            else if (config.constraints === undefined && !config.pins && paths.length === 1) {
+                await this.useConstraints(paths[0]!);
+                out.constraints = 'activated';
+            } else {
+                out.constraints = 'ask';
+                if (paths.length > 1) out.candidates = [...paths];
             }
-            return { constraints: 'ask' };
         }
-        return {};
+        return out;
+    }
+
+    /**
+     * Removes a file from the project without touching the disk: it is listed in
+     * `exclude` (so the folder contract does not add it back) and dropped from the
+     * source lists. Anything that pointed at it is cleared explicitly: the top entity,
+     * the selected testbench, the active XDC; the result says which.
+     */
+    /** What removing `path` would clear besides the file lists (nothing is changed). */
+    removalImpact(path: string): { topEntity?: string; testbench?: string; constraints?: boolean } {
+        const snap = this.requireProject();
+        const kind = classifyProjectPath(path);
+        const c = snap.project.config;
+        const out: { topEntity?: string; testbench?: string; constraints?: boolean } = {};
+        const top = typeof c.top === 'string' ? snap.index.entity(c.top) : undefined;
+        if (kind === 'source' && top && top.file === path) out.topEntity = top.decl.name;
+        const tb = c.simulation?.testbench ? snap.index.entity(c.simulation.testbench) : undefined;
+        if (kind === 'simulation' && tb && tb.file === path) out.testbench = tb.decl.name;
+        if (kind === 'constraints' && c.constraints === path) out.constraints = true;
+        return out;
+    }
+
+    async removeFromProject(path: string): Promise<RemovedFromProject> {
+        const snap = this.requireProject();
+        const kind = classifyProjectPath(path);
+        if (kind !== 'source' && kind !== 'simulation' && kind !== 'constraints') throw new NexysError(`${path} is not a source, testbench or constraints file of the project.`);
+        const c = snap.project.config;
+        const impact = this.removalImpact(path);
+        const topEntity = impact.topEntity ? snap.index.entity(impact.topEntity) : undefined;
+        const tbEntity = impact.testbench ? snap.index.entity(impact.testbench) : undefined;
+        const result: { -readonly [K in keyof RemovedFromProject]: RemovedFromProject[K] } = { path, kind };
+        const patch: Parameters<typeof updateProjectFile>[1] = {
+            exclude: [...new Set([...(Array.isArray(c.exclude) ? c.exclude : []), path])].sort(),
+            sources: (c.sources ?? []).filter((p) => p !== path),
+        };
+        let nextSim = c.simulation ? { ...c.simulation, sources: (c.simulation.sources ?? []).filter((p) => p !== path) } : undefined;
+        if (kind === 'source' && topEntity && topEntity.file === path) {
+            patch.top = '';
+            result.topEntity = topEntity.decl.name;
+        }
+        if (kind === 'simulation' && tbEntity && tbEntity.file === path && nextSim) {
+            const { testbench: _t, ...rest } = nextSim;
+            nextSim = rest;
+            result.testbench = tbEntity.decl.name;
+        }
+        if (nextSim) patch.simulation = nextSim;
+        if (kind === 'constraints' && c.constraints === path) {
+            patch.constraints = undefined;
+            result.constraints = true;
+        }
+        await updateProjectFile(snap.file, patch);
+        this.log.info(`Removed ${path} from the project (the file is still on disk).`);
+        if (result.topEntity || result.constraints) this.lastBuild = undefined;
+        await this.refreshNow();
+        return result;
+    }
+
+    /** Adds a removed file back to the project. */
+    async restoreToProject(path: string): Promise<void> {
+        const snap = this.requireProject();
+        const kind = classifyProjectPath(path);
+        if (kind !== 'source' && kind !== 'simulation' && kind !== 'constraints') throw new NexysError(`${path} is not a source, testbench or constraints file.`);
+        const left = (Array.isArray(snap.project.config.exclude) ? snap.project.config.exclude : []).filter((p) => p !== path);
+        await updateProjectFile(snap.file, { exclude: left.length > 0 ? left : undefined });
+        this.log.info(`Added ${path} back to the project.`);
+        await this.refreshNow();
     }
 
     /** Testbench candidates: simulation entities without ports. */
@@ -499,6 +643,7 @@ export class NexysVhdlService {
     private release(action: PipelineAction): void {
         if (this.claimed === action) {
             this.claimed = undefined;
+            this.stopRequested = false;
             this.emit('busy');
         }
     }
@@ -524,6 +669,8 @@ export class NexysVhdlService {
             errors.forEach((d) => this.log.warn(formatDiag(d)));
         }
         this.abort = new AbortController();
+        if (this.stopRequested) this.abort.abort();
+        this.stopRequested = false;
         this.setWorkflow(actionStarted(this.workflow, action));
         this.log.info(`▶ ${action[0]!.toUpperCase()}${action.slice(1)} — ${snap.project.config.name}`);
         return { project: snap.project, signal: this.abort.signal };
@@ -537,7 +684,20 @@ export class NexysVhdlService {
 
     /** Stops the running action (its tool process is killed through the core's AbortSignal). */
     cancel(): void {
-        this.abort?.abort();
+        if (this.abort) this.abort.abort();
+        else if (this.claimed) this.stopRequested = true; // asked before the tool started: honoured as soon as it does
+    }
+
+    /** True while a simulation owns the project (including its first moments). Stop is only meaningful then. */
+    get simulating(): boolean {
+        return this.busyAction === 'simulate';
+    }
+
+    /** Stops the running simulation. Returns whether there was one. */
+    stopSimulation(): boolean {
+        if (!this.simulating) return false;
+        this.cancel();
+        return true;
     }
 
     private logResult(status: string, diagnostics: readonly Diagnostic[], logs: readonly LogRef[], durationMs: number): void {
@@ -603,8 +763,17 @@ export class NexysVhdlService {
         return this.exclusive('simulate', async () => {
             const result = await this.runClaimed('simulate', (p, s) => this.backend.simulate(p, tb, s));
             if (this.end()) {
-                this.setWorkflow(actionCancelled(this.workflow, 'simulate'));
-                return { kind: 'done' as const, result };
+                // Stopped by the student: not a failure. Whatever waveform was recorded is kept and shown.
+                this.setWorkflow(actionCancelled(this.workflow, 'simulate', 'Stopped by user'));
+                if (result.vcd) {
+                    this.lastSimulation = result;
+                    this.simulationRun++;
+                    this.lastSimulationAt = new Date();
+                }
+                this.problems.set('vhdl', []);
+                this.log.info(`  Simulation ${result.testbench}: stopped by user${result.vcd ? ' (partial waveform kept)' : ''}`);
+                this.emit('results', 'problems');
+                return { kind: 'done' as const, result: { ...result, cancelled: true } };
             }
             this.lastSimulation = result;
             this.simulationRun++;

@@ -12,11 +12,29 @@ export function validateProjectName(name: string): string | undefined {
     return undefined;
 }
 
+/**
+ * What a new project starts with. `starter`: a small working example (design, testbench, pins).
+ * `empty`: only the standard folders (src/, sim/ and constraints/ with a blank pin file)
+ * and the project file; the first source added with "+ Add File" becomes the top entity.
+ */
+export type ProjectTemplate = 'starter' | 'empty';
+
+/** The templates the New Project dialog offers, in order. A normal project starts empty. */
+export const PROJECT_TEMPLATES: ReadonlyArray<{ readonly template: ProjectTemplate; readonly label: string; readonly description: string; readonly recommended: boolean }> = [
+    { template: 'empty', label: 'Empty project (recommended)', description: 'empty src/ and sim/ folders: add your own files with + Add File', recommended: true },
+    { template: 'starter', label: 'Starter project', description: 'a blinking-LED example with its testbench and pin constraints', recommended: false },
+];
+
+/** What the New Project command creates unless asked otherwise. */
+export const DEFAULT_TEMPLATE: ProjectTemplate = 'empty';
+
 export interface CreateProjectRequest {
     /** Existing folder in which the new project folder is created. */
     readonly parentDir: string;
     readonly name: string;
     readonly board: BoardDefinition;
+    /** Default: `starter`. */
+    readonly template?: ProjectTemplate;
 }
 
 export type CreateProjectResult =
@@ -42,13 +60,23 @@ export async function createProject(req: CreateProjectRequest): Promise<CreatePr
     const paths = starterPaths(req.board);
     let files: Record<string, string>;
     try {
-        files = {
-            [PROJECT_FILE_NAME]: formatProjectFile(starterProjectFile(req.name, req.board)),
-            [paths.top]: starterTopVhdl(req.name, req.board),
-            [paths.testbench]: starterTestbenchVhdl(),
-            [paths.constraints]: starterXdc(req.name, req.board),
-            '.gitignore': starterGitignore(),
-        };
+        files =
+            req.template === 'empty'
+                ? {
+                      [PROJECT_FILE_NAME]: formatProjectFile({
+                          name: req.name, board: req.board.id, language: 'vhdl', standard: '2008', top: '', sources: [],
+                          simulation: { sources: [] }, constraints: paths.constraints,
+                      }),
+                      [paths.constraints]: starterXdc(req.name, req.board, { starterPorts: false }),
+                      '.gitignore': starterGitignore(),
+                  }
+                : {
+                      [PROJECT_FILE_NAME]: formatProjectFile(starterProjectFile(req.name, req.board)),
+                      [paths.top]: starterTopVhdl(req.name, req.board),
+                      [paths.testbench]: starterTestbenchVhdl(),
+                      [paths.constraints]: starterXdc(req.name, req.board),
+                      '.gitignore': starterGitignore(),
+                  };
     } catch (err) {
         return { ok: false, code: 'WRITE_FAILED', message: (err as Error).message };
     }

@@ -77,12 +77,13 @@ describe('Design view: Project Files and Design Hierarchy as one view with two m
         t.after(() => view.dispose());
         view.setMode('hierarchy');
         const lines = tree(view);
-        assert.deepEqual(lines.slice(0, 6), ['Top | TOP', '  u_clock : clock_divider', '  U_Counter : counter', '  u_display : display_driver', '    u_mux : display_mux', '    u_decoder : seven_seg_decoder']);
+        assert.equal(lines[0], '+ Add File | source · testbench · constraint');
+        assert.deepEqual(lines.slice(1, 7), ['Top | TOP', '  u_clock : clock_divider', '  U_Counter : counter', '  u_display : display_driver', '    u_mux : display_mux', '    u_decoder : seven_seg_decoder']);
         assert.ok(lines.includes('Not used by top | 1'));
         assert.ok(lines.includes('Testbenches'));
         assert.ok(lines.includes('Design Schematic | structure: instances and port maps'));
         assert.ok(lines.some((l) => l.startsWith('RTL Schematic')));
-        const top = view.getChildren()[0]!;
+        const top = view.getChildren()[1]!;
         assert.equal(top.contextValue, 'nexysvhdl.topEntity', 'context-menu commands (schematic here, go to entity) still apply');
         assert.equal(top.command?.command, 'nexysvhdl.openLocation');
     });

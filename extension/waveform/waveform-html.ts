@@ -86,16 +86,28 @@ export function renderWaveHtml(input: WavePageInput): string {
   body { font-family: var(--vscode-font-family, system-ui, sans-serif); font-size: 12px; color: var(--vscode-foreground, #222); background: var(--vscode-editor-background, #fff); margin: 0; height: 100vh; display: flex; flex-direction: column; }
   header { display: flex; gap: 8px; align-items: center; padding: 6px 10px; flex-wrap: wrap; border-bottom: 1px solid var(--vscode-panel-border, #ccc); }
   header h1 { font-size: 13px; margin: 0 8px 0 0; }
+  #simbar { display: flex; gap: 8px; align-items: center; padding: 6px 10px; flex-wrap: wrap; border-bottom: 1px solid var(--vscode-panel-border, #ccc); background: var(--vscode-editorWidget-background, transparent); }
+  #simbar button { padding: 3px 12px; font-weight: 600; }
+  #run { background: var(--vscode-button-background, #0a6); color: var(--vscode-button-foreground, #fff); }
+  #stop { background: var(--vscode-button-secondaryBackground, #ddd); }
+  #simbar button:disabled { opacity: 0.45; cursor: default; }
+  #simbar input[type=text] { width: 64px; background: var(--vscode-input-background, #fff); color: var(--vscode-input-foreground, #222); border: 1px solid var(--vscode-input-border, #aaa); padding: 2px 4px; font: inherit; text-align: right; }
+  #simbar input.invalid { border-color: var(--vscode-inputValidation-errorBorder, #d02020); }
+  #simstatus { color: var(--vscode-descriptionForeground, #666); }
+  #simhint { color: var(--vscode-descriptionForeground, #666); font-size: 11px; }
   button, select { background: var(--vscode-button-secondaryBackground, #ddd); color: var(--vscode-button-secondaryForeground, #222); border: none; padding: 2px 8px; cursor: pointer; font: inherit; }
   .ident { color: var(--vscode-descriptionForeground, #666); }
   .banner { padding: 6px 10px; background: var(--vscode-inputValidation-warningBackground, #fff4ce); border-bottom: 1px solid var(--vscode-inputValidation-warningBorder, #c90); }
   main { flex: 1; display: flex; min-height: 0; }
-  #tree { width: 210px; overflow: auto; border-right: 1px solid var(--vscode-panel-border, #ccc); padding: 4px 6px; }
+  #tree { width: var(--tree-w, 210px); flex: none; overflow: auto; border-right: 1px solid var(--vscode-panel-border, #ccc); padding: 4px 6px; }
   #tree details { margin-left: 8px; } #tree summary { cursor: pointer; font-weight: 600; }
   #tree label { display: block; margin-left: 14px; white-space: nowrap; cursor: pointer; }
   #wave { flex: 1; display: flex; min-width: 0; overflow-y: auto; }
-  @media (max-width: 700px) { #tree { display: none; } #names { width: 220px !important; } }
-  #names { width: 380px; flex: none; border-right: 1px solid var(--vscode-panel-border, #ccc); }
+  @media (max-width: 700px) { #tree, #split-tree { display: none; } #names { width: 220px !important; } }
+  .splitter { flex: none; width: 5px; cursor: col-resize; background: transparent; border-left: 1px solid var(--vscode-panel-border, #ccc); touch-action: none; }
+  .splitter:hover, .splitter.active, .splitter:focus { background: var(--vscode-sash-hoverBorder, var(--vscode-focusBorder, #0a84ff)); outline: none; }
+  body.resizing { cursor: col-resize; user-select: none; }
+  #names { width: var(--names-w, 380px); flex: none; border-right: 1px solid var(--vscode-panel-border, #ccc); }
   .axis-spacer { height: 26px; border-bottom: 1px solid var(--vscode-panel-border, #ccc); display: flex; align-items: center; padding: 0 6px; color: var(--vscode-descriptionForeground, #666); }
   .row { height: 24px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-bottom: 1px solid var(--vscode-editorWidget-background, #eee); white-space: nowrap; overflow: hidden; }
   .row .nm { overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
@@ -115,11 +127,20 @@ export function renderWaveHtml(input: WavePageInput): string {
   <span>Cursor: <b id="ctime">—</b></span>
   <span class="ident" id="ident"></span>
 </header>
+<div id="simbar" role="toolbar" aria-label="Simulation">
+  <button id="run" title="Run the testbench from time 0 for the chosen duration">&#9654; Run</button>
+  <button id="stop" title="Stop the running simulation" disabled>&#9632; Stop</button>
+  <label title="How long the testbench runs, from time 0. Leave empty to let the testbench decide (it ends with std.env.stop).">Run for: <input id="dur" type="text" inputmode="numeric" placeholder="until it ends" aria-label="Simulation duration"> <select id="durunit" aria-label="Time unit"><option>fs</option><option>ps</option><option>ns</option><option selected>us</option><option>ms</option><option>sec</option></select></label>
+  <span id="simstatus" role="status"></span>
+  <span id="simhint">Each run starts the testbench again at time 0. The testbench itself provides all clocks and stimulus.</span>
+</div>
 <div id="banner" class="banner" hidden></div>
 <main>
   <aside id="tree"></aside>
+  <div id="split-tree" class="splitter" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to resize the signal list (double-click to reset)"></div>
   <section id="wave">
     <div id="names"><div class="axis-spacer">Signal / value at cursor</div><div id="rows"></div></div>
+    <div id="split-names" class="splitter" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to resize the names column (double-click to reset)"></div>
     <div id="cvwrap"><canvas id="cv"></canvas></div>
   </section>
 </main>
@@ -133,6 +154,39 @@ export function renderWaveHtml(input: WavePageInput): string {
   let data = null, visible = [], t0 = 0, t1 = 1, cursor = 0;
   // Display As: the Buses default plus per-signal choices (keyed by signal path), remembered per workspace by the extension.
   let rstate = { buses: 'hex', signals: {} };
+  // Pane widths (px), draggable; clamped to sensible limits and remembered per workspace by the extension.
+  let layout = Object.assign({}, W.DEFAULT_LAYOUT);
+  const mainEl = document.querySelector('main'), treeEl = document.getElementById('tree'), namesEl = document.getElementById('names');
+  function applyLayout() {
+    const mainW = mainEl.clientWidth || window.innerWidth;
+    layout = { treeWidth: W.clampPaneWidth(layout.treeWidth, W.TREE_LIMITS, mainW, 420, W.DEFAULT_LAYOUT.treeWidth), namesWidth: layout.namesWidth };
+    const waveW = Math.max(0, mainW - (treeEl.offsetParent === null ? 0 : layout.treeWidth + 5));
+    layout = { treeWidth: layout.treeWidth, namesWidth: W.clampPaneWidth(layout.namesWidth, W.NAMES_LIMITS, waveW, 240, W.DEFAULT_LAYOUT.namesWidth) };
+    document.body.style.setProperty('--tree-w', layout.treeWidth + 'px');
+    document.body.style.setProperty('--names-w', layout.namesWidth + 'px');
+  }
+  function simReport() { return { running: sim.running, runDisabled: runBtn.disabled, stopDisabled: stopBtn.disabled, typed: durIn.value + durUnit.value, status: simStatus.textContent }; }
+  function saveLayout() { vscode.postMessage({ type: 'layout', layout: layout }); }
+  let frame = 0;
+  function relayout() { applyLayout(); if (!frame) frame = requestAnimationFrame(function () { frame = 0; if (data) draw(); }); }
+  function splitter(id, key, limits) {
+    const el = document.getElementById(id);
+    el.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      const startX = e.clientX, start = layout[key];
+      el.classList.add('active'); document.body.classList.add('resizing');
+      const move = function (ev) { layout = Object.assign({}, layout); layout[key] = start + (ev.clientX - startX); relayout(); };
+      const up = function () { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); el.classList.remove('active'); document.body.classList.remove('resizing'); saveLayout(); };
+      window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+    });
+    el.addEventListener('dblclick', function () { layout = Object.assign({}, layout); layout[key] = W.DEFAULT_LAYOUT[key]; relayout(); saveLayout(); });
+    el.addEventListener('keydown', function (e) {
+      const step = e.shiftKey ? 48 : 16;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); layout = Object.assign({}, layout); layout[key] += e.key === 'ArrowLeft' ? -step : step; relayout(); saveLayout(); }
+    });
+  }
+  splitter('split-tree', 'treeWidth');
+  splitter('split-names', 'namesWidth');
   const RX_LABEL = { bin: 'Binary', hex: 'Hex', udec: 'Unsigned Decimal', sdec: 'Signed Decimal' };
   const cv = document.getElementById('cv'), wrap = document.getElementById('cvwrap');
   const ctx = cv.getContext('2d');
@@ -149,10 +203,10 @@ export function renderWaveHtml(input: WavePageInput): string {
   function saveRadix() { vscode.postMessage({ type: 'radix', state: rstate }); }
 
   function report() {
-    if (!data) return vscode.postMessage({ type: 'state', loaded: false });
+    if (!data) return vscode.postMessage({ type: 'state', loaded: false, sim: simReport() });
     const values = {}, radixes = {};
     for (const i of visible) { values[data.signals[i].path] = valueOf(i, cursor); radixes[data.signals[i].path] = radixOf(data.signals[i]); }
-    vscode.postMessage({ type: 'state', loaded: true, t0, t1, cursor, radix: rstate.buses, visible: visible.map((i) => data.signals[i].path), values, radixes });
+    vscode.postMessage({ type: 'state', loaded: true, sim: simReport(), layout: layout, treeWidthPx: Math.round(treeEl.getBoundingClientRect().width), canvasWidthPx: Math.round(wrap.clientWidth), t0, t1, cursor, radix: rstate.buses, visible: visible.map((i) => data.signals[i].path), values, radixes });
   }
 
   function rows() {
@@ -273,14 +327,40 @@ export function renderWaveHtml(input: WavePageInput): string {
   window.addEventListener('mouseup', (e) => { if (drag && !drag.moved && data) setCursor(timeAt(e.clientX)); drag = undefined; });
   cv.addEventListener('wheel', (e) => { e.preventDefault(); if (e.shiftKey) pan(e.deltaY > 0 ? 0.1 : -0.1); else zoom(e.deltaY < 0 ? 1.25 : 0.8, timeAt(e.clientX)); }, { passive: false });
   window.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') pan(-0.1); else if (e.key === 'ArrowRight') pan(0.1); else if (e.key === '+') zoom(2); else if (e.key === '-') zoom(0.5); });
-  window.addEventListener('resize', draw);
+  window.addEventListener('resize', relayout);
+
+  // ---- simulation toolbar: Run / Stop / Run for. The extension owns the simulation; this only asks it and shows its state.
+  let sim = { running: false, other: '', duration: '', status: '' };
+  let durDirty = false;
+  const runBtn = document.getElementById('run'), stopBtn = document.getElementById('stop'), durIn = document.getElementById('dur'), durUnit = document.getElementById('durunit'), simStatus = document.getElementById('simstatus');
+  const typedDuration = () => W.joinDuration(durIn.value, durUnit.value);
+  function renderSim() {
+    if (!durDirty) { const d = W.splitDuration(sim.duration); durIn.value = d.number; durUnit.value = d.unit; }
+    const valid = typedDuration() !== undefined;
+    durIn.classList.toggle('invalid', !valid);
+    durIn.disabled = durUnit.disabled = sim.running;
+    runBtn.disabled = sim.running || !!sim.other || !valid;
+    stopBtn.disabled = !sim.running;
+    runBtn.title = sim.running ? 'A simulation is running' : sim.other ? sim.other + ' is running' : !valid ? 'Enter a whole number above zero, or leave the duration empty' : 'Run the testbench from time 0 for the chosen duration';
+    simStatus.textContent = sim.status || '';
+  }
+  function doRun() { if (runBtn.disabled) return; const d = typedDuration(); durDirty = false; vscode.postMessage({ type: 'run', duration: d }); }
+  runBtn.onclick = doRun;
+  stopBtn.onclick = () => { if (!stopBtn.disabled) vscode.postMessage({ type: 'stop' }); };
+  durIn.addEventListener('input', () => { durDirty = true; renderSim(); report(); });
+  durUnit.addEventListener('change', () => { durDirty = true; renderSim(); report(); });
+  durIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') doRun(); });
 
   window.addEventListener('message', (ev) => {
     const m = ev.data;
     if (!m) return;
     const banner = document.getElementById('banner');
     if (m.type === 'load') {
-      data = m.data; visible = data.initial.slice(); cursor = 0;
+      const keep = data ? visible.map((i) => data.signals[i].path) : [];
+      data = m.data; cursor = 0;
+      const again = keep.map((p) => data.signals.findIndex((x) => x.path === p)).filter((i) => i >= 0);
+      visible = again.length > 0 ? again : data.initial.slice(); // a rerun keeps the signals the student chose
+      if (m.layout) { layout = W.sanitizeLayout(m.layout); applyLayout(); }
       if (m.radix) { rstate = W.sanitizeRadixState(m.radix); document.getElementById('radix').value = rstate.buses; }
       banner.hidden = !m.warning; banner.textContent = m.warning || '';
       const id = m.identity;
@@ -290,18 +370,27 @@ export function renderWaveHtml(input: WavePageInput): string {
       data = null; banner.hidden = false; banner.textContent = m.message;
       document.getElementById('rows').innerHTML = ''; document.getElementById('tree').innerHTML = ''; document.getElementById('ident').textContent = '';
       ctx.clearRect(0, 0, cv.width, cv.height); report();
+    } else if (m.type === 'simState') {
+      sim = { running: !!m.running, other: m.other || '', duration: m.duration || '', status: m.status || '' };
+      renderSim(); report();
     } else if (m.type === 'banner') {
       banner.hidden = false; banner.textContent = m.message;
     } else if (m.type === 'command') {
       if (m.action === 'fit') fit(); else if (m.action === 'zoomIn') zoom(2); else if (m.action === 'zoomOut') zoom(0.5);
       else if (m.action === 'pan') pan(m.fraction || 0.25); else if (m.action === 'cursor') setCursor(m.time);
       else if (m.action === 'radix') { rstate = { buses: m.radix, signals: rstate.signals }; document.getElementById('radix').value = m.radix; saveRadix(); draw(); }
+      else if (m.action === 'clickRun') doRun();
+      else if (m.action === 'clickStop') { if (!stopBtn.disabled) vscode.postMessage({ type: 'stop' }); }
+      else if (m.action === 'setDuration') { durIn.value = m.number || ''; durUnit.value = m.unit || 'us'; durDirty = true; renderSim(); report(); }
+      else if (m.action === 'paneWidth') { layout = Object.assign({}, layout); layout[m.pane === 'names' ? 'namesWidth' : 'treeWidth'] = m.width; relayout(); saveLayout(); }
       else if (m.action === 'signalRadix' && data) {
         const i = data.signals.findIndex((x) => x.path === m.path);
         if (i >= 0) setSignalRadix(i, m.radix || '');
       }
     }
   });
+  applyLayout();
+  renderSim();
   vscode.postMessage({ type: 'ready' });
 })();
 </script>

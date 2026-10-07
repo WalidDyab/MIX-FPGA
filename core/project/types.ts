@@ -57,6 +57,12 @@ export interface ProjectFile {
     /** Top-level port -> board resource id; NexysVHDL generates the XDC from it. */
     readonly pins?: PinMapping;
     readonly toolchain?: ToolchainSettings;
+    /**
+     * Files that stay on disk but are not part of the project (project-relative,
+     * `/`-separated). "Remove from Project" adds a file here; without it the folder
+     * contract (every `src/` and `sim/` file belongs to the project) would add it back.
+     */
+    readonly exclude?: readonly string[];
 }
 
 /** A loaded project: the file contents plus where it lives. */

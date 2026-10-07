@@ -23,8 +23,9 @@ import {
     writeNewFile,
 } from '../project/add-file';
 import { classifyProjectPath } from '../project/project-layout';
+import { findOpenTab } from './open-existing';
 import { starterXdc } from '../project/templates';
-import { createProject, validateProjectName } from '../project/scaffold';
+import { createProject, DEFAULT_TEMPLATE, PROJECT_TEMPLATES, type ProjectTemplate, validateProjectName } from '../project/scaffold';
 import type { RtlPanel } from '../rtl/rtl-panel';
 import type { SchematicPanel } from '../schematic/schematic-panel';
 import type { WaveformPanel } from '../waveform/waveform-panel';
@@ -102,6 +103,16 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         );
     };
 
+    /**
+     * Shows a file in the editor, focusing the tab that already shows it (in whichever
+     * editor group) instead of opening a second tab for the same file.
+     */
+    const showFile = async (uri: vscode.Uri, selection?: vscode.Range): Promise<vscode.TextEditor> => {
+        const tabs = vscode.window.tabGroups.all.flatMap((g) => g.tabs.map((t) => ({ fsPath: t.input instanceof vscode.TabInputText ? t.input.uri.fsPath : undefined, viewColumn: g.viewColumn })));
+        const open = findOpenTab(tabs, uri.fsPath);
+        return vscode.window.showTextDocument(uri, { preview: false, ...(open ? { viewColumn: open.viewColumn } : {}), ...(selection ? { selection } : {}) });
+    };
+
     const requireRoot = (): string => {
         const root = service.projectRoot;
         if (!root) throw new NexysError('Open a NexysVHDL project first (NexysVHDL: Open Project or Create Project).');
@@ -114,11 +125,12 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
      * Interactive (dialogs) by default. Scripted use (lab setup, validation) may pass
      * { parentDir, name, board? }: the same project is created without dialogs and not opened.
      */
-    register('nexysvhdl.createProject', async (scripted?: { parentDir: string; name: string; board?: string }) => {
+    register('nexysvhdl.createProject', async (scripted?: { parentDir: string; name: string; board?: string; template?: ProjectTemplate }) => {
         const boards = await backend.boards();
         let parentDir = scripted?.parentDir;
         let name = scripted?.name;
         let boardId = scripted?.board ?? (scripted ? boards.all()[0]?.id : undefined);
+        let template: ProjectTemplate = scripted?.template ?? DEFAULT_TEMPLATE;
         if (!scripted) {
             const parent = await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Create Project Here', title: 'NexysVHDL: choose the folder that will contain the new project folder' });
             if (!parent?.[0]) return undefined;
@@ -136,10 +148,16 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             );
             if (!pick) return undefined;
             boardId = pick.id;
+            const kind = await vscode.window.showQuickPick(
+                PROJECT_TEMPLATES.map((t) => ({ label: `${t.recommended ? '$(file-directory)' : '$(lightbulb)'} ${t.label}`, description: t.description, template: t.template })),
+                { title: 'NexysVHDL: what should the new project contain?', placeHolder: 'Empty project or starter example' },
+            );
+            if (!kind) return undefined;
+            template = kind.template;
         }
         const board = boardId ? boards.get(boardId) : undefined;
         if (!parentDir || !name || !board) throw new NexysError('Create Project needs a folder, a project name and a supported board.');
-        const result = await createProject({ parentDir, name, board });
+        const result = await createProject({ parentDir, name, board, template });
         if (!result.ok) {
             void vscode.window.showErrorMessage(result.message);
             return result;
@@ -173,13 +191,13 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     });
 
     register('nexysvhdl.openProjectSettings', async () => {
-        await vscode.window.showTextDocument(vscode.Uri.file(join(requireRoot(), PROJECT_FILE_NAME)));
+        await showFile(vscode.Uri.file(join(requireRoot(), PROJECT_FILE_NAME)));
     });
 
     register('nexysvhdl.openLocation', async (root: string, file: string, line?: number, col?: number) => {
         const uri = vscode.Uri.file(join(root, ...file.split('/')));
         const pos = new vscode.Position(Math.max(0, (line ?? 1) - 1), Math.max(0, (col ?? 1) - 1));
-        await vscode.window.showTextDocument(uri, { selection: new vscode.Range(pos, pos), preview: true });
+        await showFile(uri, new vscode.Range(pos, pos));
     });
 
     const pickEntity = async (title: string, names: string[], current?: string): Promise<string | undefined> => {
@@ -249,6 +267,58 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         if (path) await activateConstraints(path);
     });
 
+    // ------------------------------------------------------------- remove from project
+
+    /**
+     * Removes a file from the project (never from the disk). If the file is the top
+     * entity, the selected testbench or the active XDC, that is said and handled
+     * explicitly. Scripted: pass the project-relative path (and { confirm: true }).
+     */
+    register('nexysvhdl.removeFromProject', async (arg?: Node | string | { path: string; confirm?: boolean; constraints?: string | null }) => {
+        requireRoot();
+        const scripted = typeof arg === 'object' && arg !== null && 'path' in arg ? arg : undefined;
+        const path = typeof arg === 'string' ? arg : scripted ? scripted.path : typeof (arg as Node | undefined)?.payload === 'string' ? ((arg as Node).payload as string) : undefined;
+        if (!path) return undefined;
+        const impact = service.removalImpact(path);
+        const notes: string[] = [];
+        if (impact.topEntity) notes.push(`It declares the top entity ${impact.topEntity}. The project will have no top entity until you choose another.`);
+        if (impact.testbench) notes.push(`It declares the selected testbench ${impact.testbench}. No testbench will be selected.`);
+        if (impact.constraints) notes.push('It is the constraints file in use. The project will have no constraints file, and Build needs one.');
+        if (notes.length > 0 && !scripted?.confirm) {
+            const go = await vscode.window.showWarningMessage(`Remove ${basename(path)} from the project?\n\n${notes.join('\n')}\n\nThe file stays on your computer.`, { modal: true }, 'Remove from Project');
+            if (!go) return undefined;
+        }
+        const removed = await service.removeFromProject(path);
+        if (removed.constraints) {
+            const others = (service.snapshot?.files.constraints ?? []).filter((f) => f.path !== path);
+            if (scripted) {
+                if (scripted.constraints) await service.useConstraints(scripted.constraints);
+            } else if (others.length > 0) {
+                const pick = await vscode.window.showQuickPick(
+                    [...others.map((f) => ({ label: f.name, description: f.path, path: f.path as string | undefined })), { label: 'Choose later', description: 'build stays unavailable until a constraints file is chosen', path: undefined }],
+                    { title: 'NexysVHDL: which constraints file should the project use now?' },
+                );
+                if (pick?.path) await service.useConstraints(pick.path);
+            }
+        }
+        const message = `Removed ${basename(path)} from the project. The file is still on your computer.`;
+        if (!scripted) {
+            const more = removed.topEntity ? 'Choose Top Entity…' : removed.testbench ? 'Choose Testbench…' : undefined;
+            void vscode.window.showInformationMessage(message, ...(more ? [more] : []), 'Undo').then((c) => {
+                if (c === 'Undo') void service.restoreToProject(path);
+                else if (c === 'Choose Top Entity…') void vscode.commands.executeCommand('nexysvhdl.setTopEntity');
+                else if (c === 'Choose Testbench…') void vscode.commands.executeCommand('nexysvhdl.setTestbench');
+            });
+        }
+        return removed;
+    });
+
+    register('nexysvhdl.restoreToProject', async (arg?: Node | string) => {
+        requireRoot();
+        const path = typeof arg === 'string' ? arg : typeof arg?.payload === 'string' ? arg.payload : undefined;
+        if (path) await service.restoreToProject(path);
+    });
+
     // ------------------------------------------------------------- design view
 
     register('nexysvhdl.useClassroomAppearance', async () => {
@@ -279,12 +349,16 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         mode: AddFileMode;
         name?: string;
         from?: string;
-        /** Answer to the name-collision question. */
-        collision?: 'replace' | 'rename' | 'cancel';
-        /** New name used when the collision answer is 'rename'. */
+        /** Several files to copy in at once. */
+        froms?: string[];
+        /** Answer to the name-collision question (applies to every collision of the batch). */
+        collision?: 'replace' | 'rename' | 'skip' | 'cancel';
+        /** New name used when the collision answer is 'rename' (single file). */
         renameTo?: string;
         /** Answer to "make the new XDC active?". */
         activate?: boolean;
+        /** Answer to "which entity is the top?" when several were added to a project without one. */
+        top?: string;
         open?: boolean;
     }
     register('nexysvhdl.addFile', async (script?: AddFileScript) => {
@@ -307,18 +381,17 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             const pick = await vscode.window.showQuickPick(
                 [
                     { label: '$(new-file) Create New', description: 'start from a skeleton', mode: 'new' as const },
-                    { label: '$(file-symlink-file) Copy From Computer', description: `copy an existing ${infoOf(kind).extension} file into the project`, mode: 'copy' as const },
+                    { label: '$(file-symlink-file) Copy From Computer', description: `copy one or more existing ${infoOf(kind).extension} files into the project`, mode: 'copy' as const },
                 ],
-                { title: `Add File (2 of 2): ${infoOf(kind).label}`, placeHolder: 'Create a new file, or copy one from your computer' },
+                { title: `Add File (2 of 2): ${infoOf(kind).label}`, placeHolder: 'Create a new file, or copy files from your computer' },
             );
             if (!pick) return undefined;
             mode = pick.mode;
         }
         const folder = infoOf(kind).folder;
 
-        // 3. Which file name (and, for a copy, which file)?
-        let fileName: string;
-        let from: string | undefined;
+        // 3. Which files? Create: one name. Copy: any number of files, each checked.
+        const chosen: Array<{ from?: string; name: string }> = [];
         if (mode === 'new') {
             const typed =
                 script?.name ??
@@ -331,109 +404,161 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             if (typed === undefined) return undefined;
             const problem = validateFileName(kind, typed);
             if (problem) throw new NexysError(problem);
-            fileName = normalizeFileName(kind, typed);
+            chosen.push({ name: normalizeFileName(kind, typed) });
         } else {
             for (;;) {
-                const chosen =
-                    script?.from ??
+                const picked: string[] =
+                    script?.froms ??
+                    (script?.from ? [script.from] : undefined) ??
                     (
-                        await vscode.window.showOpenDialog({
+                        (await vscode.window.showOpenDialog({
                             canSelectFiles: true,
                             canSelectFolders: false,
-                            canSelectMany: false,
+                            canSelectMany: true,
                             openLabel: 'Copy Into Project',
-                            title: `Choose the ${infoOf(kind).extension} file to copy into ${folder}/`,
+                            title: `Choose the ${infoOf(kind).extension} file${kind === 'constraints' ? 's' : '(s)'} to copy into ${folder}/ (select several with Ctrl or Shift)`,
                             filters: { [kind === 'constraints' ? 'XDC constraints' : 'VHDL files']: [infoOf(kind).extension.slice(1)] },
-                        })
-                    )?.[0]?.fsPath;
-                if (!chosen) return undefined;
-                const wrong = checkCopySource(kind, chosen);
-                if (!wrong) {
-                    from = chosen;
-                    fileName = basename(chosen);
-                    break;
+                        })) ?? []
+                    ).map((u) => u.fsPath);
+                if (picked.length === 0) return undefined;
+                const refused = picked.map((f) => ({ f, why: checkCopySource(kind!, f) })).filter((x) => x.why !== undefined);
+                for (const f of picked) if (!checkCopySource(kind, f)) chosen.push({ from: f, name: basename(f) });
+                if (refused.length > 0) {
+                    const text = refused.map((x) => x.why).join('\n');
+                    if (chosen.length === 0 && script) throw new NexysError(text);
+                    void vscode.window.showWarningMessage(`${refused.length} file${refused.length === 1 ? ' was' : 's were'} not added:\n${text}`);
                 }
-                if (script) throw new NexysError(wrong);
-                const again = await vscode.window.showErrorMessage(wrong, 'Choose Another File');
+                if (chosen.length > 0) break;
+                if (script) return undefined;
+                const again = await vscode.window.showErrorMessage('None of the chosen files can be added here.', 'Choose Other Files');
                 if (!again) return undefined;
             }
         }
 
-        // 4. Bad name or a file of that name already there? Replace / Rename / Cancel.
-        let replace = false;
-        let sameFile = false;
+        // 4. Each file: bad name or a file of that name already there? Replace / Rename / Skip (Cancel stops the batch).
+        const placed: string[] = [];
+        const skipped: string[] = [];
+        const replacedPaths: string[] = [];
+        let stopped = false;
         let scriptedAnswer = script?.collision;
-        for (;;) {
-            const rel = targetPath(kind, fileName);
-            if (from && isSameFile(from, root, rel)) {
-                sameFile = true; // the chosen file already is the project's copy
-                break;
-            }
-            const badName = mode === 'copy' ? validateCopyName(kind, fileName) : validateFileName(kind, fileName);
-            const existing = badName ? undefined : await findExisting(root, kind, fileName);
-            if (!badName && !existing) break;
-            let choice: string | undefined;
-            if (badName) choice = 'Rename';
-            else if (script) choice = scriptedAnswer === 'replace' ? 'Replace' : scriptedAnswer === 'rename' ? 'Rename' : undefined;
-            else choice = await vscode.window.showWarningMessage(`${existing} already exists. Replace it, or add this file under another name?`, { modal: true }, 'Replace', 'Rename');
-            if (choice === 'Replace') {
-                replace = true;
-                break;
-            }
-            if (choice !== 'Rename') return undefined;
-            const suggestion = await suggestFreeName(root, kind, badName ? fileName.replace(/[^A-Za-z0-9_.-]/g, '_') : fileName);
-            const renamed = script
-                ? (script.renameTo ?? suggestion)
-                : await vscode.window.showInputBox({
-                      title: badName ? `Rename the file: ${badName}` : `Rename the file (${existing} already exists)`,
-                      prompt: 'New file name',
-                      value: suggestion,
-                      validateInput: async (v) => {
-                          const problem = mode === 'copy' ? validateCopyName(kind!, v) : validateFileName(kind!, v);
-                          if (problem) return problem;
-                          return (await findExisting(root, kind!, v)) ? 'A file with that name already exists.' : undefined;
-                      },
-                  });
-            if (renamed === undefined) return undefined;
-            fileName = normalizeFileName(kind, renamed);
-            scriptedAnswer = 'cancel'; // a scripted rename that still collides is a failure, not a loop
-        }
-        const rel = targetPath(kind, fileName);
-
-        // 5. Write or copy it into the project, so the project stays portable.
-        if (!sameFile) {
-            if (mode === 'copy') await copyIntoProject(root, rel, from!, replace);
-            else {
-                let content: string;
-                if (kind === 'source') content = sourceSkeleton(entityNameOf(fileName));
-                else if (kind === 'simulation') content = testbenchSkeleton(entityNameOf(fileName));
-                else {
-                    const board = (await backend.boards()).get(service.project?.config.board ?? '');
-                    content = board ? starterXdc(service.project!.config.name, board, { starterPorts: false }) : '## Pin and clock constraints. Add set_property and create_clock lines here.\n';
+        for (const item of chosen) {
+            let fileName = item.name;
+            let replace = false;
+            let sameFile = false;
+            let skip = false;
+            for (;;) {
+                const rel = targetPath(kind, fileName);
+                if (item.from && isSameFile(item.from, root, rel)) {
+                    sameFile = true; // the chosen file already is the project's copy
+                    break;
                 }
-                await writeNewFile(root, rel, content, replace);
+                const badName = mode === 'copy' ? validateCopyName(kind, fileName) : validateFileName(kind, fileName);
+                const existing = badName ? undefined : await findExisting(root, kind, fileName);
+                if (!badName && !existing) break;
+                let choice: string | undefined;
+                if (badName) choice = 'Rename';
+                else if (script) choice = scriptedAnswer === 'replace' ? 'Replace' : scriptedAnswer === 'rename' ? 'Rename' : scriptedAnswer === 'skip' ? 'Skip' : undefined;
+                else choice = await vscode.window.showWarningMessage(`${existing} already exists. Replace it, add this file under another name, or skip it?`, { modal: true }, 'Replace', 'Rename', 'Skip');
+                if (choice === 'Replace') {
+                    replace = true;
+                    break;
+                }
+                if (choice === 'Skip') {
+                    skip = true;
+                    break;
+                }
+                if (choice !== 'Rename') {
+                    stopped = true;
+                    break;
+                }
+                const suggestion = await suggestFreeName(root, kind, badName ? fileName.replace(/[^A-Za-z0-9_.-]/g, '_') : fileName);
+                const renamed = script
+                    ? (script.renameTo ?? suggestion)
+                    : await vscode.window.showInputBox({
+                          title: badName ? `Rename the file: ${badName}` : `Rename the file (${existing} already exists)`,
+                          prompt: 'New file name',
+                          value: suggestion,
+                          validateInput: async (v) => {
+                              const problem = mode === 'copy' ? validateCopyName(kind!, v) : validateFileName(kind!, v);
+                              if (problem) return problem;
+                              return (await findExisting(root, kind!, v)) ? 'A file with that name already exists.' : undefined;
+                          },
+                      });
+                if (renamed === undefined) {
+                    stopped = true;
+                    break;
+                }
+                fileName = normalizeFileName(kind, renamed);
+                scriptedAnswer = 'cancel'; // a scripted rename that still collides is a failure, not a loop
+            }
+            if (stopped) break;
+            const rel = targetPath(kind, fileName);
+            if (skip) {
+                skipped.push(item.from ?? rel);
+                continue;
+            }
+            // 5. Copy or write it into the project, so the project stays portable.
+            if (!sameFile) {
+                if (mode === 'copy') await copyIntoProject(root, rel, item.from!, replace);
+                else {
+                    let content: string;
+                    if (kind === 'source') content = sourceSkeleton(entityNameOf(fileName));
+                    else if (kind === 'simulation') content = testbenchSkeleton(entityNameOf(fileName));
+                    else {
+                        const board = (await backend.boards()).get(service.project?.config.board ?? '');
+                        content = board ? starterXdc(service.project!.config.name, board, { starterPorts: false }) : '## Pin and clock constraints. Add set_property and create_clock lines here.\n';
+                    }
+                    await writeNewFile(root, rel, content, replace);
+                }
+            }
+            placed.push(rel);
+            if (replace) replacedPaths.push(rel);
+            output.appendLine(`Added ${rel} (${mode === 'copy' ? (sameFile ? 'already in the project' : `copied from ${item.from}`) : 'created'}${replace ? ', replaced the existing file' : ''}).`);
+        }
+        if (placed.length === 0) return undefined;
+
+        // 6. One project update and one refresh for the whole batch (hierarchy recomputed once), then active constraints and the editor.
+        const outcome = await service.filesAdded(kind, placed);
+        let activated = outcome.constraints === 'activated';
+        let top = outcome.top;
+        if (outcome.topCandidates) {
+            // Several entities arrived and the project has no top: never pick one arbitrarily.
+            const leave = 'Leave unset for now';
+            const pick = script
+                ? (script.top && outcome.topCandidates.some((c) => c.toLowerCase() === script.top!.toLowerCase()) ? script.top : undefined)
+                : (
+                      await vscode.window.showQuickPick(
+                          [...outcome.topCandidates.map((c) => ({ label: c })), { label: leave, description: 'the project keeps showing "No top entity is set" until you choose one' }],
+                          { title: `${outcome.topCandidates.length} entities were added and the project has no top entity. Which one is the top?`, placeHolder: 'The top entity is what gets built for the FPGA' },
+                      )
+                  )?.label;
+            if (pick && pick !== leave) {
+                await service.setTop(pick);
+                top = service.project?.config.top;
             }
         }
-        output.appendLine(`Added ${rel} (${mode === 'copy' ? (sameFile ? 'already in the project' : `copied from ${from}`) : 'created'}${replace ? ', replaced the existing file' : ''}).`);
-
-        // 6. Project model, active constraints, editor.
-        const outcome = await service.fileAdded(kind, rel);
-        let activated = outcome.constraints === 'activated';
         if (outcome.constraints === 'ask') {
             const current = service.project?.config.constraints;
-            const use = `Use ${basename(rel)}`;
-            const yes = script
-                ? script.activate === true
-                : (await vscode.window.showInformationMessage(
-                      `${basename(rel)} was added. ${current ? `The project currently uses ${basename(current)} for pin constraints.` : 'The project currently generates its constraints from "pins".'} Make ${basename(rel)} the active constraints file?`,
-                      use,
-                      'Keep Current',
-                  )) === use;
-            if (yes) activated = await activateConstraints(rel);
+            const candidates = outcome.candidates ?? placed;
+            const keep = current ? `The project currently uses ${basename(current)} for pin constraints.` : 'The project currently generates its constraints from "pins".';
+            let chosenXdc: string | undefined;
+            if (script) chosenXdc = script.activate === true ? candidates[0] : undefined;
+            else if (candidates.length === 1) {
+                const use = `Use ${basename(candidates[0]!)}`;
+                if ((await vscode.window.showInformationMessage(`${basename(candidates[0]!)} was added. ${keep} Make it the active constraints file?`, use, 'Keep Current')) === use) chosenXdc = candidates[0];
+            } else {
+                const pick = await vscode.window.showQuickPick(
+                    [...candidates.map((c) => ({ label: basename(c), description: c, path: c as string | undefined })), { label: 'Keep current', description: current ? basename(current) : 'generated from pins', path: undefined }],
+                    { title: `${candidates.length} constraints files were added. ${keep} Which one should the project use?` },
+                );
+                chosenXdc = pick?.path;
+            }
+            if (chosenXdc) activated = await activateConstraints(chosenXdc);
         }
-        if (script?.open !== false) await vscode.window.showTextDocument(vscode.Uri.file(join(root, ...rel.split('/'))));
-        vscode.window.setStatusBarMessage(`$(check) Added ${rel}${activated ? ' (active constraints)' : ''}`, 4000);
-        return { path: rel, kind, mode, replaced: replace, activated, ...(outcome.testbench ? { testbench: outcome.testbench } : {}) };
+        if (script?.open !== false) await showFile(vscode.Uri.file(join(root, ...placed[0]!.split('/'))));
+        const summary = placed.length === 1 ? placed[0]! : `${placed.length} files`;
+        vscode.window.setStatusBarMessage(`$(check) Added ${summary}${skipped.length ? `, skipped ${skipped.length}` : ''}${activated ? ' (active constraints)' : ''}`, 4000);
+        return { path: placed[0], paths: placed, skipped, kind, mode, replaced: replacedPaths.length > 0, activated, ...(outcome.testbench ? { testbench: outcome.testbench } : {}), ...(top ? { top } : {}), ...(outcome.topCandidates ? { topCandidates: outcome.topCandidates } : {}) };
     });
 
     /** Finite simulation length for GHDL's --stop-time. Scripted: { value: '1us' } or { value: null } to clear. */
@@ -483,42 +608,54 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         }
     });
 
-    register('nexysvhdl.simulate', async () => {
+    /**
+     * Simulate: the waveform viewer opens (or is revealed: there is only ever one) at once and is the
+     * simulation workspace; the run starts from time 0. `duration` is what the viewer's "Run for"
+     * field holds: undefined leaves the project's setting alone, '' (or null) clears it so the
+     * testbench decides, otherwise it becomes `simulation.stopTime`: the one project setting for it.
+     */
+    const simulateFlow = async (duration?: string | null): Promise<void> => {
+        requireRoot();
+        waveform.show();
         service.ensureFree('simulate');
         await saveProjectFiles(requireRoot());
-        let outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Simulating' }, () => service.simulate());
+        if (duration !== undefined) {
+            const text = duration === null ? '' : duration.trim();
+            const normalized = text === '' ? undefined : normalizeStopTime(text);
+            if (text !== '' && normalized === undefined) throw new NexysError(`"${duration}" is not a valid simulation duration. Use a whole number and a unit (${STOP_TIME_UNITS.join(', ')}), for example 2us.`);
+            if (normalized !== service.project?.config.simulation?.stopTime) await service.setStopTime(normalized);
+        }
+        let outcome = await service.simulate();
         if (outcome.kind === 'needs-testbench') {
             if (outcome.candidates.length === 0) throw new NexysError('No testbench was found: add a testbench (an entity without ports) to sim/.');
             const tb = outcome.candidates.length === 1 ? outcome.candidates[0] : await pickEntity('NexysVHDL: which testbench?', [...outcome.candidates]);
             if (!tb) return;
             await service.setTestbench(tb);
-            outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Simulating' }, () => service.simulate(tb));
+            outcome = await service.simulate(tb);
         }
         if (outcome.kind !== 'done') return;
         const r = outcome.result;
-        const after = (c: string | undefined) => {
-            if (c === 'Open Waveform') void vscode.commands.executeCommand('nexysvhdl.openWaveform');
-            else if (c === 'View Log') output.show();
-            else if (c) void vscode.commands.executeCommand('workbench.actions.view.problems');
-        };
-        if (r.status === 'not-configured') {
+        if (r.cancelled) {
+            vscode.window.setStatusBarMessage(`$(debug-stop) Simulation stopped by user${r.vcd ? ' (partial waveform shown)' : ''}`, 5000);
+        } else if (r.status === 'not-configured') {
             void vscode.window.showWarningMessage('The simulator is not set up on this computer.', 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
         } else if (r.status === 'succeeded' && r.passed) {
-            void vscode.window.showInformationMessage(`Simulation passed: ${service.workflow.simulate.summary ?? ''}`, ...(r.vcd ? ['Open Waveform'] : []), 'View Log').then(after);
+            vscode.window.setStatusBarMessage(`$(check) Simulation passed: ${service.workflow.simulate.summary ?? ''}`, 5000);
         } else if (r.diagnostics.some((d) => d.code === 'SIM_NO_END')) {
-            void vscode.window
-                .showErrorMessage(
-                    'The simulation never ended. A testbench with a free-running clock must stop itself with "std.env.stop;", or you can give the simulation a fixed length.',
-                    'Set Stop Time…',
-                    'View Log',
-                )
-                .then((c) => {
-                    if (c === 'View Log') output.show();
-                    else if (c) void vscode.commands.executeCommand('nexysvhdl.setSimulationStopTime');
-                });
+            void vscode.window.showErrorMessage('The simulation never ended. A testbench with a free-running clock must stop itself with "std.env.stop;", or choose a duration in "Run for" in the waveform viewer.', 'View Log').then((c) => c && output.show());
         } else {
-            void vscode.window.showErrorMessage(`Simulation failed: ${firstError(r.diagnostics) ?? r.messages[r.messages.length - 1] ?? 'see the log'}`, ...(r.vcd ? ['Open Waveform'] : []), 'View Log', 'Show Problems').then(after);
+            void vscode.window
+                .showErrorMessage(`Simulation failed: ${firstError(r.diagnostics) ?? r.messages[r.messages.length - 1] ?? 'see the log'}`, 'View Log', 'Show Problems')
+                .then((c) => (c === 'View Log' ? output.show() : c ? vscode.commands.executeCommand('workbench.actions.view.problems') : undefined));
         }
+    };
+
+    register('nexysvhdl.simulate', () => simulateFlow());
+    /** The viewer's Run button: Run for <duration> from time 0. */
+    register('nexysvhdl.runSimulation', (arg?: { duration?: string | null }) => simulateFlow(arg?.duration));
+    /** The viewer's Stop button: ends the running GHDL process, keeps the partial waveform, frees the project. */
+    register('nexysvhdl.stopSimulation', () => {
+        if (!service.stopSimulation()) vscode.window.setStatusBarMessage('No simulation is running.', 3000);
     });
 
     register('nexysvhdl.build', async () => {
@@ -659,14 +796,9 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         await rtl.show();
     });
 
-    register('nexysvhdl.openWaveform', async () => {
+    register('nexysvhdl.openWaveform', () => {
         requireRoot();
-        if (!service.lastSimulation) {
-            const c = await vscode.window.showInformationMessage('There is no waveform yet: run Simulate first.', 'Simulate');
-            if (c) await vscode.commands.executeCommand('nexysvhdl.simulate');
-            if (!service.lastSimulation) return;
-        }
-        waveform.show();
+        waveform.show(); // reveals the one viewer; before any run it shows how to start one
     });
 
     register('nexysvhdl.goToEntity', async (node?: Node) => {

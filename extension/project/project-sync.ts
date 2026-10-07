@@ -21,13 +21,14 @@ export function computeSourceSync(
     scanned: ScannedFiles,
     parsed: ReadonlyMap<string, IndexedFile>,
     existing: ReadonlySet<string> = new Set(),
+    exclude: ReadonlySet<string> = new Set(),
 ): ProjectFilePatch | undefined {
     const listedSources = Array.isArray(config.sources) ? config.sources.filter((p) => typeof p === 'string') : [];
     const listedSim = Array.isArray(config.simulation?.sources) ? config.simulation!.sources.filter((p) => typeof p === 'string') : [];
 
     const collect = (found: readonly string[], listed: readonly string[]) => {
-        const set = new Set(found);
-        for (const p of listed) if (existing.has(p)) set.add(p);
+        const set = new Set(found.filter((p) => !exclude.has(p)));
+        for (const p of listed) if (existing.has(p) && !exclude.has(p)) set.add(p);
         return [...set];
     };
     const order = (paths: readonly string[], preferred: readonly string[]) => {

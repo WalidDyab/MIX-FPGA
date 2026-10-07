@@ -183,25 +183,31 @@ namespace NexysVhdl.Launcher
             return best;
         }
 
-        /// <summary>Compares the extension's main script, byte for byte, with the one inside the bundled VSIX. Any problem reading counts as "matches": the launcher never nags on doubt.</summary>
+        /// <summary>Compares every compiled file of the extension (dist/) with the bundled VSIX, byte for byte. Any problem reading counts as "matches": the launcher never nags on doubt.</summary>
         public bool ExtensionMatches(ExtensionInfo installed, string vsixPath)
         {
             try
             {
-                string onDisk = Path.Combine(installed.Folder, @"dist\extension\extension.js");
-                if (!File.Exists(onDisk)) return true;
+                string distDir = Path.Combine(installed.Folder, "dist");
+                if (!Directory.Exists(distDir)) return true;
                 using (System.IO.Compression.ZipArchive zip = System.IO.Compression.ZipFile.OpenRead(vsixPath))
                 {
-                    System.IO.Compression.ZipArchiveEntry entry = zip.GetEntry("extension/dist/extension/extension.js");
-                    if (entry == null) return true;
-                    using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
+                    foreach (System.IO.Compression.ZipArchiveEntry entry in zip.Entries)
                     {
+                        if (!entry.FullName.StartsWith("extension/dist/", StringComparison.Ordinal) || entry.Name.Length == 0) continue;
+                        string onDisk = Path.Combine(installed.Folder, entry.FullName.Substring("extension/".Length).Replace('/', '\\'));
+                        FileInfo f = new FileInfo(onDisk);
+                        if (!f.Exists || f.Length != entry.Length) return false;
                         byte[] a;
-                        using (Stream s = entry.Open()) a = sha.ComputeHash(s);
                         byte[] b;
-                        using (Stream s = File.OpenRead(onDisk)) b = sha.ComputeHash(s);
-                        return Convert.ToBase64String(a) == Convert.ToBase64String(b);
+                        using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
+                        {
+                            using (Stream x = entry.Open()) a = sha.ComputeHash(x);
+                            using (Stream y = File.OpenRead(onDisk)) b = sha.ComputeHash(y);
+                        }
+                        if (Convert.ToBase64String(a) != Convert.ToBase64String(b)) return false;
                     }
+                    return true;
                 }
             }
             catch (Exception) { return true; }

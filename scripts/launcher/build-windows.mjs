@@ -51,8 +51,21 @@ const ico = join(out, 'NexysVHDL.ico');
 run('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', join(root, 'scripts', 'launcher', 'make-icon.ps1'), '-Out', ico]);
 console.log('icon      ', ico);
 
+// Name and version shown by Windows (Task Manager, file properties): generated so the version follows package.json.
+const numeric = (pkg.version.match(/^\d+\.\d+\.\d+/) ?? ['0.0.0'])[0] + '.0';
+const info = (title) => `using System.Reflection;
+[assembly: AssemblyTitle("${title}")]
+[assembly: AssemblyProduct("NexysVHDL")]
+[assembly: AssemblyCompany("EMXplore")]
+[assembly: AssemblyCopyright("Copyright 2026 Walid Dyab")]
+[assembly: AssemblyVersion("${numeric}")]
+[assembly: AssemblyFileVersion("${numeric}")]
+[assembly: AssemblyInformationalVersion("${pkg.version}")]
+`;
+writeFileSync(join(obj, 'AssemblyInfo.launcher.cs'), info('NexysVHDL'));
+writeFileSync(join(obj, 'AssemblyInfo.setup.cs'), info('NexysVHDL Setup'));
 const exe = join(out, 'NexysVHDL.exe');
-run(csc, ['/nologo', '/target:winexe', '/optimize+', `/out:${exe}`, `/win32icon:${ico}`, ...refs, ...core, src('windows', 'WindowsPlatform.cs'), src('windows', 'FolderPicker.cs'), src('windows', 'MainForm.cs'), src('windows', 'Program.cs')]);
+run(csc, ['/nologo', '/target:winexe', '/optimize+', `/out:${exe}`, `/win32icon:${ico}`, ...refs, ...core, src('windows', 'WindowsPlatform.cs'), src('windows', 'FolderPicker.cs'), src('windows', 'MainForm.cs'), src('windows', 'Program.cs'), join(obj, 'AssemblyInfo.launcher.cs')]);
 console.log('launcher  ', exe, statSync(exe).size, 'bytes');
 
 writeFileSync(join(obj, 'version.txt'), pkg.version);
@@ -60,7 +73,7 @@ const setup = join(out, 'NexysVHDL-Setup.exe');
 run(csc, [
     '/nologo', '/target:winexe', '/optimize+', `/out:${setup}`, `/win32icon:${ico}`, ...refs,
     `/resource:${exe},payload.NexysVHDL.exe`, `/resource:${vsix},payload.nexysvhdl.vsix`, `/resource:${ico},payload.NexysVHDL.ico`, `/resource:${join(obj, 'version.txt')},payload.version.txt`,
-    ...core, src('windows', 'WindowsPlatform.cs'), src('windows', 'Setup.cs'),
+    ...core, src('windows', 'WindowsPlatform.cs'), src('windows', 'Setup.cs'), join(obj, 'AssemblyInfo.setup.cs'),
 ]);
 copyFileSync(vsix, join(out, 'nexysvhdl.vsix'));
 console.log('installer ', setup, statSync(setup).size, 'bytes');

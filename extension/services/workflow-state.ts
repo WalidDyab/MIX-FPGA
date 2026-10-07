@@ -58,8 +58,8 @@ const RUNNING_TEXT: Record<WorkflowAction, string> = {
 };
 
 /** An action stopped by the user. */
-export function actionCancelled(s: WorkflowState, action: WorkflowAction): WorkflowState {
-    const cancelled: ActionStatus = { state: 'idle', summary: 'Cancelled' };
+export function actionCancelled(s: WorkflowState, action: WorkflowAction, summary = 'Cancelled'): WorkflowState {
+    const cancelled: ActionStatus = { state: 'idle', summary };
     const { running: _r, ...rest } = s;
     if (action === 'build') {
         const stages = Object.fromEntries(BUILD_STAGES.map((id) => [id, s.stages[id].state === 'running' ? cancelled : s.stages[id]])) as Record<BuildStageId, ActionStatus>;

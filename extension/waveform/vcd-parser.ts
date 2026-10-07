@@ -266,6 +266,29 @@ export function parseVcd(text: string): VcdModel {
     return { ...(date ? { date } : {}), ...(version ? { version } : {}), timescaleFs: timescale.fs, timescale: timescale.text, root, signals, traces, raw: withMeta, endTime, warnings };
 }
 
+/**
+ * Like parseVcd, but accepts a dump that was cut off (a simulation stopped by the student can leave the
+ * last line half written): the unfinished tail is dropped and the rest is shown. `partial` says it happened.
+ */
+export function parsePartialVcd(text: string): { model: VcdModel; partial: boolean } {
+    try {
+        return { model: parseVcd(text), partial: false };
+    } catch (first) {
+        let t = text;
+        for (let i = 0; i < 4; i++) {
+            const cut = t.lastIndexOf('\n');
+            if (cut <= 0) break;
+            t = t.slice(0, cut);
+            try {
+                return { model: parseVcd(t), partial: true };
+            } catch {
+                /* drop one more line */
+            }
+        }
+        throw first;
+    }
+}
+
 /** Removes scopes that (recursively) declare no signals, e.g. GHDL's package scopes. */
 export function pruneEmptyScopes(scope: VcdScope): VcdScope {
     const scopes = scope.scopes.map(pruneEmptyScopes).filter((s) => s.signals.length > 0 || s.scopes.length > 0);

@@ -32,7 +32,7 @@ const child = spawn(
         // VS Code only runs an --extensionTestsPath suite next to an --extensionDevelopmentPath; for an installed
         // extension that is an empty host folder (NEXYSVHDL_P6_HOST_DIR), so the INSTALLED extension is the one tested.
         `--extensionDevelopmentPath=${installed ? (process.env['NEXYSVHDL_P6_HOST_DIR'] ?? packageRoot(__dirname)) : packageRoot(__dirname)}`,
-        `--extensionTestsPath=${join(__dirname, 'phase6-suite.js')}`,
+        `--extensionTestsPath=${join(__dirname, `${process.env['NEXYS_P6_SUITE'] ?? 'phase6'}-suite.js`)}`,
         `--user-data-dir=${join(userData, 'user')}`,
         `--extensions-dir=${installed ?? join(userData, 'extensions')}`,
         ...(installed ? [] : ['--disable-extensions']),

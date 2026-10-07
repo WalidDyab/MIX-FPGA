@@ -151,13 +151,16 @@ export class GhdlVhdlProvider implements VhdlProvider {
         const vcdPath = join(workdir, VCD_FILE);
         if (options.vcd) args.push(`--vcd=${VCD_FILE}`);
         const r = await this.exec(ctx, workdir, args, logs, `ghdl-run-${options.testbench}`, SIM_TIMEOUT_MS);
-        diagnostics.push(...r.diagnostics);
+        const cancelled = r.run.outcome === 'cancelled';
+        // A stop by the student is an outcome, not an error: say so instead of "GHDL ... cancelled".
+        diagnostics.push(...(cancelled ? r.diagnostics.filter((d) => d.code !== 'GHDL_CANCELLED') : r.diagnostics));
+        if (cancelled) diagnostics.push({ severity: 'info', source: 'vhdl', code: 'SIM_STOPPED_BY_USER', message: 'Simulation stopped by user.' });
         if (r.run.outcome === 'timed-out') {
             diagnostics.push(errorDiag('vhdl', 'SIM_NO_END', `The simulation was still running after ${SIM_TIMEOUT_MS / 1000} s. A testbench with a free-running clock never ends by itself: finish it with "std.env.stop;" (VHDL-2008), or set a Simulation Stop Time for this project.`));
         }
 
         const parsed = parseGhdlOutput(`${r.run.stdout}\n${r.run.stderr}`);
-        const passed = r.ok && !hasErrors(r.diagnostics);
+        const passed = r.ok && !cancelled && !hasErrors(r.diagnostics);
         let waveform: BuildArtifact | undefined;
         if (options.waveform) {
             try {
@@ -179,6 +182,7 @@ export class GhdlVhdlProvider implements VhdlProvider {
         return {
             ...base,
             status: r.run.outcome === 'exited' ? 'succeeded' : 'failed',
+            ...(cancelled ? { cancelled: true } : {}),
             passed,
             messages: parsed.runtime.map((m) => `@${m.time} ${m.kind} ${m.level}: ${m.text}`),
             diagnostics,

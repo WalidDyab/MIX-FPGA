@@ -115,6 +115,56 @@ export function formatValue(value: string | undefined, width: number, radix: Rad
     return out;
 }
 
+/** GHDL time units a simulation duration may use. */
+export const DURATION_UNITS = ['fs', 'ps', 'ns', 'us', 'ms', 'sec'] as const;
+export type DurationUnit = (typeof DURATION_UNITS)[number];
+
+/** Splits a stored duration (`2us`, `500 ns`) into the number and unit the toolbar shows; empty or invalid gives an empty number. */
+export function splitDuration(text: string | undefined): { number: string; unit: DurationUnit } {
+    const m = /^\s*(\d+)\s*(fs|ps|ns|us|ms|sec)\s*$/i.exec(text ?? '');
+    return m ? { number: String(Number(m[1])), unit: m[2]!.toLowerCase() as DurationUnit } : { number: '', unit: 'us' };
+}
+
+/**
+ * The value written to the project for what the toolbar holds. `''` is valid and means "no fixed
+ * duration: the testbench decides" (the behavior of projects that never set one). Otherwise a whole
+ * number above zero and a unit; anything else is undefined (invalid).
+ */
+export function joinDuration(number: string, unit: string): string | undefined {
+    const n = number.trim();
+    if (n === '') return '';
+    if (!/^\d+$/.test(n) || Number(n) <= 0 || !(DURATION_UNITS as readonly string[]).includes(unit)) return undefined;
+    return String(Number(n)) + unit;
+}
+
+/** Widths (px) of the two resizable panes of the viewer: the signal list on the left and the name/value column. */
+export interface PaneLayout {
+    readonly treeWidth: number;
+    readonly namesWidth: number;
+}
+
+export const DEFAULT_LAYOUT: PaneLayout = { treeWidth: 210, namesWidth: 380 };
+export const TREE_LIMITS = { min: 120, max: 600 } as const;
+export const NAMES_LIMITS = { min: 160, max: 720 } as const;
+
+/**
+ * Keeps a pane width inside its limits, and never so wide that fewer than
+ * `reserve` pixels are left for what is beside it (the waveform needs room).
+ * A non-number gives the fallback.
+ */
+export function clampPaneWidth(width: unknown, limits: { readonly min: number; readonly max: number }, available: number, reserve: number, fallback: number): number {
+    const w = typeof width === 'number' && Number.isFinite(width) ? width : fallback;
+    const max = Math.max(limits.min, Math.min(limits.max, available - reserve));
+    return Math.round(Math.min(max, Math.max(limits.min, w)));
+}
+
+/** A stored layout with anything malformed replaced by the defaults. */
+export function sanitizeLayout(value: unknown): PaneLayout {
+    const v = (typeof value === 'object' && value !== null ? value : {}) as { treeWidth?: unknown; namesWidth?: unknown };
+    const ok = (n: unknown, limits: { min: number; max: number }, fallback: number) => (typeof n === 'number' && Number.isFinite(n) ? Math.min(limits.max, Math.max(limits.min, Math.round(n))) : fallback);
+    return { treeWidth: ok(v.treeWidth, TREE_LIMITS, DEFAULT_LAYOUT.treeWidth), namesWidth: ok(v.namesWidth, NAMES_LIMITS, DEFAULT_LAYOUT.namesWidth) };
+}
+
 /** One drawable stretch of a trace. `dense` = several changes inside less than `minPx` pixels. */
 export interface Segment {
     readonly x0: number;

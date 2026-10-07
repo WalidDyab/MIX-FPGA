@@ -68,7 +68,7 @@ export class HierarchyView extends ServiceTree {
         if (hierarchy.root) {
             nodes.push(this.node(root, hierarchy.root, true));
         } else {
-            const missing = info(`Top entity "${hierarchy.top}" not found`, 'Set Top Entity…', 'warning');
+            const missing = info(hierarchy.top.trim() === '' ? 'No top entity is set' : `Top entity "${hierarchy.top}" not found`, 'Set Top Entity…', 'warning');
             missing.command = { title: 'Set Top Entity', command: 'nexysvhdl.setTopEntity' };
             nodes.push(missing);
         }

@@ -52,10 +52,31 @@ export class FilesView extends ServiceTree {
             gen.tooltip = 'This project lists pin mappings instead of an XDC file. Right-click an .xdc file and choose "Use This Constraints File" to switch.';
             constraints.children = [gen, ...(files.constraints.length ? constraints.children! : [])];
         }
-        return [
+        const nodes = [
             group('Sources', 'file-code', files.sources, 'source', 'No .vhd files in src/'),
             group('Simulation', 'beaker', files.simulation, 'simulation', 'No .vhd files in sim/'),
             constraints,
         ];
+        if (snap.excluded.length > 0) {
+            const g = new Node('Removed from project', vscode.TreeItemCollapsibleState.Collapsed);
+            g.id = 'group:removed';
+            g.description = String(snap.excluded.length);
+            g.iconPath = new vscode.ThemeIcon('circle-slash');
+            g.tooltip = 'These files are still on disk but are not part of the project. Right-click a file and choose "Add Back to Project".';
+            g.children = snap.excluded.map((p) => {
+                const n = new Node(p.slice(p.lastIndexOf('/') + 1));
+                n.id = `removed:${p}`;
+                n.resourceUri = vscode.Uri.file(join(root, ...p.split('/')));
+                n.iconPath = vscode.ThemeIcon.File;
+                n.tooltip = p;
+                n.description = p.slice(0, p.lastIndexOf('/'));
+                n.payload = p;
+                n.contextValue = 'nexysvhdl.removed';
+                n.command = openCommand(root, p);
+                return n;
+            });
+            nodes.push(g);
+        }
+        return nodes;
     }
 }
