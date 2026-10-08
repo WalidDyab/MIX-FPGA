@@ -29,7 +29,7 @@ public static class CoreTests
     {
         public string State;
         public VsCodeInfo VsCode = new VsCodeInfo { Executable = @"C:\fake\Code.exe", Version = "1.99.0" };
-        public ExtensionInfo Extension = new ExtensionInfo { Id = "emxplore.nexysvhdl", Version = "0.5.0" };
+        public ExtensionInfo Extension = new ExtensionInfo { Id = "emxplore.nexysvhdl", Version = "0.6.0" };
         public ToolchainInfo Toolchain = new ToolchainInfo { Installed = true, Version = "1.0" };
         public List<string> Calls = new List<string>();
         public ProcessOutcome InstallResult = new ProcessOutcome { Ok = true };

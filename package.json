@@ -1,7 +1,7 @@
 {
   "name": "nexysvhdl",
   "displayName": "NexysVHDL",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Classroom Preview: VHDL-2008 design for the Digilent Nexys A7-100T in VS Code. Check, simulate, waveforms, design and RTL schematics, build and program, using the separately installed NexysVHDL FPGA toolchain.",
   "publisher": "emxplore",
   "private": true,

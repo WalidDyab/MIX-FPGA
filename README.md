@@ -2,7 +2,7 @@
 
 NexysVHDL is a VHDL-first FPGA workflow in VS Code for the Digilent Nexys A7-100T (XC7A100T-1CSG324C).
 
-**Current stage:** Phase 4B — **Classroom Preview** (0.5.0). It is an installable classroom package with its own FPGA toolchain; it is not on the Visual Studio Marketplace.
+**Current release:** NexysVHDL **0.6.0** (Classroom Preview, FPGA toolchain 1.0). It is an installable classroom package with its own FPGA toolchain and, on Windows, a per-user installer with a launcher; it is not on the Visual Studio Marketplace.
 
 Target platforms:
 - Windows x64 (Classroom Preview package validated)

@@ -6,7 +6,7 @@ A small desktop application so a student starts NexysVHDL like any other app (St
 NexysVHDL.exe (window)  ── New Project ───────► vscode://emxplore.nexysvhdl/newProject ─► the extension's own "Create Project"
                         ── Open Project / Recent ► Code.exe "<folder>"  (the extension activates: the folder holds nexysvhdl.json)
                         ── Install NexysVHDL ──► Code's own CLI (cli.js) --install-extension nexysvhdl.vsix   (hidden, only on click)
-NexysVHDL-Setup.exe     ── per-user install: Start Menu, optional Desktop shortcut, "Apps & features" entry
+NexysVHDL-Setup-<version>-win32-x64.exe     ── per-user install: Start Menu, optional Desktop shortcut, "Apps & features" entry
 ```
 
 ## Layout
@@ -19,7 +19,7 @@ NexysVHDL-Setup.exe     ── per-user install: Start Menu, optional Desktop sh
 | `windows/Setup.cs` | the installer | replace (a `.pkg` / drag-to-Applications `.app`) |
 | `tests/CoreTests.cs` | tests of `core/` against a fake platform | reuse |
 
-Built with the C# compiler that ships with Windows (.NET Framework 4, `csc.exe`): no SDK and no downloads. `node scripts/launcher/build-windows.mjs [--vsix file]` writes `.artifacts/launcher/NexysVHDL-Setup.exe` (about 370 KB, containing the launcher, the extension VSIX and the icon).
+Built with the C# compiler that ships with Windows (.NET Framework 4, `csc.exe`): no SDK and no downloads. `node scripts/launcher/build-windows.mjs [--vsix file]` writes `.artifacts/launcher/NexysVHDL-Setup-<version>-win32-x64.exe` (about 370 KB, containing the launcher, the extension VSIX and the icon).
 
 ## Contracts
 

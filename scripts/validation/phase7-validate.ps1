@@ -1,7 +1,7 @@
 <#
 Phase 7 validation in a real VS Code, against the PACKAGED extension (not the source tree).
 
-  powershell -File scripts\validation\phase7-validate.ps1 -Vsix .artifacts\phase7\nexysvhdl-0.5.0-phase7-test-win32-x64.vsix -Sandbox C:\temp\p7 -Stages a,b,r
+  powershell -File scripts\validation\phase7-validate.ps1 -Vsix .artifacts\phase8\nexysvhdl-0.6.0-phase8-test-win32-x64.vsix -Sandbox C:\temp\p7 -Stages a,b,r
 
 Stages (see tests/integration/phase7-suite.ts):
   a  change every NexysVHDL-managed setting, close the window normally (the suite stretches the state write delay through the API object: only the exit flush can save it)

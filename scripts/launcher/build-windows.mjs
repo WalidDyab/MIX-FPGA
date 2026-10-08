@@ -5,7 +5,7 @@
 //   node scripts/launcher/build-windows.mjs [--vsix <file>]
 //
 // Output (.artifacts/launcher/):
-//   NexysVHDL-Setup.exe   per-user installer: contains NexysVHDL.exe, the extension VSIX and the icon (not the FPGA toolchain)
+//   NexysVHDL-Setup-<version>-win32-x64.exe   per-user installer: contains NexysVHDL.exe, the extension VSIX and the icon (not the FPGA toolchain)
 //   NexysVHDL.exe         the launcher itself (also installed by the setup)
 //   NexysVHDL.ico
 import { spawnSync } from 'node:child_process';
@@ -69,7 +69,7 @@ run(csc, ['/nologo', '/target:winexe', '/optimize+', `/out:${exe}`, `/win32icon:
 console.log('launcher  ', exe, statSync(exe).size, 'bytes');
 
 writeFileSync(join(obj, 'version.txt'), pkg.version);
-const setup = join(out, 'NexysVHDL-Setup.exe');
+const setup = join(out, `NexysVHDL-Setup-${pkg.version}-win32-x64.exe`);
 run(csc, [
     '/nologo', '/target:winexe', '/optimize+', `/out:${setup}`, `/win32icon:${ico}`, ...refs,
     `/resource:${exe},payload.NexysVHDL.exe`, `/resource:${vsix},payload.nexysvhdl.vsix`, `/resource:${ico},payload.NexysVHDL.ico`, `/resource:${join(obj, 'version.txt')},payload.version.txt`,

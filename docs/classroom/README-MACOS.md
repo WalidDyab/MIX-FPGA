@@ -4,7 +4,7 @@ For Macs with Apple silicon (M1 or newer). Intel Macs are not supported. You nee
 
 Files in this folder:
 
-- `nexysvhdl-0.5.0-darwin-arm64.vsix` — the NexysVHDL extension
+- `nexysvhdl-0.6.0-darwin-arm64.vsix` — the NexysVHDL extension
 - `nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz` — the FPGA toolchain (about 630 MB). **Do not double-click or unzip it.** NexysVHDL installs it for you.
 
 ## 1. Install VS Code
@@ -15,7 +15,7 @@ Download Visual Studio Code from <https://code.visualstudio.com/> (Apple silicon
 
 1. In VS Code, open the **Extensions** view (⇧⌘X).
 2. Click **…** (top right of the Extensions view) → **Install from VSIX…**
-3. Choose `nexysvhdl-0.5.0-darwin-arm64.vsix` from this folder.
+3. Choose `nexysvhdl-0.6.0-darwin-arm64.vsix` from this folder.
 
 ## 3. Install the FPGA toolchain (once)
 

@@ -4,7 +4,8 @@ For Windows 10/11 (x64). You need nothing except the steps below.
 
 Files in this folder:
 
-- `nexysvhdl-0.5.0-win32-x64.vsix` — the NexysVHDL extension
+- `NexysVHDL-Setup-0.6.0-win32-x64.exe` — the Windows installer (optional: installs NexysVHDL for your Windows account, with a Start Menu entry; double-clicking a `.nvproj` project file then opens it)
+- `nexysvhdl-0.6.0-win32-x64.vsix` — the NexysVHDL extension
 - `nexysvhdl-toolchain-1.0-win32-x64.tar.gz` — the FPGA toolchain (about 700 MB). **Do not unzip it.** NexysVHDL installs it for you.
 
 ## 1. Install VS Code
@@ -24,7 +25,7 @@ If you are not sure whether you already have them, skip this step: NexysVHDL tel
 
 1. In VS Code, open the **Extensions** view (Ctrl+Shift+X).
 2. Click **…** (top right of the Extensions view) → **Install from VSIX…**
-3. Choose `nexysvhdl-0.5.0-win32-x64.vsix` from this folder.
+3. Choose `nexysvhdl-0.6.0-win32-x64.vsix` from this folder.
 
 ## 4. Install the FPGA toolchain (once)
 

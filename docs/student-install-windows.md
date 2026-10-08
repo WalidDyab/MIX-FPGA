@@ -21,11 +21,12 @@ Your course provides the NexysVHDL classroom download `NexysVHDL-<version>-win32
 
 | File | What it is |
 |---|---|
+| `NexysVHDL-Setup-<version>-win32-x64.exe` | the Windows installer (optional; includes the extension) |
 | `nexysvhdl-<version>-win32-x64.vsix` | the NexysVHDL extension (small) |
 | `nexysvhdl-toolchain-<toolchain version>-win32-x64.tar.gz` | the NexysVHDL FPGA toolchain (about 725 MB; about 3 GB once installed) |
 | `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.md` | checksums and licenses |
 
-**a. Install the extension.** In VS Code open the Extensions view (Ctrl+Shift+X), click **…** (top right) → **Install from VSIX…**, and choose the `.vsix` file.
+**a. Install the extension.** Either run the installer `NexysVHDL-Setup-<version>-win32-x64.exe` (for your Windows account only, no administrator needed; it adds a Start Menu entry, an optional Desktop shortcut, makes `.nvproj` project files open with NexysVHDL, and installs the extension into VS Code), or install the extension by hand: in VS Code open the Extensions view (Ctrl+Shift+X), click **…** (top right) → **Install from VSIX…**, and choose the `.vsix` file.
 
 **b. Install the FPGA toolchain.** Click the **NexysVHDL** icon in the Activity Bar. NexysVHDL tells you that it needs its FPGA toolchain: click **Install FPGA Toolchain…** and choose the `nexysvhdl-toolchain-…tar.gz` file. Installation takes about a minute. The toolchain is installed for your Windows user account in `%LOCALAPPDATA%\NexysVHDL` and is reused by later NexysVHDL updates, so you install it only once per toolchain version. NexysVHDL checks every file against the validated toolchain before using it.
 

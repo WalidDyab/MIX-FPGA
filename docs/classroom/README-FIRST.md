@@ -1,4 +1,4 @@
-# NexysVHDL Classroom Preview 0.5.0 — read this first
+# NexysVHDL 0.6.0 (Classroom Preview) — read this first
 
 NexysVHDL lets you write VHDL for the **Digilent Nexys A7-100T** board in VS Code, then check, simulate, build and program it.
 

@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased — UI polish (not yet versioned)
+## 0.6.0 — Classroom Preview (requires NexysVHDL toolchain 1.0, unchanged)
+
+Second classroom release. The FPGA toolchain is the same validated **toolchain 1.0** installed by 0.5.0; an existing installation is reused. Windows now also ships a per-user installer (`NexysVHDL-Setup-0.6.0-win32-x64.exe`: launcher, extension, Start Menu entry, optional Desktop shortcut, `.nvproj` association, uninstaller).
+
+### Phase 8 — UI polish and project switching
 
 - **Viewers use the whole editor area:** Waveform, RTL Schematic and Design Schematic open in the active editor group (never beside or in a new split) and are reused when already open.
 - **Schematics:** open in Fit All (never below a readable scale: a huge design opens as a scrollable overview); one toolbar for both (100%, Fit Width, Fit All, zoom, Reset = Fit All, Maximize); **Dark/Light** background shared by both and remembered per project; **Export SVG…** and **Export PNG…** of the complete drawing through the native Save dialog (true vector SVG; PNG at up to 3×).
@@ -9,14 +13,14 @@
 - **Projects:** the Project section shows only the project name, its board and Environment; **New Project / Open Project / Close Project** are its header actions. *Open Project* switches this window directly to another project (folder, `.nvproj` or an older project) after flushing NexysVHDL's state; *Close Project* flushes and closes the folder, leaving the welcome state. Unsaved VHDL/XDC documents are handled by VS Code's own Save / Don't Save / Cancel prompt, never by NexysVHDL.
 - **Sidebar:** per-section colour identity, a status beside each section title, inline row actions on Project rows (Top, Testbench, Simulation length, project settings, environment, project file), stronger section separators in the Classroom theme. **Add File** now shows a single plus.
 
-## Unreleased — Phase 7 project UX refinements (not yet versioned)
+### Phase 7 — project persistence, `.nvproj`, console, schematic
 
 - **Reliable saving:** NexysVHDL's own state is written as it changes and flushed before the window closes, reloads or the extension stops (`deactivate()` is awaited). `nexysvhdl.json` is now written atomically and one update at a time. Design mode, waveform signals, Display As, pane widths and the schematic view are remembered with the project in `.nexysvhdl/state.json`. Source documents keep VS Code's normal Save / Auto Save.
 - **`.nvproj` project file:** every new project gets `<name>.nvproj` (a small versioned launch descriptor; `nexysvhdl.json` stays the source of truth). Open Project accepts a folder or a `.nvproj`; older projects open unchanged and can add one with *Create NexysVHDL Project File*. On Windows, Setup registers `.nvproj` for the current user (NexysVHDL icon, double-click opens the project, no console window); Uninstall removes only that association.
 - **NexysVHDL Console:** one Output channel for Check, Simulate, Build and Program progress, results, warnings and errors, revealed when an action starts or fails; optional detailed mode streams the raw tool output. The previous log is now *NexysVHDL Log*.
 - **Design Schematic:** opens as a normal tab at 100% instead of a narrow side column and a Fit-All view; 100% / Fit Width / Fit All / zoom / Reset / Maximize, scrolling, larger text and spacing, collapsible notes, remembered view; source opens beside it.
 
-## Unreleased — Phase 6 pilot hardening (not yet versioned)
+### Phase 6 — pilot hardening, simulation workspace, Windows launcher
 
 - **Fixed:** a top entity with capital letters (`DigitDisplay`) no longer fails synthesis with `GHDL_SYNTH_NO_TOP`; the module spelling GHDL emits is used for Yosys, RTL schematic and Build.
 - **Fixed:** Check, Simulate, Build, RTL schematic and Program can no longer run at the same time on one project (duplicate requests answer "Build is already running").
