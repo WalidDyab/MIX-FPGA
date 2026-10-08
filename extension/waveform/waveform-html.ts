@@ -97,6 +97,7 @@ export function renderWaveHtml(input: WavePageInput): string {
   #run { background: var(--vscode-button-background, #0a6); color: var(--vscode-button-foreground, #fff); }
   #stop { background: var(--vscode-button-secondaryBackground, #ddd); }
   #simbar button:disabled { opacity: 0.45; cursor: default; }
+  #ctime { color: var(--vscode-editorCursor-foreground, #ff8800); font-size: 13px; }
   #simbar input[type=text] { width: 64px; background: var(--vscode-input-background, #fff); color: var(--vscode-input-foreground, #222); border: 1px solid var(--vscode-input-border, #aaa); padding: 2px 4px; font: inherit; text-align: right; }
   #simbar input.invalid { border-color: var(--vscode-inputValidation-errorBorder, #d02020); }
   #simstatus { color: var(--vscode-descriptionForeground, #666); }
@@ -136,6 +137,7 @@ export function renderWaveHtml(input: WavePageInput): string {
 <div id="simbar" role="toolbar" aria-label="Simulation">
   <button id="run" title="Run the testbench from time 0 for the chosen duration">&#9654; Run</button>
   <button id="stop" title="Stop the running simulation" disabled>&#9632; Stop</button>
+  <button id="restart" title="Start over: run the testbench again from time 0 for the chosen duration (available after a run, when nothing is running)" disabled>&#8635; Start Over</button>
   <label title="How long the testbench runs, from time 0. Leave empty to let the testbench decide (it ends with std.env.stop).">Run for: <input id="dur" type="text" inputmode="numeric" placeholder="until it ends" aria-label="Simulation duration"> <select id="durunit" aria-label="Time unit"><option>fs</option><option>ps</option><option>ns</option><option selected>us</option><option>ms</option><option>sec</option></select></label>
   <span id="simstatus" role="status"></span>
   <span id="simhint">Each run starts the testbench again at time 0. The testbench itself provides all clocks and stimulus.</span>
@@ -171,7 +173,7 @@ export function renderWaveHtml(input: WavePageInput): string {
     document.body.style.setProperty('--tree-w', layout.treeWidth + 'px');
     document.body.style.setProperty('--names-w', layout.namesWidth + 'px');
   }
-  function simReport() { return { running: sim.running, runDisabled: runBtn.disabled, stopDisabled: stopBtn.disabled, typed: durIn.value + durUnit.value, status: simStatus.textContent }; }
+  function simReport() { return { running: sim.running, runDisabled: runBtn.disabled, stopDisabled: stopBtn.disabled, restartDisabled: restartBtn.disabled, typed: durIn.value + durUnit.value, status: simStatus.textContent }; }
   function saveLayout() { vscode.postMessage({ type: 'layout', layout: layout }); }
   let frame = 0;
   function relayout() { applyLayout(); if (!frame) frame = requestAnimationFrame(function () { frame = 0; if (data) draw(); }); }
@@ -280,9 +282,19 @@ export function renderWaveHtml(input: WavePageInput): string {
       }
     });
     // Cursor.
+    // The time marker: a halo and a bright line through every row, a flag with the selected time at the top.
     const cx = Math.round(x(cursor)) + 0.5;
-    ctx.strokeStyle = css('--vscode-editorCursor-foreground', '#f80'); ctx.lineWidth = 1.5;
+    const mk = css('--vscode-editorCursor-foreground', '#ff8800');
+    ctx.lineWidth = 6; ctx.strokeStyle = css('--vscode-editor-background', '#000'); ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.lineWidth = 2.5; ctx.strokeStyle = mk;
     ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+    ctx.font = 'bold 11px ' + css('--vscode-editor-font-family', 'monospace');
+    const tag = fmtT(cursor), tw = ctx.measureText(tag).width + 12;
+    const tx0 = Math.max(1, Math.min(w - tw - 1, cx - tw / 2));
+    ctx.fillStyle = mk; ctx.fillRect(tx0, 1, tw, 18);
+    ctx.beginPath(); ctx.moveTo(cx - 5, 19); ctx.lineTo(cx + 5, 19); ctx.lineTo(cx, 25); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = css('--vscode-editor-background', '#000'); ctx.fillText(tag, tx0 + 6, 14);
     rows();
     report();
   }
@@ -335,13 +347,22 @@ export function renderWaveHtml(input: WavePageInput): string {
   });
   window.addEventListener('mouseup', (e) => { if (drag && !drag.moved && data) setCursor(timeAt(e.clientX)); drag = undefined; });
   cv.addEventListener('wheel', (e) => { e.preventDefault(); if (e.shiftKey) pan(e.deltaY > 0 ? 0.1 : -0.1); else zoom(e.deltaY < 0 ? 1.25 : 0.8, timeAt(e.clientX)); }, { passive: false });
-  window.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') pan(-0.1); else if (e.key === 'ArrowRight') pan(0.1); else if (e.key === '+') zoom(2); else if (e.key === '-') zoom(0.5); });
+  window.addEventListener('keydown', (e) => {
+    if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+    // Left/Right move the time marker (Shift: ten times further); the toolbar arrows, Shift+wheel and dragging pan the view.
+    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && data) {
+      e.preventDefault();
+      const step = (t1 - t0) / (e.shiftKey ? 10 : 100) * (e.key === 'ArrowLeft' ? -1 : 1);
+      setCursor(cursor + step);
+      if (cursor < t0 || cursor > t1) { const span = t1 - t0; setView(cursor - span / 2, cursor + span / 2); }
+    } else if (e.key === '+') zoom(2); else if (e.key === '-') zoom(0.5);
+  });
   window.addEventListener('resize', relayout);
 
   // ---- simulation toolbar: Run / Stop / Run for. The extension owns the simulation; this only asks it and shows its state.
-  let sim = { running: false, other: '', duration: '', status: '' };
+  let sim = { running: false, other: '', duration: '', status: '', hasRun: false };
   let durDirty = false;
-  const runBtn = document.getElementById('run'), stopBtn = document.getElementById('stop'), durIn = document.getElementById('dur'), durUnit = document.getElementById('durunit'), simStatus = document.getElementById('simstatus');
+  const runBtn = document.getElementById('run'), stopBtn = document.getElementById('stop'), restartBtn = document.getElementById('restart'), durIn = document.getElementById('dur'), durUnit = document.getElementById('durunit'), simStatus = document.getElementById('simstatus');
   const typedDuration = () => W.joinDuration(durIn.value, durUnit.value);
   function renderSim() {
     if (!durDirty) { const d = W.splitDuration(sim.duration); durIn.value = d.number; durUnit.value = d.unit; }
@@ -350,11 +371,15 @@ export function renderWaveHtml(input: WavePageInput): string {
     durIn.disabled = durUnit.disabled = sim.running;
     runBtn.disabled = sim.running || !!sim.other || !valid;
     stopBtn.disabled = !sim.running;
+    // Start Over: only when nothing runs and a simulation has run before; same GHDL run as Run, from time 0, current duration.
+    restartBtn.disabled = sim.running || !!sim.other || !valid || !sim.hasRun;
+    restartBtn.title = sim.running ? 'A simulation is running' : !sim.hasRun ? 'Run the simulation once first' : 'Start over: run the testbench again from time 0 for the chosen duration';
     runBtn.title = sim.running ? 'A simulation is running' : sim.other ? sim.other + ' is running' : !valid ? 'Enter a whole number above zero, or leave the duration empty' : 'Run the testbench from time 0 for the chosen duration';
     simStatus.textContent = sim.status || '';
   }
   function doRun() { if (runBtn.disabled) return; const d = typedDuration(); durDirty = false; vscode.postMessage({ type: 'run', duration: d }); }
   runBtn.onclick = doRun;
+  restartBtn.onclick = () => { if (!restartBtn.disabled) doRun(); };
   stopBtn.onclick = () => { if (!stopBtn.disabled) vscode.postMessage({ type: 'stop' }); };
   durIn.addEventListener('input', () => { durDirty = true; renderSim(); report(); });
   durUnit.addEventListener('change', () => { durDirty = true; renderSim(); report(); });
@@ -366,7 +391,8 @@ export function renderWaveHtml(input: WavePageInput): string {
     const banner = document.getElementById('banner');
     if (m.type === 'load') {
       const keep = data ? visible.map((i) => data.signals[i].path) : [];
-      data = m.data; cursor = 0;
+      const keptCursor = data ? cursor : 0;
+      data = m.data; cursor = keptCursor <= data.endTime ? keptCursor : 0; // a rerun keeps the marker where the student put it, when that time still exists
       const again = keep.map((p) => data.signals.findIndex((x) => x.path === p)).filter((i) => i >= 0);
       // A rerun keeps the signals the student chose; after a restart, the ones remembered with the project.
       const saved = (m.signals || []).map((p) => data.signals.findIndex((x) => x.path === p)).filter((i) => i >= 0);
@@ -383,7 +409,7 @@ export function renderWaveHtml(input: WavePageInput): string {
       document.getElementById('rows').innerHTML = ''; document.getElementById('tree').innerHTML = ''; document.getElementById('ident').textContent = '';
       ctx.clearRect(0, 0, cv.width, cv.height); report();
     } else if (m.type === 'simState') {
-      sim = { running: !!m.running, other: m.other || '', duration: m.duration || '', status: m.status || '' };
+      sim = { running: !!m.running, other: m.other || '', duration: m.duration || '', status: m.status || '', hasRun: !!m.hasRun };
       renderSim(); report();
     } else if (m.type === 'banner') {
       banner.hidden = false; banner.textContent = m.message;
@@ -392,6 +418,7 @@ export function renderWaveHtml(input: WavePageInput): string {
       else if (m.action === 'pan') pan(m.fraction || 0.25); else if (m.action === 'cursor') setCursor(m.time);
       else if (m.action === 'radix') { rstate = { buses: m.radix, signals: rstate.signals }; document.getElementById('radix').value = m.radix; saveRadix(); draw(); }
       else if (m.action === 'clickRun') doRun();
+      else if (m.action === 'clickRestart') { if (!restartBtn.disabled) doRun(); }
       else if (m.action === 'clickStop') { if (!stopBtn.disabled) vscode.postMessage({ type: 'stop' }); }
       else if (m.action === 'setDuration') { durIn.value = m.number || ''; durUnit.value = m.unit || 'us'; durDirty = true; renderSim(); report(); }
       else if (m.action === 'paneWidth') { layout = Object.assign({}, layout); layout[m.pane === 'names' ? 'namesWidth' : 'treeWidth'] = m.width; relayout(); saveLayout(); }

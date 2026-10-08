@@ -8,7 +8,7 @@ import { createProject } from '../../extension/project/scaffold';
 import { buildSchematic } from '../../extension/schematic/schematic-model';
 import { SchematicPanel } from '../../extension/schematic/schematic-panel';
 import { layoutSchematic } from '../../extension/schematic/schematic-svg';
-import { clampScale, computeScale, FIT_CEILING, MAX_SCALE, MIN_SCALE, sanitizeViewState } from '../../extension/schematic/schematic-view';
+import { clampScale, computeScale, FIT_CEILING, MAX_SCALE, MIN_READABLE_FIT, MIN_SCALE, sanitizeViewState } from '../../extension/schematic/schematic-view';
 import { NexysVhdlService } from '../../extension/services/nexys-service';
 import { REPO, repoBoards, tempDir } from '../helpers';
 import { FakeBackend } from './fake-backend';
@@ -74,12 +74,20 @@ describe('Design Schematic: zoom model', () => {
     const content = { w: 1400, h: 400 };
     const window = { w: 700, h: 500 };
 
-    it('opens at 100% by default; Fit Width and Fit All are explicit choices', () => {
-        assert.deepEqual(sanitizeViewState(undefined).view, { mode: '100', scale: 1 });
+    it('opens in Fit All by default; 100% and Fit Width are explicit choices', () => {
+        assert.deepEqual(sanitizeViewState(undefined).view, { mode: 'all', scale: 1 });
         assert.equal(computeScale('100', content, window, 0.3), 1);
         assert.equal(computeScale('width', content, window, 1), 0.5);
-        assert.equal(computeScale('all', { w: 1400, h: 1400 }, window, 1), Math.max(MIN_SCALE, 500 / 1400));
+        // Everything fits: the scale is the true fit.
+        assert.equal(computeScale('all', { w: 1000, h: 300 }, window, 1), 0.7);
         assert.equal(computeScale('custom', content, window, 2.5), 2.5);
+    });
+
+    it('Fit All never goes below a readable scale: a huge design opens as a scrollable overview instead', () => {
+        assert.equal(computeScale('all', { w: 1400, h: 1400 }, window, 1), MIN_READABLE_FIT);
+        assert.equal(computeScale('all', { w: 9000, h: 4000 }, window, 1), MIN_READABLE_FIT);
+        assert.ok(MIN_READABLE_FIT * 12 >= 7, 'a 12 px label is still about 7 px at the floor');
+        assert.equal(computeScale('width', { w: 9000, h: 400 }, window, 1), Math.max(MIN_SCALE, window.w / 9000), 'Fit Width is literal (down to the zoom limit): the student asked for it');
     });
 
     it('never magnifies a small schematic past the ceiling, and clamps zoom to sensible limits', () => {
@@ -93,7 +101,7 @@ describe('Design Schematic: zoom model', () => {
 
     it('stored view state is sanitized: unknown modes, junk positions and huge maps are dropped', () => {
         const s = sanitizeViewState({ view: { mode: 'bogus', scale: 'x' }, pans: { a: { x: 10.4, y: -5 }, b: { x: 'q' }, c: null }, notesOpen: 'yes' });
-        assert.deepEqual(s, { view: { mode: '100', scale: 1 }, pans: { a: { x: 10, y: 0 } }, notesOpen: false });
+        assert.deepEqual(s, { view: { mode: 'all', scale: 1 }, pans: { a: { x: 10, y: 0 } }, notesOpen: false });
         const wide = sanitizeViewState({ view: { mode: 'custom', scale: 9 }, pans: Object.fromEntries(Array.from({ length: 500 }, (_, i) => [`n${i}`, { x: 1, y: 1 }])) });
         assert.equal(wide.view.scale, MAX_SCALE);
         assert.equal(Object.keys(wide.pans).length, 200);
@@ -101,7 +109,7 @@ describe('Design Schematic: zoom model', () => {
 });
 
 describe('Design Schematic: DigitDisplay stays readable', () => {
-    it('opens as a normal tab in the active editor group at 100%, not in a narrow side column and not shrunk to fit', async (t) => {
+    it('opens as a normal tab in the active editor group in Fit All, not in a narrow side column', async (t) => {
         const { service } = await digitDisplay(t);
         const panel = new SchematicPanel(service);
         t.after(() => panel.dispose());
@@ -110,7 +118,7 @@ describe('Design Schematic: DigitDisplay stays readable', () => {
         assert.equal(p.viewColumn, ViewColumn.Active);
         assert.notEqual(p.viewColumn, ViewColumn.Beside);
         assert.notEqual(p.viewColumn, ViewColumn.Two);
-        assert.match(p.webview.html, /const INIT = \{"mode":"100","scale":1,"x":0,"y":0,"notesOpen":false\}/, 'the first view is 100% from the top left');
+        assert.match(p.webview.html, /const INIT = \{"mode":"all","scale":1,"x":0,"y":0,"notesOpen":false,"appearance":"dark"\}/, 'the first view is Fit All from the top left');
         panel.show(); // a second request reveals the same tab and takes focus
         assert.equal(panels.filter((x) => x === p).length, 1);
         assert.equal(p.revealed[p.revealed.length - 1]!.preserveFocus, false);
@@ -163,11 +171,10 @@ describe('Design Schematic: DigitDisplay stays readable', () => {
             assert.ok(b.width >= 180, `${b.block.label} width ${b.width}`);
             assert.ok(b.height >= 50 + 22, `${b.block.label} height ${b.height}`);
         }
-        const css = readFileSync(join(REPO, 'extension', 'schematic', 'schematic-panel.ts'), 'utf8');
+        const chrome = readFileSync(join(REPO, 'extension', 'schematic', 'schematic-chrome.ts'), 'utf8');
+        const css = chrome.slice(chrome.indexOf("kind === 'design'"), chrome.indexOf('.rtl text'));
         const sizes = [...css.matchAll(/font-size: (\d+)px/g)].map((m) => Number(m[1]));
-        const diagram = [...css.matchAll(/\.(?:schematic text|pin-label[^{]*|net-label|block-label|frame-title|drill)[^{]*\{[^}]*font-size: (\d+)px/g)].map((m) => Number(m[1]));
-        assert.ok(diagram.length >= 5 && Math.min(...diagram) >= 12, `diagram text sizes ${diagram}`);
-        assert.ok(Math.min(...sizes) >= 11);
+        assert.ok(sizes.length >= 6 && Math.min(...sizes) >= 12, `diagram text sizes ${sizes}`);
         // Pins keep a comfortable spacing, so port labels never overlap.
         const pitch = new Set<number>();
         for (const b of layout.blocks) {

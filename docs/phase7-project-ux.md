@@ -70,3 +70,11 @@ No Verilog export. `.nexysvhdl/rtl/generated.v` stays an internal artifact of th
 ## Validation
 
 `npm test`, plus real-VS-Code runs of the packaged VSIX (`tests/integration/phase7-suite.ts`, stages `a`/`b`/`r` persistence, `n` project file, `s` schematic, `c`/`d` console) and the installed launcher (double-click of a `.nvproj`). Run them with `run-phase6.ts` and `NEXYS_P6_SUITE=phase7`; see the header of `phase7-suite.ts`.
+
+## UI polish pass (branch `phase7/ui-polish`)
+
+- **Shared schematic chrome** (`extension/schematic/schematic-chrome.ts`): the Dark/Light palettes, the diagram styles, the toolbar, the zoom/pan/appearance/export page script and standalone SVG for both schematics. The drawing uses its own palette tokens (not the VS Code theme), so Dark/Light is independent of the theme and the global theme is never touched. Both schematics read one `AppearanceStore` (`nexysvhdl.schematic.appearance`).
+- **Export** (`schematic-export.ts`): the extension shows the Save dialog and writes the file; SVG is the full drawing with its styles resolved and a background rectangle; PNG is rasterized in the page from that same standalone SVG (CSP `img-src data:` only) at up to 3× and capped at 8192 px, then written by the extension.
+- **Hidden tabs:** a hidden webview has no page, so a tab shown again is rebuilt from the current zoom and Dark/Light choice (only on hidden → shown, never on a focus change).
+- **Fit All** floors at `MIN_READABLE_FIT` (0.6); Fit Width stays literal.
+- **Validation hooks** stay behind `testHooks`, as in Phase 7; the export Save dialog has an injectable `chooseTarget` for the same reason.

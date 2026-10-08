@@ -58,13 +58,13 @@ describe('RTL schematic model with a mixed-case top (DigitDisplay)', () => {
 });
 
 describe('Design view: Project Files and Design Hierarchy as one view with two modes', () => {
-    it('opens in Files mode with a prominent "+ Add File" followed by the three file groups', async (t) => {
+    it('opens in Files mode with a prominent "Add File" followed by the three file groups', async (t) => {
         const { service } = await setup(t);
         const view = new DesignView(service);
         t.after(() => view.dispose());
         assert.equal(view.mode, 'files');
         const roots = view.getChildren();
-        assert.equal(roots[0]!.label, '+ Add File');
+        assert.equal(roots[0]!.label, 'Add File');
         assert.equal(roots[0]!.command?.command, 'nexysvhdl.addFile');
         assert.deepEqual(tree(view).slice(1), ['Sources', '  top.vhd | TOP', 'Simulation', '  top_tb.vhd | TESTBENCH', 'Constraints', '  nexys-a7-100t.xdc | IN USE']);
     });
@@ -77,7 +77,7 @@ describe('Design view: Project Files and Design Hierarchy as one view with two m
         t.after(() => view.dispose());
         view.setMode('hierarchy');
         const lines = tree(view);
-        assert.equal(lines[0], '+ Add File | source · testbench · constraint');
+        assert.equal(lines[0], 'Add File | source · testbench · constraint');
         assert.deepEqual(lines.slice(1, 7), ['Top | TOP', '  u_clock : clock_divider', '  U_Counter : counter', '  u_display : display_driver', '    u_mux : display_mux', '    u_decoder : seven_seg_decoder']);
         assert.ok(lines.includes('Not used by top | 1'));
         assert.ok(lines.includes('Testbenches'));

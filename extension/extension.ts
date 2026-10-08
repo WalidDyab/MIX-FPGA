@@ -6,6 +6,7 @@ import { ProblemsPublisher } from './diagnostics/vscode-diagnostics';
 import { findNvprojFiles } from '../core';
 import { findProjectRoot } from './project/detect';
 import { RtlPanel } from './rtl/rtl-panel';
+import { AppearanceStore } from './schematic/schematic-chrome';
 import { SchematicPanel } from './schematic/schematic-panel';
 import { LAYOUT_STATE_KEY, RADIX_STATE_KEY, WaveformPanel } from './waveform/waveform-panel';
 import { loadRequirement } from '../runtime/classroom';
@@ -59,8 +60,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
     const backend = new CoreBackend({ ...(required.requirement ? { classroom: { requirement: required.requirement } } : {}), onToolOutput: (text) => nexysConsole.raw(text) });
     const service = new NexysVhdlService({ backend, logger, console: nexysConsole, checkOnSave: () => config().get<boolean>('checkOnSave', true) });
     const state = new ProjectState();
-    const schematic = new SchematicPanel(service, context.extensionUri, state);
-    const rtl = new RtlPanel(service);
+    // One Dark/Light choice for both schematics, kept with the project.
+    const schematicAppearance = new AppearanceStore(state);
+    const schematic = new SchematicPanel(service, context.extensionUri, state, schematicAppearance);
+    const rtl = new RtlPanel(service, context.extensionUri, state, schematicAppearance);
     const waveform = new WaveformPanel(service, context.extensionUri, state);
     context.subscriptions.push(rtl, waveform);
     context.subscriptions.push(output, consoleChannel, { dispose: () => service.dispose() }, schematic, new ProblemsPublisher(service), new StatusBar(service));
@@ -75,8 +78,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         ['nexysvhdl.results', new ResultsView(service)],
     ];
     const setContext = (key: string, value: unknown) => void vscode.commands.executeCommand('setContext', key, value);
+    const trees = new Map<string, vscode.TreeView<unknown>>();
     for (const [id, provider] of views) {
         const tree = vscode.window.createTreeView(id, { treeDataProvider: provider, showCollapseAll: id === 'nexysvhdl.design' });
+        trees.set(id, tree);
         context.subscriptions.push(provider, tree);
         if (provider === design) {
             const showMode = (mode: string) => {
@@ -87,6 +92,21 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
             context.subscriptions.push(design.onDidChangeMode(showMode));
         }
     }
+
+    // A short status beside each section title (a supported header decoration), so the sections read as separate things at a glance.
+    const describeSections = () => {
+        const set = (id: string, text: string) => {
+            const t = trees.get(id);
+            if (t) t.description = text;
+        };
+        set('nexysvhdl.project', service.snapshot?.emptyProject ? 'empty project' : (service.project?.config.name ?? ''));
+        const busy = service.busyAction;
+        set('nexysvhdl.workflow', busy ? `${busy} running…` : '');
+        const boards = service.hardware.boards.length;
+        set('nexysvhdl.hardware', service.hardware.status === 'unknown' ? '' : service.hardware.status === 'detecting' ? 'looking…' : boards === 0 ? 'no board' : `${boards} board${boards === 1 ? '' : 's'}`);
+    };
+    context.subscriptions.push(service.onDidChange(describeSections));
+    describeSections();
 
     // Optional classroom appearance: workspace scope only, the user's own theme is never written.
     const themeSettings: ThemeSettings = {

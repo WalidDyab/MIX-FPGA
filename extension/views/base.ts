@@ -75,3 +75,15 @@ export function stateIcon(state: ActionState): vscode.ThemeIcon {
 export function openCommand(root: string, file: string, line?: number, col?: number): vscode.Command {
     return { title: 'Open', command: 'nexysvhdl.openLocation', arguments: [root, file, line, col] };
 }
+
+/**
+ * Gives a section its own colour identity: icons that have no colour of their own (state icons keep theirs) take `colorId`, a theme
+ * colour, so Project, Hardware and Results read as different places at a glance in any theme. Top-level rows only.
+ */
+export function tint(nodes: Node[], colorId: string): Node[] {
+    for (const n of nodes) {
+        const icon = n.iconPath;
+        if (icon instanceof vscode.ThemeIcon && icon.color === undefined && icon.id !== 'file') n.iconPath = new vscode.ThemeIcon(icon.id, new vscode.ThemeColor(colorId));
+    }
+    return nodes;
+}

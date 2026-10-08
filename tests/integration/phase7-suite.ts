@@ -3,6 +3,7 @@
  * Run with run-phase6.ts (NEXYS_P6_SUITE=phase7), against the PACKAGED extension installed in a private extensions folder:
  *
  *   NEXYS_P7_STAGE=a   first session: change every NexysVHDL-managed setting, then CLOSE THE WINDOW NORMALLY (no explicit save).
+ *   NEXYS_P7_STAGE=u   UI polish: sidebar, panels in the active group, Fit All, Dark/Light, export, Start Over, marker, Clear Problems; w = Dark/Light after a restart.
  *   NEXYS_P7_STAGE=e   Empty project: clean Problems at the start, validation begins once sources exist.
  *   NEXYS_P7_STAGE=n   New Project (.nvproj), Open Project, legacy project; s = Design Schematic readability; c = NexysVHDL Console with the real tools.
  *   NEXYS_P7_STAGE=b   second session on the same project and user data: everything must be restored; then workflow/console/schematic
@@ -163,6 +164,227 @@ export async function run(): Promise<void> {
         }
 
 
+        // ================================================================== stage u: UI polish, with the real tools
+        if (stage === 'u') {
+            const { rtl } = await ext.activate();
+            rtl.testHooks = true;
+            const groups = () => vscode.window.tabGroups.all.map((g) => ({ column: g.viewColumn, tabs: g.tabs.map((t) => t.label) }));
+            const tabCount = (prefix: string) => vscode.window.tabGroups.all.flatMap((g) => g.tabs).filter((t) => t.label.startsWith(prefix)).length;
+            const unrelated = vscode.languages.createDiagnosticCollection('p7-unrelated');
+            const diags = () => vscode.languages.getDiagnostics().flatMap(([uri, ds]) => ds.map((d) => ({ file: uri.fsPath.split(/[\\/]/).pop(), source: d.source ?? '', message: d.message })));
+            const consoleBytes = async () => {
+                const walk = async (dir: string): Promise<string[]> => {
+                    const found: string[] = [];
+                    for (const e of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+                        const p = join(dir, e.name);
+                        if (e.isDirectory()) found.push(...(await walk(p)));
+                        else if (e.name.includes('NexysVHDL Console')) found.push(p);
+                    }
+                    return found;
+                };
+                const files = await walk(join(process.env['NEXYS_P7_USERDATA']!, 'logs'));
+                const texts = await Promise.all(files.map((f) => readFile(f, 'utf8').catch(() => '')));
+                return texts.sort((a, b) => b.length - a.length)[0]?.length ?? 0;
+            };
+            await exec('workbench.action.closeAuxiliaryBar');
+            await exec('workbench.view.extension.nexysvhdl');
+            await sleep(1500);
+
+            // ---- sidebar separation (default theme, then the Classroom appearance) and a row with its inline action
+            await shot('a1-sidebar-default-theme');
+            await exec('nexysvhdl.useClassroomAppearance');
+            await sleep(2500);
+            await shot('a2-sidebar-classroom-theme');
+            await exec('nexysvhdl.project.focus');
+            for (let i = 0; i < 4; i++) await exec('list.focusDown'); // the Top row
+            await sleep(800);
+            await shot('a3-project-row-inline-action');
+
+            // ---- Check, then the three viewers all in the ACTIVE editor group
+            await exec('nexysvhdl.check');
+            await idle();
+            await exec('nexysvhdl.runSimulation', { duration: '2us' });
+            await idle();
+            await waitFor('waveform loaded', () => (wst()['loaded'] ? wst() : undefined), 40_000);
+            await exec('nexysvhdl.openSchematic');
+            await waitFor('design view', () => schematic.lastView, 15_000);
+            await exec('nexysvhdl.openRtlSchematic');
+            await waitFor('rtl view', () => rtl.lastView, 60_000);
+            await sleep(1200);
+            step('u.groupsAfterOpening', groups());
+            // Open each again: reused, not duplicated.
+            await exec('nexysvhdl.openWaveform');
+            await exec('nexysvhdl.openSchematic');
+            await exec('nexysvhdl.openRtlSchematic');
+            await sleep(800);
+            step('u.reuse', { groups: groups(), waveformTabs: tabCount('Waveform'), designTabs: tabCount('Schematic'), rtlTabs: tabCount('RTL') });
+
+            // ---- Fit All is the initial view of both schematics (metrics are what the student sees)
+            step('u.designInitial', { mode: schematic.lastView!.mode, scale: schematic.lastView!.scale, metrics: schematic.lastView!.metrics });
+            step('u.rtlInitial', { mode: rtl.lastView!.mode, scale: rtl.lastView!.scale, metrics: rtl.lastView!.metrics });
+            await exec('nexysvhdl.openSchematic');
+            await sleep(1200);
+            await shot('b1-design-schematic-fit-all-full-area');
+            await exec('nexysvhdl.openRtlSchematic');
+            await sleep(1200);
+            await shot('b2-rtl-schematic-fit-all-full-area');
+
+            // ---- Dark / Light: one choice for both, applied live and remembered. (A hidden tab has no page, so reveal before driving it.)
+            const appearanceNow = () => ({ design: schematic.lastView?.metrics['appearance'], rtl: rtl.lastView?.metrics['appearance'], store: schematic.appearance.get() });
+            const reveal = async (which: 'design' | 'rtl') => {
+                await exec(which === 'design' ? 'nexysvhdl.openSchematic' : 'nexysvhdl.openRtlSchematic');
+                await sleep(900);
+            };
+            const nudge = async (which: 'design' | 'rtl') => {
+                // zoom in and out so the page reports its state again
+                const panel = which === 'design' ? schematic : rtl;
+                panel.postCommand({ action: 'zoomIn' });
+                await sleep(500);
+                panel.postCommand({ action: 'zoomOut' });
+                await sleep(600);
+            };
+            await reveal('design');
+            schematic.postCommand({ action: 'click', selector: '#bmode' });
+            await sleep(900);
+            await nudge('design');
+            step('u.afterToggleInDesign', appearanceNow());
+            await shot('c1-design-schematic-light');
+            await reveal('rtl');
+            await nudge('rtl');
+            step('u.rtlFollowed', appearanceNow());
+            await shot('c2-rtl-schematic-light');
+            // and back from the RTL page
+            rtl.postCommand({ action: 'click', selector: '#bmode' });
+            await sleep(900);
+            await nudge('rtl');
+            step('u.toggledBackInRtl', appearanceNow());
+            rtl.postCommand({ action: 'click', selector: '#bmode' });
+            await sleep(900);
+            await nudge('rtl');
+            step('u.lightAgainInRtl', appearanceNow());
+
+            // ---- Export SVG and PNG of both, in Light and in Dark; the whole drawing, whatever the zoom
+            const outDir = join(scratch, 'exports');
+            await mkdir(outDir, { recursive: true });
+            const exported: Record<string, unknown> = {};
+            const doExport = async (which: 'design' | 'rtl', format: 'svg' | 'png', mode: string) => {
+                const panel = which === 'design' ? schematic : rtl;
+                const target = join(outDir, `${which}-${mode}.${format}`);
+                panel.exporter.chooseTarget = () => Promise.resolve(vscode.Uri.file(target));
+                panel.exporter.lastExport = undefined;
+                await reveal(which);
+                panel.postCommand({ action: '100' }); // the export must still be the complete drawing at full resolution
+                await sleep(500);
+                panel.postCommand({ action: 'click', selector: format === 'svg' ? '#bsvg' : '#bpng' });
+                await waitFor(`${which} ${format} exported`, () => panel.exporter.lastExport, 30_000);
+                exported[`${which}-${mode}.${format}`] = { ...panel.exporter.lastExport! };
+            };
+            for (const mode of ['light', 'dark'] as const) {
+                schematic.appearance.set(mode);
+                await sleep(500);
+                step(`u.exportMode.${mode}`, { store: schematic.appearance.get() });
+                for (const which of ['design', 'rtl'] as const) for (const format of ['svg', 'png'] as const) await doExport(which, format, mode);
+            }
+            step('u.exports', exported);
+
+            // ---- Start Over
+            await exec('nexysvhdl.openWaveform');
+            await sleep(900);
+            const run0 = service.simulationRun;
+            step('u.startOverIdle', { restartDisabled: wst()['sim']?.restartDisabled, runDisabled: wst()['sim']?.runDisabled, stopDisabled: wst()['sim']?.stopDisabled });
+            waveform.postCommand({ action: 'setDuration', number: '3', unit: 'us' });
+            await waitFor('duration typed', () => wst()['sim']?.typed === '3us', 10_000);
+            waveform.postCommand({ action: 'cursor', time: Number(wst()['t1']) * 0.4 });
+            await sleep(500);
+            const cursorBefore = wst()['cursor'];
+            waveform.postCommand({ action: 'clickRestart' });
+            await waitFor('rerun started', () => service.simulating || service.simulationRun > run0, 20_000);
+            const during = { restartDisabled: wst()['sim']?.restartDisabled, runDisabled: wst()['sim']?.runDisabled, stopDisabled: wst()['sim']?.stopDisabled, running: wst()['sim']?.running };
+            await idle();
+            await waitFor('reloaded', () => service.simulationRun > run0 && wst()['loaded'], 30_000);
+            await sleep(900);
+            step('u.startOver', {
+                during,
+                afterRun: { restartDisabled: wst()['sim']?.restartDisabled, runDisabled: wst()['sim']?.runDisabled, stopDisabled: wst()['sim']?.stopDisabled },
+                stoppedAt: service.lastSimulation?.stoppedAt,
+                runs: service.simulationRun - run0,
+                cursorBefore,
+                cursorAfter: wst()['cursor'],
+                viewers: tabCount('Waveform'),
+            });
+            await shot('d1-waveform-start-over-marker');
+            // The marker follows the selected time through zoom and pan.
+            waveform.postCommand({ action: 'cursor', time: Number(wst()['t1']) * 0.7 });
+            waveform.postCommand({ action: 'zoomIn' });
+            await sleep(700);
+            step('u.markerAfterZoom', { cursor: wst()['cursor'], t0: wst()['t0'], t1: wst()['t1'], visible: wst()['cursor'] >= wst()['t0'] && wst()['cursor'] <= wst()['t1'] });
+            await shot('d2-waveform-marker-zoomed');
+
+            // ---- Add File shows one plus; Hierarchy too
+            await exec('workbench.view.extension.nexysvhdl');
+            await exec('nexysvhdl.design.showHierarchy');
+            await sleep(900);
+            await shot('e1-add-file-hierarchy');
+            await exec('nexysvhdl.design.showFiles');
+            await sleep(600);
+            await shot('e2-add-file-files');
+
+            // ---- Clear NexysVHDL Problems: only NexysVHDL's own diagnostics go
+            await writeFile(join(root, 'src', 'broken.vhd'), BROKEN);
+            await service.refreshNow();
+            await exec('nexysvhdl.check');
+            await idle();
+            unrelated.set(vscode.Uri.file(join(root, 'src', 'DigitDisplay.vhd')), [new vscode.Diagnostic(new vscode.Range(0, 0, 0, 3), 'a diagnostic from another extension', vscode.DiagnosticSeverity.Warning)]);
+            (unrelated.get(vscode.Uri.file(join(root, 'src', 'DigitDisplay.vhd'))) as vscode.Diagnostic[])[0]!.source = 'other-extension';
+            unrelated.set(vscode.Uri.file(join(root, 'src', 'DigitDisplay.vhd')), unrelated.get(vscode.Uri.file(join(root, 'src', 'DigitDisplay.vhd')))!);
+            await exec('workbench.actions.view.problems');
+            await sleep(1500);
+            const before = diags();
+            const consoleBefore = await consoleBytes();
+            await shot('f1-problems-before-clear');
+            await exec('nexysvhdl.clearProblems');
+            await sleep(1500);
+            const after = diags();
+            await shot('f2-problems-after-clear');
+            step('u.clearProblems', { before, after, consoleBytesBefore: consoleBefore, consoleBytesAfter: await consoleBytes() });
+            await exec('nexysvhdl.check');
+            await idle();
+            await sleep(1200);
+            step('u.problemsReturn', diags());
+            await rm(join(root, 'src', 'broken.vhd'), { force: true });
+            await service.refreshNow();
+            unrelated.dispose();
+
+            await schematic.appearance.set('light');
+            await state.flush();
+            step('u.appearanceOnDisk', (await readJson(join(root, '.nexysvhdl', 'state.json'))).values['nexysvhdl.schematic.appearance']);
+            step('result', 'stage-u-complete');
+            return;
+        }
+
+        // ================================================================== stage w: the Dark/Light choice survives a new session
+        if (stage === 'w') {
+            const { rtl } = await ext.activate();
+            rtl.testHooks = true;
+            await exec('nexysvhdl.openSchematic');
+            await waitFor('design view', () => schematic.lastView, 15_000);
+            await sleep(900);
+            const design = schematic.lastView!.metrics['appearance'];
+            await exec('nexysvhdl.check');
+            await idle();
+            await exec('nexysvhdl.openRtlSchematic');
+            await waitFor('rtl view', () => rtl.lastView, 60_000);
+            await sleep(900);
+            step('w.restored', { store: schematic.appearance.get(), design, rtl: rtl.lastView!.metrics['appearance'] });
+            await shot('g1-design-light-after-restart');
+            await exec('nexysvhdl.openWaveform');
+            await waitFor('toolbar state', () => wst()['sim'], 15_000);
+            await sleep(600);
+            step('w.startOverBeforeAnyRun', { restartDisabled: wst()['sim']?.restartDisabled, runDisabled: wst()['sim']?.runDisabled });
+            step('result', 'stage-w-complete');
+            return;
+        }
+
         // ================================================================== stage e: an Empty project is a valid starting state
         if (stage === 'e') {
             const problems = () =>
@@ -287,7 +509,7 @@ end architecture rtl;
             step('s.zoomedAndPanned', { scale: lastView()!.scale, x: lastView()!.x, y: lastView()!.y, metrics: lastView()!.metrics });
             await shot('73-schematic-zoom-pan');
             schematic.postCommand({ action: 'reset' });
-            await settle('100');
+            await settle('all');
             await sleep(400);
             step('s.reset', { mode: lastView()!.mode, scale: lastView()!.scale, x: lastView()!.x, y: lastView()!.y });
 

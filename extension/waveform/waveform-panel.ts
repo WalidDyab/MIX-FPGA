@@ -65,7 +65,7 @@ export class WaveformPanel implements vscode.Disposable {
             return;
         }
         const scripts = vscode.Uri.joinPath(this.extensionUri, 'dist', 'extension', 'waveform');
-        this.panel = vscode.window.createWebviewPanel('nexysvhdl.waveform', 'Waveform', vscode.ViewColumn.Two, { enableScripts: true, localResourceRoots: [scripts] });
+        this.panel = vscode.window.createWebviewPanel('nexysvhdl.waveform', 'Waveform', vscode.ViewColumn.Active, { enableScripts: true, localResourceRoots: [scripts] });
         this.panel.iconPath = new vscode.ThemeIcon('pulse');
         this.panel.onDidDispose(() => {
             this.panel = undefined;
@@ -105,7 +105,7 @@ export class WaveformPanel implements vscode.Disposable {
         else if (last?.cancelled) status = 'Simulation stopped by user';
         else if (last && last.status === 'succeeded' && last.passed) status = `Last run passed${last.stoppedAt ? ` · stopped at ${formatSimTime(last.stoppedAt)}` : ''}`;
         else if (last) status = 'Last run failed: see the message above or Problems';
-        void this.panel.webview.postMessage({ type: 'simState', running, other, duration, status });
+        void this.panel.webview.postMessage({ type: 'simState', running, other, duration, status, hasRun: last !== undefined });
     }
 
     /** Sends a command to the webview (fit, zoomIn, zoomOut, pan, cursor, radix). */

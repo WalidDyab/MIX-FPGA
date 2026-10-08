@@ -14,6 +14,11 @@ export const MIN_SCALE = 0.1;
 export const MAX_SCALE = 4;
 /** "Fit Width" and "Fit All" never magnify a small schematic beyond this. */
 export const FIT_CEILING = 1.5;
+/**
+ * "Fit All" never goes below this: a design too big to show whole at a readable size opens as a scrollable overview at this
+ * scale instead of shrinking its text into nothing (12 px labels stay about 7 px).
+ */
+export const MIN_READABLE_FIT = 0.6;
 
 export interface SchematicView {
     readonly mode: ZoomMode;
@@ -32,7 +37,8 @@ export interface SchematicViewState {
     readonly notesOpen: boolean;
 }
 
-export const DEFAULT_VIEW: SchematicView = { mode: '100', scale: 1 };
+/** A schematic opens in Fit All: for a normal teaching design the whole thing is visible at once. */
+export const DEFAULT_VIEW: SchematicView = { mode: 'all', scale: 1 };
 
 export function clampScale(scale: number): number {
     if (typeof scale !== 'number' || !Number.isFinite(scale)) return 1;
@@ -49,14 +55,15 @@ export function computeScale(mode: ZoomMode, content: { w: number; h: number }, 
     if (!(content.w > 0) || !(content.h > 0) || !(viewport.w > 0) || !(viewport.h > 0)) return 1;
     const byWidth = viewport.w / content.w;
     const fit = mode === 'width' ? byWidth : Math.min(byWidth, viewport.h / content.h);
-    return clampScale(Math.min(fit, FIT_CEILING));
+    const bounded = Math.min(fit, FIT_CEILING);
+    return clampScale(mode === 'all' ? Math.max(bounded, MIN_READABLE_FIT) : bounded);
 }
 
 /** Stored state with anything malformed replaced by the defaults. */
 export function sanitizeViewState(value: unknown): SchematicViewState {
     const v = (typeof value === 'object' && value !== null ? value : {}) as { view?: { mode?: unknown; scale?: unknown }; pans?: unknown; notesOpen?: unknown };
-    const mode: ZoomMode = v.view?.mode === 'width' || v.view?.mode === 'all' || v.view?.mode === 'custom' || v.view?.mode === '100' ? v.view.mode : '100';
-    const scale = typeof v.view?.scale === 'number' ? clampScale(v.view.scale) : 1;
+    const mode: ZoomMode = v.view?.mode === 'width' || v.view?.mode === 'all' || v.view?.mode === 'custom' || v.view?.mode === '100' ? v.view.mode : DEFAULT_VIEW.mode;
+    const scale = typeof v.view?.scale === 'number' ? clampScale(v.view.scale) : DEFAULT_VIEW.scale;
     const pans: Record<string, PanPosition> = {};
     if (typeof v.pans === 'object' && v.pans !== null && !Array.isArray(v.pans)) {
         for (const [id, p] of Object.entries(v.pans as Record<string, unknown>).slice(0, 200)) {

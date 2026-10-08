@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import type { LogRef } from '../../core';
 import type { NexysVhdlService } from '../services/nexys-service';
 import { buildResultsModel, type ResultRow } from '../services/results-model';
-import { info, Node, ServiceTree } from './base';
+import { info, Node, ServiceTree, tint } from './base';
 
 /** RESULTS: latest Check, Simulation and Build results, from the Phase 3 result objects. */
 export class ResultsView extends ServiceTree {
@@ -78,6 +78,6 @@ export class ResultsView extends ServiceTree {
             nodes.push(this.section('check', 'Check', m.check.passed, m.check.passed ? 'No VHDL errors' : 'Errors found', [...this.rows(m.check.rows), ...this.logs(m.check.logs)]));
         }
         if (nodes.length === 0) nodes.push(info('No results yet', 'run Check, Simulate or Build', 'info'));
-        return nodes;
+        return tint(nodes, 'charts.purple');
     }
 }

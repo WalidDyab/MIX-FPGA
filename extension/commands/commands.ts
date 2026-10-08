@@ -986,6 +986,12 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
 
     register('nexysvhdl.showConsole', () => nexysConsole.show());
 
+    /** Removes the diagnostics NexysVHDL published (its own collection only); the Console and the Log are not cleared. */
+    register('nexysvhdl.clearProblems', () => {
+        service.clearProblems();
+        vscode.window.setStatusBarMessage('$(check) NexysVHDL problems cleared', 3000);
+    });
+
     /** Switches the Console between the short student-readable output and the full streamed tool output. */
     register('nexysvhdl.toggleConsoleDetail', async () => {
         const config = vscode.workspace.getConfiguration('nexysvhdl');

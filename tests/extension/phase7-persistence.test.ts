@@ -227,7 +227,7 @@ describe('NexysVHDL-managed state survives closing and reopening', () => {
         assert.deepEqual(sch1.lastView && { mode: sch1.lastView.mode, x: sch1.lastView.x, y: sch1.lastView.y }, { mode: 'width', x: 40, y: 12 });
         // The automatic re-render on save keeps the view: the new page is told the remembered state.
         await service.refreshNow();
-        assert.match(panel.webview.html, /const INIT = \{"mode":"width","scale":0\.8,"x":40,"y":12,"notesOpen":true\}/);
+        assert.match(panel.webview.html, /const INIT = \{"mode":"width","scale":0\.8,"x":40,"y":12,"notesOpen":true,"appearance":"dark"\}/);
         await state1.flush();
 
         const state2 = new ProjectState({ debounceMs: 60_000 });
@@ -238,7 +238,7 @@ describe('NexysVHDL-managed state survives closing and reopening', () => {
         sch2.show();
         const reopened = panels[panels.length - 1]!;
         assert.notEqual(reopened, panel);
-        assert.match(reopened.webview.html, /const INIT = \{"mode":"width","scale":0\.8,"x":40,"y":12,"notesOpen":true\}/);
+        assert.match(reopened.webview.html, /const INIT = \{"mode":"width","scale":0\.8,"x":40,"y":12,"notesOpen":true,"appearance":"dark"\}/);
         assert.equal(((state2.get(SCHEMATIC_STATE_KEY) as { view: { mode: string } }).view).mode, 'width');
         assert.equal(reopened.viewColumn, ViewColumn.Active, 'opens as a normal tab in the active group, not beside');
     });

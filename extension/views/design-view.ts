@@ -16,7 +16,7 @@ const STORED_MODE = DESIGN_MODE_STATE_KEY;
 /**
  * DESIGN: the single student-facing view of the design, in two modes. Files
  * (the default: it is where a project starts) lists Sources, Simulation and
- * Constraints with a prominent "+ Add File"; Hierarchy shows the structure
+ * Constraints with a prominent "Add File"; Hierarchy shows the structure
  * from the top entity and the schematics. Both modes are the former Project
  * Files and Design Hierarchy trees, reused unchanged, so every capability
  * (set top, use XDC, open schematic, go to entity, ...) is still there.
@@ -63,7 +63,7 @@ export class DesignView extends ServiceTree {
 
     /** The one primary file action, shown first in both modes. It runs the same command: Add File. */
     private addFileNode(): Node {
-        const add = info('+ Add File', 'source · testbench · constraint', 'add');
+        const add = info('Add File', 'source · testbench · constraint', 'add');
         add.id = 'design:add-file';
         add.tooltip = 'Create a new VHDL source, testbench or XDC constraints file, or copy files into the project.';
         add.command = { title: 'Add File', command: 'nexysvhdl.addFile' };
@@ -76,6 +76,8 @@ export class DesignView extends ServiceTree {
         if (this.service.snapshot.emptyProject) {
             const n = info(EMPTY_PROJECT_MESSAGE, 'no top entity yet', 'lightbulb');
             n.id = 'design:empty-hint';
+            n.contextValue = 'nexysvhdl.design.empty';
+            n.command = this.addFileNode().command!; // the one Add File implementation
             hint.push(n);
         }
         return [this.addFileNode(), ...hint, ...(this.current === 'hierarchy' ? this.hierarchy : this.files).getChildren()];

@@ -35,28 +35,33 @@
       "nexysvhdl": [
         {
           "id": "nexysvhdl.project",
-          "name": "Project"
+          "name": "Project",
+          "icon": "$(folder-library)"
         },
         {
           "id": "nexysvhdl.design",
           "name": "Design",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject",
+          "icon": "$(type-hierarchy)"
         },
         {
           "id": "nexysvhdl.workflow",
           "name": "Workflow",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject",
+          "icon": "$(play-circle)"
         },
         {
           "id": "nexysvhdl.hardware",
           "name": "Hardware",
-          "when": "nexysvhdl.hasProject"
+          "when": "nexysvhdl.hasProject",
+          "icon": "$(chip)"
         },
         {
           "id": "nexysvhdl.results",
           "name": "Results",
           "when": "nexysvhdl.hasProject",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "icon": "$(checklist)"
         }
       ]
     },
@@ -155,7 +160,8 @@
       {
         "command": "nexysvhdl.setTopEntity",
         "title": "Set Top Entity",
-        "category": "NexysVHDL"
+        "category": "NexysVHDL",
+        "icon": "$(edit)"
       },
       {
         "command": "nexysvhdl.setTopEntityFromItem",
@@ -165,7 +171,8 @@
       {
         "command": "nexysvhdl.setTestbench",
         "title": "Set Testbench",
-        "category": "NexysVHDL"
+        "category": "NexysVHDL",
+        "icon": "$(edit)"
       },
       {
         "command": "nexysvhdl.useConstraintsFile",
@@ -306,6 +313,12 @@
       {
         "command": "nexysvhdl.createProjectFile",
         "title": "Create NexysVHDL Project File",
+        "category": "NexysVHDL",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "nexysvhdl.clearProblems",
+        "title": "Clear NexysVHDL Problems",
         "category": "NexysVHDL"
       }
     ],
@@ -442,6 +455,10 @@
         {
           "command": "nexysvhdl.toggleConsoleDetail",
           "when": "true"
+        },
+        {
+          "command": "nexysvhdl.clearProblems",
+          "when": "true"
         }
       ],
       "view/title": [
@@ -514,6 +531,16 @@
           "command": "nexysvhdl.refreshHierarchy",
           "when": "view == nexysvhdl.design && nexysvhdl.designMode == hierarchy",
           "group": "navigation@3"
+        },
+        {
+          "command": "nexysvhdl.clearProblems",
+          "when": "view == nexysvhdl.workflow",
+          "group": "9_problems@1"
+        },
+        {
+          "command": "nexysvhdl.clearProblems",
+          "when": "view == nexysvhdl.results",
+          "group": "9_problems@1"
         }
       ],
       "view/item/context": [
@@ -586,6 +613,76 @@
           "command": "nexysvhdl.restoreToProject",
           "when": "view == nexysvhdl.design && viewItem == nexysvhdl.removed",
           "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.setTopEntity",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.top",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.setTopEntity",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.top",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.setTestbench",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.testbench",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.setTestbench",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.testbench",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.setSimulationStopTime",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.stopTime",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.setSimulationStopTime",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.stopTime",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.openProjectSettings",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.name",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.openProjectSettings",
+          "when": "view == nexysvhdl.project && viewItem =~ /^nexysvhdl\\.project\\.(name|constraints)$/",
+          "group": "nexysvhdl@2"
+        },
+        {
+          "command": "nexysvhdl.createProjectFile",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.fileMissing",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.createProjectFile",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.fileMissing",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.showEnvironment",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.environment",
+          "group": "inline"
+        },
+        {
+          "command": "nexysvhdl.showEnvironment",
+          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.environment",
+          "group": "nexysvhdl@1"
+        },
+        {
+          "command": "nexysvhdl.detectBoards",
+          "when": "view == nexysvhdl.hardware && viewItem =~ /^nexysvhdl\\.board/",
+          "group": "nexysvhdl@5"
+        },
+        {
+          "command": "nexysvhdl.addFile",
+          "when": "view == nexysvhdl.design && viewItem == nexysvhdl.design.empty",
+          "group": "inline"
         }
       ]
     },
@@ -674,7 +771,7 @@
           {
             "id": "edit",
             "title": "Edit VHDL",
-            "description": "Write your design in src/ and your testbench in sim/. Use + Add File in the Design view to create or copy files. The hierarchy updates when you save.\n[Show Design](command:nexysvhdl.design.focus)",
+            "description": "Write your design in src/ and your testbench in sim/. Use Add File in the Design view to create or copy files. The hierarchy updates when you save.\n[Show Design](command:nexysvhdl.design.focus)",
             "media": {
               "markdown": "resources/walkthrough/edit.md"
             },

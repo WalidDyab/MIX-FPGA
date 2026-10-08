@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { hardwareHeadline } from '../services/hardware-state';
 import type { NexysVhdlService } from '../services/nexys-service';
-import { info, Node, ServiceTree } from './base';
+import { info, Node, ServiceTree, tint } from './base';
 
 /** HARDWARE: connected boards, the student's choice among several, detection problems. */
 export class HardwareView extends ServiceTree {
@@ -68,6 +68,6 @@ export class HardwareView extends ServiceTree {
             n.tooltip = d.message;
             nodes.push(n);
         }
-        return nodes;
+        return tint(nodes, 'charts.orange');
     }
 }

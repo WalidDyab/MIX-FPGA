@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — UI polish (not yet versioned)
+
+- **Viewers use the whole editor area:** Waveform, RTL Schematic and Design Schematic open in the active editor group (never beside or in a new split) and are reused when already open.
+- **Schematics:** open in Fit All (never below a readable scale: a huge design opens as a scrollable overview); one toolbar for both (100%, Fit Width, Fit All, zoom, Reset = Fit All, Maximize); **Dark/Light** background shared by both and remembered per project; **Export SVG…** and **Export PNG…** of the complete drawing through the native Save dialog (true vector SVG; PNG at up to 3×).
+- **Waveform:** **Start Over** reruns the testbench from time 0 with the current duration (disabled while a run is in progress or before the first run); a high-contrast time marker with the selected time on a flag spans every row, stays put through zoom, pan and reruns, and moves with Left/Right.
+- **Problems:** *Clear NexysVHDL Problems* removes only NexysVHDL's own diagnostics (command palette; also in the Workflow/Results "..." menus: VS Code has no contribution point for the Problems panel's own context menu).
+- **Sidebar:** per-section colour identity, a status beside each section title, inline row actions on Project rows (Top, Testbench, Simulation length, project settings, environment, project file), stronger section separators in the Classroom theme. **Add File** now shows a single plus.
+
 ## Unreleased — Phase 7 project UX refinements (not yet versioned)
 
 - **Reliable saving:** NexysVHDL's own state is written as it changes and flushed before the window closes, reloads or the extension stops (`deactivate()` is awaited). `nexysvhdl.json` is now written atomically and one update at a time. Design mode, waveform signals, Display As, pane widths and the schematic view are remembered with the project in `.nexysvhdl/state.json`. Source documents keep VS Code's normal Save / Auto Save.

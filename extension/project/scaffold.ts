@@ -21,7 +21,7 @@ export type ProjectTemplate = 'starter' | 'empty';
 
 /** The templates the New Project dialog offers, in order. A normal project starts empty. */
 export const PROJECT_TEMPLATES: ReadonlyArray<{ readonly template: ProjectTemplate; readonly label: string; readonly description: string; readonly recommended: boolean }> = [
-    { template: 'empty', label: 'Empty project (recommended)', description: 'empty src/ and sim/ folders: add your own files with + Add File', recommended: true },
+    { template: 'empty', label: 'Empty project (recommended)', description: 'empty src/ and sim/ folders: add your own files with Add File', recommended: true },
     { template: 'starter', label: 'Starter project', description: 'a blinking-LED example with its testbench and pin constraints', recommended: false },
 ];
 

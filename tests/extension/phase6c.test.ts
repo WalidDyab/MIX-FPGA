@@ -40,7 +40,7 @@ describe('Design → Hierarchy has the same + Add File as Files', () => {
         view.setMode('hierarchy');
         const hierarchy = view.getChildren()[0]!;
         for (const node of [files, hierarchy]) {
-            assert.equal(node.label, '+ Add File');
+            assert.equal(node.label, 'Add File');
             assert.equal(node.command?.command, 'nexysvhdl.addFile');
             assert.equal(node.description, 'source · testbench · constraint');
         }

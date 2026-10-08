@@ -273,6 +273,15 @@ export class NexysVhdlService {
         this.changes.dispose();
     }
 
+    /**
+     * Clears NexysVHDL's own diagnostics (the Problems list). Nothing else is touched: other extensions' diagnostics, the NexysVHDL
+     * Console and the NexysVHDL Log stay as they are, and the next Check, Simulate, Build, Program or project refresh may report again.
+     */
+    clearProblems(): void {
+        this.problems.clear();
+        this.emit('problems');
+    }
+
     /** Debounced refresh: coalesces bursts of file events into one re-index. */
     scheduleRefresh(): Promise<void> {
         if (this.timer) clearTimeout(this.timer);

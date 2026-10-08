@@ -185,6 +185,17 @@ export class FakeWebviewPanel {
         this.disposeHandler = l;
         return { dispose: () => undefined };
     }
+    private viewStateHandler: ((e: { webviewPanel: FakeWebviewPanel }) => void) | undefined;
+    visible = true;
+    onDidChangeViewState(l: (e: { webviewPanel: FakeWebviewPanel }) => void): { dispose(): void } {
+        this.viewStateHandler = l;
+        return { dispose: () => undefined };
+    }
+    /** The tab is hidden or shown again. */
+    setVisible(visible: boolean): void {
+        this.visible = visible;
+        this.viewStateHandler?.({ webviewPanel: this });
+    }
     reveal(column?: number, preserveFocus?: boolean): void {
         this.revealed.push({ column, preserveFocus });
     }
@@ -199,7 +210,17 @@ export class FakeWebviewPanel {
 }
 
 export const panels: FakeWebviewPanel[] = [];
+/** Messages the extension showed, for assertions. */
+export const messages: Array<{ kind: 'info' | 'warning' | 'error'; text: string }> = [];
+const show = (kind: 'info' | 'warning' | 'error') => (text: string): Promise<undefined> => {
+    messages.push({ kind, text });
+    return Promise.resolve(undefined);
+};
 export const window = {
+    showInformationMessage: show('info'),
+    showWarningMessage: show('warning'),
+    showErrorMessage: show('error'),
+    setStatusBarMessage: (_text: string, _ms?: number) => ({ dispose: () => undefined }),
     createWebviewPanel(viewType: string, title: string, column: number, options: Record<string, unknown>): FakeWebviewPanel {
         const p = new FakeWebviewPanel(viewType, title, column, options);
         panels.push(p);

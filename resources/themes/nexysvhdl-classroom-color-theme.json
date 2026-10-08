@@ -55,9 +55,9 @@
     "sideBar.foreground": "#c3cee0",
     "sideBar.border": "#1a2a45",
     "sideBarTitle.foreground": "#d4dcea",
-    "sideBarSectionHeader.background": "#101e35",
-    "sideBarSectionHeader.foreground": "#d4dcea",
-    "sideBarSectionHeader.border": "#1a2a45",
+    "sideBarSectionHeader.background": "#1b3a66",
+    "sideBarSectionHeader.foreground": "#ffffff",
+    "sideBarSectionHeader.border": "#f28c28",
 
     "list.activeSelectionBackground": "#22406e",
     "list.activeSelectionForeground": "#ffffff",
