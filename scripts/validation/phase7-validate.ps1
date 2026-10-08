@@ -23,6 +23,8 @@ param(
     [string[]]$Stages = @('a', 'b', 'r'),
     [string]$Project,
     [switch]$Fresh,
+    # Which integration suite to run: phase7 (stages a..w), or the earlier phase6 / phase6b / phase6c suites (their stage name is only a label).
+    [string]$Suite = 'phase7',
     [int]$TimeoutSec = 600
 )
 $ErrorActionPreference = 'Stop'
@@ -41,7 +43,7 @@ if ($Fresh -or -not (Test-Path $Sandbox)) {
 $workspace = (Get-ChildItem "$Sandbox\ws" -Directory | Select-Object -First 1).FullName
 
 foreach ($stage in $Stages) {
-    $env:NEXYS_P6_SUITE = 'phase7'
+    $env:NEXYS_P6_SUITE = $Suite
     $env:NEXYS_P7_STAGE = $stage
     $env:NEXYS_P7_SCRATCH = "$Sandbox\scratch"
     $env:NEXYS_P7_USERDATA = "$Sandbox\user"
