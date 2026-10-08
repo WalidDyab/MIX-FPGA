@@ -51,6 +51,8 @@ export interface CommandDeps {
     /** The NexysVHDL Console (the student-facing record of workflow actions). */
     readonly console: NexysConsole;
     readonly extensionVersion: string;
+    /** Completes every pending NexysVHDL write (project file and state.json) before the window leaves the project. */
+    readonly flush: () => Promise<void>;
 }
 
 const SETUP_ICON: Record<SetupRow['state'], string> = {
@@ -76,19 +78,24 @@ async function saveProjectFiles(root: string): Promise<void> {
     }
 }
 
-async function openFolder(root: string): Promise<void> {
-    const hasWorkspace = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
-    let forceNewWindow = false;
-    if (hasWorkspace) {
-        const choice = await vscode.window.showInformationMessage(`Open project ${root.split(/[\\/]/).pop()}?`, 'Open in This Window', 'Open in New Window');
-        if (!choice) return;
-        forceNewWindow = choice === 'Open in New Window';
-    }
-    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(root), { forceNewWindow });
-}
-
 export function registerCommands(context: vscode.ExtensionContext, deps: CommandDeps): void {
-    const { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion } = deps;
+    const { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion, flush } = deps;
+
+    const sameFolder = (a: string, b: string) => a.replace(/[\\/]+$/, '').toLowerCase() === b.replace(/[\\/]+$/, '').toLowerCase();
+
+    /**
+     * Switches THIS window to a project folder. NexysVHDL's own state is flushed first; VS Code then replaces the window's folder
+     * (no vscode:// link, no second window) and asks about unsaved source documents itself: NexysVHDL never saves or discards them.
+     * The extension host restarts with the new folder, so nothing of the previous project survives into it.
+     */
+    const switchToProject = async (root: string): Promise<void> => {
+        if (service.projectRoot && sameFolder(service.projectRoot, root)) {
+            vscode.window.setStatusBarMessage('This project is already open.', 3000);
+            return;
+        }
+        await flush();
+        await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(root), { forceNewWindow: false });
+    };
 
     /** Wraps a handler: NexysErrors become friendly messages, anything else is logged too. The handler's result is returned. */
     const register = (id: string, handler: (...args: never[]) => unknown) => {
@@ -169,7 +176,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             return result;
         }
         output.appendLine(`Created project ${result.root}: ${result.files.join(', ')}`);
-        if (!scripted) await openFolder(result.root);
+        if (!scripted) await switchToProject(result.root);
         return result;
     });
 
@@ -198,7 +205,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         }
         const resolved = await resolveOpenTarget(target);
         if (!resolved.ok) throw new NexysError(resolved.message);
-        await openFolder(resolved.root);
+        await switchToProject(resolved.root);
         return resolved;
     });
 
@@ -219,6 +226,16 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         nexysConsole.say('Project', `Created the project file ${basename(r.file)}. Double-click it to open this project.`);
         void vscode.window.showInformationMessage(`Created ${basename(r.file)}. Double-click it in your file manager to open this project with NexysVHDL.`);
         return r;
+    });
+
+    /**
+     * Close Project: NexysVHDL's state is flushed, then VS Code's own Close Folder runs: the window stays open and empty, the extension
+     * restarts without a project, and VS Code handles any unsaved source documents (save / don't save / cancel) itself.
+     */
+    register('nexysvhdl.closeProject', async () => {
+        requireRoot();
+        await flush();
+        await vscode.commands.executeCommand('workbench.action.closeFolder');
     });
 
     register('nexysvhdl.refreshProject', async () => {

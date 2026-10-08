@@ -144,10 +144,17 @@ export enum ViewColumn {
 
 /** Every command executed through the fake, for assertions. */
 export const commandLog: Array<{ command: string; args: unknown[] }> = [];
+/** Handlers registered through the fake, so a test can invoke a command as VS Code would. */
+export const registered = new Map<string, (...args: never[]) => unknown>();
 export const commands = {
     executeCommand(command: string, ...args: unknown[]): Promise<unknown> {
         commandLog.push({ command, args });
-        return Promise.resolve(undefined);
+        const handler = registered.get(command);
+        return Promise.resolve(handler ? handler(...(args as never[])) : undefined);
+    },
+    registerCommand(id: string, handler: (...args: never[]) => unknown): { dispose(): void } {
+        registered.set(id, handler);
+        return { dispose: () => registered.delete(id) };
     },
 };
 

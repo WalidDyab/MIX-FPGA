@@ -183,16 +183,16 @@ describe('Workflow view while an operation runs', () => {
     });
 });
 
-describe('Project view: simulation length', () => {
-    it('shows "until the testbench stops" by default and the fixed time once set', async (t) => {
+describe('Simulation length', () => {
+    it('is still stored in the project and set through its command; the Project view no longer repeats it (the waveform toolbar shows it)', async (t) => {
         const { service } = await setup(t);
         const view = new ProjectView(service);
         t.after(() => view.dispose());
-        const row = () => view.getChildren().find((n) => n.label === 'Simulation length')!;
-        assert.equal(row().description, 'until the testbench stops');
-        assert.equal(row().command?.command, 'nexysvhdl.setSimulationStopTime');
-        await service.setStopTime('1us');
-        assert.equal(row().description, 'stops at 1us');
+        assert.equal(await service.setStopTime('1us'), '1us');
+        assert.equal(service.project?.config.simulation?.stopTime, '1us');
+        assert.ok(!view.getChildren().some((n) => n.label === 'Simulation length'));
+        assert.equal(await service.setStopTime(undefined), undefined);
+        assert.equal(service.project?.config.simulation?.stopTime, undefined);
     });
 });
 

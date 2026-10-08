@@ -73,7 +73,7 @@
       },
       {
         "view": "nexysvhdl.project",
-        "contents": "No NexysVHDL project is open.\n[Create NexysVHDL Project](command:nexysvhdl.createProject)\n[Open NexysVHDL Project](command:nexysvhdl.openProject)\nA project is a folder containing nexysvhdl.json.\n[Getting Started](command:nexysvhdl.gettingStarted)\n[Show Environment](command:nexysvhdl.showEnvironment)",
+        "contents": "No NexysVHDL project is open.\n[New Project](command:nexysvhdl.createProject)\n[Open Project](command:nexysvhdl.openProject)\nOpen a project folder (it contains nexysvhdl.json) or a .nvproj project file.\n[Getting Started](command:nexysvhdl.gettingStarted)\n[Show Environment](command:nexysvhdl.showEnvironment)",
         "when": "!nexysvhdl.hasProject"
       },
       {
@@ -85,7 +85,7 @@
     "commands": [
       {
         "command": "nexysvhdl.createProject",
-        "title": "Create Project",
+        "title": "New Project",
         "category": "NexysVHDL",
         "icon": "$(new-folder)"
       },
@@ -320,6 +320,12 @@
         "command": "nexysvhdl.clearProblems",
         "title": "Clear NexysVHDL Problems",
         "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.closeProject",
+        "title": "Close Project",
+        "category": "NexysVHDL",
+        "icon": "$(close)"
       }
     ],
     "menus": {
@@ -459,19 +465,13 @@
         {
           "command": "nexysvhdl.clearProblems",
           "when": "true"
+        },
+        {
+          "command": "nexysvhdl.closeProject",
+          "when": "nexysvhdl.hasProject"
         }
       ],
       "view/title": [
-        {
-          "command": "nexysvhdl.openProjectSettings",
-          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
-          "group": "navigation@1"
-        },
-        {
-          "command": "nexysvhdl.refreshProject",
-          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
-          "group": "navigation@2"
-        },
         {
           "command": "nexysvhdl.cancel",
           "when": "view == nexysvhdl.workflow && nexysvhdl.busy",
@@ -541,6 +541,31 @@
           "command": "nexysvhdl.clearProblems",
           "when": "view == nexysvhdl.results",
           "group": "9_problems@1"
+        },
+        {
+          "command": "nexysvhdl.createProject",
+          "when": "view == nexysvhdl.project",
+          "group": "navigation@0"
+        },
+        {
+          "command": "nexysvhdl.openProject",
+          "when": "view == nexysvhdl.project",
+          "group": "navigation@1"
+        },
+        {
+          "command": "nexysvhdl.closeProject",
+          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
+          "group": "navigation@2"
+        },
+        {
+          "command": "nexysvhdl.openProjectSettings",
+          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
+          "group": "1_project@1"
+        },
+        {
+          "command": "nexysvhdl.refreshProject",
+          "when": "view == nexysvhdl.project && nexysvhdl.hasProject",
+          "group": "1_project@2"
         }
       ],
       "view/item/context": [
@@ -615,36 +640,6 @@
           "group": "nexysvhdl@1"
         },
         {
-          "command": "nexysvhdl.setTopEntity",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.top",
-          "group": "inline"
-        },
-        {
-          "command": "nexysvhdl.setTopEntity",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.top",
-          "group": "nexysvhdl@1"
-        },
-        {
-          "command": "nexysvhdl.setTestbench",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.testbench",
-          "group": "inline"
-        },
-        {
-          "command": "nexysvhdl.setTestbench",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.testbench",
-          "group": "nexysvhdl@1"
-        },
-        {
-          "command": "nexysvhdl.setSimulationStopTime",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.stopTime",
-          "group": "inline"
-        },
-        {
-          "command": "nexysvhdl.setSimulationStopTime",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.stopTime",
-          "group": "nexysvhdl@1"
-        },
-        {
           "command": "nexysvhdl.openProjectSettings",
           "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.name",
           "group": "inline"
@@ -653,16 +648,6 @@
           "command": "nexysvhdl.openProjectSettings",
           "when": "view == nexysvhdl.project && viewItem =~ /^nexysvhdl\\.project\\.(name|constraints)$/",
           "group": "nexysvhdl@2"
-        },
-        {
-          "command": "nexysvhdl.createProjectFile",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.fileMissing",
-          "group": "inline"
-        },
-        {
-          "command": "nexysvhdl.createProjectFile",
-          "when": "view == nexysvhdl.project && viewItem == nexysvhdl.project.fileMissing",
-          "group": "nexysvhdl@1"
         },
         {
           "command": "nexysvhdl.showEnvironment",

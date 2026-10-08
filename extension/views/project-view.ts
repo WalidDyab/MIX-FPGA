@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
 import { PROJECT_FILE_NAME } from '../../core';
-import { basename } from 'node:path';
-import { EMPTY_PROJECT_MESSAGE } from '../project/empty-project';
 import type { NexysVhdlService } from '../services/nexys-service';
 import { info, Node, openCommand, ServiceTree, tint } from './base';
 
-/** PROJECT: name, board, standard, top, constraints, testbench, environment. */
+/**
+ * PROJECT: one purpose: which project is open, which board it targets, and the toolchain environment.
+ * The design (top entity, testbench, constraints, files) lives in Design; simulation and build in Workflow.
+ * New / Open / Close Project are the section's header actions, not rows.
+ */
 export class ProjectView extends ServiceTree {
     constructor(service: NexysVhdlService) {
         super(service, ['project', 'environment']);
@@ -31,88 +33,18 @@ export class ProjectView extends ServiceTree {
         const nodes: Node[] = [];
         const name = info(c.name, '', 'circuit-board');
         name.tooltip = snap.root;
-        name.command = { title: 'Open Project Settings', command: 'nexysvhdl.openProjectSettings' };
         name.contextValue = 'nexysvhdl.project.name';
         nodes.push(name);
-        nodes.push(info('Board', snap.boardName?.replace(/^Digilent /, '') ?? `${c.board} (unsupported)`, 'chip'));
-        nodes.push(info('Standard', `VHDL-${c.standard}`, 'book'));
-
-        const top = info('Top', c.top, 'symbol-class');
-        top.tooltip = 'Top-level entity for synthesis. Click to change.';
-        top.command = { title: 'Set Top Entity', command: 'nexysvhdl.setTopEntity' };
-        top.contextValue = 'nexysvhdl.project.top';
-        if (snap.emptyProject) {
-            top.description = 'not set yet';
-            top.tooltip = EMPTY_PROJECT_MESSAGE;
-        } else if (typeof c.top !== 'string' || c.top.trim() === '') {
-            top.description = 'not set: click to choose';
-            top.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'));
-        } else if (!snap.index.entity(c.top)) {
-            top.description = `${c.top} (not found)`;
-            top.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'));
-        }
-        nodes.push(top);
-        if (snap.emptyProject) {
-            const hint = info(EMPTY_PROJECT_MESSAGE, 'Use Add File in Design', 'lightbulb');
-            hint.command = { title: 'Add File', command: 'nexysvhdl.addFile' };
-            nodes.push(hint);
-        }
-
-        if (c.constraints !== undefined) {
-            const xdc = info('Constraints', c.constraints.split('/').pop(), 'pinned');
-            xdc.tooltip = c.constraints;
-            xdc.command = openCommand(snap.root, c.constraints);
-            xdc.contextValue = 'nexysvhdl.project.constraints';
-            nodes.push(xdc);
-        } else if (c.pins) {
-            nodes.push(info('Constraints', 'generated from "pins"', 'pinned'));
-        }
-        if (c.simulation?.testbench) {
-            const tb = info('Testbench', c.simulation.testbench, 'beaker');
-            tb.command = { title: 'Set Testbench', command: 'nexysvhdl.setTestbench' };
-            tb.contextValue = 'nexysvhdl.project.testbench';
-            nodes.push(tb);
-            const stop = info('Simulation length', c.simulation.stopTime ? `stops at ${c.simulation.stopTime}` : 'until the testbench stops', 'watch');
-            stop.tooltip = 'How long Simulate runs. By default the testbench decides (it ends with std.env.stop). Click to set a fixed stop time such as 1us.';
-            stop.command = { title: 'Set Simulation Stop Time', command: 'nexysvhdl.setSimulationStopTime' };
-            stop.contextValue = 'nexysvhdl.project.stopTime';
-            nodes.push(stop);
-        }
-
-        const file = snap.projectFile;
-        if (file) {
-            const pf = info('Project file', basename(file), 'file');
-            pf.tooltip = `${file}
-Double-click this file to open the project with NexysVHDL.`;
-            nodes.push(pf);
-        } else {
-            const pf = info('Project file', 'none: click to create', 'file');
-            pf.tooltip = 'Adds a <project>.nvproj file you can double-click to open this project. Nothing else in the project changes.';
-            pf.command = { title: 'Create NexysVHDL Project File', command: 'nexysvhdl.createProjectFile' };
-            pf.contextValue = 'nexysvhdl.project.fileMissing';
-            nodes.push(pf);
-        }
+        const board = info(snap.boardName?.replace(/^Digilent /, '') ?? `${c.board} (unsupported)`, '', 'chip');
+        board.tooltip = 'The board this project targets.';
+        nodes.push(board);
 
         const env = this.service.environment;
-        if (env?.toolchain && env.toolchain.state !== 'ready') {
-            const tc = info('FPGA toolchain', env.toolchain.state === 'not-installed' ? `not installed — click to install ${env.toolchain.requiredVersion}` : 'needs attention', 'desktop-download');
-            tc.tooltip = env.problems.join('\n');
-            tc.command = { title: 'Install FPGA Toolchain', command: env.toolchain.state === 'not-installed' ? 'nexysvhdl.installToolchain' : 'nexysvhdl.showEnvironment' };
-            nodes.push(tc);
-        }
         const envNode = info('Environment', env ? env.headline : 'checking…', env ? (env.level === 'ready' ? 'pass' : env.level === 'warning' ? 'warning' : 'error') : 'loading~spin');
         envNode.command = { title: 'Show Environment', command: 'nexysvhdl.showEnvironment' };
         envNode.contextValue = 'nexysvhdl.project.environment';
         if (env?.problems.length) envNode.tooltip = env.problems.join('\n');
         nodes.push(envNode);
-
-        const problems = snap.validation.filter((d) => d.severity !== 'info');
-        if (problems.length > 0) {
-            const p = info(`${problems.length} project setting problem${problems.length === 1 ? '' : 's'}`, '', 'warning');
-            p.tooltip = problems.map((d) => d.message).join('\n');
-            p.command = { title: 'Show Problems', command: 'workbench.actions.view.problems' };
-            nodes.push(p);
-        }
         return tint(nodes, 'charts.blue');
     }
 }

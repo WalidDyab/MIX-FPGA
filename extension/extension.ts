@@ -126,7 +126,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         }),
     );
 
-    registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? '') });
+    registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? ''), flush: () => (shutdown ? shutdown() : Promise.resolve()) });
 
     let toolchainPrompted = false;
     context.subscriptions.push(

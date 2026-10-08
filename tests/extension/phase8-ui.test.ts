@@ -365,7 +365,7 @@ describe('Clear NexysVHDL Problems', () => {
     });
 });
 
-describe('Design view: Add File shows a single plus; rows carry their own actions', () => {
+describe('Design view: Add File shows a single plus', () => {
     it('Files and Hierarchy both start with "Add File" (the codicon is the plus) running the same command', async (t) => {
         const { service } = await project(t);
         const design = new DesignView(service);
@@ -378,22 +378,6 @@ describe('Design view: Add File shows a single plus; rows carry their own action
             assert.equal((first.iconPath as { id: string }).id, 'add');
             assert.doesNotMatch(String(first.label), /\+/);
         }
-    });
-
-    it('Project rows that own a setting carry a context value, and every menu entry targets a context value that exists', async (t) => {
-        const { service } = await project(t, 'starter');
-        const view = new ProjectView(service);
-        t.after(() => view.dispose());
-        const values = new Map(view.getChildren().map((n: Node) => [String(n.label), n.contextValue]));
-        assert.equal(values.get('Top'), 'nexysvhdl.project.top');
-        assert.equal(values.get('Environment'), 'nexysvhdl.project.environment');
-        const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')) as { contributes: { menus: Record<string, Array<{ when?: string; group?: string; command: string }>> } };
-        const src = ['project-view.ts', 'files-view.ts', 'hierarchy-view.ts', 'hardware-view.ts', 'workflow-view.ts', 'design-view.ts'].map((f) => readFileSync(join(REPO, 'extension', 'views', f), 'utf8')).join('\n');
-        for (const m of pkg.contributes.menus['view/item/context']!) {
-            for (const v of [...(m.when ?? '').matchAll(/viewItem == (nexysvhdl\.project\.\w+)/g)].map((x) => x[1]!)) assert.ok(src.includes(`'${v}'`), `${v} is set by the Project view`);
-        }
-        const inline = pkg.contributes.menus['view/item/context']!.filter((m) => m.group === 'inline' && /project\.(top|testbench|stopTime|name|environment|fileMissing)/.test(m.when ?? ''));
-        assert.ok(inline.length >= 6, 'inline actions on the Project rows');
     });
 });
 
@@ -444,12 +428,12 @@ describe('sidebar: Classroom theme separates the sections; sections show a statu
         assert.equal(c['sideBarSectionHeader.foreground'], '#ffffff');
     });
 
-    it('Project, Hardware and Results rows carry their section colour (state icons keep theirs)', async (t) => {
+    it('Project rows carry their section colour (state icons keep theirs)', async (t) => {
         const { service } = await project(t, 'starter');
         const view = new ProjectView(service);
         t.after(() => view.dispose());
         const colours = view.getChildren().map((n: Node) => (n.iconPath as { color?: { id: string } }).color?.id).filter(Boolean);
-        assert.ok(colours.length >= 4 && colours.every((c) => c === 'charts.blue'));
+        assert.ok(colours.length >= 2 && colours.every((c) => c === 'charts.blue'));
     });
 
     it('each section has its own icon, and the extension never injects CSS or edits the global theme', () => {
