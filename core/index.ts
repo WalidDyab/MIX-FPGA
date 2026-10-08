@@ -11,6 +11,7 @@ export * from './host';
 export * from './paths';
 
 export * from './process/tool-runner';
+export * from './process/output-tee-runner';
 
 export * from './board/types';
 export * from './board/board-registry';
@@ -21,6 +22,8 @@ export * from './project/types';
 export * from './project/project-loader';
 export * from './project/validation';
 export * from './project/project-writer';
+export * from './project/nvproj';
+export * from './util/atomic-write';
 
 export * from './toolchain/types';
 export * from './toolchain/compatibility';

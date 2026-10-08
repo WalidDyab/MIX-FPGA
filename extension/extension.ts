@@ -3,16 +3,19 @@ import { AppearanceManager, KEEP_MINE, type ThemeSettings, USE_CLASSROOM } from 
 import { registerCommands } from './commands/commands';
 import { routeUri } from './commands/uri-routes';
 import { ProblemsPublisher } from './diagnostics/vscode-diagnostics';
+import { findNvprojFiles } from '../core';
 import { findProjectRoot } from './project/detect';
 import { RtlPanel } from './rtl/rtl-panel';
 import { SchematicPanel } from './schematic/schematic-panel';
-import { WaveformPanel } from './waveform/waveform-panel';
+import { LAYOUT_STATE_KEY, RADIX_STATE_KEY, WaveformPanel } from './waveform/waveform-panel';
 import { loadRequirement } from '../runtime/classroom';
 import { CoreBackend } from './services/backend';
+import { type ConsoleVerbosity, NexysConsole } from './services/console';
 import type { Logger } from './services/events';
 import { NexysVhdlService } from './services/nexys-service';
+import { ProjectState } from './services/project-state';
 import { StatusBar } from './status/status-bar';
-import { DESIGN_MODE_KEY, DesignView } from './views/design-view';
+import { DESIGN_MODE_KEY, DESIGN_MODE_STATE_KEY, DesignView } from './views/design-view';
 import { HardwareView } from './views/hardware-view';
 import { ProjectView } from './views/project-view';
 import { ResultsView } from './views/results-view';
@@ -30,10 +33,22 @@ export interface NexysVhdlApi {
     readonly rtl: RtlPanel;
     readonly waveform: WaveformPanel;
     readonly schematic: SchematicPanel;
+    /** NexysVHDL's own per-project workspace state (`.nexysvhdl/state.json`). */
+    readonly state: ProjectState;
 }
 
+/** Completes pending NexysVHDL project writes; set by activate(), awaited by deactivate(). */
+let shutdown: (() => Promise<void>) | undefined;
+
 export async function activate(context: vscode.ExtensionContext): Promise<NexysVhdlApi> {
-    const output = vscode.window.createOutputChannel('NexysVHDL', { log: true });
+    // Two surfaces, one purpose each: the NexysVHDL Console is what a student reads (workflow progress, results, errors);
+    // the NexysVHDL Log keeps the engineering detail (timestamps, diagnostic codes, log-file paths).
+    const output = vscode.window.createOutputChannel('NexysVHDL Log', { log: true });
+    const consoleChannel = vscode.window.createOutputChannel('NexysVHDL Console');
+    const nexysConsole = new NexysConsole(
+        { appendLine: (l) => consoleChannel.appendLine(l), reveal: () => consoleChannel.show(true) },
+        () => (vscode.workspace.getConfiguration('nexysvhdl').get<string>('console.detail', 'normal') === 'detailed' ? 'detailed' : 'normal') satisfies ConsoleVerbosity,
+    );
     const logger: Logger = { info: (m) => output.info(m), warn: (m) => output.warn(m), error: (m) => output.error(m) };
     const config = () => vscode.workspace.getConfiguration('nexysvhdl');
 
@@ -41,15 +56,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
     // this release requires (installed once per user, shared by extension updates).
     const required = loadRequirement(context.extensionPath);
     for (const d of required.diagnostics) output.error(d.message);
-    const backend = new CoreBackend(required.requirement ? { classroom: { requirement: required.requirement } } : {});
-    const service = new NexysVhdlService({ backend, logger, checkOnSave: () => config().get<boolean>('checkOnSave', true) });
-    const schematic = new SchematicPanel(service);
+    const backend = new CoreBackend({ ...(required.requirement ? { classroom: { requirement: required.requirement } } : {}), onToolOutput: (text) => nexysConsole.raw(text) });
+    const service = new NexysVhdlService({ backend, logger, console: nexysConsole, checkOnSave: () => config().get<boolean>('checkOnSave', true) });
+    const state = new ProjectState();
+    const schematic = new SchematicPanel(service, context.extensionUri, state);
     const rtl = new RtlPanel(service);
-    const waveform = new WaveformPanel(service, context.extensionUri, context.workspaceState);
+    const waveform = new WaveformPanel(service, context.extensionUri, state);
     context.subscriptions.push(rtl, waveform);
-    context.subscriptions.push(output, { dispose: () => service.dispose() }, schematic, new ProblemsPublisher(service), new StatusBar(service));
+    context.subscriptions.push(output, consoleChannel, { dispose: () => service.dispose() }, schematic, new ProblemsPublisher(service), new StatusBar(service));
 
-    const design = new DesignView(service, context.workspaceState);
+    const design = new DesignView(service, state);
+    context.subscriptions.push(state.onDidAttach(() => design.reload()));
     const views: Array<[string, vscode.TreeDataProvider<unknown> & vscode.Disposable]> = [
         ['nexysvhdl.project', new ProjectView(service)],
         ['nexysvhdl.design', design],
@@ -89,7 +106,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         }),
     );
 
-    registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? '') });
+    registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? '') });
 
     let toolchainPrompted = false;
     context.subscriptions.push(
@@ -132,6 +149,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         setContext('nexysvhdl.hasProject', root !== undefined);
         if (!root || root === service.projectRoot) return;
         await service.open(root);
+        // The remembered interface choices travel with the project; earlier versions kept them in VS Code's workspace storage.
+        setContext('nexysvhdl.hasProjectFile', (await findNvprojFiles(root)).length > 0);
+        await state.attach(root, { store: context.workspaceState, keys: [DESIGN_MODE_STATE_KEY, RADIX_STATE_KEY, LAYOUT_STATE_KEY] });
         watch(root);
         if (appearance.shouldAsk(config().get<boolean>('promptForClassroomAppearance', true))) {
             void vscode.window
@@ -142,12 +162,30 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         if (config().get<boolean>('detectBoardsOnOpen', true)) void service.detectBoards();
     };
     context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(() => void detect()));
+
+    // Save-before-exit. Changes are written as they happen (debounced); this makes sure nothing pending is lost.
+    // Modified .vhd / .xdc editor buffers are NOT saved here: VS Code's own Save / Auto Save / prompt handles them.
+    const flushAll = async () => {
+        const results = await Promise.allSettled([service.flush(), state.flush()]);
+        for (const r of results) if (r.status === 'rejected') output.appendLine(`[warn] Could not save project state: ${String((r.reason as Error)?.message ?? r.reason)}`);
+    };
+    shutdown = flushAll;
+    context.subscriptions.push(
+        vscode.window.onDidChangeWindowState((w) => {
+            if (!w.focused) void flushAll(); // leaving the window is the last safe moment before a forced close
+        }),
+        { dispose: () => state.dispose() },
+    );
     await detect();
     // The setup state matters with or without a project (welcome views, Getting Started).
     if (!service.projectRoot) void service.refreshEnvironment();
-    return { service, rtl, waveform, schematic };
+    return { service, rtl, waveform, schematic, state };
 }
 
-export function deactivate(): void {
-    /* everything is disposed through context.subscriptions */
+/** VS Code awaits this on shutdown, window close and reload: pending NexysVHDL project writes are completed first. */
+export async function deactivate(): Promise<void> {
+    const flush = shutdown;
+    shutdown = undefined;
+    await flush?.();
+    /* everything else is disposed through context.subscriptions */
 }

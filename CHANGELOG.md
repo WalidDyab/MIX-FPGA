@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Phase 7 project UX refinements (not yet versioned)
+
+- **Reliable saving:** NexysVHDL's own state is written as it changes and flushed before the window closes, reloads or the extension stops (`deactivate()` is awaited). `nexysvhdl.json` is now written atomically and one update at a time. Design mode, waveform signals, Display As, pane widths and the schematic view are remembered with the project in `.nexysvhdl/state.json`. Source documents keep VS Code's normal Save / Auto Save.
+- **`.nvproj` project file:** every new project gets `<name>.nvproj` (a small versioned launch descriptor; `nexysvhdl.json` stays the source of truth). Open Project accepts a folder or a `.nvproj`; older projects open unchanged and can add one with *Create NexysVHDL Project File*. On Windows, Setup registers `.nvproj` for the current user (NexysVHDL icon, double-click opens the project, no console window); Uninstall removes only that association.
+- **NexysVHDL Console:** one Output channel for Check, Simulate, Build and Program progress, results, warnings and errors, revealed when an action starts or fails; optional detailed mode streams the raw tool output. The previous log is now *NexysVHDL Log*.
+- **Design Schematic:** opens as a normal tab at 100% instead of a narrow side column and a Fit-All view; 100% / Fit Width / Fit All / zoom / Reset / Maximize, scrolling, larger text and spacing, collapsible notes, remembered view; source opens beside it.
+
 ## Unreleased — Phase 6 pilot hardening (not yet versioned)
 
 - **Fixed:** a top entity with capital letters (`DigitDisplay`) no longer fails synthesis with `GHDL_SYNTH_NO_TOP`; the module spelling GHDL emits is used for Yosys, RTL schematic and Build.

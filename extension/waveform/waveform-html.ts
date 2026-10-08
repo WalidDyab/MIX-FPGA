@@ -64,17 +64,23 @@ export function toWaveData(model: VcdModel): WaveData {
     };
 }
 
+/** Page code used only by automated validation (WaveformPanel.testHooks): not in the page unless a test enables it. */
+const TEST_COMMANDS_JS = `else if (m.action === 'showSignals' && data) { visible = (m.paths || []).map((p) => data.signals.findIndex((x) => x.path === p)).filter((i) => i >= 0); saveSignals(); tree(); draw(); }`;
+
 export interface WavePageInput {
     readonly nonce: string;
     /** Webview CSP source (asWebviewUri origin); empty for a standalone preview. */
     readonly cspSource: string;
     /** URI of the compiled wave-render.js. */
     readonly rendererUri: string;
+    /** Validation only: include the test-only commands. */
+    readonly testHooks?: boolean;
 }
 
 /** The waveform viewer page. Data arrives later by postMessage ({type:'load'}). */
 export function renderWaveHtml(input: WavePageInput): string {
     const { nonce, cspSource, rendererUri } = input;
+    const testHooks = input.testHooks === true;
     const csp = `default-src 'none'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}' ${cspSource};`;
     return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
@@ -200,6 +206,8 @@ export function renderWaveHtml(input: WavePageInput): string {
     const s = data.signals[i], tr = data.traces[s.code], k = W.indexAt(tr.times, t);
     return fmt(s, k < 0 ? undefined : tr.values[k], k < 0 || !tr.raw ? undefined : tr.raw[k]);
   }
+  let testbench = '';
+  function saveSignals() { if (data && testbench) vscode.postMessage({ type: 'signals', testbench: testbench, paths: visible.map((i) => data.signals[i].path) }); }
   function saveRadix() { vscode.postMessage({ type: 'radix', state: rstate }); }
 
   function report() {
@@ -299,6 +307,7 @@ export function renderWaveHtml(input: WavePageInput): string {
     const i = Number(e.target.dataset.sig);
     if (Number.isNaN(i)) return;
     if (e.target.checked) { if (!visible.includes(i)) visible.push(i); } else visible = visible.filter((v) => v !== i);
+    saveSignals();
     draw();
   });
   document.getElementById('fit').onclick = fit;
@@ -359,7 +368,10 @@ export function renderWaveHtml(input: WavePageInput): string {
       const keep = data ? visible.map((i) => data.signals[i].path) : [];
       data = m.data; cursor = 0;
       const again = keep.map((p) => data.signals.findIndex((x) => x.path === p)).filter((i) => i >= 0);
-      visible = again.length > 0 ? again : data.initial.slice(); // a rerun keeps the signals the student chose
+      // A rerun keeps the signals the student chose; after a restart, the ones remembered with the project.
+      const saved = (m.signals || []).map((p) => data.signals.findIndex((x) => x.path === p)).filter((i) => i >= 0);
+      visible = again.length > 0 ? again : saved.length > 0 ? saved : data.initial.slice();
+      testbench = m.identity.testbench;
       if (m.layout) { layout = W.sanitizeLayout(m.layout); applyLayout(); }
       if (m.radix) { rstate = W.sanitizeRadixState(m.radix); document.getElementById('radix').value = rstate.buses; }
       banner.hidden = !m.warning; banner.textContent = m.warning || '';
@@ -383,6 +395,7 @@ export function renderWaveHtml(input: WavePageInput): string {
       else if (m.action === 'clickStop') { if (!stopBtn.disabled) vscode.postMessage({ type: 'stop' }); }
       else if (m.action === 'setDuration') { durIn.value = m.number || ''; durUnit.value = m.unit || 'us'; durDirty = true; renderSim(); report(); }
       else if (m.action === 'paneWidth') { layout = Object.assign({}, layout); layout[m.pane === 'names' ? 'namesWidth' : 'treeWidth'] = m.width; relayout(); saveLayout(); }
+${testHooks ? TEST_COMMANDS_JS : ""}
       else if (m.action === 'signalRadix' && data) {
         const i = data.signals.findIndex((x) => x.path === m.path);
         if (i >= 0) setSignalRadix(i, m.radix || '');

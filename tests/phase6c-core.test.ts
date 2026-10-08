@@ -89,11 +89,17 @@ describe('Stop Simulation: how a stop reaches GHDL', () => {
 class EndlessSim implements VhdlProvider {
     readonly id = 'endless';
     started = 0;
+    /** Resolves each time simulate() has been entered: the condition the test needs, instead of a guessed delay. */
+    private waiters: Array<() => void> = [];
+    entered(): Promise<void> {
+        return new Promise((r) => this.waiters.push(r));
+    }
     async check(): Promise<VhdlCheckResult> {
         return { ...ok, elaborated: [] };
     }
     async simulate(_ctx: VhdlContext, o: SimulationOptions): Promise<SimulationResult> {
         this.started++;
+        this.waiters.splice(0).forEach((w) => w());
         const signal = _ctx.signal;
         await new Promise<void>((resolve) => (signal?.aborted ? resolve() : signal?.addEventListener('abort', () => resolve(), { once: true })));
         return { ...ok, status: 'failed', cancelled: true, passed: false, testbench: o.testbench, messages: [] };
@@ -109,8 +115,9 @@ describe('Stop Simulation: lock and state', () => {
         const vhdl = new EndlessSim();
         const controller = new WorkflowController({ boards: await repoBoards(), workspaces: new WorkspaceManager(), vhdl });
         const abort = new AbortController();
+        const firstEntered = vhdl.entered();
         const running = controller.simulate(project, 'top_tb', abort.signal);
-        await new Promise((r) => setTimeout(r, 40));
+        await firstEntered;
         assert.equal(activeOperation(project.root), 'simulate', 'the project is claimed while it runs');
         const refused = await controller.simulate(project, 'top_tb');
         assert.equal(refused.diagnostics[0]!.code, 'PIPELINE_BUSY');
@@ -120,8 +127,9 @@ describe('Stop Simulation: lock and state', () => {
         assert.equal(result.cancelled, true);
         assert.equal(activeOperation(project.root), undefined, 'the lock is released');
         const second = new AbortController();
+        const secondEntered = vhdl.entered();
         const again = controller.simulate(project, 'top_tb', second.signal);
-        await new Promise((r) => setTimeout(r, 40));
+        await secondEntered;
         assert.equal(vhdl.started, 2, 'Run works again after Stop');
         second.abort();
         await again;

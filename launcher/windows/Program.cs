@@ -9,9 +9,11 @@ namespace NexysVhdl.Launcher
     /// NexysVHDL.exe: the application a student starts from the Start Menu.
     /// A Windows-subsystem program, so no console window can ever appear.
     ///   (no arguments)             the launcher window
-    ///   --open "folder"            open a project directly (used by shortcuts and tests)
+    ///   "Project.nvproj"           open the project of a project file (what a double-click passes)
+    ///   --open "folder"            open a project directly: a project folder or a .nvproj file (shortcuts and tests)
     ///   --new-project              ask NexysVHDL to create a project
     ///   --status-report "file"     write what was detected as JSON and exit (tests)
+    /// Test hook: NEXYSVHDL_LAUNCHER_MESSAGE_FILE=file writes a problem message there instead of showing a dialog.
     /// </summary>
     public static class Program
     {
@@ -31,8 +33,10 @@ namespace NexysVhdl.Launcher
                     WriteReport(service, args[i + 1]);
                     return 0;
                 }
-                if (a == "--open" && i + 1 < args.Length) return Headless(service.OpenProject(args[i + 1]));
+                if (a == "--open" && i + 1 < args.Length) return Headless(service.OpenTarget(args[i + 1]));
                 if (a == "--new-project") return Headless(service.NewProject());
+                // Windows starts the program as: NexysVHDL.exe "C:\path with spaces\MyProject.nvproj"
+                if (!a.StartsWith("--") && ProjectCheck.IsProjectFile(a)) return Headless(service.OpenTarget(a));
             }
             Application.Run(new MainForm(service, vsix));
             return 0;
@@ -42,6 +46,13 @@ namespace NexysVhdl.Launcher
         static int Headless(OpenResult r)
         {
             if (r.Ok) return 0;
+            // Test hook: write the message to a file instead of showing a (blocking) dialog.
+            string messageFile = Environment.GetEnvironmentVariable("NEXYSVHDL_LAUNCHER_MESSAGE_FILE");
+            if (!string.IsNullOrEmpty(messageFile))
+            {
+                File.WriteAllText(messageFile, r.Message);
+                return 1;
+            }
             MessageBox.Show(r.Message, "NexysVHDL", MessageBoxButtons.OK, r.Outcome == OpenOutcome.NotAProject ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
             return 1;
         }

@@ -86,7 +86,7 @@
       },
       {
         "command": "nexysvhdl.openProject",
-        "title": "Open Project",
+        "title": "Open Project (folder or .nvproj file)",
         "category": "NexysVHDL",
         "icon": "$(folder-opened)"
       },
@@ -261,7 +261,7 @@
       },
       {
         "command": "nexysvhdl.showLog",
-        "title": "Show Log",
+        "title": "Show NexysVHDL Log (details)",
         "category": "NexysVHDL",
         "icon": "$(output)"
       },
@@ -290,6 +290,22 @@
       {
         "command": "nexysvhdl.openThirdPartyNotices",
         "title": "Third-Party Notices",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.showConsole",
+        "title": "Show NexysVHDL Console",
+        "category": "NexysVHDL",
+        "icon": "$(output)"
+      },
+      {
+        "command": "nexysvhdl.toggleConsoleDetail",
+        "title": "Toggle Detailed Console Output",
+        "category": "NexysVHDL"
+      },
+      {
+        "command": "nexysvhdl.createProjectFile",
+        "title": "Create NexysVHDL Project File",
         "category": "NexysVHDL"
       }
     ],
@@ -414,6 +430,18 @@
         {
           "command": "nexysvhdl.stopSimulation",
           "when": "nexysvhdl.hasProject && nexysvhdl.busy"
+        },
+        {
+          "command": "nexysvhdl.createProjectFile",
+          "when": "nexysvhdl.hasProject && !nexysvhdl.hasProjectFile"
+        },
+        {
+          "command": "nexysvhdl.showConsole",
+          "when": "true"
+        },
+        {
+          "command": "nexysvhdl.toggleConsoleDetail",
+          "when": "true"
         }
       ],
       "view/title": [
@@ -433,7 +461,7 @@
           "group": "navigation@0"
         },
         {
-          "command": "nexysvhdl.showLog",
+          "command": "nexysvhdl.showConsole",
           "when": "view == nexysvhdl.workflow",
           "group": "navigation@1"
         },
@@ -443,7 +471,7 @@
           "group": "navigation"
         },
         {
-          "command": "nexysvhdl.showLog",
+          "command": "nexysvhdl.showConsole",
           "when": "view == nexysvhdl.results",
           "group": "navigation"
         },
@@ -578,6 +606,19 @@
           "type": "boolean",
           "default": true,
           "description": "Offer the optional NexysVHDL Classroom appearance (a navy and orange color theme) the first time a project folder is opened. It is only ever applied to that project folder, never to your global VS Code theme."
+        },
+        "nexysvhdl.console.detail": {
+          "type": "string",
+          "enum": [
+            "normal",
+            "detailed"
+          ],
+          "default": "normal",
+          "enumDescriptions": [
+            "The NexysVHDL Console shows progress, results and errors.",
+            "The NexysVHDL Console also streams the raw output of the FPGA tools while an action runs."
+          ],
+          "description": "How much the NexysVHDL Console shows. Normal is meant for students; Detailed adds every line the FPGA tools print."
         }
       }
     },
@@ -724,7 +765,12 @@
         "uiTheme": "vs-dark",
         "path": "./resources/themes/nexysvhdl-classroom-color-theme.json"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "files.associations": {
+        "*.nvproj": "json"
+      }
+    }
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",

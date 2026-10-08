@@ -6,15 +6,18 @@ import { sha256File, type SimulationResult } from '../../core';
 import type { NexysVhdlService } from '../services/nexys-service';
 import { formatSimTime } from '../services/workflow-state';
 import { parsePartialVcd } from './vcd-parser';
-import { sanitizeLayout, sanitizeRadixState } from './wave-render';
+import type { StateStore } from '../services/project-state';
+import { sanitizeLayout, sanitizeRadixState, sanitizeSignalChoices } from './wave-render';
 import { renderWaveHtml, toWaveData, type WaveIdentity } from './waveform-html';
 
-type Message = { type: 'ready' } | { type: 'run'; duration: string | undefined } | { type: 'stop' } | { type: 'state'; [k: string]: unknown } | { type: 'radix'; state: unknown } | { type: 'layout'; layout: unknown };
+type Message = { type: 'ready' } | { type: 'run'; duration: string | undefined } | { type: 'stop' } | { type: 'state'; [k: string]: unknown } | { type: 'radix'; state: unknown } | { type: 'layout'; layout: unknown } | { type: 'signals'; testbench: string; paths: unknown };
 
 /** Workspace-state key of the remembered Display As choices. */
 export const RADIX_STATE_KEY = 'nexysvhdl.waveform.radix';
 /** Workspace-state key of the remembered pane widths. */
 export const LAYOUT_STATE_KEY = 'nexysvhdl.waveform.layout';
+/** Project-state key of the remembered signal choices (per testbench). */
+export const SIGNALS_STATE_KEY = 'nexysvhdl.waveform.signals';
 
 /**
  * The simulation workspace: ONE waveform viewer panel per window, with the simulation
@@ -30,14 +33,16 @@ export class WaveformPanel implements vscode.Disposable {
     private readonly sub: { dispose(): void };
     /** Last state reported by the webview script (used by integration tests). */
     lastWebviewState: Record<string, unknown> | undefined;
+    /** Validation only: adds the test-only page commands. Off in every normal session. */
+    testHooks = false;
     /** Identity of the waveform last sent to the webview. */
     shown: WaveIdentity | undefined;
 
     constructor(
         private readonly service: NexysVhdlService,
         private readonly extensionUri: vscode.Uri,
-        /** Remembers Display As choices for this workspace (absent in tests). */
-        private readonly memory?: vscode.Memento,
+        /** Remembers the viewer's choices (signals, Display As, pane widths) with the project (absent in tests). */
+        private readonly memory?: StateStore,
     ) {
         this.sub = service.onDidChange((k) => {
             if (!this.panel) return;
@@ -76,10 +81,14 @@ export class WaveformPanel implements vscode.Disposable {
             else if (m.type === 'state') this.lastWebviewState = m;
             else if (m.type === 'radix') void this.memory?.update(RADIX_STATE_KEY, sanitizeRadixState(m.state));
             else if (m.type === 'layout') void this.memory?.update(LAYOUT_STATE_KEY, sanitizeLayout(m.layout));
+            else if (m.type === 'signals' && typeof m.testbench === 'string' && Array.isArray(m.paths)) {
+                const all = { ...sanitizeSignalChoices(this.memory?.get(SIGNALS_STATE_KEY)), ...sanitizeSignalChoices({ [m.testbench]: m.paths }) };
+                void this.memory?.update(SIGNALS_STATE_KEY, all);
+            }
         });
         const nonce = randomBytes(16).toString('base64');
         const rendererUri = this.panel.webview.asWebviewUri(vscode.Uri.joinPath(scripts, 'wave-render.js')).toString();
-        this.panel.webview.html = renderWaveHtml({ nonce, cspSource: this.panel.webview.cspSource, rendererUri });
+        this.panel.webview.html = renderWaveHtml({ nonce, cspSource: this.panel.webview.cspSource, rendererUri, testHooks: this.testHooks });
     }
 
     /** What the toolbar shows: whether a simulation runs, what else is busy, the project's duration, a status line. */
@@ -154,7 +163,7 @@ export class WaveformPanel implements vscode.Disposable {
               : partial
                 ? 'This waveform is incomplete.'
                 : 'This simulation failed; the waveform shows what happened up to the failure.';
-        void this.panel.webview.postMessage({ type: 'load', data, identity, radix: sanitizeRadixState(this.memory?.get(RADIX_STATE_KEY)), layout: sanitizeLayout(this.memory?.get(LAYOUT_STATE_KEY)), ...(warning ? { warning } : {}) });
+        void this.panel.webview.postMessage({ type: 'load', data, identity, radix: sanitizeRadixState(this.memory?.get(RADIX_STATE_KEY)), layout: sanitizeLayout(this.memory?.get(LAYOUT_STATE_KEY)), signals: sanitizeSignalChoices(this.memory?.get(SIGNALS_STATE_KEY))[sim.testbench] ?? [], ...(warning ? { warning } : {}) });
     }
 
     dispose(): void {

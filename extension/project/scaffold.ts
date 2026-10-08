@@ -1,6 +1,6 @@
 import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { type BoardDefinition, BuildWorkspace, formatProjectFile, PROJECT_FILE_NAME, PROJECT_FOLDERS, WORKSPACE_DIR_NAME } from '../../core';
+import { type BoardDefinition, BuildWorkspace, formatNvproj, formatProjectFile, nvprojNameFor, PROJECT_FILE_NAME, PROJECT_FOLDERS, WORKSPACE_DIR_NAME } from '../../core';
 import { starterGitignore, starterPaths, starterProjectFile, starterTestbenchVhdl, starterTopVhdl, starterXdc } from './templates';
 
 /** Project (and folder) names: a letter, then letters, digits, `_` or `-`. */
@@ -42,8 +42,8 @@ export type CreateProjectResult =
     | { readonly ok: false; readonly code: 'INVALID_NAME' | 'PARENT_MISSING' | 'ALREADY_EXISTS' | 'WRITE_FAILED'; readonly message: string };
 
 /**
- * Creates `<parentDir>/<name>/` with the standard structure and starter
- * files. Writes nothing outside that new folder, never reuses an existing
+ * Creates `<parentDir>/<name>/` with the standard structure, the `<name>.nvproj` project
+ * file and starter files. Writes nothing outside that new folder, never reuses an existing
  * folder, and removes the folder again if creation fails part-way.
  */
 export async function createProject(req: CreateProjectRequest): Promise<CreateProjectResult> {
@@ -63,6 +63,7 @@ export async function createProject(req: CreateProjectRequest): Promise<CreatePr
         files =
             req.template === 'empty'
                 ? {
+                      [nvprojNameFor(req.name)]: formatNvproj(),
                       [PROJECT_FILE_NAME]: formatProjectFile({
                           name: req.name, board: req.board.id, language: 'vhdl', standard: '2008', top: '', sources: [],
                           simulation: { sources: [] }, constraints: paths.constraints,
@@ -71,6 +72,7 @@ export async function createProject(req: CreateProjectRequest): Promise<CreatePr
                       '.gitignore': starterGitignore(),
                   }
                 : {
+                      [nvprojNameFor(req.name)]: formatNvproj(),
                       [PROJECT_FILE_NAME]: formatProjectFile(starterProjectFile(req.name, req.board)),
                       [paths.top]: starterTopVhdl(req.name, req.board),
                       [paths.testbench]: starterTestbenchVhdl(),

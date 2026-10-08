@@ -1,4 +1,5 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
+import { serializeFileJob, writeFileAtomic } from '../util/atomic-write';
 import type { ProjectFile } from './types';
 
 /** Fields of nexysvhdl.json a tool may change; `undefined` removes the field. */
@@ -14,7 +15,12 @@ export function formatProjectFile(config: ProjectFile | Record<string, unknown>)
  * including ones this version does not know, are kept in their original
  * order. Returns true if the file changed.
  */
-export async function updateProjectFile(file: string, patch: ProjectFilePatch): Promise<boolean> {
+export function updateProjectFile(file: string, patch: ProjectFilePatch): Promise<boolean> {
+    // Serialized per file and written atomically: simultaneous updates never lose each other and a crash never truncates the project.
+    return serializeFileJob(file, () => applyPatch(file, patch));
+}
+
+async function applyPatch(file: string, patch: ProjectFilePatch): Promise<boolean> {
     const before = await readFile(file, 'utf8');
     const data = JSON.parse(before) as unknown;
     if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new Error(`${file} must contain a JSON object.`);
@@ -25,6 +31,6 @@ export async function updateProjectFile(file: string, patch: ProjectFilePatch): 
     }
     // Compare content, not formatting: an unchanged project keeps its file untouched.
     if (JSON.stringify(next) === JSON.stringify(data)) return false;
-    await writeFile(file, formatProjectFile(next), 'utf8');
+    await writeFileAtomic(file, formatProjectFile(next));
     return true;
 }

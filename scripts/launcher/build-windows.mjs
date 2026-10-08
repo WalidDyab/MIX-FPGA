@@ -27,8 +27,8 @@ const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const argv = process.argv.slice(2);
 let vsix = argv.includes('--vsix') ? resolve(argv[argv.indexOf('--vsix') + 1]) : undefined;
 if (!vsix) {
-    // The Phase 6 development package while this branch is in progress, else the release package.
-    for (const dir of [join(root, '.artifacts', 'phase6'), join(root, '.artifacts', 'dist')]) {
+    // The newest development package while a phase branch is in progress, else the release package.
+    for (const dir of [join(root, '.artifacts', 'phase7'), join(root, '.artifacts', 'phase6'), join(root, '.artifacts', 'dist')]) {
         if (!existsSync(dir)) continue;
         const found = readdirSync(dir).filter((f) => f.endsWith('.vsix')).map((f) => join(dir, f)).sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)[0];
         if (found) { vsix = found; break; }

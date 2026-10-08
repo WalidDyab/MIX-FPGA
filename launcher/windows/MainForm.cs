@@ -75,9 +75,12 @@ namespace NexysVhdl.Launcher
             Controls.Add(header);
 
             StyleBig(newButton, "New Project", "Create a project from a starter", 24);
-            StyleBig(openButton, "Open Project", "Choose a project folder", 312);
+            StyleBig(openButton, "Open Project", "Choose a project file or folder", 312);
             newButton.Click += delegate { DoNew(); };
-            openButton.Click += delegate { DoPick(); };
+            ContextMenuStrip openMenu = new ContextMenuStrip();
+            openMenu.Items.Add("Project file (.nvproj)…", null, delegate { DoPickFile(); });
+            openMenu.Items.Add("Project folder…", null, delegate { DoPick(); });
+            openButton.Click += delegate { openMenu.Show(openButton, new Point(0, openButton.Height)); };
             Controls.Add(newButton);
             Controls.Add(openButton);
 
@@ -277,6 +280,18 @@ namespace NexysVhdl.Launcher
             if (r == null) return;
             service.Recent.Remove(r.Path);
             FillRecent();
+        }
+
+        void DoPickFile()
+        {
+            using (OpenFileDialog d = new OpenFileDialog())
+            {
+                d.Title = "Choose a NexysVHDL project file";
+                d.Filter = "NexysVHDL project (*.nvproj)|*.nvproj";
+                d.CheckFileExists = true;
+                if (d.ShowDialog(this) != DialogResult.OK) return;
+                Finish(service.OpenTarget(d.FileName));
+            }
         }
 
         void DoPick()

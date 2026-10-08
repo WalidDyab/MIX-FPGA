@@ -238,7 +238,8 @@ describe('the simulation toolbar in the waveform viewer', () => {
 
     it('a rerun keeps the signals the student chose and the radix and pane-width choices', () => {
         assert.match(html, /const keep = data \? visible\.map\(\(i\) => data\.signals\[i\]\.path\) : \[\];/);
-        assert.match(html, /visible = again\.length > 0 \? again : data\.initial\.slice\(\)/);
+        // After a restart the signals remembered with the project are used before the testbench's defaults.
+        assert.match(html, /visible = again\.length > 0 \? again : saved\.length > 0 \? saved : data\.initial\.slice\(\)/);
         // Radix and widths come from stored state (workspace memory) on every load, not from the old page.
         const panel = readFileSync(join(REPO, 'extension', 'waveform', 'waveform-panel.ts'), 'utf8');
         assert.match(panel, /radix: sanitizeRadixState\(this\.memory\?\.get\(RADIX_STATE_KEY\)\), layout: sanitizeLayout\(this\.memory\?\.get\(LAYOUT_STATE_KEY\)\)/);

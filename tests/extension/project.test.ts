@@ -42,6 +42,7 @@ describe('Create Project', () => {
             '.nexysvhdl/rtl/',
             '.nexysvhdl/sim/',
             '.nexysvhdl/synth/',
+            'CounterDemo.nvproj',
             'constraints/',
             'constraints/nexys-a7-100t.xdc',
             'nexysvhdl.json',

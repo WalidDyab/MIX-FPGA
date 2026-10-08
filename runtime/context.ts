@@ -27,6 +27,8 @@ import {
     loadProject,
     type LocatedTool,
     NodeToolRunner,
+    OutputTeeRunner,
+    type ToolInvocation,
     type Project,
     ProgrammingService,
     type ToolchainManifest,
@@ -89,6 +91,8 @@ export interface ContextOverrides {
     readonly dataRoot?: string;
     /** Classroom mode: bundled toolchain only, never discovery (used by the VS Code extension). */
     readonly classroom?: ClassroomOptions;
+    /** Receives the live output of every tool run (the NexysVHDL Console streams it). */
+    readonly onToolOutput?: (text: string, invocation: ToolInvocation) => void;
 }
 
 /** Resolves the installed toolchain for classroom mode. Never looks anywhere but the NexysVHDL data root. */
@@ -120,7 +124,8 @@ export async function createContext(overrides: ContextOverrides = {}): Promise<R
     const classroom = overrides.classroom ? await resolveClassroom(host, env, overrides.classroom) : undefined;
     // Classroom mode compares against the installed bundle's own versions, never the reference manifests.
     const manifests = classroom ? (classroom.toolchain ? [bundleCompatibilityManifest(classroom.toolchain.manifest)] : []) : (await loadManifests(paths.toolchains)).manifests;
-    const rawRunner = overrides.runner ?? new NodeToolRunner();
+    const plainRunner = overrides.runner ?? new NodeToolRunner();
+    const rawRunner = overrides.onToolOutput ? new OutputTeeRunner(plainRunner, overrides.onToolOutput) : plainRunner;
     const baseRunner = classroom?.toolchain ? new BundledToolRunner(rawRunner, classroom.toolchain, (p) => mkdir(p, { recursive: true })) : rawRunner;
     const platform =
         overrides.platform ??

@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { PROJECT_FILE_NAME } from '../../core';
+import { basename } from 'node:path';
+import { EMPTY_PROJECT_MESSAGE } from '../project/empty-project';
 import type { NexysVhdlService } from '../services/nexys-service';
 import { info, Node, openCommand, ServiceTree } from './base';
 
@@ -37,7 +39,10 @@ export class ProjectView extends ServiceTree {
         const top = info('Top', c.top, 'symbol-class');
         top.tooltip = 'Top-level entity for synthesis. Click to change.';
         top.command = { title: 'Set Top Entity', command: 'nexysvhdl.setTopEntity' };
-        if (typeof c.top !== 'string' || c.top.trim() === '') {
+        if (snap.emptyProject) {
+            top.description = 'not set yet';
+            top.tooltip = EMPTY_PROJECT_MESSAGE;
+        } else if (typeof c.top !== 'string' || c.top.trim() === '') {
             top.description = 'not set: click to choose';
             top.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'));
         } else if (!snap.index.entity(c.top)) {
@@ -45,6 +50,11 @@ export class ProjectView extends ServiceTree {
             top.iconPath = new vscode.ThemeIcon('warning', new vscode.ThemeColor('problemsWarningIcon.foreground'));
         }
         nodes.push(top);
+        if (snap.emptyProject) {
+            const hint = info(EMPTY_PROJECT_MESSAGE, 'Use + Add File in Design', 'lightbulb');
+            hint.command = { title: 'Add File', command: 'nexysvhdl.addFile' };
+            nodes.push(hint);
+        }
 
         if (c.constraints !== undefined) {
             const xdc = info('Constraints', c.constraints.split('/').pop(), 'pinned');
@@ -62,6 +72,19 @@ export class ProjectView extends ServiceTree {
             stop.tooltip = 'How long Simulate runs. By default the testbench decides (it ends with std.env.stop). Click to set a fixed stop time such as 1us.';
             stop.command = { title: 'Set Simulation Stop Time', command: 'nexysvhdl.setSimulationStopTime' };
             nodes.push(stop);
+        }
+
+        const file = snap.projectFile;
+        if (file) {
+            const pf = info('Project file', basename(file), 'file');
+            pf.tooltip = `${file}
+Double-click this file to open the project with NexysVHDL.`;
+            nodes.push(pf);
+        } else {
+            const pf = info('Project file', 'none: click to create', 'file');
+            pf.tooltip = 'Adds a <project>.nvproj file you can double-click to open this project. Nothing else in the project changes.';
+            pf.command = { title: 'Create NexysVHDL Project File', command: 'nexysvhdl.createProjectFile' };
+            nodes.push(pf);
         }
 
         const env = this.service.environment;

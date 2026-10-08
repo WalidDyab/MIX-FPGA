@@ -165,6 +165,22 @@ export function sanitizeLayout(value: unknown): PaneLayout {
     return { treeWidth: ok(v.treeWidth, TREE_LIMITS, DEFAULT_LAYOUT.treeWidth), namesWidth: ok(v.namesWidth, NAMES_LIMITS, DEFAULT_LAYOUT.namesWidth) };
 }
 
+/**
+ * The signals the student chose to display, remembered per testbench by hierarchical path.
+ * Bounded and cleaned so a damaged or hand-edited state file can never cause trouble.
+ */
+export type SignalChoices = Readonly<Record<string, readonly string[]>>;
+
+export function sanitizeSignalChoices(value: unknown): SignalChoices {
+    const out: Record<string, string[]> = {};
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return out;
+    for (const [testbench, paths] of Object.entries(value as Record<string, unknown>).slice(0, 64)) {
+        if (!Array.isArray(paths)) continue;
+        out[testbench] = paths.filter((p): p is string => typeof p === 'string' && p.length > 0 && p.length <= 400).slice(0, 2000);
+    }
+    return out;
+}
+
 /** One drawable stretch of a trace. `dense` = several changes inside less than `minPx` pixels. */
 export interface Segment {
     readonly x0: number;

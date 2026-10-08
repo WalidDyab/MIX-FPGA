@@ -1,13 +1,17 @@
 import * as vscode from 'vscode';
+import { EMPTY_PROJECT_MESSAGE } from '../project/empty-project';
 import type { NexysVhdlService } from '../services/nexys-service';
+import type { StateStore } from '../services/project-state';
 import { FilesView } from './files-view';
 import { HierarchyView } from './hierarchy-view';
 import { info, Node, ServiceTree } from './base';
 
 export type DesignMode = 'files' | 'hierarchy';
 
+/** Project-state key of the remembered Design mode. */
+export const DESIGN_MODE_STATE_KEY = 'nexysvhdl.design.mode';
 export const DESIGN_MODE_KEY = 'nexysvhdl.designMode';
-const STORED_MODE = 'nexysvhdl.design.mode';
+const STORED_MODE = DESIGN_MODE_STATE_KEY;
 
 /**
  * DESIGN: the single student-facing view of the design, in two modes. Files
@@ -16,7 +20,7 @@ const STORED_MODE = 'nexysvhdl.design.mode';
  * from the top entity and the schematics. Both modes are the former Project
  * Files and Design Hierarchy trees, reused unchanged, so every capability
  * (set top, use XDC, open schematic, go to entity, ...) is still there.
- * The last mode is remembered per workspace.
+ * The last mode is remembered with the project.
  */
 export class DesignView extends ServiceTree {
     private readonly files: FilesView;
@@ -27,13 +31,22 @@ export class DesignView extends ServiceTree {
 
     constructor(
         service: NexysVhdlService,
-        private readonly state?: vscode.Memento,
+        private readonly state?: StateStore,
     ) {
         super(service, ['project', 'workflow', 'rtl']);
         this.files = new FilesView(service);
         this.hierarchy = new HierarchyView(service);
         const stored = state?.get<string>(STORED_MODE);
         this.current = stored === 'hierarchy' ? 'hierarchy' : 'files';
+    }
+
+    /** The project's remembered state was (re)loaded: show the remembered mode. */
+    reload(): void {
+        const stored = this.state?.get<string>(STORED_MODE) === 'hierarchy' ? 'hierarchy' : 'files';
+        if (stored === this.current) return;
+        this.current = stored;
+        this.modeChanged.fire(stored);
+        this.refresh();
     }
 
     get mode(): DesignMode {
@@ -59,7 +72,13 @@ export class DesignView extends ServiceTree {
 
     protected roots(): Node[] {
         if (!this.service.snapshot) return [];
-        return [this.addFileNode(), ...(this.current === 'hierarchy' ? this.hierarchy : this.files).getChildren()];
+        const hint: Node[] = [];
+        if (this.service.snapshot.emptyProject) {
+            const n = info(EMPTY_PROJECT_MESSAGE, 'no top entity yet', 'lightbulb');
+            n.id = 'design:empty-hint';
+            hint.push(n);
+        }
+        return [this.addFileNode(), ...hint, ...(this.current === 'hierarchy' ? this.hierarchy : this.files).getChildren()];
     }
 
     override dispose(): void {

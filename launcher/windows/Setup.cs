@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -112,6 +113,92 @@ namespace NexysVhdl.Launcher
         }
     }
 
+    /// <summary>
+    /// The per-user Windows file association of .nvproj (HKCU only, no administrator rights):
+    ///   Software\Classes\.nvproj                    (default) = NexysVHDL.Project   (only if no other program owns .nvproj)
+    ///   Software\Classes\.nvproj\OpenWithProgids   NexysVHDL.Project
+    ///   Software\Classes\NexysVHDL.Project          the document type: name, icon, and "NexysVHDL.exe" "%1"
+    /// Remove() deletes only what Register() wrote and leaves any other program's association alone.
+    /// The registry root is a parameter so tests can use a scratch key instead of the real one.
+    /// </summary>
+    public static class FileAssociation
+    {
+        public const string Extension = ".nvproj";
+        public const string ProgId = "NexysVHDL.Project";
+        public const string DefaultClassesKey = @"Software\Classes";
+
+        [DllImport("shell32.dll")]
+        static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);
+
+        static void Notify(string classesKey)
+        {
+            // Only the real association needs Explorer to refresh its icons.
+            if (classesKey == DefaultClassesKey) SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        public static void Register(string exe, string icon, string classesKey)
+        {
+            using (RegistryKey classes = Registry.CurrentUser.CreateSubKey(classesKey))
+            {
+                using (RegistryKey id = classes.CreateSubKey(ProgId))
+                {
+                    id.SetValue("", "NexysVHDL Project");
+                    id.SetValue("FriendlyTypeName", "NexysVHDL Project");
+                    using (RegistryKey i = id.CreateSubKey("DefaultIcon")) i.SetValue("", "\"" + icon + "\"");
+                    using (RegistryKey c = id.CreateSubKey(@"shell\open\command")) c.SetValue("", "\"" + exe + "\" \"%1\"");
+                }
+                using (RegistryKey ext = classes.CreateSubKey(Extension))
+                {
+                    string current = ext.GetValue("") as string;
+                    if (string.IsNullOrEmpty(current) || current == ProgId) ext.SetValue("", ProgId);
+                    if (ext.GetValue("Content Type") == null) ext.SetValue("Content Type", "application/vnd.nexysvhdl.project+json");
+                    using (RegistryKey with = ext.CreateSubKey("OpenWithProgids")) with.SetValue(ProgId, new byte[0], RegistryValueKind.None);
+                }
+            }
+            Notify(classesKey);
+        }
+
+        public static void Remove(string classesKey)
+        {
+            using (RegistryKey classes = Registry.CurrentUser.OpenSubKey(classesKey, true))
+            {
+                if (classes == null) return;
+                using (RegistryKey ext = classes.OpenSubKey(Extension, true))
+                {
+                    if (ext != null)
+                    {
+                        if (ProgId.Equals(ext.GetValue("") as string)) ext.DeleteValue("", false);
+                        if ("application/vnd.nexysvhdl.project+json".Equals(ext.GetValue("Content Type") as string)) ext.DeleteValue("Content Type", false);
+                        using (RegistryKey with = ext.OpenSubKey("OpenWithProgids", true))
+                        {
+                            if (with != null) with.DeleteValue(ProgId, false);
+                        }
+                    }
+                }
+                // Drop .nvproj itself only when nothing of anyone else is left in it.
+                using (RegistryKey ext = classes.OpenSubKey(Extension))
+                {
+                    bool empty = false;
+                    if (ext != null)
+                    {
+                        using (RegistryKey with = ext.OpenSubKey("OpenWithProgids"))
+                            empty = ext.ValueCount == 0 && (ext.SubKeyCount == 0 || (ext.SubKeyCount == 1 && with != null && with.ValueCount == 0 && with.SubKeyCount == 0));
+                    }
+                    if (empty) { ext.Close(); classes.DeleteSubKeyTree(Extension, false); }
+                }
+                classes.DeleteSubKeyTree(ProgId, false);
+            }
+            Notify(classesKey);
+        }
+
+        /// <summary>The classes root in use (a test may point it at a scratch key).</summary>
+        public static string ClassesKey()
+        {
+            string v = Environment.GetEnvironmentVariable("NEXYSVHDL_ASSOC_CLASSES_KEY");
+            return string.IsNullOrEmpty(v) ? DefaultClassesKey : v;
+        }
+    }
+
     public static class Installer
     {
         const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\NexysVHDL";
@@ -184,6 +271,9 @@ namespace NexysVhdl.Launcher
                 if (!string.Equals(Path.GetFullPath(Application.ExecutablePath), Path.GetFullPath(uninstall), StringComparison.OrdinalIgnoreCase))
                     File.Copy(Application.ExecutablePath, uninstall, true);
 
+                // .nvproj project files open with NexysVHDL (per user; the icon is the NexysVHDL icon).
+                FileAssociation.Register(exe, ico, FileAssociation.ClassesKey());
+
                 MakeShortcut(StartMenuShortcut(), exe, ico, "NexysVHDL: VHDL for the Nexys A7 FPGA");
                 if (desktopShortcut) MakeShortcut(DesktopShortcut(), exe, ico, "NexysVHDL: VHDL for the Nexys A7 FPGA");
 
@@ -233,6 +323,8 @@ namespace NexysVhdl.Launcher
                 try { if (File.Exists(f)) File.Delete(f); } catch (IOException) { } catch (UnauthorizedAccessException) { }
             }
             try { Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, false); } catch (Exception) { }
+            // Only the association NexysVHDL registered; another program's .nvproj handling is not touched.
+            try { FileAssociation.Remove(FileAssociation.ClassesKey()); } catch (Exception) { }
             // This program lives in the folder being removed: finish the deletion after it exits, with no visible window.
             ProcessStartInfo p = new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 3 >nul & rd /s /q \"" + dir + "\"");
             p.CreateNoWindow = true;

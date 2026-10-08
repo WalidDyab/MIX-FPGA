@@ -48,6 +48,9 @@ export class Uri {
     static file(path: string): Uri {
         return new Uri(path);
     }
+    static joinPath(base: Uri, ...parts: string[]): Uri {
+        return new Uri([base.fsPath, ...parts].join('/'));
+    }
     toString(): string {
         return `file://${this.fsPath}`;
     }
@@ -130,4 +133,76 @@ export const languages = {
 
 export const workspace = {
     textDocuments: [] as Array<{ uri: Uri; getText(): string }>,
+};
+
+export enum ViewColumn {
+    Active = -1,
+    Beside = -2,
+    One = 1,
+    Two = 2,
+}
+
+/** Every command executed through the fake, for assertions. */
+export const commandLog: Array<{ command: string; args: unknown[] }> = [];
+export const commands = {
+    executeCommand(command: string, ...args: unknown[]): Promise<unknown> {
+        commandLog.push({ command, args });
+        return Promise.resolve(undefined);
+    },
+};
+
+/** A webview panel that records what the extension sends and lets a test play the page's side. */
+export class FakeWebviewPanel {
+    title: string;
+    iconPath: unknown;
+    disposed = false;
+    readonly revealed: Array<{ column: number | undefined; preserveFocus: boolean | undefined }> = [];
+    private handler: ((m: unknown) => void) | undefined;
+    private disposeHandler: (() => void) | undefined;
+    readonly webview = {
+        html: '',
+        cspSource: 'fake-csp:',
+        sent: [] as unknown[],
+        asWebviewUri: (u: Uri) => u,
+        postMessage: (m: unknown) => {
+            this.webview.sent.push(m);
+            return Promise.resolve(true);
+        },
+        onDidReceiveMessage: (l: (m: unknown) => void) => {
+            this.handler = l;
+            return { dispose: () => undefined };
+        },
+    };
+    constructor(
+        readonly viewType: string,
+        title: string,
+        readonly viewColumn: number,
+        readonly options: Record<string, unknown>,
+    ) {
+        this.title = title;
+    }
+    onDidDispose(l: () => void): { dispose(): void } {
+        this.disposeHandler = l;
+        return { dispose: () => undefined };
+    }
+    reveal(column?: number, preserveFocus?: boolean): void {
+        this.revealed.push({ column, preserveFocus });
+    }
+    /** The page posts a message to the extension. */
+    receive(message: unknown): void {
+        this.handler?.(message);
+    }
+    dispose(): void {
+        this.disposed = true;
+        this.disposeHandler?.();
+    }
+}
+
+export const panels: FakeWebviewPanel[] = [];
+export const window = {
+    createWebviewPanel(viewType: string, title: string, column: number, options: Record<string, unknown>): FakeWebviewPanel {
+        const p = new FakeWebviewPanel(viewType, title, column, options);
+        panels.push(p);
+        return p;
+    },
 };

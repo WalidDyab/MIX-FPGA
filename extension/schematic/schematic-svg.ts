@@ -11,12 +11,12 @@ import type { Endpoint, SchematicBlock, SchematicMode, SchematicModel } from './
  * classes so the webview can follow the VS Code theme.
  */
 
-const PIN = 18;
-const HEAD = 40;
-const COL_GAP = 120;
-const ROW_GAP = 36;
-const FRAME_PAD = 110;
-const CHAR = 7.2;
+const PIN = 22;
+const HEAD = 50;
+const COL_GAP = 160;
+const ROW_GAP = 48;
+const FRAME_PAD = 120;
+const CHAR = 8;
 
 export interface Point {
     readonly x: number;
@@ -88,13 +88,13 @@ export function layoutSchematic(model: SchematicModel): Layout {
     }
     const leftPorts = model.ports.filter((p) => isLeft(p.mode) || p.mode === 'inout');
     const rightPorts = model.ports.filter((p) => !isLeft(p.mode) && p.mode !== 'inout');
-    const portLabel = Math.max(60, ...model.ports.map((p) => textWidth(p.name) + 24));
+    const portLabel = Math.max(70, ...model.ports.map((p) => textWidth(p.name) + 30));
 
     const sized = model.blocks.map((b) => {
         const left = b.ports.filter((p) => isLeft(p.mode) || p.mode === 'inout');
         const right = b.ports.filter((p) => !isLeft(p.mode) && p.mode !== 'inout');
         const inner = Math.max(...left.map((p) => textWidth(p.name)), 0) + Math.max(...right.map((p) => textWidth(p.name)), 0) + 40;
-        const width = Math.max(150, inner, textWidth(b.label) + 40, textWidth(b.entityName) + 40);
+        const width = Math.max(180, inner, textWidth(b.label) + 56, textWidth(b.entityName) + 40);
         const height = HEAD + Math.max(left.length, right.length, 1) * PIN + 10;
         return { b, left, right, width, height };
     });
@@ -125,7 +125,7 @@ export function layoutSchematic(model: SchematicModel): Layout {
             maxBottom = Math.max(maxBottom, y);
         }
     }
-    const portsHeight = Math.max(leftPorts.length, rightPorts.length) * 34 + 60;
+    const portsHeight = Math.max(leftPorts.length, rightPorts.length) * 44 + 60;
     const frameHeight = Math.max(maxBottom - frameY + 10, portsHeight, 140);
     const frame = { x: frameX, y: frameY, width: innerWidth, height: frameHeight };
 
@@ -225,9 +225,9 @@ export function renderSchematicSvg(model: SchematicModel): string {
         out.push(`<title>${esc(`${b.label} : ${b.entityName}${b.note ? ` — ${b.note}` : ''}\nClick to open the instantiation${b.childCount ? '; use ⤵ to look inside' : ''}`)}</title>`);
         out.push(`<rect x="${lb.x}" y="${lb.y}" width="${lb.width}" height="${lb.height}" rx="5"/>`);
         if (b.generate.length > 0) out.push(`<rect class="replica" x="${lb.x + 4}" y="${lb.y + 4}" width="${lb.width}" height="${lb.height}" rx="5"/>`);
-        out.push(`<text class="block-label" x="${lb.x + lb.width / 2}" y="${lb.y + 16}" text-anchor="middle">${esc(b.label)}</text>`);
-        out.push(`<text class="block-entity" x="${lb.x + lb.width / 2}" y="${lb.y + 31}" text-anchor="middle">${esc(b.entityName)}${b.status === 'ok' ? '' : ' ?'}</text>`);
-        if (b.childCount > 0) out.push(`<text class="drill" data-hid="${esc(b.hierarchyId)}" x="${lb.x + lb.width - 16}" y="${lb.y + 16}">⤵</text>`);
+        out.push(`<text class="block-label" x="${lb.x + lb.width / 2}" y="${lb.y + 19}" text-anchor="middle">${esc(b.label)}</text>`);
+        out.push(`<text class="block-entity" x="${lb.x + lb.width / 2}" y="${lb.y + 35}" text-anchor="middle">${esc(b.entityName)}${b.status === 'ok' ? '' : ' ?'}</text>`);
+        if (b.childCount > 0) out.push(`<text class="drill" data-hid="${esc(b.hierarchyId)}" x="${lb.x + lb.width - 22}" y="${lb.y + 19}">⤵</text>`);
         for (const p of b.ports) {
             const pin = lb.pins.get(p.name.toLowerCase());
             if (!pin) continue;

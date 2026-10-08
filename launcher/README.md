@@ -23,7 +23,9 @@ Built with the C# compiler that ships with Windows (.NET Framework 4, `csc.exe`)
 
 ## Contracts
 
-- **Project**: a folder containing `nexysvhdl.json`. Anything else gets a friendly message and nothing is launched.
+- **Project**: a folder containing `nexysvhdl.json`, or a `.nvproj` project file next to it. Anything else gets a friendly message and nothing is launched.
+- **Project file** (`ProjectCheck.ResolveProjectFile`, same rules as `core/project/nvproj.ts`): `{ "format": "nexysvhdl-project", "version": 1, "config": "nexysvhdl.json" }`; `config` is relative to the file and stays inside its folder. Windows runs `NexysVHDL.exe "<path>.nvproj"` for a double-click; the launcher validates it and opens the project folder with `Code.exe "<folder>"` (never a `vscode://` link, so VS Code shows no confirmation). A damaged, foreign, newer or unsafe file is explained in a message box. Moving or copying the whole project folder keeps working.
+- **File association** (`windows/Setup.cs`, `FileAssociation`, HKCU only): `.nvproj` -> `NexysVHDL.Project` (only if no other program owns `.nvproj`; otherwise NexysVHDL is offered under Open with), the NexysVHDL icon, `"<install>\NexysVHDL.exe" "%1"`. Uninstalling removes only what Setup wrote. A macOS `.app` registers the same document type and calls `LauncherService.OpenTarget`.
 - **Recent projects**: `%APPDATA%\NexysVHDL\Launcher\recent-projects.json` (`{ "version": 1, "projects": [ { "path", "name", "lastOpenedUtc" } ] }`, newest first, at most 10). Per user; nothing is written into a project. Deleted folders are listed as "missing" and dropped when chosen.
 - **VS Code discovery** (never PATH): `NEXYSVHDL_VSCODE_PATH` (tests), `%LOCALAPPDATA%\Programs\Microsoft VS Code`, `%ProgramFiles%`/`%ProgramW6432%`/`%ProgramFiles(x86)%` `\Microsoft VS Code`, the uninstall registry keys (HKCU/HKLM, 64/32-bit) and `App Paths\Code.exe`. VS Code Insiders is not used.
 - **Extension detection**: `~\.vscode\extensions\emxplore.nexysvhdl-<version>*`, highest version, ignoring folders listed in `.obsolete`.
@@ -35,8 +37,8 @@ Built with the C# compiler that ships with Windows (.NET Framework 4, `csc.exe`)
 
 ## Test hooks (environment variables, tests only)
 
-`NEXYSVHDL_LAUNCHER_STATE_DIR`, `NEXYSVHDL_LAUNCHER_FORCE_NO_VSCODE=1`, `NEXYSVHDL_VSCODE_PATH`, `NEXYSVHDL_VSCODE_EXTENSIONS_DIR`, `NEXYSVHDL_VSCODE_USER_DATA_DIR`, `NEXYSVHDL_LAUNCHER_DATA_ROOT`; and the command-line switches `--open <folder>`, `--new-project`, `--status-report <file>`.
+`NEXYSVHDL_LAUNCHER_STATE_DIR`, `NEXYSVHDL_LAUNCHER_FORCE_NO_VSCODE=1`, `NEXYSVHDL_VSCODE_PATH`, `NEXYSVHDL_VSCODE_EXTENSIONS_DIR`, `NEXYSVHDL_VSCODE_USER_DATA_DIR`, `NEXYSVHDL_LAUNCHER_DATA_ROOT`, `NEXYSVHDL_LAUNCHER_MESSAGE_FILE` (write a problem message to a file instead of a dialog), `NEXYSVHDL_ASSOC_CLASSES_KEY` (scratch registry key for the file association); and the command-line switches `<project>.nvproj`, `--open <folder or .nvproj>`, `--new-project`, `--status-report <file>`.
 
 ## Installer switches
 
-`/S` silent, `/desktop`, `/noextension`, `/nolaunch`, `/dir=PATH`, `/uninstall` (also `Uninstall.exe`). Uninstalling removes the application, its shortcuts and its Apps entry; it keeps projects, the recent list, the VS Code extension and the toolchain.
+`/S` silent, `/desktop`, `/noextension`, `/nolaunch`, `/dir=PATH`, `/uninstall` (also `Uninstall.exe`). Uninstalling removes the application, its shortcuts, its `.nvproj` association and its Apps entry; it keeps projects, the recent list, the VS Code extension and the toolchain.

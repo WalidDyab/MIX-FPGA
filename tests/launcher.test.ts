@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -90,7 +90,7 @@ describe('launcher (Windows)', { skip: !win || !existsSync(csc) }, () => {
         const r = spawnSync(exe, [], { encoding: 'utf8' });
         assert.equal(r.status, 0, r.stdout);
         const lines = r.stdout.split(/\r?\n/).filter(Boolean);
-        assert.ok(lines.filter((l) => l.startsWith('ok ')).length >= 13, r.stdout);
+        assert.ok(lines.filter((l) => l.startsWith('ok ')).length >= 18, r.stdout);
         assert.equal(lines[lines.length - 1], 'ALL OK');
     });
 
@@ -135,6 +135,120 @@ describe('launcher (Windows)', { skip: !win || !existsSync(csc) }, () => {
             assert.match(String(real['vscodeExecutable']), /Code\.exe$/);
             assert.ok(['user', 'system'].includes(String(real['vscodeScope'])));
         }
+    });
+
+    describe('.nvproj project files', () => {
+        /** Builds the launcher and a recording stand-in for Code.exe once. */
+        let launcher: string;
+        let fakeCode: string;
+        before(() => {
+            launcher = join(build, 'NexysVHDL-nvproj.exe');
+            compile(launcher, 'winexe', [...core, src('windows', 'WindowsPlatform.cs'), src('windows', 'FolderPicker.cs'), src('windows', 'MainForm.cs'), src('windows', 'Program.cs')]);
+            fakeCode = join(build, 'Code.exe');
+            compile(fakeCode, 'exe', [src('tests', 'FakeCode.cs')]);
+            mkdirSync(join(build, 'abc123', 'resources', 'app', 'out'), { recursive: true });
+            writeFileSync(join(build, 'abc123', 'resources', 'app', 'out', 'cli.js'), '');
+        });
+
+        function project(dir: string, name: string): string {
+            const root = join(dir, name);
+            mkdirSync(root, { recursive: true });
+            writeFileSync(join(root, 'nexysvhdl.json'), JSON.stringify({ name }));
+            writeFileSync(join(root, `${name}.nvproj`), JSON.stringify({ format: 'nexysvhdl-project', version: 1, config: 'nexysvhdl.json' }));
+            return root;
+        }
+
+        /** Starts the launcher exactly as Windows does for a double-click: one argument, the file, no shell. */
+        function doubleClick(dir: string, args: string[]) {
+            const extensions = join(dir, 'ext');
+            mkdirSync(join(extensions, 'emxplore.nexysvhdl-0.5.0-win32-x64'), { recursive: true });
+            const out = join(dir, 'fakecode.txt');
+            const message = join(dir, 'message.txt');
+            const r = spawnSync(launcher, args, {
+                env: {
+                    SystemRoot: process.env['SystemRoot'] ?? 'C:\\Windows',
+                    NEXYSVHDL_VSCODE_PATH: fakeCode,
+                    NEXYSVHDL_VSCODE_EXTENSIONS_DIR: extensions,
+                    NEXYSVHDL_LAUNCHER_STATE_DIR: join(dir, 'state'),
+                    NEXYSVHDL_LAUNCHER_DATA_ROOT: join(dir, 'data'),
+                    NEXYS_FAKECODE_OUT: out,
+                    NEXYSVHDL_LAUNCHER_MESSAGE_FILE: message,
+                },
+                timeout: 30000,
+            });
+            return { status: r.status, started: existsSync(out) ? readFileSync(out, 'utf8') : undefined, message: existsSync(message) ? readFileSync(message, 'utf8') : undefined, stderr: String(r.stderr) };
+        }
+
+        it('double-clicking a .nvproj (path with spaces) starts VS Code on that project folder, without a terminal or a vscode:// link', async () => {
+            const dir = await mkdtemp(join(tmpdir(), 'nexys launcher nvproj '));
+            const root = project(join(dir, 'My Courses'), 'Lab 1 Counter');
+            const r = doubleClick(dir, [join(root, 'Lab 1 Counter.nvproj')]);
+            assert.equal(r.status, 0, r.stderr);
+            assert.ok(r.started, 'VS Code was started');
+            const args = r.started.split('\n');
+            assert.equal(args[0], root, 'the first argument is the project FOLDER, as one argument');
+            assert.doesNotMatch(r.started, /--open-url|vscode:\/\//, 'no URI hand-off, so no VS Code confirmation prompt');
+            assert.equal(subsystem(launcher), 2, 'a Windows-subsystem program: no console window');
+        });
+
+        it('--open accepts a project file too, and the folder form still works for projects without one', async () => {
+            const dir = await mkdtemp(join(tmpdir(), 'nexys launcher nvproj '));
+            const root = project(dir, 'WithFile');
+            assert.equal(doubleClick(dir, ['--open', join(root, 'WithFile.nvproj')]).started?.split('\n')[0], root);
+            const legacy = join(dir, 'Legacy');
+            mkdirSync(legacy);
+            writeFileSync(join(legacy, 'nexysvhdl.json'), '{}');
+            rmSync(join(dir, 'fakecode.txt'), { force: true });
+            const r = doubleClick(dir, ['--open', legacy]);
+            assert.equal(r.status, 0);
+            assert.equal(r.started?.split('\n')[0], legacy);
+        });
+
+        it('a moved project folder opens from its new place', async () => {
+            const dir = await mkdtemp(join(tmpdir(), 'nexys launcher nvproj '));
+            const root = project(dir, 'Original');
+            const moved = join(dir, 'Archive 2026', 'Original');
+            mkdirSync(join(dir, 'Archive 2026'));
+            renameSync(root, moved);
+            const r = doubleClick(dir, [join(moved, 'Original.nvproj')]);
+            assert.equal(r.status, 0, r.stderr);
+            assert.equal(r.started?.split('\n')[0], moved);
+        });
+
+        it('a malformed .nvproj or one without nexysvhdl.json is explained and VS Code is not started', async () => {
+            const dir = await mkdtemp(join(tmpdir(), 'nexys launcher nvproj '));
+            const root = project(dir, 'Broken');
+            writeFileSync(join(root, 'Broken.nvproj'), '{ not json');
+            const bad = doubleClick(dir, [join(root, 'Broken.nvproj')]);
+            assert.equal(bad.status, 1);
+            assert.equal(bad.started, undefined, 'nothing was launched');
+            assert.match(bad.message ?? '', /damaged/);
+            rmSync(join(root, 'nexysvhdl.json'));
+            writeFileSync(join(root, 'Broken.nvproj'), JSON.stringify({ format: 'nexysvhdl-project', version: 1, config: 'nexysvhdl.json' }));
+            const missing = doubleClick(dir, [join(root, 'Broken.nvproj')]);
+            assert.equal(missing.status, 1);
+            assert.equal(missing.started, undefined);
+            assert.match(missing.message ?? '', /nexysvhdl\.json, which was not found next to it/);
+        });
+    });
+
+    it('the .nvproj file association (per user): registered with the icon and "exe" "%1", removed without touching unrelated associations (scratch registry key)', () => {
+        const exe = join(build, 'AssociationTests.exe');
+        const r0 = spawnSync(csc, ['/nologo', '/target:exe', '/main:AssociationTests', `/out:${exe}`, ...refs, ...core, src('windows', 'WindowsPlatform.cs'), src('windows', 'Setup.cs'), src('tests', 'AssociationTests.cs')], { encoding: 'utf8' });
+        assert.equal(r0.status, 0, `${r0.stdout}${r0.stderr}`);
+        const r = spawnSync(exe, [], { encoding: 'utf8' });
+        assert.equal(r.status, 0, r.stdout);
+        const lines = r.stdout.split(/\r?\n/).filter(Boolean);
+        assert.ok(lines.filter((l) => l.startsWith('ok ')).length >= 5, r.stdout);
+        assert.equal(lines[lines.length - 1], 'ALL OK');
+    });
+
+    it('the installer registers the association and the uninstaller removes it; the project file keeps the NexysVHDL icon', () => {
+        const setup = readFileSync(src('windows', 'Setup.cs'), 'utf8');
+        assert.match(setup, /FileAssociation\.Register\(exe, ico, FileAssociation\.ClassesKey\(\)\)/);
+        assert.match(setup, /FileAssociation\.Remove\(FileAssociation\.ClassesKey\(\)\)/);
+        assert.match(setup, /Registry\.CurrentUser\.CreateSubKey\(classesKey\)/, 'per user (HKCU), no administrator rights');
+        assert.doesNotMatch(setup, /Registry\.LocalMachine|ClassesRoot/);
     });
 
     it('reports VS Code as missing when it is not installed', async () => {

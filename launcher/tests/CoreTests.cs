@@ -262,6 +262,102 @@ public static class CoreTests
             True(!s.GetStatus().ExtensionOutdated, "not installed is not outdated");
         });
 
+        Test(".nvproj: a valid project file opens its project folder by full path, through the normal open path, and the folder is remembered", delegate ()
+        {
+            string t = Temp();
+            FakePlatform p = new FakePlatform { State = Path.Combine(t, "s") };
+            LauncherService s = new LauncherService(p, null);
+            string proj = MakeProject(t, "Counter Demo");
+            string file = Path.Combine(proj, "Counter Demo.nvproj");
+            File.WriteAllText(file, "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"nexysvhdl.json\" }");
+            OpenResult r = s.OpenTarget(file);
+            True(r.Ok, "opened: " + r.Message);
+            Eq(1, p.Calls.Count, "one launch");
+            Eq("folder:" + Path.GetFullPath(proj), p.Calls[0], "launches the project FOLDER (path with a space), never a vscode:// link");
+            Eq(1, s.Recent.List().Count, "remembered");
+            Eq(Path.GetFullPath(proj).ToLowerInvariant(), Path.GetFullPath(s.Recent.List()[0].Path).ToLowerInvariant(), "recent entry is the folder");
+        });
+
+        Test(".nvproj: a moved or copied project folder still opens from its new place (no absolute paths)", delegate ()
+        {
+            string t = Temp();
+            FakePlatform p = new FakePlatform { State = Path.Combine(t, "s") };
+            LauncherService s = new LauncherService(p, null);
+            string proj = MakeProject(t, "Moved");
+            File.WriteAllText(Path.Combine(proj, "Moved.nvproj"), "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"nexysvhdl.json\" }");
+            string elsewhere = Path.Combine(t, "Elsewhere", "Deeper Folder");
+            Directory.CreateDirectory(Path.GetDirectoryName(elsewhere));
+            Directory.Move(proj, elsewhere);
+            True(s.OpenTarget(Path.Combine(elsewhere, "Moved.nvproj")).Ok, "opens after a move");
+            Eq("folder:" + Path.GetFullPath(elsewhere), p.Calls[0], "new location");
+            True(!File.ReadAllText(Path.Combine(elsewhere, "Moved.nvproj")).Contains(":\\"), "the descriptor holds no machine path");
+        });
+
+        Test(".nvproj: a damaged, foreign, newer or unsafe project file is refused with a clear message and VS Code is not started", delegate ()
+        {
+            string t = Temp();
+            FakePlatform p = new FakePlatform { State = Path.Combine(t, "s") };
+            LauncherService s = new LauncherService(p, null);
+            string proj = MakeProject(t, "P");
+            string file = Path.Combine(proj, "P.nvproj");
+            string[][] cases = new string[][]
+            {
+                new string[] { "{ broken", "damaged" },
+                new string[] { "[1,2]", "damaged" },
+                new string[] { "{ \"format\": \"something-else\", \"version\": 1, \"config\": \"nexysvhdl.json\" }", "not a NexysVHDL project file" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 2, \"config\": \"nexysvhdl.json\" }", "newer NexysVHDL" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 0, \"config\": \"nexysvhdl.json\" }", "invalid \"version\"" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1.5, \"config\": \"nexysvhdl.json\" }", "invalid \"version\"" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": \"1\", \"config\": \"nexysvhdl.json\" }", "invalid \"version\"" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1 }", "unusable settings file" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"C:\\\\Users\\\\x\\\\nexysvhdl.json\" }", "unusable settings file" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"/etc/nexysvhdl.json\" }", "unusable settings file" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"../nexysvhdl.json\" }", "unusable settings file" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"other.json\" }", "unusable settings file" },
+                new string[] { "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"sub/nexysvhdl.json\" }", "not found next to it" }
+            };
+            foreach (string[] c in cases)
+            {
+                File.WriteAllText(file, c[0]);
+                OpenResult r = s.OpenTarget(file);
+                Eq(OpenOutcome.NotAProject, r.Outcome, c[1] + " outcome");
+                True(r.Message.Contains(c[1]), "message for " + c[0] + " should mention <" + c[1] + "> but was <" + r.Message + ">");
+            }
+            Eq(0, p.Calls.Count, "nothing launched");
+            Eq(0, s.Recent.List().Count, "nothing remembered");
+            File.Delete(Path.Combine(proj, "nexysvhdl.json"));
+            File.WriteAllText(file, "{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"nexysvhdl.json\" }");
+            OpenResult missing = s.OpenTarget(file);
+            Eq(OpenOutcome.NotAProject, missing.Outcome, "missing nexysvhdl.json");
+            True(missing.Message.Contains("not found next to it"), "explains the missing settings file: " + missing.Message);
+            True(s.OpenTarget(Path.Combine(proj, "Gone.nvproj")).Message.Contains("does not exist"), "a project file that is gone");
+        });
+
+        Test(".nvproj: unknown extra fields are ignored and a nested config opens the folder that holds it", delegate ()
+        {
+            string t = Temp();
+            FakePlatform p = new FakePlatform { State = Path.Combine(t, "s") };
+            LauncherService s = new LauncherService(p, null);
+            string outer = Path.Combine(t, "Outer");
+            string inner = MakeProject(outer, "inner");
+            string file = Path.Combine(outer, "Outer.nvproj");
+            File.WriteAllText(file, "\uFEFF{ \"format\": \"nexysvhdl-project\", \"version\": 1, \"config\": \"inner\\\\nexysvhdl.json\", \"futureField\": { \"x\": 1 } }");
+            True(s.OpenTarget(file).Ok, "opens");
+            Eq("folder:" + Path.GetFullPath(inner), p.Calls[0], "the folder holding the config");
+        });
+
+        Test("a project folder without any .nvproj (an older project) still opens exactly as before", delegate ()
+        {
+            string t = Temp();
+            FakePlatform p = new FakePlatform { State = Path.Combine(t, "s") };
+            LauncherService s = new LauncherService(p, null);
+            string legacy = MakeProject(t, "OldProject");
+            True(s.OpenTarget(legacy).Ok, "opens by folder through OpenTarget");
+            Eq("folder:" + Path.GetFullPath(legacy), p.Calls[0], "launch call");
+            True(ProjectCheck.IsProjectFile("x\\Y.NVPROJ"), "extension check is case-insensitive");
+            True(!ProjectCheck.IsProjectFile(legacy), "a folder is not a project file");
+        });
+
         Console.WriteLine(failures == 0 ? "ALL OK" : failures + " FAILED");
         return failures == 0 ? 0 : 1;
     }

@@ -24,7 +24,8 @@ if (!code || !workspace || !reportFile) {
 const env: NodeJS.ProcessEnv = { ...process.env, NEXYS_EDH_REPORT: reportFile, ...(shots ? { NEXYS_P6_SHOTS: shots } : {}) };
 delete env['ELECTRON_RUN_AS_NODE'];
 const installed = process.env['NEXYSVHDL_P6_EXTENSIONS_DIR'];
-const userData = mkdtempSync(join(tmpdir(), 'nexys-p6-'));
+// NEXYS_P6_USER_DATA keeps one user-data folder across launches (a second session must see what the first left behind).
+const userData = process.env['NEXYS_P6_USER_DATA'] ?? mkdtempSync(join(tmpdir(), 'nexys-p6-'));
 const child = spawn(
     code,
     [
@@ -33,7 +34,7 @@ const child = spawn(
         // extension that is an empty host folder (NEXYSVHDL_P6_HOST_DIR), so the INSTALLED extension is the one tested.
         `--extensionDevelopmentPath=${installed ? (process.env['NEXYSVHDL_P6_HOST_DIR'] ?? packageRoot(__dirname)) : packageRoot(__dirname)}`,
         `--extensionTestsPath=${join(__dirname, `${process.env['NEXYS_P6_SUITE'] ?? 'phase6'}-suite.js`)}`,
-        `--user-data-dir=${join(userData, 'user')}`,
+        `--user-data-dir=${process.env['NEXYS_P6_USER_DATA'] ?? join(userData, 'user')}`,
         `--extensions-dir=${installed ?? join(userData, 'extensions')}`,
         ...(installed ? [] : ['--disable-extensions']),
         '--disable-workspace-trust',

@@ -1,9 +1,11 @@
 import { readFile, stat } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import {
+    type BuildProgress,
     type BuildResult,
     type Diagnostic,
     errorDiag,
+    findNvprojFiles,
     type LogRef,
     normalizeStopTime,
     type Project,
@@ -14,17 +16,20 @@ import {
     STOP_TIME_UNITS,
     updateProjectFile,
     type VhdlCheckResult,
+    whenFileJobsSettled,
 } from '../../core';
 import type { ProblemCategory } from '../diagnostics/problems';
 import { DesignIndex, type FileRole, type IndexedFile } from '../hierarchy/design-index';
 import { buildHierarchy, type HierarchyModel } from '../hierarchy/hierarchy';
 import { parseVhdl } from '../hierarchy/vhdl-parser';
 import { buildProjectFilesModel, classifyProjectPath, type ProjectFilesModel, scanProjectFiles, type ScannedFiles } from '../project/project-layout';
+import { isEmptyProject, withoutEmptyStateErrors } from '../project/empty-project';
 import { computeSourceSync } from '../project/project-sync';
 import { buildRtlModel, parseYosysJson, type RtlModel } from '../rtl/rtl-model';
 import type { EnvironmentReport } from '../../runtime/environment';
 import type { NexysBackend } from './backend';
 import { type EnvironmentSummary, summarizeEnvironment } from './environment-summary';
+import { type ConsoleTag, NexysConsole, silentConsole } from './console';
 import { Emitter, type Logger, silentLogger } from './events';
 import { applyDetection, detectionStarted, type HardwareState, initialHardware, resolveProgramTarget, selectBoard } from './hardware-state';
 import {
@@ -33,6 +38,7 @@ import {
     buildFinished,
     buildProgressed,
     checkFinished,
+    formatSimTime,
     initialWorkflow,
     programBlocked,
     programFinished,
@@ -45,6 +51,8 @@ import {
 export type PipelineAction = WorkflowAction | 'rtl';
 
 const ACTION_LABEL: Record<PipelineAction, string> = { check: 'Check', simulate: 'Simulation', build: 'Build', program: 'Programming', rtl: 'RTL schematic generation' };
+
+const CONSOLE_TAG: Record<WorkflowAction, ConsoleTag> = { check: 'Check', simulate: 'Simulate', build: 'Build', program: 'Program' };
 
 /** `busy`: the project's single-flight claim changed (UIs disable or mark the other actions). */
 export type ChangeKind = 'project' | 'workflow' | 'hardware' | 'environment' | 'results' | 'problems' | 'rtl' | 'busy';
@@ -75,6 +83,10 @@ export interface ProjectSnapshot {
     readonly hierarchy: HierarchyModel;
     /** Display name of the project's board, when supported. */
     readonly boardName?: string;
+    /** A new Empty project: no VHDL and no top entity yet. A valid starting state, shown as guidance instead of errors. */
+    readonly emptyProject?: boolean;
+    /** The project's `.nvproj` file, when it has one (old projects may not). */
+    readonly projectFile?: string;
     /** Files removed from the project that still exist on disk (project-relative), so they can be added back. */
     readonly excluded: readonly string[];
 }
@@ -107,6 +119,8 @@ export type ProgramOutcome =
 export interface ServiceOptions {
     readonly backend: NexysBackend;
     readonly logger?: Logger;
+    /** The NexysVHDL Console: the student-facing record of every workflow action. */
+    readonly console?: NexysConsole;
     /** Delay that coalesces file events before re-indexing (ms). */
     readonly debounceMs?: number;
     /** Whether saving a VHDL file runs Check automatically. */
@@ -155,6 +169,7 @@ export class NexysVhdlService {
     private root?: string;
     private readonly backend: NexysBackend;
     private readonly log: Logger;
+    readonly console: NexysConsole;
     private readonly debounceMs: number;
     private readonly checkOnSave: () => boolean;
     private readonly parseCache = new Map<string, { mtimeMs: number; size: number; file: IndexedFile }>();
@@ -172,6 +187,7 @@ export class NexysVhdlService {
     constructor(options: ServiceOptions) {
         this.backend = options.backend;
         this.log = options.logger ?? silentLogger;
+        this.console = options.console ?? silentConsole;
         this.debounceMs = options.debounceMs ?? 300;
         this.checkOnSave = options.checkOnSave ?? (() => false);
     }
@@ -229,6 +245,26 @@ export class NexysVhdlService {
         this.emit('workflow', 'results', 'rtl', 'problems');
         this.log.info(`Opened project folder ${root}`);
         await this.refreshNow();
+        this.console.initialize(this.project?.config.name ?? root.split(/[\\/]/).pop() ?? root, root);
+    }
+
+    /**
+     * Completes every project write that is still pending, so nothing is lost when the window closes
+     * or the extension restarts: a debounced refresh (which may carry the source-list update for
+     * nexysvhdl.json) runs now instead of waiting for its timer, and queued writes to
+     * nexysvhdl.json are awaited. Never saves editor buffers: source documents keep VS Code's
+     * normal Save / Auto Save behaviour.
+     */
+    async flush(): Promise<void> {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = undefined;
+            const waiting = this.waiters.splice(0);
+            await this.refreshNow();
+            waiting.forEach((w) => w());
+        }
+        await this.whenIdle();
+        await whenFileJobsSettled();
     }
 
     dispose(): void {
@@ -328,6 +364,7 @@ export class NexysVhdlService {
         if (!root) return;
         const file = join(root, PROJECT_FILE_NAME);
         const scannedAll = await scanProjectFiles(root);
+        const projectFile = (await findNvprojFiles(root))[0];
         let scanned = scannedAll;
         let loaded = await this.backend.loadProject(root);
         if (!loaded.ok) {
@@ -336,7 +373,7 @@ export class NexysVhdlService {
             this.snapshot = {
                 root, file, loadDiagnostics, validation: [], scanned,
                 files: buildProjectFilesModel(scanned, { sources: [] }),
-                index, hierarchy: buildHierarchy(index, ''), excluded: [],
+                index, hierarchy: buildHierarchy(index, ''), excluded: [], ...(projectFile ? { projectFile } : {}),
             };
             this.problems.set('project', loadDiagnostics);
             this.emit('project', 'problems');
@@ -391,7 +428,10 @@ export class NexysVhdlService {
             new Set(topEntity && topEntity.role === 'source' ? [topEntity.file] : []),
             new Set(tbEntity ? [tbEntity.file] : []),
         );
-        const validation = (await this.backend.validate(project)).diagnostics.map((d) => (d.location ? d : { ...d, location: { file: PROJECT_FILE_NAME } }));
+        const emptyProject = isEmptyProject(project.config, scanned);
+        const rawValidation = (await this.backend.validate(project)).diagnostics.map((d) => (d.location ? d : { ...d, location: { file: PROJECT_FILE_NAME } }));
+        // The backend (and so Build and Simulate) still sees the full validation; only what is displayed is softened.
+        const validation = emptyProject ? withoutEmptyStateErrors(rawValidation) : rawValidation;
         const boardName = (await this.backend.boards()).get(project.config.board)?.name;
         const signature = JSON.stringify([top, order.map((p) => [p, this.parseCache.get(p)?.mtimeMs, this.parseCache.get(p)?.size])]);
         if (signature !== this.designSignature) {
@@ -400,7 +440,7 @@ export class NexysVhdlService {
         }
         const excluded: string[] = [];
         for (const p of [...excludeSet].sort()) if (await this.exists(p)) excluded.push(p);
-        this.snapshot = { root, file, project, loadDiagnostics: [], validation, scanned, files, index, hierarchy, excluded, ...(boardName ? { boardName } : {}) };
+        this.snapshot = { root, file, project, loadDiagnostics: [], validation, scanned, files, index, hierarchy, excluded, ...(emptyProject ? { emptyProject } : {}), ...(boardName ? { boardName } : {}), ...(projectFile ? { projectFile } : {}) };
         this.problems.set('project', validation);
         this.emit('project', 'problems');
     }
@@ -658,7 +698,7 @@ export class NexysVhdlService {
         }
     }
 
-    private async begin(action: WorkflowAction): Promise<{ project: Project; signal: AbortSignal }> {
+    private async begin(action: WorkflowAction, intro: string): Promise<{ project: Project; signal: AbortSignal }> {
         await this.whenIdle();
         await this.refreshNow();
         const snap = this.requireProject();
@@ -673,6 +713,7 @@ export class NexysVhdlService {
         this.stopRequested = false;
         this.setWorkflow(actionStarted(this.workflow, action));
         this.log.info(`▶ ${action[0]!.toUpperCase()}${action.slice(1)} — ${snap.project.config.name}`);
+        this.console.begin(CONSOLE_TAG[action], intro);
         return { project: snap.project, signal: this.abort.signal };
     }
 
@@ -707,14 +748,16 @@ export class NexysVhdlService {
     }
 
     /** Runs `op` for an action the caller already claimed with exclusive(). */
-    private async runClaimed<T>(action: WorkflowAction, op: (project: Project, signal: AbortSignal) => Promise<T>): Promise<T> {
-        const { project, signal } = await this.begin(action);
+    private async runClaimed<T>(action: WorkflowAction, intro: string, op: (project: Project, signal: AbortSignal) => Promise<T>): Promise<T> {
+        const { project, signal } = await this.begin(action, intro);
         try {
             return await op(project, signal);
         } catch (err) {
             this.end();
             this.setWorkflow(actionCancelled(this.workflow, action));
             this.log.error(`${action} failed unexpectedly: ${(err as Error).message}`);
+            this.console.error(CONSOLE_TAG[action], `${ACTION_LABEL[action]} stopped unexpectedly: ${(err as Error).message}`);
+            this.console.endAction();
             throw err;
         }
     }
@@ -737,15 +780,17 @@ export class NexysVhdlService {
 
     private async runCheck(): Promise<VhdlCheckResult> {
         const result = await this.exclusive('check', async () => {
-            const r = await this.runClaimed('check', (p, s) => this.backend.check(p, s));
+            const r = await this.runClaimed('check', 'Analysing VHDL files...', (p, s) => this.backend.check(p, s));
             if (this.end()) {
                 this.setWorkflow(actionCancelled(this.workflow, 'check'));
+                this.consoleCancelled('Check');
                 return { result: r, cancelled: true };
             }
             this.lastCheck = r;
             this.problems.set('vhdl', r.diagnostics);
             this.setWorkflow(checkFinished(this.workflow, r));
             this.logResult(`Check ${r.status}`, r.diagnostics, r.logs, r.durationMs);
+            this.consoleCheckDone(r);
             this.emit('results', 'problems');
             return { result: r, cancelled: false };
         });
@@ -761,7 +806,11 @@ export class NexysVhdlService {
         const tb = testbench ?? snap.project.config.simulation?.testbench;
         if (!tb) return { kind: 'needs-testbench', candidates: this.testbenchCandidates() };
         return this.exclusive('simulate', async () => {
-            const result = await this.runClaimed('simulate', (p, s) => this.backend.simulate(p, tb, s));
+            const stopTime = snap.project.config.simulation?.stopTime;
+            const result = await this.runClaimed('simulate', `Testbench: ${tb}`, async (p, s) => {
+                this.console.say('Simulate', stopTime ? `Running for ${formatSimTime(stopTime)}` : 'Running until the testbench ends');
+                return this.backend.simulate(p, tb, s);
+            });
             if (this.end()) {
                 // Stopped by the student: not a failure. Whatever waveform was recorded is kept and shown.
                 this.setWorkflow(actionCancelled(this.workflow, 'simulate', 'Stopped by user'));
@@ -772,6 +821,7 @@ export class NexysVhdlService {
                 }
                 this.problems.set('vhdl', []);
                 this.log.info(`  Simulation ${result.testbench}: stopped by user${result.vcd ? ' (partial waveform kept)' : ''}`);
+                this.consoleCancelled('Simulate', `Stopped by user${result.vcd ? ' (partial waveform kept)' : ''}`);
                 this.emit('results', 'problems');
                 return { kind: 'done' as const, result: { ...result, cancelled: true } };
             }
@@ -782,6 +832,7 @@ export class NexysVhdlService {
             this.setWorkflow(simulateFinished(this.workflow, result));
             this.logResult(`Simulation ${result.testbench}: ${result.status === 'succeeded' ? (result.passed ? 'PASSED' : 'FAILED') : result.status}`, result.diagnostics, result.logs, result.durationMs);
             for (const m of result.messages) this.log.info(`  ${m}`);
+            this.consoleSimulationDone(result);
             this.emit('results', 'problems');
             return { kind: 'done' as const, result };
         });
@@ -789,9 +840,19 @@ export class NexysVhdlService {
 
     build(): Promise<BuildResult> {
         return this.exclusive('build', async () => {
-            const result = await this.runClaimed('build', (p, s) => this.backend.build(p, (progress) => this.setWorkflow(buildProgressed(this.workflow, progress)), s));
+            const result = await this.runClaimed('build', 'Starting build...', (p, s) =>
+                this.backend.build(
+                    p,
+                    (progress) => {
+                        this.setWorkflow(buildProgressed(this.workflow, progress));
+                        this.consoleBuildProgress(progress);
+                    },
+                    s,
+                ),
+            );
             if (this.end()) {
                 this.setWorkflow(actionCancelled(this.workflow, 'build'));
+                this.consoleCancelled('Build');
                 return result;
             }
             this.lastBuild = result;
@@ -800,9 +861,99 @@ export class NexysVhdlService {
             this.setWorkflow(buildFinished(this.workflow, result));
             this.log.info(`  steps: ${result.steps.map((st) => `${st.step}=${st.status}`).join(', ')}`);
             this.logResult(`Build ${result.success ? 'SUCCEEDED' : 'FAILED'}`, result.diagnostics, result.logs, result.durationMs);
+            this.consoleBuildDone(result);
             this.emit('results', 'problems');
             return result;
         });
+    }
+
+    // ------------------------------------------------------------------ console
+
+    /** Diagnostics with project-relative file names, in the console's shape. */
+    private consoleDiagnostics(tag: ConsoleTag, diagnostics: readonly Diagnostic[], skip: (d: Diagnostic) => boolean = () => false): void {
+        const root = this.root;
+        const rel = (file: string) => {
+            if (!root) return file;
+            const r = relative(root, file);
+            return r === '' || r.startsWith('..') || /^[A-Za-z]:/.test(r) ? file : r.split(sep).join('/');
+        };
+        this.console.diagnostics(
+            tag,
+            diagnostics
+                .filter((d) => !skip(d))
+                .map((d) => ({
+                    severity: d.severity,
+                    message: d.message,
+                    code: d.code,
+                    ...(d.location ? { location: { file: rel(d.location.file), ...(d.location.line ? { line: d.location.line } : {}), ...(d.location.column ? { column: d.location.column } : {}) } } : {}),
+                })),
+        );
+    }
+
+    private consoleCancelled(tag: ConsoleTag, message = 'Cancelled'): void {
+        this.console.say(tag, message);
+        this.console.endAction();
+    }
+
+    private consoleCheckDone(r: VhdlCheckResult): void {
+        if (r.status === 'not-configured') {
+            this.console.error('Check', 'The VHDL tools are not set up on this computer. Use NexysVHDL: Show Environment to install the FPGA toolchain.');
+        } else {
+            this.consoleDiagnostics('Check', r.diagnostics);
+            const errors = r.diagnostics.filter((d) => d.severity === 'error').length;
+            if (r.status === 'succeeded') this.console.pass('Check');
+            else this.console.fail('Check', `FAIL — ${errors || 'some'} error${errors === 1 ? '' : 's'}`);
+        }
+        this.console.endAction();
+    }
+
+    private consoleSimulationDone(r: SimulationResult): void {
+        if (r.status === 'not-configured') {
+            this.console.error('Simulate', 'The simulator is not set up on this computer. Use NexysVHDL: Show Environment to install the FPGA toolchain.');
+        } else {
+            const streamed = this.console.streamedLines > 0;
+            // Without live tool output the testbench's own messages are listed here instead.
+            if (!streamed) for (const m of r.messages) this.console.say('Simulate', `  ${m}`);
+            this.consoleDiagnostics('Simulate', r.diagnostics, (d) => streamed && /^GHDL_(REPORT|ASSERTION)_/.test(d.code));
+            if (r.status === 'succeeded' && r.passed) this.console.pass('Simulate', `PASS${r.stoppedAt ? ` — stopped at ${formatSimTime(r.stoppedAt)}` : ''}`);
+            else if (r.status === 'succeeded') this.console.fail('Simulate', `FAIL${r.stoppedAt ? ` — at ${formatSimTime(r.stoppedAt)}` : ''}: the testbench reported errors`);
+            else if (r.diagnostics.some((d) => d.code === 'SIM_NO_END')) this.console.fail('Simulate', 'FAIL — the testbench never ended: use "Run for" or end it with std.env.stop');
+            else this.console.fail('Simulate', 'FAIL');
+        }
+        this.console.endAction();
+    }
+
+    private consoleBuildProgress(p: BuildProgress): void {
+        if (p.kind === 'step-started' && p.step === 'check') this.console.say('Build', 'Checking VHDL...');
+        else if (p.kind === 'implementation-stage') this.console.say('Build', { synthesis: 'Synthesis...', implementation: 'Implementation...', bitstream: 'Generating bitstream...' }[p.stage]);
+    }
+
+    private consoleBuildDone(r: BuildResult): void {
+        if (r.steps.some((st) => st.status === 'not-configured')) {
+            this.console.error('Build', 'The FPGA build tools are not set up on this computer. Use NexysVHDL: Show Environment to install the FPGA toolchain.');
+        } else {
+            this.consoleDiagnostics('Build', r.diagnostics);
+            const clock = r.timing?.clocks[0];
+            if (r.timing?.passed !== undefined && (r.success || r.bitstream)) {
+                const mhz = clock?.achievedMHz ? ` (${Math.round(clock.achievedMHz * 100) / 100} MHz)` : '';
+                if (r.timing.passed) this.console.say('Build', `Timing met${mhz}`);
+                else this.console.warning('Build', `Timing not met${mhz}: the design may not work at the requested clock speed.`);
+            }
+            if (r.success) this.console.say('Build', 'Bitstream ready');
+            else this.console.fail('Build', `FAIL${r.implementationStage ? ` during ${r.implementationStage}` : ''}`);
+        }
+        this.console.endAction();
+    }
+
+    private consoleProgramDone(r: ProgrammingResult): void {
+        if (r.status === 'not-configured') {
+            this.console.error('Program', 'The board programmer is not set up on this computer. Use NexysVHDL: Show Environment.');
+        } else {
+            this.consoleDiagnostics('Program', r.diagnostics);
+            if (r.status === 'succeeded') this.console.pass('Program', `PASS${r.target?.serialNumber ? ` (board ${r.target.serialNumber})` : ''}`);
+            else this.console.fail('Program', 'FAIL');
+        }
+        this.console.endAction();
     }
 
     /** Newest modification time among the files that determine the bitstream. */
@@ -834,11 +985,17 @@ export class NexysVhdlService {
         if (this.lastBuild && !this.lastBuild.success) {
             const message = 'The last build failed. Fix the problems and run Build again before programming.';
             this.setWorkflow(programBlocked(this.workflow, 'Last build failed'));
+            this.console.begin('Program', 'Programming is not possible yet');
+            this.console.warning('Program', message);
+            this.console.endAction();
             return { kind: 'blocked', message };
         }
         const bit = await this.backend.bitstream(project);
         if (!bit) {
             this.setWorkflow(programBlocked(this.workflow, 'No bitstream yet'));
+            this.console.begin('Program', 'Programming is not possible yet');
+            this.console.warning('Program', 'There is no bitstream yet. Run Build first.');
+            this.console.endAction();
             return { kind: 'blocked', message: 'There is no bitstream yet. Run Build first.' };
         }
         if (!options.allowStale && (await this.newestDesignInput(project)) > bit.modifiedMs) return { kind: 'stale', builtAt: new Date(bit.modifiedMs) };
@@ -854,14 +1011,16 @@ export class NexysVhdlService {
             // 'single' and 'none': the shared service selects the only board or reports none.
         }
 
-        const result = await this.runClaimed('program', (p, s) => this.backend.program(p, serial, s));
+        const result = await this.runClaimed('program', `Programming ${this.snapshot?.boardName ?? 'the board'}...`, (p, s) => this.backend.program(p, serial, s));
         if (this.end()) {
             this.setWorkflow(actionCancelled(this.workflow, 'program'));
+            this.consoleCancelled('Program');
             return { kind: 'done', result };
         }
         this.lastProgram = result;
         this.setWorkflow(programFinished(this.workflow, result));
         this.logResult(`Program ${result.status}${result.target ? ` (serial ${result.target.serialNumber ?? '?'})` : ''}`, result.diagnostics, result.logs, result.durationMs);
+        this.consoleProgramDone(result);
         this.emit('results');
         return { kind: 'done', result };
     }

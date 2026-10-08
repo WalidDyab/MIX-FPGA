@@ -2,7 +2,7 @@ import { stat } from 'node:fs/promises';
 import { basename, join, relative, sep } from 'node:path';
 import * as vscode from 'vscode';
 import type { AppearanceManager } from '../appearance/appearance-manager';
-import { type Diagnostic, normalizeStopTime, PROJECT_FILE_NAME, STOP_TIME_UNITS } from '../../core';
+import { createNvprojFile, type Diagnostic, findNvprojFiles, normalizeStopTime, PROJECT_FILE_NAME, STOP_TIME_UNITS } from '../../core';
 import {
     ADD_FILE_KINDS,
     type AddFileKind,
@@ -24,6 +24,8 @@ import {
 } from '../project/add-file';
 import { classifyProjectPath } from '../project/project-layout';
 import { findOpenTab } from './open-existing';
+import { resolveOpenTarget } from '../project/open-target';
+import type { NexysConsole } from '../services/console';
 import { starterXdc } from '../project/templates';
 import { createProject, DEFAULT_TEMPLATE, PROJECT_TEMPLATES, type ProjectTemplate, validateProjectName } from '../project/scaffold';
 import type { RtlPanel } from '../rtl/rtl-panel';
@@ -46,6 +48,8 @@ export interface CommandDeps {
     readonly design: DesignView;
     readonly appearance: AppearanceManager;
     readonly output: vscode.OutputChannel;
+    /** The NexysVHDL Console (the student-facing record of workflow actions). */
+    readonly console: NexysConsole;
     readonly extensionVersion: string;
 }
 
@@ -84,7 +88,7 @@ async function openFolder(root: string): Promise<void> {
 }
 
 export function registerCommands(context: vscode.ExtensionContext, deps: CommandDeps): void {
-    const { service, backend, schematic, rtl, waveform, design, appearance, output, extensionVersion } = deps;
+    const { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion } = deps;
 
     /** Wraps a handler: NexysErrors become friendly messages, anything else is logged too. The handler's result is returned. */
     const register = (id: string, handler: (...args: never[]) => unknown) => {
@@ -107,10 +111,12 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
      * Shows a file in the editor, focusing the tab that already shows it (in whichever
      * editor group) instead of opening a second tab for the same file.
      */
-    const showFile = async (uri: vscode.Uri, selection?: vscode.Range): Promise<vscode.TextEditor> => {
+    const showFile = async (uri: vscode.Uri, selection?: vscode.Range, beside = false): Promise<vscode.TextEditor> => {
         const tabs = vscode.window.tabGroups.all.flatMap((g) => g.tabs.map((t) => ({ fsPath: t.input instanceof vscode.TabInputText ? t.input.uri.fsPath : undefined, viewColumn: g.viewColumn })));
         const open = findOpenTab(tabs, uri.fsPath);
-        return vscode.window.showTextDocument(uri, { preview: false, ...(open ? { viewColumn: open.viewColumn } : {}), ...(selection ? { selection } : {}) });
+        // `beside`: a file opened from the full-width schematic goes to the side, so the schematic stays in view.
+        const column = open ? { viewColumn: open.viewColumn } : beside ? { viewColumn: vscode.ViewColumn.Beside } : {};
+        return vscode.window.showTextDocument(uri, { preview: false, ...column, ...(selection ? { selection } : {}) });
     };
 
     const requireRoot = (): string => {
@@ -167,15 +173,52 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         return result;
     });
 
-    register('nexysvhdl.openProject', async () => {
-        const folder = await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Open Project', title: 'NexysVHDL: choose a project folder (containing nexysvhdl.json)' });
-        if (!folder?.[0]) return;
-        try {
-            await stat(join(folder[0].fsPath, PROJECT_FILE_NAME));
-        } catch {
-            throw new NexysError(`${folder[0].fsPath} has no ${PROJECT_FILE_NAME}. Choose a NexysVHDL project folder, or use Create Project.`);
+    /**
+     * Open Project accepts a project folder (containing nexysvhdl.json) or a .nvproj project file. Interactive
+     * by default; scripted use (lab setup) passes the path.
+     */
+    register('nexysvhdl.openProject', async (scripted?: string | { path: string }) => {
+        let target: string | undefined = typeof scripted === 'string' ? scripted : scripted?.path;
+        if (!target) {
+            const kind = await vscode.window.showQuickPick(
+                [
+                    { label: '$(file) Project file (.nvproj)', description: 'recommended: the file named after your project', mode: 'file' as const },
+                    { label: '$(folder) Project folder', description: 'a folder that contains nexysvhdl.json', mode: 'folder' as const },
+                ],
+                { title: 'NexysVHDL: open a project', placeHolder: 'What do you want to open?' },
+            );
+            if (!kind) return undefined;
+            const picked = await vscode.window.showOpenDialog(
+                kind.mode === 'file'
+                    ? { canSelectFolders: false, canSelectFiles: true, canSelectMany: false, openLabel: 'Open Project', title: 'NexysVHDL: choose a project file', filters: { 'NexysVHDL project': ['nvproj'] } }
+                    : { canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Open Project', title: 'NexysVHDL: choose a project folder (containing nexysvhdl.json)' },
+            );
+            target = picked?.[0]?.fsPath;
+            if (!target) return undefined;
         }
-        await openFolder(folder[0].fsPath);
+        const resolved = await resolveOpenTarget(target);
+        if (!resolved.ok) throw new NexysError(resolved.message);
+        await openFolder(resolved.root);
+        return resolved;
+    });
+
+    /**
+     * Adds <folder>.nvproj to a project that was made before project files existed. Never overwrites
+     * anything and never changes the rest of the project.
+     */
+    register('nexysvhdl.createProjectFile', async () => {
+        const root = requireRoot();
+        const existing = await findNvprojFiles(root);
+        if (existing.length > 0) {
+            void vscode.window.showInformationMessage(`This project already has a project file: ${basename(existing[0]!)}.`);
+            return { file: existing[0]!, created: false };
+        }
+        const r = await createNvprojFile(root);
+        void vscode.commands.executeCommand('setContext', 'nexysvhdl.hasProjectFile', true);
+        await service.refreshNow();
+        nexysConsole.say('Project', `Created the project file ${basename(r.file)}. Double-click it to open this project.`);
+        void vscode.window.showInformationMessage(`Created ${basename(r.file)}. Double-click it in your file manager to open this project with NexysVHDL.`);
+        return r;
     });
 
     register('nexysvhdl.refreshProject', async () => {
@@ -194,10 +237,10 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         await showFile(vscode.Uri.file(join(requireRoot(), PROJECT_FILE_NAME)));
     });
 
-    register('nexysvhdl.openLocation', async (root: string, file: string, line?: number, col?: number) => {
+    register('nexysvhdl.openLocation', async (root: string, file: string, line?: number, col?: number, opts?: { beside?: boolean }) => {
         const uri = vscode.Uri.file(join(root, ...file.split('/')));
         const pos = new vscode.Position(Math.max(0, (line ?? 1) - 1), Math.max(0, (col ?? 1) - 1));
-        await showFile(uri, new vscode.Range(pos, pos));
+        await showFile(uri, new vscode.Range(pos, pos), opts?.beside === true);
     });
 
     const pickEntity = async (title: string, names: string[], current?: string): Promise<string | undefined> => {
@@ -642,11 +685,11 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         } else if (r.status === 'succeeded' && r.passed) {
             vscode.window.setStatusBarMessage(`$(check) Simulation passed: ${service.workflow.simulate.summary ?? ''}`, 5000);
         } else if (r.diagnostics.some((d) => d.code === 'SIM_NO_END')) {
-            void vscode.window.showErrorMessage('The simulation never ended. A testbench with a free-running clock must stop itself with "std.env.stop;", or choose a duration in "Run for" in the waveform viewer.', 'View Log').then((c) => c && output.show());
+            void vscode.window.showErrorMessage('The simulation never ended. A testbench with a free-running clock must stop itself with "std.env.stop;", or choose a duration in "Run for" in the waveform viewer.', 'Show Console').then((c) => c && nexysConsole.show());
         } else {
             void vscode.window
-                .showErrorMessage(`Simulation failed: ${firstError(r.diagnostics) ?? r.messages[r.messages.length - 1] ?? 'see the log'}`, 'View Log', 'Show Problems')
-                .then((c) => (c === 'View Log' ? output.show() : c ? vscode.commands.executeCommand('workbench.actions.view.problems') : undefined));
+                .showErrorMessage(`Simulation failed: ${firstError(r.diagnostics) ?? r.messages[r.messages.length - 1] ?? 'see the console'}`, 'Show Console', 'Show Problems')
+                .then((c) => (c === 'Show Console' ? nexysConsole.show() : c ? vscode.commands.executeCommand('workbench.actions.view.problems') : undefined));
         }
     };
 
@@ -693,9 +736,9 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             void vscode.window.showWarningMessage('The FPGA build tools are not set up on this computer.', 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
         } else if (w.build.summary !== 'Cancelled') {
             const stage = BUILD_STAGES.find((id) => w.stages[id].state === 'failed');
-            const reason = (stage && w.stages[stage].summary) ?? firstError(result.diagnostics) ?? (result.timing?.passed === false ? 'timing not met' : 'see the log');
-            void vscode.window.showErrorMessage(`Build failed${stage ? ` in ${STAGE_LABEL[stage]}` : ''}: ${reason}`, 'Show Problems', 'View Log').then((c) => {
-                if (c === 'View Log') output.show();
+            const reason = (stage && w.stages[stage].summary) ?? firstError(result.diagnostics) ?? (result.timing?.passed === false ? 'timing not met' : 'see the console');
+            void vscode.window.showErrorMessage(`Build failed${stage ? ` in ${STAGE_LABEL[stage]}` : ''}: ${reason}`, 'Show Problems', 'Show Console').then((c) => {
+                if (c === 'Show Console') nexysConsole.show();
                 else if (c) void vscode.commands.executeCommand('workbench.actions.view.problems');
             });
         }
@@ -739,8 +782,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             } else if (r.status === 'not-configured') {
                 void vscode.window.showWarningMessage('The board programmer is not set up on this computer.', 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
             } else {
-                void vscode.window.showErrorMessage(`Programming failed: ${firstError(r.diagnostics) ?? 'see the log'}`, 'Detect Boards', 'View Log').then((c) => {
-                    if (c === 'View Log') output.show();
+                void vscode.window.showErrorMessage(`Programming failed: ${firstError(r.diagnostics) ?? 'see the console'}`, 'Detect Boards', 'Show Console').then((c) => {
+                    if (c === 'Show Console') nexysConsole.show();
                     else if (c) void vscode.commands.executeCommand('nexysvhdl.detectBoards');
                 });
             }
@@ -876,6 +919,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         });
         if (!picked?.[0]) return undefined;
         const archive = picked[0].fsPath;
+        nexysConsole.begin('Toolchain', `Installing the NexysVHDL FPGA toolchain from ${basename(archive)}...`);
         const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Installing the NexysVHDL FPGA toolchain', cancellable: true }, async (progress, token) => {
             const abort = new AbortController();
             token.onCancellationRequested(() => abort.abort());
@@ -893,9 +937,14 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         });
         for (const d of outcome.diagnostics) output.appendLine(`[toolchain] ${d.message}`);
         if (outcome.status === 'failed') {
-            void vscode.window.showErrorMessage(outcome.diagnostics[0]?.message ?? 'The toolchain could not be installed.', 'Show Log').then((c) => c && output.show());
+            for (const d of outcome.diagnostics) nexysConsole.error('Toolchain', d.message);
+            nexysConsole.fail('Toolchain', 'FAIL');
+            nexysConsole.endAction();
+            void vscode.window.showErrorMessage(outcome.diagnostics[0]?.message ?? 'The toolchain could not be installed.', 'Show Console').then((c) => c && nexysConsole.show());
             return outcome;
         }
+        nexysConsole.pass('Toolchain', `PASS — toolchain ${outcome.version} ${outcome.status === 'installed' ? 'installed' : 'was already installed'}`);
+        nexysConsole.endAction();
         output.appendLine(`Toolchain ${outcome.version} ${outcome.status === 'installed' ? 'installed' : 'was already installed'} at ${outcome.location}`);
         await service.refreshEnvironment();
         const done = outcome.status === 'installed' ? `NexysVHDL FPGA toolchain ${outcome.version} installed.` : `NexysVHDL FPGA toolchain ${outcome.version} is already installed.`;
@@ -934,4 +983,16 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     });
 
     register('nexysvhdl.showLog', () => output.show());
+
+    register('nexysvhdl.showConsole', () => nexysConsole.show());
+
+    /** Switches the Console between the short student-readable output and the full streamed tool output. */
+    register('nexysvhdl.toggleConsoleDetail', async () => {
+        const config = vscode.workspace.getConfiguration('nexysvhdl');
+        const next = config.get<string>('console.detail', 'normal') === 'detailed' ? 'normal' : 'detailed';
+        await config.update('console.detail', next, vscode.ConfigurationTarget.Global);
+        nexysConsole.say('Project', next === 'detailed' ? 'Detailed output is ON: the raw output of the FPGA tools is shown while actions run.' : 'Detailed output is OFF: the Console shows progress and results only.');
+        nexysConsole.show();
+        return next;
+    });
 }
