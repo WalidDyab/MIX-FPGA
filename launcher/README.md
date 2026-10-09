@@ -25,7 +25,7 @@ Built with the C# compiler that ships with Windows (.NET Framework 4, `csc.exe`)
 
 - **Project**: a folder containing `nexysvhdl.json`, or a `.nvproj` project file next to it. Anything else gets a friendly message and nothing is launched.
 - **Project file** (`ProjectCheck.ResolveProjectFile`, same rules as `core/project/nvproj.ts`): `{ "format": "nexysvhdl-project", "version": 1, "config": "nexysvhdl.json" }`; `config` is relative to the file and stays inside its folder. Windows runs `NexysVHDL.exe "<path>.nvproj"` for a double-click; the launcher validates it and opens the project folder with `Code.exe "<folder>"` (never a `vscode://` link, so VS Code shows no confirmation). A damaged, foreign, newer or unsafe file is explained in a message box. Moving or copying the whole project folder keeps working.
-- **File association** (`windows/Setup.cs`, `FileAssociation`, HKCU only): `.nvproj` -> `NexysVHDL.Project` (only if no other program owns `.nvproj`; otherwise NexysVHDL is offered under Open with), the NexysVHDL icon, `"<install>\NexysVHDL.exe" "%1"`. Uninstalling removes only what Setup wrote. A macOS `.app` registers the same document type and calls `LauncherService.OpenTarget`.
+- **File association** (`windows/Setup.cs`, `FileAssociation`, HKCU only): `.nvproj` -> `NexysVHDL.Project` (only if no other program owns `.nvproj`; otherwise NexysVHDL is offered under Open with), the NexysVHDL icon, `"<install>\NexysVHDL.exe" "%1"`. Uninstalling removes only what Setup wrote. The macOS app registers the same document type in its `Info.plist` (`CFBundleDocumentTypes` + exported UTI `com.emxplore.nexysvhdl.project`) and calls `LauncherService.openTarget`.
 - **Recent projects**: `%APPDATA%\NexysVHDL\Launcher\recent-projects.json` (`{ "version": 1, "projects": [ { "path", "name", "lastOpenedUtc" } ] }`, newest first, at most 10). Per user; nothing is written into a project. Deleted folders are listed as "missing" and dropped when chosen.
 - **VS Code discovery** (never PATH): `NEXYSVHDL_VSCODE_PATH` (tests), `%LOCALAPPDATA%\Programs\Microsoft VS Code`, `%ProgramFiles%`/`%ProgramW6432%`/`%ProgramFiles(x86)%` `\Microsoft VS Code`, the uninstall registry keys (HKCU/HKLM, 64/32-bit) and `App Paths\Code.exe`. VS Code Insiders is not used.
 - **Extension detection**: `~\.vscode\extensions\emxplore.nexysvhdl-<version>*`, highest version, ignoring folders listed in `.obsolete`.
@@ -42,3 +42,15 @@ Built with the C# compiler that ships with Windows (.NET Framework 4, `csc.exe`)
 ## Installer switches
 
 `/S` silent, `/desktop`, `/noextension`, `/nolaunch`, `/dir=PATH`, `/uninstall` (also `Uninstall.exe`). Uninstalling removes the application, its shortcuts, its `.nvproj` association and its Apps entry; it keeps projects, the recent list, the VS Code extension and the toolchain.
+
+## macOS (`launcher/macos/`)
+
+`NexysVHDL.app`, native Apple silicon, built by `node scripts/launcher/build-macos.mjs` (only `swiftc`, `iconutil`, `codesign`) and packaged by `scripts/release/macos-release.mjs` as `NexysVHDL-<version>-darwin-arm64.dmg`.
+
+| File | Role |
+|---|---|
+| `Core.swift` | Swift port of `core/*.cs`: same rules, same student-facing messages (`tests/launcher.test.ts` checks that both contain them) |
+| `MacPlatform.swift` | VS Code discovery without PATH (`~/Applications`, `/Applications`, then LaunchServices by bundle id `com.microsoft.VSCode`; Insiders ignored), folder/link hand-off through `/usr/bin/open -a`, extension install through VS Code's own `cli.js` (`ELECTRON_RUN_AS_NODE`), toolchain marker `~/Library/NexysVHDL/toolchains/darwin-arm64/1.0/.nexysvhdl-installed.json` |
+| `UI.swift`, `main.swift` | window (same screens and wording), Finder "open documents" handling, Dock menu, command-line forms |
+
+State is `~/Library/Application Support/NexysVHDL/Launcher/recent-projects.json`. A double-click on a `.nvproj` reaches `application(_:open:)`; the file is validated and its folder opened with VS Code, no window and no Terminal. The test hooks and switches above are the same on macOS. The `.app` is ad-hoc signed unless `NEXYSVHDL_CODESIGN_IDENTITY` is set (see the release script for signing and notarization).

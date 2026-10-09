@@ -2,7 +2,7 @@
 
 ## 0.6.0 — Classroom Preview (requires NexysVHDL toolchain 1.0, unchanged)
 
-Second classroom release. The FPGA toolchain is the same validated **toolchain 1.0** installed by 0.5.0; an existing installation is reused. Windows now also ships a per-user installer (`NexysVHDL-Setup-0.6.0-win32-x64.exe`: launcher, extension, Start Menu entry, optional Desktop shortcut, `.nvproj` association, uninstaller).
+Second classroom release. The FPGA toolchain is the same validated **toolchain 1.0** installed by 0.5.0; an existing installation is reused. Windows now also ships a per-user installer (`NexysVHDL-Setup-0.6.0-win32-x64.exe`: launcher, extension, Start Menu entry, optional Desktop shortcut, `.nvproj` association, uninstaller). macOS (Apple silicon) ships `NexysVHDL-0.6.0-darwin-arm64.dmg`: a native `NexysVHDL.app` launcher with the same New/Open/Recent Projects, one-click extension install/update and `.nvproj` double-click, as an early build that is not yet signed or notarized.
 
 ### Phase 8 — UI polish and project switching
 

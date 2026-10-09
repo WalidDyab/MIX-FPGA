@@ -4,8 +4,17 @@ For Macs with Apple silicon (M1 or newer). Intel Macs are not supported. You nee
 
 Files in this folder:
 
+- `NexysVHDL-0.6.0-darwin-arm64.dmg` — the NexysVHDL app (optional: a normal Mac app with a Dock icon; it opens your projects in VS Code, and double-clicking a `.nvproj` project file opens it)
 - `nexysvhdl-0.6.0-darwin-arm64.vsix` — the NexysVHDL extension
 - `nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz` — the FPGA toolchain (about 630 MB). **Do not double-click or unzip it.** NexysVHDL installs it for you.
+
+## 0. Optional: install the NexysVHDL app
+
+1. Open `NexysVHDL-0.6.0-darwin-arm64.dmg` and drag **NexysVHDL** onto **Applications**.
+2. This is an early classroom build that Apple has not notarized. The first time, macOS says it *"cannot verify"* NexysVHDL. Open **System Settings → Privacy & Security**, scroll to the message about **NexysVHDL**, click **Open Anyway**, and confirm. You do this once.
+3. Open **NexysVHDL**. **Install NexysVHDL** (one click) adds the extension to VS Code for you, so you can skip step 2 below. **New Project**, **Open Project** and **Recent Projects** work from the app; so does double-clicking a `.nvproj` file.
+
+You still do steps 1 and 3 (VS Code and the FPGA toolchain); the app does not contain the toolchain.
 
 ## 1. Install VS Code
 

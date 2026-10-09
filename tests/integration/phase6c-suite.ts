@@ -23,9 +23,12 @@ async function shot(name: string): Promise<void> {
     await waitFor(`screenshot ${name}`, () => existsSync(join(shots, `${name}.done`)), 30_000).catch(() => undefined);
 }
 const readJson = async (file: string) => JSON.parse(await readFile(file, 'utf8')) as Record<string, any>;
+/** Running GHDL processes (the program itself; the simulation runs in-process or as a child of it). -1 if they cannot be listed. */
 const ghdlProcesses = (): number => {
     try {
-        return (execSync('tasklist /FI "IMAGENAME eq ghdl.exe" /NH', { encoding: 'utf8' }).match(/ghdl\.exe/gi) ?? []).length;
+        if (process.platform === 'win32') return (execSync('tasklist /FI "IMAGENAME eq ghdl.exe" /NH', { encoding: 'utf8' }).match(/ghdl\.exe/gi) ?? []).length;
+        // macOS: `ps -axo comm=` prints each executable's full path; count those named ghdl (the toolchain's, whatever the folder).
+        return execSync('ps -axo comm=', { encoding: 'utf8' }).split('\n').filter((l) => /(^|\/)ghdl(-[a-z]+)?$/.test(l.trim())).length;
     } catch {
         return -1;
     }
