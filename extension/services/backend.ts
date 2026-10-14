@@ -1,4 +1,5 @@
 import {
+    type BoardDefinition,
     type BoardDetectionResult,
     BoardRegistry,
     type BuildProgress,
@@ -18,7 +19,9 @@ import {
     withProjectLock,
 } from '../../core';
 import { stat } from 'node:fs/promises';
+import type { BoardFlows, EngineStatus, EnvironmentVerification } from '../../core/backend';
 import { loadCanonicalBitstream, workspacePaths } from '../../runtime/bitstream';
+import { createBoardFlows } from '../../runtime/multiboard';
 import { expectedArchiveName, installClassroomToolchain, verifyClassroomToolchain } from '../../runtime/classroom';
 import { type ContextOverrides, controllerFor, createContext, programmingFor, type RuntimeContext } from '../../runtime/context';
 import { type EnvironmentReport, inspectEnvironment } from '../../runtime/environment';
@@ -36,17 +39,24 @@ export interface BitstreamInfo {
  */
 export interface NexysBackend {
     boards(): Promise<BoardRegistry>;
+    /** Whether this computer can build and program the board. Absent: every board in the registry is offered. */
+    supportsBoard?(board: BoardDefinition): boolean;
     loadProject(root: string): Promise<ProjectLoadResult>;
     validate(project: Project): Promise<ProjectValidation>;
     check(project: Project, signal?: AbortSignal): Promise<VhdlCheckResult>;
     simulate(project: Project, testbench: string | undefined, signal?: AbortSignal): Promise<SimulationResult>;
-    build(project: Project, onProgress: (p: BuildProgress) => void, signal?: AbortSignal): Promise<BuildResult>;
+    /** `onStatus` receives student-facing status lines (`Preparing FPGA engine…`) for boards whose build has such phases. */
+    build(project: Project, onProgress: (p: BuildProgress) => void, signal?: AbortSignal, onStatus?: (message: string) => void): Promise<BuildResult>;
     /** RTL analysis for the RTL schematic (no place/route). */
     rtl(project: Project, signal?: AbortSignal): Promise<RtlAnalysisResult>;
     detectBoards(project: Project): Promise<BoardDetectionResult & { readonly configured: boolean }>;
     bitstream(project: Project): Promise<BitstreamInfo | undefined>;
     program(project: Project, serialNumber: string | undefined, signal?: AbortSignal): Promise<ProgrammingResult>;
     environment(project?: Project): Promise<EnvironmentReport>;
+    /** Boards with their own engine: checks the owned tools and proves the engine runs (may start it). Absent or undefined: nothing to verify. */
+    verifyEnvironment?(project: Project, signal?: AbortSignal): Promise<EnvironmentVerification | undefined>;
+    /** Boards with their own engine: restarts it. Undefined for boards without one. */
+    restartEngine?(project: Project, signal?: AbortSignal): Promise<EngineStatus | undefined>;
     /** Classroom mode: installs a NexysVHDL toolchain archive into the per-user store. */
     installToolchain(archive: string, onProgress: (fraction: number | undefined, message: string) => void, signal?: AbortSignal): Promise<ToolchainInstallOutcome>;
     /** Classroom mode: re-hashes the installed toolchain. */
@@ -65,6 +75,7 @@ export interface ToolchainInstallOutcome {
 /** NexysBackend over the shared Phase 3 core. */
 export class CoreBackend implements NexysBackend {
     private context: Promise<RuntimeContext> | undefined;
+    private flowsPromise: Promise<BoardFlows> | undefined;
 
     /** `overrides` exist for tests (fake platform, refusing runner); production passes none. */
     constructor(private readonly overrides: ContextOverrides = {}) {}
@@ -76,6 +87,12 @@ export class CoreBackend implements NexysBackend {
 
     async boards(): Promise<BoardRegistry> {
         return (await this.ctx()).boards;
+    }
+
+    /** The providers of every board family (built once; rebuilt when the installed toolchain changes). */
+    flows(): Promise<BoardFlows> {
+        this.flowsPromise ??= this.ctx().then((ctx) => createBoardFlows({ ctx, ...(this.overrides.onToolOutput ? { onToolOutput: this.overrides.onToolOutput } : {}) }));
+        return this.flowsPromise;
     }
 
     loadProject(root: string): Promise<ProjectLoadResult> {
@@ -148,7 +165,10 @@ export class CoreBackend implements NexysBackend {
         const size = await stat(archive).then((s) => s.size, () => undefined);
         const r = await installClassroomToolchain(ctx, archive, onProgress, signal, size);
         // The composition root resolves the toolchain once; rebuild it so the new install is used.
-        if (r.status !== 'failed') this.context = undefined;
+        if (r.status !== 'failed') {
+            this.context = undefined;
+            this.flowsPromise = undefined;
+        }
         return r.status === 'failed'
             ? { status: 'failed', diagnostics: r.diagnostics }
             : { status: r.status, version: r.marker.bundleVersion, location: r.paths.versionDir, diagnostics: [] };

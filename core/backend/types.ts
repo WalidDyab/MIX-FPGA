@@ -7,6 +7,9 @@
  */
 import type { BoardDefinition } from '../board/types';
 import type { Diagnostic, LogRef } from '../results/diagnostic';
+import type { BoardDetectionResult, ProgrammingResult } from '../programming/types';
+import type { Project } from '../project/types';
+import type { BuildProgress, BuildResult } from '../workflow/types';
 
 // ---------------------------------------------------------------- board profile
 
@@ -27,6 +30,8 @@ export interface MetricLabels {
 export interface BoardProfile {
     readonly id: string;
     readonly name: string;
+    /** Short student-facing name (`DE10-Lite`, `Nexys A7-100T`). */
+    readonly displayName: string;
     readonly vendor: string;
     readonly fpga: {
         readonly family: string;
@@ -42,6 +47,8 @@ export interface BoardProfile {
     /** Key the board's programming backend uses for this board (opaque to the core). */
     readonly programmerBoardKey?: string;
     readonly metricLabels: MetricLabels;
+    /** Host platforms this board's backend supports; absent = the base flow's hosts. */
+    readonly hosts?: readonly string[];
     readonly identification?: { readonly usb?: { readonly vendorId: string; readonly productId: string }; readonly productNames?: readonly string[] };
 }
 
@@ -58,13 +65,16 @@ export interface ConstraintFile {
 export interface ConstraintSet {
     readonly format: ConstraintFormat;
     readonly files: readonly ConstraintFile[];
+    /** `generated`: no file; the constraints are produced from the project's pin mapping (original Nexys flow). */
+    readonly origin?: 'files' | 'generated';
 }
 
 /** Finds and validates the constraint files that belong to one board. Never writes to the project. */
 export interface ConstraintProvider {
     readonly format: ConstraintFormat;
-    collect(projectDir: string): Promise<ConstraintSet>;
-    validate(set: ConstraintSet, board: BoardProfile): Promise<readonly Diagnostic[]>;
+    /** `exclude`: project-relative files the student removed from the project (they stay on disk and are ignored). */
+    collect(projectDir: string, exclude?: readonly string[]): Promise<ConstraintSet>;
+    validate(set: ConstraintSet, board: BoardProfile, projectDir?: string): Promise<readonly Diagnostic[]>;
 }
 
 // ---------------------------------------------------------------- normalized build result
@@ -102,6 +112,15 @@ export interface ProgrammingArtifactRef {
     readonly sha256: string;
 }
 
+/** The programming artifact of the last good build and what it was built from. */
+export interface ProgrammingArtifactInfo extends ProgrammingArtifactRef {
+    readonly modifiedMs: number;
+    /** Board the build was for; absent for artifacts of the original flow. */
+    readonly boardId?: string;
+    /** Hashes of the project files the build read (project-relative path -> sha256); absent for the original flow. */
+    readonly inputs?: Readonly<Record<string, string>>;
+}
+
 export interface RawReport {
     readonly label: string;
     readonly path: string;
@@ -115,6 +134,8 @@ export interface NormalizedBuildResult {
     readonly failedStage?: BuildStage;
     readonly timingStatus: TimingStatus;
     readonly clocks: readonly ClockResult[];
+    /** The board's own metric names, so a metric the tool did not report can still be listed by name. */
+    readonly labels?: MetricLabels;
     readonly resources: {
         readonly logic?: VendorMetric;
         readonly combinational?: VendorMetric;
@@ -131,6 +152,8 @@ export interface NormalizedBuildResult {
     readonly logs: readonly LogRef[];
     readonly stageDurationsMs: Readonly<Partial<Record<BuildStage, number>>>;
     readonly durationMs: number;
+    /** The board family's own full result for UI code that already understands it (the original Nexys flow). */
+    readonly native?: BuildResult;
 }
 
 // ---------------------------------------------------------------- implementation provider
@@ -141,11 +164,17 @@ export type BuildProgressEvent =
 
 export interface BuildRequest {
     readonly projectDir: string;
+    /** The already-loaded project, when the caller has it (avoids re-reading the project file). */
+    readonly project?: Project;
     readonly board: BoardProfile;
     /** Top-level entity; defaults to the provider's convention. */
     readonly top?: string;
+    /** The project's VHDL sources (project-relative, compile order). Absent: the provider's folder convention. */
+    readonly sources?: readonly string[];
     readonly signal?: AbortSignal;
     readonly onProgress?: (event: BuildProgressEvent) => void;
+    /** Providers that wrap a flow with a richer progress stream forward it here unchanged (the original Nexys flow). */
+    readonly nativeProgress?: (progress: BuildProgress) => void;
     /** Live tool output (stdout and stderr) for a console. */
     readonly onOutput?: (text: string) => void;
 }
@@ -153,8 +182,17 @@ export interface BuildRequest {
 /** Synthesis -> place and route -> timing -> programming artifact for one family of boards. */
 export interface ImplementationProvider {
     readonly id: string;
+    /**
+     * True for a provider that runs validation and Check itself and takes the project's single-flight
+     * claim (the original Nexys flow). Others get Check and the claim from the caller.
+     */
+    readonly selfContained?: boolean;
     supports(board: BoardProfile): boolean;
     build(request: BuildRequest): Promise<NormalizedBuildResult>;
+    /** The programming artifact of the project's last good build, if any. */
+    artifactFor?(projectDir: string, top: string): Promise<ProgrammingArtifactInfo | undefined>;
+    /** The project files an artifact would be built from, hashed now (to detect a stale artifact). */
+    currentInputs?(projectDir: string, sources: readonly string[], exclude?: readonly string[]): Promise<Readonly<Record<string, string>>>;
 }
 
 // ---------------------------------------------------------------- programming provider
@@ -174,6 +212,8 @@ export interface HardwareDetection {
     readonly devices: readonly DetectedDevice[];
     readonly diagnostics: readonly Diagnostic[];
     readonly logs: readonly LogRef[];
+    /** The original flow's own detection result (board list with selectors), kept exact for its UI. */
+    readonly native?: BoardDetectionResult & { readonly configured: boolean };
 }
 
 export type ProgramStatus = 'programmed' | 'failed' | 'cancelled' | 'rejected';
@@ -181,6 +221,10 @@ export type ProgramStatus = 'programmed' | 'failed' | 'cancelled' | 'rejected';
 export interface ProgramRequest {
     readonly artifact: ProgrammingArtifactRef;
     readonly board: BoardProfile;
+    /** Which board to program when several identical ones are connected. */
+    readonly serialNumber?: string;
+    /** A private directory the provider may write derived files into. */
+    readonly workDir?: string;
     readonly signal?: AbortSignal;
     readonly onOutput?: (text: string) => void;
 }
@@ -192,6 +236,8 @@ export interface ProgramOutcome {
     readonly diagnostics: readonly Diagnostic[];
     readonly logs: readonly LogRef[];
     readonly durationMs: number;
+    /** The original flow's own result, kept exact for its UI. */
+    readonly native?: ProgrammingResult;
 }
 
 export interface ProgrammingProvider {
@@ -222,18 +268,28 @@ export interface EngineProvider {
     shutdown(): Promise<void>;
 }
 
-/** Adapter from the existing Xilinx-style board data to a profile (no behaviour change to that path). */
+const DEFAULT_LABELS: MetricLabels = { logic: 'LUTs', registers: 'Flip-Flops', memory: 'BRAM (36 Kb)', dsp: 'DSP' };
+
+/**
+ * Board profile from board data. A board without a `backend` block is the original open-source
+ * flow: XDC constraints, the openxc7 implementation, the platform programmer and a bitstream.
+ */
 export function profileFromBoardDefinition(def: BoardDefinition): BoardProfile {
+    const be = def.backend;
+    const idcode = be?.jtagIdcode !== undefined ? Number.parseInt(be.jtagIdcode, 16) : undefined;
     return {
         id: def.id,
         name: def.name,
+        displayName: def.displayName ?? def.name,
         vendor: def.vendor,
-        fpga: { family: def.fpga.family, device: def.fpga.device },
-        constraintFormat: 'xdc',
-        implementationProviderId: 'apio-openxc7',
-        programmingProviderId: 'platform-default',
-        programmingFormat: 'bit',
-        metricLabels: { logic: 'LUTs', registers: 'Flip-flops', memory: 'Block RAM', dsp: 'DSP' },
+        fpga: { family: def.fpga.family, device: def.fpga.device, ...(idcode !== undefined && Number.isFinite(idcode) ? { jtagIdcode: idcode } : {}) },
+        constraintFormat: be?.constraints ?? 'xdc',
+        implementationProviderId: be?.implementation ?? 'openxc7',
+        programmingProviderId: be?.programming ?? 'platform-default',
+        programmingFormat: be?.programmingFormat ?? 'bit',
+        ...(be?.programmerBoardKey ? { programmerBoardKey: be.programmerBoardKey } : {}),
+        metricLabels: be?.metricLabels ?? DEFAULT_LABELS,
+        ...(be?.hosts ? { hosts: be.hosts } : {}),
         ...(def.identification?.usb || def.identification?.productNames
             ? {
                   identification: {

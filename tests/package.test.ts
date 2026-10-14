@@ -36,7 +36,7 @@ describe('package manifest (Classroom Preview)', () => {
     it('identity, version and VS Code engine', async () => {
         const p = await pkg();
         assert.equal(p.name, 'nexysvhdl');
-        assert.equal(p.displayName, 'NexysVHDL');
+        assert.equal(p.displayName, 'MIX-FPGA');
         assert.equal(p.publisher, 'emxplore');
         assert.equal(p.version, '0.6.0');
         assert.equal(p.engines['vscode'], '^1.120.0');
@@ -107,7 +107,7 @@ describe('package manifest (Classroom Preview)', () => {
     });
 });
 
-describe('license: NexysVHDL is Apache-2.0; third-party software keeps its own licenses', () => {
+describe('license: MIX-FPGA is Apache-2.0; third-party software keeps its own licenses', () => {
     it('package metadata, the canonical Apache-2.0 text and the NOTICE file', async () => {
         const pkg = JSON.parse(await readFile(join(REPO, 'package.json'), 'utf8'));
         assert.equal(pkg.license, 'Apache-2.0');
@@ -115,7 +115,9 @@ describe('license: NexysVHDL is Apache-2.0; third-party software keeps its own l
         // SHA-256 of https://www.apache.org/licenses/LICENSE-2.0.txt (unmodified).
         assert.equal(createHash('sha256').update(license).digest('hex'), 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30');
         const notice = await readFile(join(REPO, 'NOTICE'), 'utf8');
-        assert.match(notice, /^NexysVHDL\nCopyright \d{4} /);
+        assert.match(notice, /^MIX-FPGA\nCopyright 2026 Walid Dyab\n/);
+        assert.match(notice, /EMXplore project/);
+        assert.match(notice, /continues the NexysVHDL project/, 'the NexysVHDL development history stays acknowledged');
         assert.match(notice, /Apache License, Version 2\.0/);
         assert.match(notice, /NOT\s+licensed under the Apache License/);
         const script = await readFile(join(REPO, 'scripts', 'package.mjs'), 'utf8');

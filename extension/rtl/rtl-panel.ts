@@ -115,7 +115,7 @@ export class RtlPanel implements vscode.Disposable {
     private async generate(): Promise<void> {
         this.path = [];
         try {
-            await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Generating RTL schematic' }, () => this.service.generateRtl());
+            await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'MIX-FPGA: Generating RTL schematic' }, () => this.service.generateRtl());
         } catch (err) {
             if (!(err instanceof NexysError)) throw err;
             this.render(err.message);

@@ -7,6 +7,7 @@ import type { BoardProfile } from './types';
 export const DE10_LITE_PROFILE: BoardProfile = {
     id: 'de10-lite',
     name: 'Terasic DE10-Lite',
+    displayName: 'DE10-Lite',
     vendor: 'Terasic',
     fpga: { family: 'MAX 10', device: '10M50DAF484C7G', jtagIdcode: 0x031050dd },
     constraintFormat: 'qsf-sdc',
@@ -14,7 +15,8 @@ export const DE10_LITE_PROFILE: BoardProfile = {
     programmingProviderId: 'native-jtag',
     programmingFormat: 'svf',
     programmerBoardKey: 'de10lite',
-    metricLabels: { logic: 'Logic Elements', registers: 'Registers', memory: 'Memory bits', dsp: 'Multipliers (9-bit)' },
+    metricLabels: { logic: 'Logic Elements', registers: 'Registers', memory: 'Memory Bits', dsp: 'DSP Blocks' },
+    hosts: ['macos-arm64'],
     identification: { usb: { vendorId: '09fb', productId: '6001' }, productNames: ['USB-Blaster'] },
 };
 

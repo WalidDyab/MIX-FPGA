@@ -15,6 +15,7 @@ import {
     type ToolchainManifest,
     ToolDetector,
 } from '../core';
+import type { BoardEnvironment } from '../core/backend';
 import type { ProgrammerSetup } from '../platform';
 import { type ClassroomState, providersFor, type RuntimeContext, toolLocatorFor } from './context';
 
@@ -34,6 +35,8 @@ export interface EnvironmentReport {
     readonly programmerSetup?: ProgrammerSetup;
     /** Classroom mode only: the required/installed NexysVHDL toolchain. */
     readonly classroom?: ClassroomState;
+    /** The open project's board brings its own tools and engine (DE10-Lite): their state; the original-toolchain fields above do not apply. */
+    readonly board?: BoardEnvironment;
 }
 
 /**
@@ -74,7 +77,7 @@ async function inspectClassroom(ctx: RuntimeContext, classroom: ClassroomState, 
     const tools = new Map<ToolId, DetectedTool>();
     const userSpace = ALL_TOOL_IDS.filter((t) => t !== 'programmer');
     if (classroom.toolchain) for (const [k, v] of await inspectBundledTools(classroom.toolchain, ctx.runner, userSpace)) tools.set(k, v);
-    else for (const t of userSpace) tools.set(t, { tool: t, found: false, method: 'NexysVHDL toolchain not installed' });
+    else for (const t of userSpace) tools.set(t, { tool: t, found: false, method: 'MIX-FPGA toolchain not installed' });
     const platform = ctx.platform.inspectToolchain ? await ctx.platform.inspectToolchain({ tools: ['programmer'], locator }) : undefined;
     const prog = platform?.tools.get('programmer');
     if (prog) tools.set('programmer', prog);

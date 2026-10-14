@@ -72,6 +72,8 @@ export interface Project {
     /** Absolute path of nexysvhdl.json. */
     readonly file: string;
     readonly config: ProjectFile;
+    /** The file had no "board": the original Nexys A7-100T was assumed (in memory only; the file is unchanged). */
+    readonly legacyBoardDefault?: boolean;
 }
 
 /** Standard folders of a NexysVHDL project (Phase 4A folder contract). */

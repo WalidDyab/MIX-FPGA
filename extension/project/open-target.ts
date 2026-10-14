@@ -26,12 +26,12 @@ export async function resolveOpenTarget(path: string): Promise<OpenTarget> {
         } catch {
             /* fall through */
         }
-        return { ok: false, message: `${abs} has no ${PROJECT_FILE_NAME}. Choose a NexysVHDL project folder or its .nvproj file, or use Create Project.` };
+        return { ok: false, message: `${abs} has no ${PROJECT_FILE_NAME}. Choose a MIX-FPGA project folder or its .nvproj file, or use Create Project.` };
     }
     if (isNvprojPath(abs)) {
         const r = await resolveNvproj(abs);
         return r.ok ? { ok: true, root: r.root, via: 'project-file', projectFile: r.file } : { ok: false, message: r.message };
     }
     if (basename(abs).toLowerCase() === PROJECT_FILE_NAME) return { ok: true, root: dirname(abs), via: 'folder' };
-    return { ok: false, message: `${basename(abs)} is not a NexysVHDL project. Choose a project folder or a .nvproj file.` };
+    return { ok: false, message: `${basename(abs)} is not a MIX-FPGA project. Choose a project folder or a .nvproj file.` };
 }

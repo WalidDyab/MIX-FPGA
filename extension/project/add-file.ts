@@ -1,7 +1,7 @@
 import { constants } from 'node:fs';
 import { copyFile, mkdir, readdir, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, resolve } from 'node:path';
-import { PROJECT_FOLDERS } from '../../core';
+import { type BoardConstraintFormat, PROJECT_FOLDERS } from '../../core';
 
 /**
  * The student's "+ Add File" workflow, free of the VS Code API: what kinds of
@@ -10,7 +10,8 @@ import { PROJECT_FOLDERS } from '../../core';
  * (commands.ts) only ask the questions; every rule lives here so it can be
  * tested without a window.
  */
-export type AddFileKind = 'source' | 'simulation' | 'constraints';
+/** `constraints` = an .xdc file (Nexys A7); `qsf` / `sdc` = the two Quartus constraint files (DE10-Lite). */
+export type AddFileKind = 'source' | 'simulation' | 'constraints' | 'qsf' | 'sdc';
 export type AddFileMode = 'new' | 'copy';
 
 export interface AddFileKindInfo {
@@ -21,14 +22,24 @@ export interface AddFileKindInfo {
     /** Project folder the file goes to. */
     readonly folder: string;
     /** The one extension accepted, with the dot. */
-    readonly extension: '.vhd' | '.xdc';
+    readonly extension: '.vhd' | '.xdc' | '.qsf' | '.sdc';
 }
 
 export const ADD_FILE_KINDS: readonly AddFileKindInfo[] = [
     { kind: 'source', label: 'Source', description: 'VHDL design file (.vhd) → src/', folder: PROJECT_FOLDERS.sources, extension: '.vhd' },
     { kind: 'simulation', label: 'Simulation Testbench', description: 'VHDL testbench (.vhd) → sim/', folder: PROJECT_FOLDERS.simulation, extension: '.vhd' },
     { kind: 'constraints', label: 'Constraint', description: 'Pin and clock constraints (.xdc) → constraints/', folder: PROJECT_FOLDERS.constraints, extension: '.xdc' },
+    { kind: 'qsf', label: 'Constraint: Pins (QSF)', description: 'Device, pin and I/O assignments (.qsf) → constraints/', folder: PROJECT_FOLDERS.constraints, extension: '.qsf' },
+    { kind: 'sdc', label: 'Constraint: Clock (SDC)', description: 'Clock and timing constraints (.sdc) → constraints/', folder: PROJECT_FOLDERS.constraints, extension: '.sdc' },
 ];
+
+/** The kinds the Add File picker offers for a board: only the constraint types that board can use. */
+export function addFileKindsFor(format: BoardConstraintFormat): readonly AddFileKindInfo[] {
+    return ADD_FILE_KINDS.filter((k) => (format === 'qsf-sdc' ? k.kind !== 'constraints' : k.kind !== 'qsf' && k.kind !== 'sdc'));
+}
+
+/** Whether a kind is a constraint file of any format. */
+export const isConstraintKind = (kind: AddFileKind): boolean => kind === 'constraints' || kind === 'qsf' || kind === 'sdc';
 
 export function kindInfo(kind: AddFileKind): AddFileKindInfo {
     return ADD_FILE_KINDS.find((k) => k.kind === kind)!;
@@ -67,7 +78,7 @@ export function validateFileName(kind: AddFileKind, name: string): string | unde
         return `Only ${info.extension} files can be added here${ext ? ` (not ${ext})` : ''}.`;
     }
     const stem = full.slice(0, -ext.length);
-    if (kind === 'constraints') {
+    if (isConstraintKind(kind)) {
         return XDC_NAME.test(stem) ? undefined : 'Use only English letters, digits, "_", "-" and "." in the file name, starting with a letter or digit.';
     }
     if (!VHDL_NAME.test(stem)) {
@@ -88,7 +99,7 @@ export function validateCopyName(kind: AddFileKind, name: string): string | unde
     const ext = extname(name);
     if (ext.toLowerCase() !== info.extension) return `Only ${info.extension} files can be added here${ext ? ` (not ${ext})` : ''}.`;
     const stem = name.slice(0, name.length - ext.length);
-    if (!XDC_NAME.test(stem)) return `The file name "${name}" has characters NexysVHDL's tools cannot read. Use only English letters, digits, "_", "-" and "." (no spaces), starting with a letter or digit.`;
+    if (!XDC_NAME.test(stem)) return `The file name "${name}" has characters MIX-FPGA's tools cannot read. Use only English letters, digits, "_", "-" and "." (no spaces), starting with a letter or digit.`;
     return undefined;
 }
 
@@ -167,7 +178,7 @@ export function entityNameOf(fileName: string): string {
 export function sourceSkeleton(entity: string): string {
     return `-- ${entity}.vhd: describe what this block does.
 --
--- NexysVHDL uses VHDL-2008. Add this entity's ports below. To use it from
+-- MIX-FPGA uses VHDL-2008. Add this entity's ports below. To use it from
 -- another file, instantiate it with:
 --     u_${entity.toLowerCase()} : entity work.${entity} port map (...);
 
@@ -205,12 +216,12 @@ end architecture rtl;
 
 /** A VHDL-2008 testbench skeleton that ends itself with std.env.stop. */
 export function testbenchSkeleton(entity: string): string {
-    return `-- ${entity}.vhd: testbench. Run it with "NexysVHDL: Simulate".
+    return `-- ${entity}.vhd: testbench. Run it with "MIX-FPGA: Simulate".
 --
 -- A testbench is an entity without ports. The clock below runs forever, so the
 -- stimulus process ends the simulation itself with "std.env.stop" (VHDL-2008).
 -- Without it Simulate would never finish. (Alternatively, set a fixed length
--- with "Simulation length" in the NexysVHDL Project view.)
+-- with "Simulation length" in the MIX-FPGA Project view.)
 
 library ieee;
 use ieee.std_logic_1164.all;

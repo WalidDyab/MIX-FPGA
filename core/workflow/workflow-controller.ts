@@ -169,6 +169,14 @@ export class WorkflowController {
         return done({ verilog, ...(r.netlist ? { netlist: r.netlist } : {}) });
     }
 
+    /**
+     * Check without taking the project's single-flight claim, for a caller that already holds it
+     * (a board's Build runs Check as its first step inside its own claim).
+     */
+    checkUnlocked(project: Project, signal?: AbortSignal): Promise<VhdlCheckResult> {
+        return this.runCheck(project, signal);
+    }
+
     check(project: Project, signal?: AbortSignal): Promise<VhdlCheckResult> {
         return withProjectLock(project.root, 'check', () => this.runCheck(project, signal), (running) => ({
             status: 'failed', diagnostics: [busyDiagnostic(running)], logs: [], durationMs: 0, elaborated: [],

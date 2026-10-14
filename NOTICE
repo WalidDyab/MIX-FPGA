@@ -1,9 +1,10 @@
-NexysVHDL
+MIX-FPGA
 Copyright 2026 Walid Dyab
 
-NexysVHDL is an EMXplore project (VS Code publisher: emxplore).
+MIX-FPGA is an EMXplore project (VS Code publisher: emxplore).
+MIX-FPGA continues the NexysVHDL project (development history and 0.6.0 release preserved).
 
-NexysVHDL is licensed under the Apache License, Version 2.0 (see LICENSE).
+MIX-FPGA (including its NexysVHDL heritage) is licensed under the Apache License, Version 2.0 (see LICENSE).
 
 The NexysVHDL extension (.vsix) contains only NexysVHDL's own code and data;
 it bundles no third-party code.

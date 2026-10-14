@@ -15,9 +15,9 @@ export class StatusBar implements vscode.Disposable {
     private readonly sub: { dispose(): void };
 
     constructor(private readonly service: NexysVhdlService) {
-        this.main.name = 'NexysVHDL';
-        this.board.name = 'NexysVHDL Board';
-        this.build.name = 'NexysVHDL Build';
+        this.main.name = 'MIX-FPGA';
+        this.board.name = 'MIX-FPGA Board';
+        this.build.name = 'MIX-FPGA Build';
         this.main.command = 'workbench.view.extension.nexysvhdl';
         this.board.command = 'nexysvhdl.detectBoards';
         this.build.command = 'nexysvhdl.results.focus';
@@ -40,18 +40,18 @@ export class StatusBar implements vscode.Disposable {
         let background: vscode.ThemeColor | undefined;
         if (w.running) {
             const stage = w.running === 'build' ? BUILD_STAGES.find((id) => w.stages[id].state === 'running') : undefined;
-            text = `$(sync~spin) NexysVHDL: ${w[w.running].summary ?? 'Working…'}${stage ? ` ${STAGE_LABEL[stage]}` : ''}`;
-            tooltip = 'Click to show the NexysVHDL sidebar';
+            text = `$(sync~spin) MIX-FPGA: ${w[w.running].summary ?? 'Working…'}${stage ? ` ${STAGE_LABEL[stage]}` : ''}`;
+            tooltip = 'Click to show the MIX-FPGA sidebar';
         } else if (!snap.project) {
-            text = '$(error) NexysVHDL: Project error';
+            text = '$(error) MIX-FPGA: Project error';
             tooltip = snap.loadDiagnostics.map((d) => d.message).join('\n');
             background = new vscode.ThemeColor('statusBarItem.errorBackground');
         } else if (s.environment?.level === 'setup-required') {
-            text = '$(warning) NexysVHDL: Setup required';
+            text = '$(warning) MIX-FPGA: Setup required';
             tooltip = s.environment.problems.join('\n');
             background = new vscode.ThemeColor('statusBarItem.warningBackground');
         } else {
-            text = '$(circuit-board) NexysVHDL: Ready';
+            text = '$(circuit-board) MIX-FPGA: Ready';
             tooltip = `${snap.project.config.name} — ${snap.boardName ?? snap.project.config.board}`;
         }
         this.main.text = text;

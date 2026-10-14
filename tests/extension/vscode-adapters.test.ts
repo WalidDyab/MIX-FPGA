@@ -48,15 +48,15 @@ describe('Problems integration', () => {
             ]),
         );
         assert.deepEqual([...problems.keys()].sort(), [join(root, 'nexysvhdl.json'), join(root, 'src', 'top.vhd')].sort());
-        assert.deepEqual(problems.get(join(root, 'src', 'top.vhd')), [{ severity: 'error', message: ghdlError.message, code: 'GHDL_ERROR', source: 'NexysVHDL (vhdl)', line: 11, column: 4 }], 'duplicates are merged');
+        assert.deepEqual(problems.get(join(root, 'src', 'top.vhd')), [{ severity: 'error', message: ghdlError.message, code: 'GHDL_ERROR', source: 'MIX-FPGA (vhdl)', line: 11, column: 4 }], 'duplicates are merged');
         assert.equal(problems.get(join(root, 'nexysvhdl.json'))![0]!.line, 0);
     });
 
     it('converts entries to vscode.Diagnostic with severity, code and a token-wide squiggle', () => {
-        const d = toVsDiagnostic({ severity: 'warning', message: 'm', code: 'C', source: 'NexysVHDL (vhdl)', line: 3, column: 4 }, '    count <= x;');
+        const d = toVsDiagnostic({ severity: 'warning', message: 'm', code: 'C', source: 'MIX-FPGA (vhdl)', line: 3, column: 4 }, '    count <= x;');
         assert.equal(d.severity, DiagnosticSeverity.Warning);
         assert.equal(d.code, 'C');
-        assert.equal(d.source, 'NexysVHDL (vhdl)');
+        assert.equal(d.source, 'MIX-FPGA (vhdl)');
         assert.deepEqual([d.range.start.line, d.range.start.character, d.range.end.line, d.range.end.character], [3, 4, 3, 9]);
         const whole = toVsDiagnostic({ severity: 'error', message: 'm', code: 'C', source: 's', line: 0 }, 'abc');
         assert.deepEqual([whole.range.start.character, whole.range.end.character], [0, 3]);

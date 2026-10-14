@@ -1,6 +1,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import {
+    type BoardConstraintFormat,
     type BuildProgress,
     type BuildResult,
     type Diagnostic,
@@ -37,6 +38,7 @@ import {
     actionStarted,
     buildFinished,
     buildProgressed,
+    buildStatus,
     checkFinished,
     formatSimTime,
     initialWorkflow,
@@ -83,6 +85,8 @@ export interface ProjectSnapshot {
     readonly hierarchy: HierarchyModel;
     /** Display name of the project's board, when supported. */
     readonly boardName?: string;
+    /** Constraint files the project's board uses: `.xdc` (Nexys A7) or `.qsf` + `.sdc` (DE10-Lite). */
+    readonly constraintFormat: BoardConstraintFormat;
     /** A new Empty project: no VHDL and no top entity yet. A valid starting state, shown as guidance instead of errors. */
     readonly emptyProject?: boolean;
     /** The project's `.nvproj` file, when it has one (old projects may not). */
@@ -153,6 +157,8 @@ export class NexysVhdlService {
     lastCheck: VhdlCheckResult | undefined;
     lastSimulation: SimulationResult | undefined;
     lastBuild: BuildResult | undefined;
+    /** Status lines the board's build reported this run (when it reports them, the stage lines are not repeated in the console). */
+    private buildStatusLines = 0;
     lastProgram: ProgrammingResult | undefined;
     rtl: RtlState = { status: 'idle' };
     /** Increments whenever the indexed design (files, contents, top) changes. */
@@ -333,7 +339,7 @@ export class NexysVhdlService {
         if (!this.root) return undefined;
         const rel = posixRel(this.root, absPath);
         if (rel.startsWith('..')) return undefined;
-        return classifyProjectPath(rel);
+        return classifyProjectPath(rel, this.snapshot?.constraintFormat ?? 'xdc');
     }
 
     private autoCheck(): void {
@@ -372,16 +378,19 @@ export class NexysVhdlService {
         const root = this.root;
         if (!root) return;
         const file = join(root, PROJECT_FILE_NAME);
-        const scannedAll = await scanProjectFiles(root);
+        let loaded = await this.backend.loadProject(root);
+        // The board decides which constraint files exist (.xdc, or .qsf + .sdc), so it is known before the folder is scanned.
+        const format: BoardConstraintFormat = loaded.ok ? ((await this.backend.boards()).get(loaded.project.config.board)?.backend?.constraints ?? 'xdc') : 'xdc';
+        const scannedAll = await scanProjectFiles(root, format);
         const projectFile = (await findNvprojFiles(root))[0];
         let scanned = scannedAll;
-        let loaded = await this.backend.loadProject(root);
         if (!loaded.ok) {
             const loadDiagnostics = loaded.diagnostics.map((d) => (d.location ? d : { ...d, location: { file: PROJECT_FILE_NAME } }));
             const index = new DesignIndex([]);
             this.snapshot = {
                 root, file, loadDiagnostics, validation: [], scanned,
                 files: buildProjectFilesModel(scanned, { sources: [] }),
+                constraintFormat: format,
                 index, hierarchy: buildHierarchy(index, ''), excluded: [], ...(projectFile ? { projectFile } : {}),
             };
             this.problems.set('project', loadDiagnostics);
@@ -399,7 +408,7 @@ export class NexysVhdlService {
             ...(Array.isArray(p.config.simulation?.sources) ? p.config.simulation!.sources : []),
         ].filter((x): x is string => typeof x === 'string' && !excludeSet.has(x));
         const simListed = new Set(Array.isArray(project.config.simulation?.sources) ? project.config.simulation!.sources : []);
-        const roleOf = (p: string): FileRole => (classifyProjectPath(p) === 'simulation' || simListed.has(p) ? 'simulation' : 'source');
+        const roleOf = (p: string): FileRole => (classifyProjectPath(p, format) === 'simulation' || simListed.has(p) ? 'simulation' : 'source');
 
         // Parse every VHDL file the project has or lists (cached by mtime/size).
         const outside = new Set<string>();
@@ -436,12 +445,14 @@ export class NexysVhdlService {
             project.config,
             new Set(topEntity && topEntity.role === 'source' ? [topEntity.file] : []),
             new Set(tbEntity ? [tbEntity.file] : []),
+            format,
         );
         const emptyProject = isEmptyProject(project.config, scanned);
         const rawValidation = (await this.backend.validate(project)).diagnostics.map((d) => (d.location ? d : { ...d, location: { file: PROJECT_FILE_NAME } }));
         // The backend (and so Build and Simulate) still sees the full validation; only what is displayed is softened.
         const validation = emptyProject ? withoutEmptyStateErrors(rawValidation) : rawValidation;
-        const boardName = (await this.backend.boards()).get(project.config.board)?.name;
+        const boardDef = (await this.backend.boards()).get(project.config.board);
+        const boardName = boardDef ? (boardDef.displayName ?? boardDef.name) : undefined;
         const signature = JSON.stringify([top, order.map((p) => [p, this.parseCache.get(p)?.mtimeMs, this.parseCache.get(p)?.size])]);
         if (signature !== this.designSignature) {
             this.designSignature = signature;
@@ -449,7 +460,7 @@ export class NexysVhdlService {
         }
         const excluded: string[] = [];
         for (const p of [...excludeSet].sort()) if (await this.exists(p)) excluded.push(p);
-        this.snapshot = { root, file, project, loadDiagnostics: [], validation, scanned, files, index, hierarchy, excluded, ...(emptyProject ? { emptyProject } : {}), ...(boardName ? { boardName } : {}), ...(projectFile ? { projectFile } : {}) };
+        this.snapshot = { root, file, project, loadDiagnostics: [], validation, scanned, files, index, hierarchy, excluded, constraintFormat: format, ...(emptyProject ? { emptyProject } : {}), ...(boardName ? { boardName } : {}), ...(projectFile ? { projectFile } : {}) };
         this.problems.set('project', validation);
         this.emit('project', 'problems');
     }
@@ -510,7 +521,7 @@ export class NexysVhdlService {
      * an active XDC (or `pins`) the answer is `ask`: the caller asks the
      * student and then calls useConstraints().
      */
-    async fileAdded(kind: 'source' | 'simulation' | 'constraints', path: string): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; testbench?: string; top?: string; topCandidates?: string[] }> {
+    async fileAdded(kind: 'source' | 'simulation' | 'constraints' | 'qsf' | 'sdc', path: string): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; testbench?: string; top?: string; topCandidates?: string[] }> {
         const r = await this.filesAdded(kind, [path]);
         const { candidates: _c, ...rest } = r;
         return rest;
@@ -524,7 +535,7 @@ export class NexysVhdlService {
      * Several XDC files never switch the active one silently: `candidates` lists them.
      */
     async filesAdded(
-        kind: 'source' | 'simulation' | 'constraints',
+        kind: 'source' | 'simulation' | 'constraints' | 'qsf' | 'sdc',
         paths: readonly string[],
     ): Promise<{ constraints?: 'activated' | 'already-active' | 'ask'; candidates?: string[]; testbench?: string; top?: string; topCandidates?: string[] }> {
         const before = this.requireProject();
@@ -565,6 +576,8 @@ export class NexysVhdlService {
                 }
             }
         }
+        // Quartus constraint files (.qsf/.sdc) need no activation: every one in constraints/ is used.
+        if (kind === 'qsf' || kind === 'sdc') out.constraints = 'already-active';
         if (kind === 'constraints') {
             if (config.constraints !== undefined && paths.includes(config.constraints)) out.constraints = 'already-active';
             else if (config.constraints === undefined && !config.pins && paths.length === 1) {
@@ -587,7 +600,7 @@ export class NexysVhdlService {
     /** What removing `path` would clear besides the file lists (nothing is changed). */
     removalImpact(path: string): { topEntity?: string; testbench?: string; constraints?: boolean } {
         const snap = this.requireProject();
-        const kind = classifyProjectPath(path);
+        const kind = classifyProjectPath(path, this.snapshot?.constraintFormat ?? 'xdc');
         const c = snap.project.config;
         const out: { topEntity?: string; testbench?: string; constraints?: boolean } = {};
         const top = typeof c.top === 'string' ? snap.index.entity(c.top) : undefined;
@@ -600,7 +613,7 @@ export class NexysVhdlService {
 
     async removeFromProject(path: string): Promise<RemovedFromProject> {
         const snap = this.requireProject();
-        const kind = classifyProjectPath(path);
+        const kind = classifyProjectPath(path, this.snapshot?.constraintFormat ?? 'xdc');
         if (kind !== 'source' && kind !== 'simulation' && kind !== 'constraints') throw new NexysError(`${path} is not a source, testbench or constraints file of the project.`);
         const c = snap.project.config;
         const impact = this.removalImpact(path);
@@ -636,7 +649,7 @@ export class NexysVhdlService {
     /** Adds a removed file back to the project. */
     async restoreToProject(path: string): Promise<void> {
         const snap = this.requireProject();
-        const kind = classifyProjectPath(path);
+        const kind = classifyProjectPath(path, this.snapshot?.constraintFormat ?? 'xdc');
         if (kind !== 'source' && kind !== 'simulation' && kind !== 'constraints') throw new NexysError(`${path} is not a source, testbench or constraints file.`);
         const left = (Array.isArray(snap.project.config.exclude) ? snap.project.config.exclude : []).filter((p) => p !== path);
         await updateProjectFile(snap.file, { exclude: left.length > 0 ? left : undefined });
@@ -651,7 +664,7 @@ export class NexysVhdlService {
 
     private requireProject(): ProjectSnapshot & { project: Project } {
         const snap = this.snapshot;
-        if (!snap) throw new NexysError('No NexysVHDL project is open.');
+        if (!snap) throw new NexysError('No MIX-FPGA project is open.');
         if (!snap.project) throw new NexysError(`The project file has a problem: ${snap.loadDiagnostics[0]?.message ?? 'unknown error'}`);
         return snap as ProjectSnapshot & { project: Project };
     }
@@ -849,6 +862,7 @@ export class NexysVhdlService {
 
     build(): Promise<BuildResult> {
         return this.exclusive('build', async () => {
+            this.buildStatusLines = 0;
             const result = await this.runClaimed('build', 'Starting build...', (p, s) =>
                 this.backend.build(
                     p,
@@ -857,6 +871,11 @@ export class NexysVhdlService {
                         this.consoleBuildProgress(progress);
                     },
                     s,
+                    (message) => {
+                        this.buildStatusLines++;
+                        this.setWorkflow(buildStatus(this.workflow, message));
+                        this.console.say('Build', message);
+                    },
                 ),
             );
             if (this.end()) {
@@ -906,7 +925,7 @@ export class NexysVhdlService {
 
     private consoleCheckDone(r: VhdlCheckResult): void {
         if (r.status === 'not-configured') {
-            this.console.error('Check', 'The VHDL tools are not set up on this computer. Use NexysVHDL: Show Environment to install the FPGA toolchain.');
+            this.console.error('Check', 'The VHDL tools are not set up on this computer. Use MIX-FPGA: Show Environment to install the FPGA toolchain.');
         } else {
             this.consoleDiagnostics('Check', r.diagnostics);
             const errors = r.diagnostics.filter((d) => d.severity === 'error').length;
@@ -918,7 +937,7 @@ export class NexysVhdlService {
 
     private consoleSimulationDone(r: SimulationResult): void {
         if (r.status === 'not-configured') {
-            this.console.error('Simulate', 'The simulator is not set up on this computer. Use NexysVHDL: Show Environment to install the FPGA toolchain.');
+            this.console.error('Simulate', 'The simulator is not set up on this computer. Use MIX-FPGA: Show Environment to install the FPGA toolchain.');
         } else {
             const streamed = this.console.streamedLines > 0;
             // Without live tool output the testbench's own messages are listed here instead.
@@ -934,12 +953,12 @@ export class NexysVhdlService {
 
     private consoleBuildProgress(p: BuildProgress): void {
         if (p.kind === 'step-started' && p.step === 'check') this.console.say('Build', 'Checking VHDL...');
-        else if (p.kind === 'implementation-stage') this.console.say('Build', { synthesis: 'Synthesis...', implementation: 'Implementation...', bitstream: 'Generating bitstream...' }[p.stage]);
+        else if (p.kind === 'implementation-stage' && this.buildStatusLines === 0) this.console.say('Build', { synthesis: 'Synthesis...', implementation: 'Implementation...', bitstream: 'Generating bitstream...' }[p.stage]);
     }
 
     private consoleBuildDone(r: BuildResult): void {
         if (r.steps.some((st) => st.status === 'not-configured')) {
-            this.console.error('Build', 'The FPGA build tools are not set up on this computer. Use NexysVHDL: Show Environment to install the FPGA toolchain.');
+            this.console.error('Build', 'The FPGA build tools are not set up on this computer. Use MIX-FPGA: Show Environment to install the FPGA toolchain.');
         } else {
             this.consoleDiagnostics('Build', r.diagnostics);
             const clock = r.timing?.clocks[0];
@@ -948,7 +967,7 @@ export class NexysVhdlService {
                 if (r.timing.passed) this.console.say('Build', `Timing met${mhz}`);
                 else this.console.warning('Build', `Timing not met${mhz}: the design may not work at the requested clock speed.`);
             }
-            if (r.success) this.console.say('Build', 'Bitstream ready');
+            if (r.success) this.console.say('Build', r.normalized?.programmingArtifact?.format === 'svf' ? 'Programming file ready' : 'Bitstream ready');
             else this.console.fail('Build', `FAIL${r.implementationStage ? ` during ${r.implementationStage}` : ''}`);
         }
         this.console.endAction();
@@ -956,7 +975,7 @@ export class NexysVhdlService {
 
     private consoleProgramDone(r: ProgrammingResult): void {
         if (r.status === 'not-configured') {
-            this.console.error('Program', 'The board programmer is not set up on this computer. Use NexysVHDL: Show Environment.');
+            this.console.error('Program', 'The board programmer is not set up on this computer. Use MIX-FPGA: Show Environment.');
         } else {
             this.consoleDiagnostics('Program', r.diagnostics);
             if (r.status === 'succeeded') this.console.pass('Program', `PASS${r.target?.serialNumber ? ` (board ${r.target.serialNumber})` : ''}`);
@@ -967,7 +986,7 @@ export class NexysVhdlService {
 
     /** Newest modification time among the files that determine the bitstream. */
     private async newestDesignInput(project: Project): Promise<number> {
-        const files = [PROJECT_FILE_NAME, ...project.config.sources, ...(project.config.constraints ? [project.config.constraints] : [])];
+        const files = [PROJECT_FILE_NAME, ...project.config.sources, ...(project.config.constraints ? [project.config.constraints] : []), ...(this.snapshot?.constraintFormat === 'qsf-sdc' ? this.snapshot.files.constraints.map((c) => c.path) : [])];
         let newest = 0;
         for (const f of files) {
             try {

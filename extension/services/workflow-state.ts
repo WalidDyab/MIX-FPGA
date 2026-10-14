@@ -163,10 +163,14 @@ export function stagesFromResult(r: BuildResult): Record<BuildStageId, ActionSta
     const bad = (st: OperationStatus, summary?: string): ActionStatus => ({ state: st === 'not-configured' ? 'unavailable' : 'failed', ...(summary ? { summary } : {}) });
 
     const util = r.utilization;
-    const synthSummary = util?.luts || util?.flipFlops ? [util.luts ? `${util.luts.used} LUTs` : '', util.flipFlops ? `${util.flipFlops.used} FFs` : ''].filter(Boolean).join(' · ') : 'VHDL → netlist';
+    // A board whose flow has its own vendor words (Logic Elements, Registers) says them; the original flow keeps its summary.
+    const nz = r.normalized && !r.normalized.native ? r.normalized : undefined;
+    const nzParts = nz ? [nz.resources.logic, nz.resources.registers].filter((m): m is NonNullable<typeof m> => m !== undefined).map((m) => `${m.used} ${m.label}`) : [];
+    const synthSummary = nz ? (nzParts.join(' · ') || 'VHDL → netlist') : util?.luts || util?.flipFlops ? [util.luts ? `${util.luts.used} LUTs` : '', util.flipFlops ? `${util.flipFlops.used} FFs` : ''].filter(Boolean).join(' · ') : 'VHDL → netlist';
     const clock = r.timing?.clocks[0];
     const implSummary = r.timing?.passed === undefined ? 'Placed and routed' : `Timing ${r.timing.passed ? 'PASS' : 'FAIL'}${clock ? ` · ${fmtMHz(clock.achievedMHz)}` : ''}`;
-    const bitSummary = r.bitstream ? `hardware.bit · ${formatBytes(r.bitstream.sizeBytes)}`.replace(/ · $/, '') : undefined;
+    const bitName = nz && r.bitstream ? r.bitstream.path.split(/[\\/]/).pop()! : 'hardware.bit';
+    const bitSummary = r.bitstream ? `${bitName} · ${formatBytes(r.bitstream.sizeBytes)}`.replace(/ · $/, '') : undefined;
 
     if (failedStep) {
         const reason = firstError(failedStep.diagnostics);
@@ -181,8 +185,14 @@ export function stagesFromResult(r: BuildResult): Record<BuildStageId, ActionSta
     return {
         synthesis: { state: 'passed', summary: synthSummary },
         implementation: { state: r.timing?.passed === false ? 'failed' : 'passed', summary: implSummary },
-        bitstream: r.bitstream ? { state: 'passed', ...(bitSummary ? { summary: bitSummary } : {}) } : { state: 'failed', summary: 'No bitstream produced' },
+        bitstream: r.bitstream ? { state: 'passed', ...(bitSummary ? { summary: bitSummary } : {}) } : { state: 'failed', summary: nz ? 'No programming file produced' : 'No bitstream produced' },
     };
+}
+
+/** A student-facing status line while a build runs (`Preparing FPGA engine…`, `Fitting…`). */
+export function buildStatus(s: WorkflowState, message: string): WorkflowState {
+    if (s.running !== 'build') return s;
+    return { ...s, build: { state: 'running', summary: message } };
 }
 
 export function buildFinished(s: WorkflowState, r: BuildResult): WorkflowState {

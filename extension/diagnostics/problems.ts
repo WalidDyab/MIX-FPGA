@@ -41,7 +41,7 @@ export function collectProblems(root: string, categories: ReadonlyMap<ProblemCat
                 severity: d.severity,
                 message: d.message,
                 code: d.code,
-                source: `NexysVHDL (${d.source})`,
+                source: `MIX-FPGA (${d.source})`,
                 line,
                 ...(d.location?.column !== undefined ? { column: Math.max(0, d.location.column - 1) } : {}),
             };

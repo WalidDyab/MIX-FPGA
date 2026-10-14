@@ -1,3 +1,4 @@
+import type { NormalizedBuildResult } from '../backend/types';
 import type { ImplementationStage, ResourceUtilization, TimingResult } from '../implementation/types';
 import type { BuildArtifact } from '../results/artifact';
 import type { Diagnostic, LogRef, OperationStatus } from '../results/diagnostic';
@@ -33,6 +34,8 @@ export interface BuildResult {
     readonly implementationStage?: ImplementationStage;
     /** Where the constraints came from: the project's XDC file, or generated from `pins`. */
     readonly constraintsSource?: { readonly kind: 'file'; readonly file: string } | { readonly kind: 'generated' };
+    /** The vendor-neutral result of the board's implementation provider (resource names are the board's own words). */
+    readonly normalized?: NormalizedBuildResult;
     /** All diagnostics from all steps, in order. */
     readonly diagnostics: readonly Diagnostic[];
     readonly logs: readonly LogRef[];

@@ -1,7 +1,7 @@
 import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { type BoardDefinition, BuildWorkspace, formatNvproj, formatProjectFile, nvprojNameFor, PROJECT_FILE_NAME, PROJECT_FOLDERS, WORKSPACE_DIR_NAME } from '../../core';
-import { starterGitignore, starterPaths, starterProjectFile, starterTestbenchVhdl, starterTopVhdl, starterXdc } from './templates';
+import { type BoardDefinition, BuildWorkspace, PROJECT_FOLDERS, WORKSPACE_DIR_NAME } from '../../core';
+import { scaffoldFiles } from './board-scaffold';
 
 /** Project (and folder) names: a letter, then letters, digits, `_` or `-`. */
 export const PROJECT_NAME = /^[A-Za-z][A-Za-z0-9_-]{0,63}$/;
@@ -57,28 +57,9 @@ export async function createProject(req: CreateProjectRequest): Promise<CreatePr
         return { ok: false, code: 'PARENT_MISSING', message: `The folder ${parent} does not exist.` };
     }
 
-    const paths = starterPaths(req.board);
     let files: Record<string, string>;
     try {
-        files =
-            req.template === 'empty'
-                ? {
-                      [nvprojNameFor(req.name)]: formatNvproj(),
-                      [PROJECT_FILE_NAME]: formatProjectFile({
-                          name: req.name, board: req.board.id, language: 'vhdl', standard: '2008', top: '', sources: [],
-                          simulation: { sources: [] }, constraints: paths.constraints,
-                      }),
-                      [paths.constraints]: starterXdc(req.name, req.board, { starterPorts: false }),
-                      '.gitignore': starterGitignore(),
-                  }
-                : {
-                      [nvprojNameFor(req.name)]: formatNvproj(),
-                      [PROJECT_FILE_NAME]: formatProjectFile(starterProjectFile(req.name, req.board)),
-                      [paths.top]: starterTopVhdl(req.name, req.board),
-                      [paths.testbench]: starterTestbenchVhdl(),
-                      [paths.constraints]: starterXdc(req.name, req.board),
-                      '.gitignore': starterGitignore(),
-                  };
+        files = scaffoldFiles(req.name, req.board, req.template ?? 'starter');
     } catch (err) {
         return { ok: false, code: 'WRITE_FAILED', message: (err as Error).message };
     }

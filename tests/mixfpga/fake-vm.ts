@@ -41,6 +41,8 @@ export class FakeVm implements ToolRunner {
     readonly guestScripts: string[] = [];
     readonly limaArgs: string[][] = [];
     remediated = 0;
+    /** Tests may set this after construction (e.g. to hold a build mid-run). */
+    hook: ((script: string) => void | Promise<void>) | undefined;
     private probeIdx = 0;
     state: 'Running' | 'Stopped' | 'missing';
     rosettad: boolean;
@@ -72,6 +74,7 @@ export class FakeVm implements ToolRunner {
             const script = a[a.length - 1]!;
             this.guestScripts.push(script);
             await this.o.onGuest?.(script);
+            await this.hook?.(script);
             if (this.o.cancelOn && script.includes(this.o.cancelOn)) return { ...base, outcome: 'cancelled', exitCode: null };
             return { ...base, ...(await this.guest(script)) };
         }

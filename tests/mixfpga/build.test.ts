@@ -27,8 +27,8 @@ describe('DE10-Lite build: success path', () => {
         const events: string[] = [];
         const r = await provider.build(req({ onProgress: (e: BuildProgressEvent) => events.push(`${e.kind === 'stage-started' ? '+' : e.ok ? '✓' : '✗'}${e.stage}`) }));
         assert.equal(r.implementationStatus, 'passed', JSON.stringify(r.diagnostics));
-        assert.deepEqual(quartusTools(vm), ['quartus_map', 'quartus_fit', 'quartus_asm', 'quartus_sta', 'quartus_cpf']);
-        assert.deepEqual(events.filter((e) => e[0] !== '+'), ['✓prepare', '✓stage', '✓synthesis', '✓fit', '✓assemble', '✓timing', '✓package', '✓collect']);
+        assert.deepEqual(quartusTools(vm), ['quartus_map', 'quartus_fit', 'quartus_sta', 'quartus_asm', 'quartus_cpf']);
+        assert.deepEqual(events.filter((e) => e[0] !== '+'), ['✓prepare', '✓stage', '✓synthesis', '✓fit', '✓timing', '✓assemble', '✓package', '✓collect']);
         assert.equal(r.timingStatus, 'met');
         assert.equal(r.boardId, 'de10-lite');
         assert.equal(r.device, '10M50DAF484C7G');
@@ -110,6 +110,23 @@ describe('DE10-Lite build: success path', () => {
         assert.equal(inferTop(['entity blink is\nend;']), 'blink');
         assert.equal(inferTop(['entity a is\nend;', 'entity b is\nend;']), 'top');
         assert.equal(inferTop([]), 'top');
+    });
+});
+
+describe('DE10-Lite build: files removed from the project', () => {
+    it('are never staged or hashed, even though they stay on disk', async (t) => {
+        const { provider, paths, req, project } = await setup(t);
+        await writeFile(join(project, 'constraints', 'old.sdc'), 'create_clock -name stale -period 5 [get_ports clk_50]\n');
+        const exclude = ['constraints/old.sdc'];
+        const fakeProject = { root: project, file: join(project, 'nexysvhdl.json'), config: { exclude } } as unknown as import('../../core').Project;
+        const r = await provider.build(req({ project: fakeProject }));
+        assert.equal(r.implementationStatus, 'passed', JSON.stringify(r.diagnostics));
+        const job = join(paths.shareDir, 'jobs', (await readdir(join(paths.shareDir, 'jobs')))[0]!);
+        assert.deepEqual((await readdir(join(job, 'constraints'))).sort(), ['de10-lite.qsf', 'de10-lite.sdc']);
+        assert.doesNotMatch(await readFile(join(job, 'blink.qsf'), 'utf8'), /old\.sdc/);
+        const inputs = await provider.currentInputs(project, ['src/blink.vhd'], exclude);
+        assert.deepEqual(Object.keys(inputs).sort(), ['constraints/de10-lite.qsf', 'constraints/de10-lite.sdc', 'src/blink.vhd']);
+        assert.ok('constraints/old.sdc' in (await provider.currentInputs(project, ['src/blink.vhd'])), 'without the exclusion it would count');
     });
 });
 

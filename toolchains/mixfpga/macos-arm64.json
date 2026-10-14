@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "product": "MIX-FPGA",
+  "target": "macos-arm64",
+  "description": "What the MIX-FPGA macOS (Apple silicon) toolchain consists of, who owns each part, and how it is verified. Nothing is packaged or released from this file yet.",
+  "components": [
+    {
+      "id": "ghdl",
+      "name": "GHDL",
+      "version": "6.0.0",
+      "ownership": "owned",
+      "role": "VHDL check, simulation, VHDL-to-netlist synthesis",
+      "license": "GPL-2.0-or-later (with GCC runtime library exception)",
+      "source": "https://github.com/ghdl/ghdl",
+      "provenance": "Copied byte-for-byte from the validated NexysVHDL Toolchain 1.0 (darwin-arm64) into toolchains/experimental/ghdl-6.0.0; the original is untouched. Source offer required on redistribution.",
+      "executable": "ghdl-6.0.0/bin/ghdl",
+      "sha256": "38a99c1cc18b04dfae128b118c7344910e08b8ba6eeb9c1e67f950a84bca3c3d"
+    },
+    {
+      "id": "yosys",
+      "name": "Yosys",
+      "version": "0.63",
+      "ownership": "owned",
+      "role": "RTL Schematic (read GHDL netlist, proc, write JSON); no synthesis or place and route",
+      "license": "ISC",
+      "source": "https://github.com/YosysHQ/yosys (build 0.63+173 via YosysHQ OSS CAD Suite 2026-09-15)",
+      "provenance": "Copied from NexysVHDL Toolchain 1.0 (libexec/yosys plus the five dylibs it loads and the Tcl 8.6 library) into toolchains/experimental/yosys-0.63.",
+      "executable": "yosys-0.63/libexec/yosys",
+      "sha256": "beb67bee34580810390f41553a9f012902526d455e6eaa4788d7552b91d34502"
+    },
+    {
+      "id": "lima",
+      "name": "Lima",
+      "version": "2.2.1",
+      "ownership": "owned",
+      "role": "Hidden Linux VM host for the Quartus implementation engine",
+      "license": "Apache-2.0",
+      "source": "https://github.com/lima-vm/lima/releases/tag/v2.2.1",
+      "provenance": "Official release lima-2.2.1-Darwin-arm64.tar.gz (sha256 9e9eacce88f37e185c346bad73aa6136f738d8cdf8c3bb23cd42b071824bc66e, verified against the official SHA256SUMS).",
+      "executable": "lima-2.2.1/bin/limactl",
+      "sha256": "6d32fb0f880c0ea750434f2ac855a3f2129126752a301ce4d88adbd2fa599e1e"
+    },
+    {
+      "id": "openfpgaloader",
+      "name": "openFPGALoader",
+      "version": "1.1.1",
+      "ownership": "owned",
+      "role": "Native macOS USB-Blaster programming (SRAM, SVF)",
+      "license": "Apache-2.0 (libusb and libftdi are LGPL; hidapi, zlib, zstd notices still to be added before redistribution)",
+      "source": "https://github.com/trabucayre/openFPGALoader (build via YosysHQ OSS CAD Suite 2026-09-15, source revision 451beadf)",
+      "provenance": "Copied byte-for-byte from NexysVHDL Toolchain 1.0 into toolchains/experimental/openfpgaloader-1.1.1; the original is untouched.",
+      "executable": "openfpgaloader-1.1.1/libexec/openFPGALoader",
+      "sha256": "99dcde0efb78de808ce596fc82c8361127f7c793618aa46d6b386dd79586fdc3"
+    },
+    {
+      "id": "mixfpga-adapters",
+      "name": "MIX-FPGA adapters and scripts",
+      "version": "phase2",
+      "ownership": "owned",
+      "role": "Board profiles, providers, VM provisioning scripts (platform/macos/lima)",
+      "license": "Apache-2.0",
+      "source": "this repository"
+    },
+    {
+      "id": "rosetta",
+      "name": "Rosetta 2",
+      "version": "system",
+      "ownership": "external",
+      "supplier": "Apple",
+      "role": "Runs the x86-64 Quartus tools inside the Linux VM",
+      "install": "One-time, by the student: softwareupdate --install-rosetta --agree-to-license (Apple license, administrator password)"
+    },
+    {
+      "id": "quartus",
+      "name": "Quartus Prime Lite Edition",
+      "version": "25.1std.0 Build 1129",
+      "ownership": "external",
+      "supplier": "Altera",
+      "role": "FPGA implementation for the DE10-Lite (MAX 10)",
+      "install": "Supplied by the student from Altera's official download page after accepting the Altera license; installed headless inside the VM. Not redistributed by MIX-FPGA."
+    },
+    {
+      "id": "max10-device-package",
+      "name": "MAX 10 device support",
+      "version": "25.1std.0.1129",
+      "ownership": "external",
+      "supplier": "Altera",
+      "role": "Device data for 10M50DAF484C7G",
+      "install": "Supplied by the student (max10-25.1std.0.1129.qdz) together with Quartus. Not redistributed by MIX-FPGA."
+    }
+  ]
+}

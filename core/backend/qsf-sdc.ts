@@ -9,7 +9,7 @@ const err = (code: string, message: string): Diagnostic => ({ severity: 'error',
 export class QsfSdcConstraintProvider implements ConstraintProvider {
     readonly format = 'qsf-sdc' as const;
 
-    async collect(projectDir: string): Promise<ConstraintSet> {
+    async collect(projectDir: string, exclude: readonly string[] = []): Promise<ConstraintSet> {
         const dir = join(projectDir, 'constraints');
         let names: string[] = [];
         try {
@@ -19,6 +19,7 @@ export class QsfSdcConstraintProvider implements ConstraintProvider {
         }
         const files: ConstraintFile[] = [];
         for (const n of names) {
+            if (exclude.includes(`constraints/${n}`)) continue;
             const lower = n.toLowerCase();
             if (lower.endsWith('.qsf')) files.push({ kind: 'qsf', path: join(dir, n) });
             else if (lower.endsWith('.sdc')) files.push({ kind: 'sdc', path: join(dir, n) });
@@ -34,7 +35,8 @@ export class QsfSdcConstraintProvider implements ConstraintProvider {
         if (sdc.length === 0) out.push(err('CONSTRAINTS_NO_SDC', 'No .sdc file in constraints/. An SDC declares the clock so timing can be checked.'));
         for (const f of qsf) {
             const text = await readFile(f.path, 'utf8');
-            const m = /set_global_assignment\s+-name\s+DEVICE\s+("?)([A-Za-z0-9]+)\1/i.exec(text);
+            // Quartus ignores `#` comments, so they must not count (a comment may mention DEVICE).
+            const m = /^\s*set_global_assignment\s+-name\s+DEVICE\s+("?)([A-Za-z0-9]+)\1/im.exec(text.replace(/^\s*#.*$/gm, ''));
             if (!m) out.push(err('CONSTRAINTS_NO_DEVICE', `${f.path}: no DEVICE assignment; expected ${board.fpga.device}.`));
             else if (m[2]!.toUpperCase() !== board.fpga.device.toUpperCase())
                 out.push(err('CONSTRAINTS_WRONG_DEVICE', `${f.path}: DEVICE is ${m[2]} but ${board.name} has ${board.fpga.device}.`));

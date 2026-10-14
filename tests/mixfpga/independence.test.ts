@@ -28,10 +28,14 @@ describe('MIX-FPGA DE10 backend independence', () => {
         }
     });
 
-    it('does not import the Nexys implementation or programming code', async () => {
-        for (const f of [...(await ts('platform/macos/de10')), ...(await ts('core/backend'))]) {
-            const text = await readFile(join(REPO, f), 'utf8');
-            assert.doesNotMatch(text, /from '[./]*(?:core\/)?(implementation\/apio|programming|workflow|platform\/macos\/(?:apio|programmer|openxc7|openfpgaloader))/, f);
+    it('does not import the Nexys implementation or programming code (only the dedicated Nexys adapter file may)', async () => {
+        const files = [...(await ts('platform/macos/de10')), ...(await ts('core/backend'))].filter((f) => !f.endsWith('core/backend/nexys.ts'));
+        assert.ok(files.length >= 8);
+        for (const f of files) {
+            // Type-only imports (`import type`) carry no runtime dependency and are allowed (the `native` result bridge).
+            // The vendor-neutral WorkflowController (Check / Simulate / RTL over GHDL and Yosys) is shared on purpose.
+            const text = (await readFile(join(REPO, f), 'utf8')).replace(/^import type .*$/gm, '');
+            assert.doesNotMatch(text, /from '[./]*(?:core\/)?(implementation\/apio|programming|platform\/macos\/(?:apio|programmer|openxc7|openfpgaloader))/, f);
         }
     });
 

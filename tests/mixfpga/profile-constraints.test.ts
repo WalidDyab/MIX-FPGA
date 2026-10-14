@@ -23,9 +23,12 @@ describe('board profiles', () => {
         assert.equal(nexys.fpga.device, 'XC7A100T-1CSG324C');
     });
 
-    it('leaves the existing Nexys A7 board data untouched (registry still lists only its boards)', async () => {
-        const ids = (await repoBoards()).ids();
-        assert.deepEqual(ids, ['nexys-a7-100t']);
+    it('keeps the Nexys A7 board data intact next to the DE10-Lite', async () => {
+        const reg = await repoBoards();
+        assert.deepEqual(reg.ids(), ['de10-lite', 'nexys-a7-100t']);
+        const n = reg.get('nexys-a7-100t')!;
+        assert.equal(n.fpga.part, 'xc7a100tcsg324-1');
+        assert.equal(n.backend, undefined, 'the original board needs no backend block: defaults are the original flow');
     });
 });
 

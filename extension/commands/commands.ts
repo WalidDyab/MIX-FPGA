@@ -2,15 +2,16 @@ import { stat } from 'node:fs/promises';
 import { basename, join, relative, sep } from 'node:path';
 import * as vscode from 'vscode';
 import type { AppearanceManager } from '../appearance/appearance-manager';
-import { createNvprojFile, type Diagnostic, findNvprojFiles, normalizeStopTime, PROJECT_FILE_NAME, STOP_TIME_UNITS } from '../../core';
+import { createNvprojFile, type Diagnostic, findNvprojFiles, LEGACY_BOARD_ID, normalizeStopTime, PROJECT_FILE_NAME, STOP_TIME_UNITS } from '../../core';
 import {
-    ADD_FILE_KINDS,
+    addFileKindsFor,
     type AddFileKind,
     type AddFileMode,
     checkCopySource,
     copyIntoProject,
     entityNameOf,
     findExisting,
+    isConstraintKind,
     isSameFile,
     kindInfo,
     normalizeFileName,
@@ -26,6 +27,7 @@ import { classifyProjectPath } from '../project/project-layout';
 import { findOpenTab } from './open-existing';
 import { resolveOpenTarget } from '../project/open-target';
 import type { NexysConsole } from '../services/console';
+import { de10StarterQsf, de10StarterSdc } from '../project/de10-templates';
 import { starterXdc } from '../project/templates';
 import { createProject, DEFAULT_TEMPLATE, PROJECT_TEMPLATES, type ProjectTemplate, validateProjectName } from '../project/scaffold';
 import type { RtlPanel } from '../rtl/rtl-panel';
@@ -74,7 +76,7 @@ async function saveProjectFiles(root: string): Promise<void> {
     for (const doc of vscode.workspace.textDocuments) {
         if (!doc.isDirty || doc.uri.scheme !== 'file') continue;
         const rel = relative(root, doc.uri.fsPath).split(sep).join('/');
-        if (!rel.startsWith('..') && classifyProjectPath(rel)) await doc.save();
+        if (!rel.startsWith('..') && (classifyProjectPath(rel, 'xdc') || classifyProjectPath(rel, 'qsf-sdc'))) await doc.save();
     }
 }
 
@@ -107,7 +109,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                     if (err instanceof NexysError) void vscode.window.showWarningMessage(err.message);
                     else {
                         output.appendLine(`[error] ${id}: ${(err as Error).stack ?? String(err)}`);
-                        void vscode.window.showErrorMessage(`NexysVHDL: ${(err as Error).message}`, 'Show Log').then((c) => c && output.show());
+                        void vscode.window.showErrorMessage(`MIX-FPGA: ${(err as Error).message}`, 'Show Log').then((c) => c && output.show());
                     }
                 }
             }),
@@ -128,7 +130,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
 
     const requireRoot = (): string => {
         const root = service.projectRoot;
-        if (!root) throw new NexysError('Open a NexysVHDL project first (NexysVHDL: Open Project or Create Project).');
+        if (!root) throw new NexysError('Open a MIX-FPGA project first (MIX-FPGA: Open Project or Create Project).');
         return root;
     };
 
@@ -142,28 +144,29 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         const boards = await backend.boards();
         let parentDir = scripted?.parentDir;
         let name = scripted?.name;
-        let boardId = scripted?.board ?? (scripted ? boards.all()[0]?.id : undefined);
+        // Interactive creation always asks. Scripted creation (lab setup, tests) that names no board keeps the original Nexys A7 behaviour.
+        let boardId = scripted?.board ?? (scripted ? LEGACY_BOARD_ID : undefined);
         let template: ProjectTemplate = scripted?.template ?? DEFAULT_TEMPLATE;
         if (!scripted) {
-            const parent = await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Create Project Here', title: 'NexysVHDL: choose the folder that will contain the new project folder' });
+            const parent = await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Create Project Here', title: 'MIX-FPGA: choose the folder that will contain the new project folder' });
             if (!parent?.[0]) return undefined;
             parentDir = parent[0].fsPath;
             name = await vscode.window.showInputBox({
-                title: 'NexysVHDL: project name',
+                title: 'MIX-FPGA: project name',
                 prompt: `A new folder with this name is created in ${parentDir}`,
                 placeHolder: 'CounterDemo',
                 validateInput: (v) => validateProjectName(v),
             });
             if (!name) return undefined;
             const pick = await vscode.window.showQuickPick(
-                boards.all().map((b) => ({ label: b.name, description: `${b.fpga.device}`, id: b.id })),
-                { title: 'NexysVHDL: board', placeHolder: 'Choose the FPGA board' },
+                boards.all().filter((b) => backend.supportsBoard?.(b) !== false).map((b) => ({ label: b.displayName ?? b.name, description: `${b.fpga.device}`, id: b.id })),
+                { title: 'New MIX-FPGA Project: board', placeHolder: 'Choose the FPGA board' },
             );
             if (!pick) return undefined;
             boardId = pick.id;
             const kind = await vscode.window.showQuickPick(
                 PROJECT_TEMPLATES.map((t) => ({ label: `${t.recommended ? '$(file-directory)' : '$(lightbulb)'} ${t.label}`, description: t.description, template: t.template })),
-                { title: 'NexysVHDL: what should the new project contain?', placeHolder: 'Empty project or starter example' },
+                { title: 'MIX-FPGA: what should the new project contain?', placeHolder: 'Empty project or starter example' },
             );
             if (!kind) return undefined;
             template = kind.template;
@@ -192,13 +195,13 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                     { label: '$(file) Project file (.nvproj)', description: 'recommended: the file named after your project', mode: 'file' as const },
                     { label: '$(folder) Project folder', description: 'a folder that contains nexysvhdl.json', mode: 'folder' as const },
                 ],
-                { title: 'NexysVHDL: open a project', placeHolder: 'What do you want to open?' },
+                { title: 'MIX-FPGA: open a project', placeHolder: 'What do you want to open?' },
             );
             if (!kind) return undefined;
             const picked = await vscode.window.showOpenDialog(
                 kind.mode === 'file'
-                    ? { canSelectFolders: false, canSelectFiles: true, canSelectMany: false, openLabel: 'Open Project', title: 'NexysVHDL: choose a project file', filters: { 'NexysVHDL project': ['nvproj'] } }
-                    : { canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Open Project', title: 'NexysVHDL: choose a project folder (containing nexysvhdl.json)' },
+                    ? { canSelectFolders: false, canSelectFiles: true, canSelectMany: false, openLabel: 'Open Project', title: 'MIX-FPGA: choose a project file', filters: { 'MIX-FPGA project': ['nvproj'] } }
+                    : { canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: 'Open Project', title: 'MIX-FPGA: choose a project folder (containing nexysvhdl.json)' },
             );
             target = picked?.[0]?.fsPath;
             if (!target) return undefined;
@@ -224,7 +227,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         void vscode.commands.executeCommand('setContext', 'nexysvhdl.hasProjectFile', true);
         await service.refreshNow();
         nexysConsole.say('Project', `Created the project file ${basename(r.file)}. Double-click it to open this project.`);
-        void vscode.window.showInformationMessage(`Created ${basename(r.file)}. Double-click it in your file manager to open this project with NexysVHDL.`);
+        void vscode.window.showInformationMessage(`Created ${basename(r.file)}. Double-click it in your file manager to open this project with MIX-FPGA.`);
         return r;
     });
 
@@ -273,7 +276,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         requireRoot();
         const snap = service.snapshot!;
         const names = snap.index.entitiesIn('source').map((e) => e.decl.name);
-        const name = await pickEntity('NexysVHDL: top entity (from src/)', names, snap.project?.config.top);
+        const name = await pickEntity('MIX-FPGA: top entity (from src/)', names, snap.project?.config.top);
         if (name) await service.setTop(name);
     });
 
@@ -301,7 +304,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             candidates = candidates.filter((c) => inFile.has(c));
         }
         if (candidates.length === 0) throw new NexysError('No testbench was found: a testbench is an entity without ports in sim/.');
-        const name = candidates.length === 1 && node ? candidates[0] : await pickEntity('NexysVHDL: testbench', candidates, service.project?.config.simulation?.testbench);
+        const name = candidates.length === 1 && node ? candidates[0] : await pickEntity('MIX-FPGA: testbench', candidates, service.project?.config.simulation?.testbench);
         if (name) await service.setTestbench(name);
     });
 
@@ -356,7 +359,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             } else if (others.length > 0) {
                 const pick = await vscode.window.showQuickPick(
                     [...others.map((f) => ({ label: f.name, description: f.path, path: f.path as string | undefined })), { label: 'Choose later', description: 'build stays unavailable until a constraints file is chosen', path: undefined }],
-                    { title: 'NexysVHDL: which constraints file should the project use now?' },
+                    { title: 'MIX-FPGA: which constraints file should the project use now?' },
                 );
                 if (pick?.path) await service.useConstraints(pick.path);
             }
@@ -429,7 +432,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         let kind = script?.kind;
         if (!kind) {
             const pick = await vscode.window.showQuickPick(
-                ADD_FILE_KINDS.map((k) => ({ label: k.label, description: k.description, fileKind: k.kind })),
+                addFileKindsFor(service.snapshot?.constraintFormat ?? 'xdc').map((k) => ({ label: k.label, description: k.description, fileKind: k.kind })),
                 { title: 'Add File (1 of 2): what are you adding?', placeHolder: 'Source, Simulation Testbench or Constraint' },
             );
             if (!pick) return undefined;
@@ -457,8 +460,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                 script?.name ??
                 (await vscode.window.showInputBox({
                     title: `New ${infoOf(kind).label.toLowerCase()} (created in ${folder}/)`,
-                    prompt: kind === 'constraints' ? 'File name (the .xdc extension is added for you)' : 'File name = entity name (the .vhd extension is added for you)',
-                    placeHolder: kind === 'constraints' ? 'my_pins' : kind === 'simulation' ? 'alu_tb' : 'alu',
+                    prompt: isConstraintKind(kind) ? `File name (the ${infoOf(kind).extension} extension is added for you)` : 'File name = entity name (the .vhd extension is added for you)',
+                    placeHolder: kind === 'qsf' ? 'my_pins' : kind === 'sdc' ? 'my_clock' : kind === 'constraints' ? 'my_pins' : kind === 'simulation' ? 'alu_tb' : 'alu',
                     validateInput: (v) => validateFileName(kind!, v),
                 }));
             if (typed === undefined) return undefined;
@@ -476,8 +479,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                             canSelectFolders: false,
                             canSelectMany: true,
                             openLabel: 'Copy Into Project',
-                            title: `Choose the ${infoOf(kind).extension} file${kind === 'constraints' ? 's' : '(s)'} to copy into ${folder}/ (select several with Ctrl or Shift)`,
-                            filters: { [kind === 'constraints' ? 'XDC constraints' : 'VHDL files']: [infoOf(kind).extension.slice(1)] },
+                            title: `Choose the ${infoOf(kind).extension} file${isConstraintKind(kind) ? 's' : '(s)'} to copy into ${folder}/ (select several with Ctrl or Shift)`,
+                            filters: { [isConstraintKind(kind) ? `${infoOf(kind).extension.slice(1).toUpperCase()} constraints` : 'VHDL files']: [infoOf(kind).extension.slice(1)] },
                         })) ?? []
                     ).map((u) => u.fsPath);
                 if (picked.length === 0) return undefined;
@@ -566,7 +569,10 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                     else if (kind === 'simulation') content = testbenchSkeleton(entityNameOf(fileName));
                     else {
                         const board = (await backend.boards()).get(service.project?.config.board ?? '');
-                        content = board ? starterXdc(service.project!.config.name, board, { starterPorts: false }) : '## Pin and clock constraints. Add set_property and create_clock lines here.\n';
+                        const projectName = service.project!.config.name;
+                        if (kind === 'qsf') content = board ? de10StarterQsf(projectName, board, { starterPorts: false }) : '# Device, pin and I/O assignments.\n';
+                        else if (kind === 'sdc') content = board ? de10StarterSdc(board, { starterPorts: false }) : '# create_clock lines here.\n';
+                        else content = board ? starterXdc(projectName, board, { starterPorts: false }) : '## Pin and clock constraints. Add set_property and create_clock lines here.\n';
                     }
                     await writeNewFile(root, rel, content, replace);
                 }
@@ -633,12 +639,12 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                     { label: 'Run until the testbench stops itself', description: `default${current ? '' : ' (current)'} — the testbench ends with std.env.stop`, fixed: false },
                     { label: 'Stop after a fixed time…', description: current ? `current: ${current}` : 'for a testbench with a free-running clock that never ends', fixed: true },
                 ],
-                { title: 'NexysVHDL: simulation length', placeHolder: 'How long should Simulate run?' },
+                { title: 'MIX-FPGA: simulation length', placeHolder: 'How long should Simulate run?' },
             );
             if (!pick) return undefined;
             if (pick.fixed) {
                 const typed = await vscode.window.showInputBox({
-                    title: 'NexysVHDL: stop the simulation after',
+                    title: 'MIX-FPGA: stop the simulation after',
                     prompt: `A whole number and a unit: ${STOP_TIME_UNITS.join(', ')}. Examples: 500ns, 1us, 2ms`,
                     value: current ?? '1us',
                     validateInput: (v) => (normalizeStopTime(v) ? undefined : `Use a whole number and one of: ${STOP_TIME_UNITS.join(', ')} (for example 1us).`),
@@ -657,9 +663,9 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     register('nexysvhdl.check', async () => {
         service.ensureFree('check');
         await saveProjectFiles(requireRoot());
-        const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Checking VHDL' }, () => service.check());
+        const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'MIX-FPGA: Checking VHDL' }, () => service.check());
         if (result.status === 'succeeded') {
-            vscode.window.setStatusBarMessage('$(check) NexysVHDL: No VHDL errors', 4000);
+            vscode.window.setStatusBarMessage('$(check) MIX-FPGA: No VHDL errors', 4000);
         } else if (result.status === 'not-configured') {
             void vscode.window.showWarningMessage('The VHDL tools are not set up on this computer.', 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
         } else {
@@ -688,7 +694,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         let outcome = await service.simulate();
         if (outcome.kind === 'needs-testbench') {
             if (outcome.candidates.length === 0) throw new NexysError('No testbench was found: add a testbench (an entity without ports) to sim/.');
-            const tb = outcome.candidates.length === 1 ? outcome.candidates[0] : await pickEntity('NexysVHDL: which testbench?', [...outcome.candidates]);
+            const tb = outcome.candidates.length === 1 ? outcome.candidates[0] : await pickEntity('MIX-FPGA: which testbench?', [...outcome.candidates]);
             if (!tb) return;
             await service.setTestbench(tb);
             outcome = await service.simulate(tb);
@@ -722,7 +728,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         service.ensureFree('build');
         await saveProjectFiles(requireRoot());
         const result = await vscode.window.withProgress(
-            { location: vscode.ProgressLocation.Notification, title: 'NexysVHDL Build', cancellable: true },
+            { location: vscode.ProgressLocation.Notification, title: 'MIX-FPGA Build', cancellable: true },
             async (progress, token) => {
                 token.onCancellationRequested(() => service.cancel());
                 let last: string | undefined;
@@ -766,7 +772,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         service.ensureFree('program');
         let options = { ...(opts ?? {}) };
         for (;;) {
-            const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'NexysVHDL: Programming FPGA…' }, () => service.program(options));
+            const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'MIX-FPGA: Programming FPGA…' }, () => service.program(options));
             if (outcome.kind === 'blocked') {
                 void vscode.window.showWarningMessage(outcome.message, 'Build').then((c) => c && vscode.commands.executeCommand('nexysvhdl.build'));
                 return;
@@ -847,7 +853,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         if (check !== 'passed') {
             // Not checked yet in this session: check first, then show the RTL.
             await saveProjectFiles(root);
-            const r = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Checking VHDL' }, () => service.check());
+            const r = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'MIX-FPGA: Checking VHDL' }, () => service.check());
             if (r.status !== 'succeeded') {
                 void vscode.window.showWarningMessage('Check did not pass, so the RTL schematic cannot be generated.', 'Show Problems').then((c) => c && vscode.commands.executeCommand('workbench.actions.view.problems'));
                 return;
@@ -870,22 +876,23 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     // ------------------------------------------------------------- environment & log
 
     register('nexysvhdl.showEnvironment', async () => {
-        const summary = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'NexysVHDL: Inspecting tools' }, () => service.refreshEnvironment());
+        const summary = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'MIX-FPGA: Inspecting tools' }, () => service.refreshEnvironment());
         if (!summary) throw new NexysError('The environment could not be inspected; see the log.');
-        const rows = [...summary.setup, boardRow(service.hardware)];
+        const rows = [...summary.setup, boardRow(service.hardware, summary.hardwareLabel)];
         const tc = summary.toolchain;
         type Item = vscode.QuickPickItem & { action?: () => unknown };
         const sep = (label: string): Item => ({ label, kind: vscode.QuickPickItemKind.Separator });
         const items: Item[] = [
-            sep(`NexysVHDL ${extensionVersion} — Classroom Preview`),
-            { label: '$(pass) Extension', description: `Ready — ${extensionVersion}` },
+            sep(`MIX-FPGA ${extensionVersion} — Classroom Preview`),
+            { label: '$(pass) MIX-FPGA', description: `Ready — ${extensionVersion}` },
             ...rows.map((r) => ({ label: `${SETUP_ICON[r.state]} ${r.label}`, description: r.status, ...(r.detail ? { detail: r.detail } : {}) })),
             sep(`Status: ${summary.status}`),
         ];
-        if (tc?.state === 'ready' || tc?.state === 'problem') items.push(sep(`NexysVHDL Toolchain ${tc.installedVersion ?? tc.requiredVersion}${tc.platform ? ` — ${tc.platform}` : ''}`));
+        if (tc?.state === 'ready' || tc?.state === 'problem') items.push(sep(`MIX-FPGA Toolchain ${tc.installedVersion ?? tc.requiredVersion}${tc.platform ? ` — ${tc.platform}` : ''}`));
+        else if (summary.engine) items.push(sep('Details'));
         else if (!tc) items.push(sep('Tools'));
         if (tc?.state !== 'not-installed') {
-            for (const i of summary.items.slice(0, -1)) items.push({ label: `${i.ok ? (i.warn ? '$(warning)' : '$(pass)') : '$(error)'} ${i.label}`, description: `${i.detail}${i.ok && !i.warn ? '   Ready' : ''}` });
+            for (const i of summary.engine ? summary.items : summary.items.slice(0, -1)) items.push({ label: `${i.ok ? (i.warn ? '$(warning)' : '$(pass)') : '$(error)'} ${i.label}`, description: `${i.detail}${i.ok && !i.warn ? '   Ready' : ''}` });
         }
         if (summary.problems.length && summary.level !== 'ready') items.push(sep('Notes'), ...summary.problems.map((p) => ({ label: `$(info) ${p}` })));
         items.push(sep('Actions'));
@@ -895,18 +902,57 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             items.push({ label: `$(link-external) How to install ${guide.name}`, ...(guide.instructions ? { detail: guide.instructions } : {}), action: () => guide.url && vscode.env.openExternal(vscode.Uri.parse(guide.url)) });
         }
         if (tc?.state === 'ready') items.push({ label: '$(verified) Verify Toolchain', description: 'checks every installed file', action: () => vscode.commands.executeCommand('nexysvhdl.verifyToolchain') });
+        if (summary.engine) {
+            items.push(
+                { label: '$(verified) Verify Environment', description: 'checks the tools and proves the FPGA engine runs', action: () => vscode.commands.executeCommand('nexysvhdl.verifyEnvironment') },
+                { label: '$(debug-restart) Restart FPGA Engine', description: 'stops and starts it again', action: () => vscode.commands.executeCommand('nexysvhdl.restartFpgaEngine') },
+            );
+        }
         items.push(
             { label: '$(book) Getting Started', action: () => vscode.commands.executeCommand('nexysvhdl.gettingStarted') },
             { label: '$(law) Third-Party Notices', action: () => vscode.commands.executeCommand('nexysvhdl.openThirdPartyNotices') },
             { label: '$(output) Engineering details (paths, versions) in the log', action: () => showEngineeringDetails() },
         );
-        const pick = await vscode.window.showQuickPick(items, { title: 'NexysVHDL Environment', placeHolder: summary.status, matchOnDescription: true });
+        const pick = await vscode.window.showQuickPick(items, { title: 'MIX-FPGA Environment', placeHolder: summary.status, matchOnDescription: true });
         await pick?.action?.();
+    });
+
+    /** Verify Environment: owned-tool integrity, then a real run of the FPGA engine (may start it). Only for boards that have an engine. */
+    register('nexysvhdl.verifyEnvironment', async () => {
+        const project = service.project;
+        if (!project) throw new NexysError('Open a project first.');
+        if (!backend.verifyEnvironment) throw new NexysError('This board has nothing to verify here. Use Verify Toolchain in the Environment page.');
+        const v = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'MIX-FPGA: Verifying the environment (the FPGA engine may start)', cancellable: false }, () => backend.verifyEnvironment!(project));
+        if (!v) throw new NexysError('This board has nothing to verify here. Use Verify Toolchain in the Environment page.');
+        nexysConsole.begin('Environment', 'Verify Environment');
+        for (const st of v.steps) nexysConsole[st.ok ? 'say' : 'warning']('Environment', `${st.ok ? 'OK ' : 'FAIL'}  ${st.label}${st.detail ? ` — ${st.detail}` : ''}`);
+        if (v.ok) nexysConsole.pass('Environment', 'PASS');
+        else nexysConsole.fail('Environment', 'FAIL — see the lines above');
+        nexysConsole.endAction();
+        await service.refreshEnvironment();
+        if (v.ok) void vscode.window.showInformationMessage('MIX-FPGA: the environment is ready.');
+        else void vscode.window.showWarningMessage('MIX-FPGA: some parts of the environment need attention.', 'Show Console').then((c) => c && output.show());
+        return v;
+    });
+
+    /** Restart FPGA Engine: stops and starts the hidden engine again. The only engine control a student gets. */
+    register('nexysvhdl.restartFpgaEngine', async () => {
+        const project = service.project;
+        if (!project) throw new NexysError('Open a project first.');
+        if (!backend.restartEngine) throw new NexysError('This board has no FPGA engine to restart.');
+        const s = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'MIX-FPGA: Restarting the FPGA engine', cancellable: false }, () => backend.restartEngine!(project));
+        if (!s) throw new NexysError('This board has no FPGA engine to restart.');
+        nexysConsole.begin('Environment', 'Restart FPGA Engine');
+        if (s.state === 'running') nexysConsole.pass('Environment', 'FPGA engine restarted');
+        else nexysConsole.fail('Environment', `FPGA engine: ${s.problems[0]?.message ?? s.state}`);
+        nexysConsole.endAction();
+        await service.refreshEnvironment();
+        return s;
     });
 
     const showEngineeringDetails = () => {
         const report = service.environmentReport;
-        output.appendLine(`NexysVHDL ${extensionVersion} environment details:`);
+        output.appendLine(`MIX-FPGA ${extensionVersion} environment details:`);
         const c = report?.classroom;
         if (c) {
             output.appendLine('  Mode: classroom (bundled toolchain only; no PATH or system FPGA tools)');
@@ -930,14 +976,14 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             canSelectFiles: true,
             canSelectFolders: false,
             canSelectMany: false,
-            filters: { 'NexysVHDL toolchain': ['gz'] },
+            filters: { 'MIX-FPGA toolchain': ['gz'] },
             openLabel: 'Install Toolchain',
-            title: `NexysVHDL: choose the toolchain file${name ? ` (${name})` : ''}`,
+            title: `MIX-FPGA: choose the toolchain file${name ? ` (${name})` : ''}`,
         });
         if (!picked?.[0]) return undefined;
         const archive = picked[0].fsPath;
-        nexysConsole.begin('Toolchain', `Installing the NexysVHDL FPGA toolchain from ${basename(archive)}...`);
-        const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Installing the NexysVHDL FPGA toolchain', cancellable: true }, async (progress, token) => {
+        nexysConsole.begin('Toolchain', `Installing the MIX-FPGA FPGA toolchain from ${basename(archive)}...`);
+        const outcome = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Installing the MIX-FPGA FPGA toolchain', cancellable: true }, async (progress, token) => {
             const abort = new AbortController();
             token.onCancellationRequested(() => abort.abort());
             let shown = 0;
@@ -964,19 +1010,19 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         nexysConsole.endAction();
         output.appendLine(`Toolchain ${outcome.version} ${outcome.status === 'installed' ? 'installed' : 'was already installed'} at ${outcome.location}`);
         await service.refreshEnvironment();
-        const done = outcome.status === 'installed' ? `NexysVHDL FPGA toolchain ${outcome.version} installed.` : `NexysVHDL FPGA toolchain ${outcome.version} is already installed.`;
+        const done = outcome.status === 'installed' ? `MIX-FPGA FPGA toolchain ${outcome.version} installed.` : `MIX-FPGA FPGA toolchain ${outcome.version} is already installed.`;
         void vscode.window.showInformationMessage(done, 'Show Environment').then((c) => c && vscode.commands.executeCommand('nexysvhdl.showEnvironment'));
         return outcome;
     });
 
     register('nexysvhdl.verifyToolchain', async () => {
-        const r = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'NexysVHDL: verifying the toolchain' }, async (progress) => {
+        const r = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'MIX-FPGA: verifying the toolchain' }, async (progress) => {
             let n = 0;
             return backend.verifyToolchain(() => {
                 if (++n % 500 === 0) progress.report({ message: `${n.toLocaleString('en-US')} files checked` });
             });
         });
-        if (r.ok) void vscode.window.showInformationMessage(`NexysVHDL toolchain verified: all ${r.files?.toLocaleString('en-US') ?? ''} files are unchanged.`);
+        if (r.ok) void vscode.window.showInformationMessage(`MIX-FPGA toolchain verified: all ${r.files?.toLocaleString('en-US') ?? ''} files are unchanged.`);
         else void vscode.window.showErrorMessage(r.diagnostics[0]?.message ?? 'The toolchain could not be verified.');
         return r;
     });
@@ -1006,7 +1052,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     /** Removes the diagnostics NexysVHDL published (its own collection only); the Console and the Log are not cleared. */
     register('nexysvhdl.clearProblems', () => {
         service.clearProblems();
-        vscode.window.setStatusBarMessage('$(check) NexysVHDL problems cleared', 3000);
+        vscode.window.setStatusBarMessage('$(check) MIX-FPGA problems cleared', 3000);
     });
 
     /** Switches the Console between the short student-readable output and the full streamed tool output. */

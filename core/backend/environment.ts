@@ -42,3 +42,34 @@ export function describeEnvironment(i: EnvironmentInputs): EnvironmentSummary {
         allReady: i.vhdlReady && engineOk && i.programmerAvailable,
     };
 }
+
+// ---------------------------------------------------------------- board environment (boards with their own engine)
+
+/** One tool behind a board, as the Environment page lists it under Details. */
+export interface ToolReport {
+    readonly id: string;
+    readonly label: string;
+    readonly found: boolean;
+    readonly version?: string;
+    readonly detail?: string;
+    /** MIX-FPGA ships it (`owned`) or the student/Apple/Altera supplies it (`external`). */
+    readonly ownership: 'owned' | 'external';
+}
+
+/** The environment of a board that brings its own tools and engine (everything the Environment page shows for it). */
+export interface BoardEnvironment {
+    readonly boardId: string;
+    readonly displayName: string;
+    readonly engine: EngineStatus;
+    readonly tools: readonly ToolReport[];
+    /** MIX-FPGA's own VHDL tools (GHDL, and Yosys for the RTL view) are installed and start. */
+    readonly vhdlReady: boolean;
+    readonly programmer: { readonly available: boolean; readonly detail: string };
+}
+
+/** Result of "Verify Environment": integrity of the owned tools, then a real run of the engine. */
+export interface EnvironmentVerification {
+    readonly ok: boolean;
+    readonly steps: readonly { readonly label: string; readonly ok: boolean; readonly detail?: string }[];
+    readonly engine?: EngineStatus;
+}

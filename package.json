@@ -1,8 +1,8 @@
 {
   "name": "nexysvhdl",
-  "displayName": "NexysVHDL",
+  "displayName": "MIX-FPGA",
   "version": "0.6.0",
-  "description": "Classroom Preview: VHDL-2008 design for the Digilent Nexys A7-100T in VS Code. Check, simulate, waveforms, design and RTL schematics, build and program, using the separately installed NexysVHDL FPGA toolchain.",
+  "description": "Classroom Preview: one VS Code environment for VHDL-2008 FPGA design on several boards (Nexys A7-100T, DE10-Lite). Check, simulate, waveforms, design and RTL schematics, build and program. MIX-FPGA is an EMXplore project.",
   "publisher": "emxplore",
   "private": true,
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
       "activitybar": [
         {
           "id": "nexysvhdl",
-          "title": "NexysVHDL",
+          "title": "MIX-FPGA",
           "icon": "resources/nexysvhdl.svg"
         }
       ]
@@ -68,17 +68,17 @@
     "viewsWelcome": [
       {
         "view": "nexysvhdl.project",
-        "contents": "NexysVHDL needs its FPGA toolchain before it can check, simulate or build designs. It is installed once for your user account and reused by NexysVHDL updates.\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)\nChoose the nexysvhdl-toolchain file from the NexysVHDL classroom download.",
+        "contents": "This Nexys A7 project needs its FPGA toolchain before MIX-FPGA can check, simulate or build it. It is installed once for your user account and reused by MIX-FPGA updates.\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)\nChoose the nexysvhdl-toolchain file from the MIX-FPGA classroom download.",
         "when": "nexysvhdl.toolchainState == not-installed"
       },
       {
         "view": "nexysvhdl.project",
-        "contents": "No NexysVHDL project is open.\n[New Project](command:nexysvhdl.createProject)\n[Open Project](command:nexysvhdl.openProject)\nOpen a project folder (it contains nexysvhdl.json) or a .nvproj project file.\n[Getting Started](command:nexysvhdl.gettingStarted)\n[Show Environment](command:nexysvhdl.showEnvironment)",
+        "contents": "No MIX-FPGA project is open.\n[New Project](command:nexysvhdl.createProject)\n[Open Project](command:nexysvhdl.openProject)\nOpen a project folder (it contains nexysvhdl.json) or a .nvproj project file.\n[Getting Started](command:nexysvhdl.gettingStarted)\n[Show Environment](command:nexysvhdl.showEnvironment)",
         "when": "!nexysvhdl.hasProject"
       },
       {
         "view": "explorer",
-        "contents": "NexysVHDL (Nexys A7 FPGA)\n[Create NexysVHDL Project](command:nexysvhdl.createProject)\n[Open NexysVHDL Project](command:nexysvhdl.openProject)\n[NexysVHDL: Getting Started](command:nexysvhdl.gettingStarted)",
+        "contents": "MIX-FPGA (Nexys A7-100T, DE10-Lite)\n[Create MIX-FPGA Project](command:nexysvhdl.createProject)\n[Open MIX-FPGA Project](command:nexysvhdl.openProject)\n[MIX-FPGA: Getting Started](command:nexysvhdl.gettingStarted)",
         "when": "workbenchState == empty"
       }
     ],
@@ -86,245 +86,255 @@
       {
         "command": "nexysvhdl.createProject",
         "title": "New Project",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(new-folder)"
       },
       {
         "command": "nexysvhdl.openProject",
         "title": "Open Project (folder or .nvproj file)",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(folder-opened)"
       },
       {
         "command": "nexysvhdl.refreshProject",
         "title": "Refresh Project",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(refresh)"
       },
       {
         "command": "nexysvhdl.refreshHierarchy",
         "title": "Refresh Hierarchy",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(refresh)"
       },
       {
         "command": "nexysvhdl.addFile",
         "title": "Add File…",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(add)"
       },
       {
         "command": "nexysvhdl.removeFromProject",
         "title": "Remove from Project",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.restoreToProject",
         "title": "Add Back to Project",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.design.showFiles",
         "title": "Design: Show Files",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(files)"
       },
       {
         "command": "nexysvhdl.design.showHierarchy",
         "title": "Design: Show Hierarchy",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(type-hierarchy)"
       },
       {
         "command": "nexysvhdl.setSimulationStopTime",
         "title": "Set Simulation Stop Time…",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(watch)"
       },
       {
         "command": "nexysvhdl.useClassroomAppearance",
         "title": "Use NexysVHDL Classroom Appearance",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.useMyAppearance",
         "title": "Use My VS Code Appearance",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.openProjectSettings",
         "title": "Open Project Settings",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(settings-gear)"
       },
       {
         "command": "nexysvhdl.setTopEntity",
         "title": "Set Top Entity",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(edit)"
       },
       {
         "command": "nexysvhdl.setTopEntityFromItem",
         "title": "Set as Top Entity",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.setTestbench",
         "title": "Set Testbench",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(edit)"
       },
       {
         "command": "nexysvhdl.useConstraintsFile",
         "title": "Use This Constraints File",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.check",
         "title": "Check VHDL",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(check)"
       },
       {
         "command": "nexysvhdl.simulate",
         "title": "Simulate",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(play)"
       },
       {
         "command": "nexysvhdl.runSimulation",
         "title": "Run Simulation",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(play)"
       },
       {
         "command": "nexysvhdl.stopSimulation",
         "title": "Stop Simulation",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(debug-stop)"
       },
       {
         "command": "nexysvhdl.build",
         "title": "Build",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(tools)"
       },
       {
         "command": "nexysvhdl.program",
         "title": "Program FPGA",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(arrow-up)"
       },
       {
         "command": "nexysvhdl.cancel",
         "title": "Cancel Running Action",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(debug-stop)"
       },
       {
         "command": "nexysvhdl.detectBoards",
         "title": "Detect Boards",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(refresh)"
       },
       {
         "command": "nexysvhdl.selectBoard",
         "title": "Use This Board",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.openSchematic",
         "title": "Open Design Schematic",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(type-hierarchy)"
       },
       {
         "command": "nexysvhdl.openSchematicFromItem",
         "title": "Open Design Schematic Here",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.openRtlSchematic",
         "title": "Open RTL Schematic",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(circuit-board)"
       },
       {
         "command": "nexysvhdl.openWaveform",
         "title": "Open Waveform",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(pulse)"
       },
       {
         "command": "nexysvhdl.goToEntity",
         "title": "Go to Entity Declaration",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.showEnvironment",
         "title": "Show Environment",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(pulse)"
       },
       {
         "command": "nexysvhdl.showLog",
-        "title": "Show NexysVHDL Log (details)",
-        "category": "NexysVHDL",
+        "title": "Show MIX-FPGA Log (details)",
+        "category": "MIX-FPGA",
         "icon": "$(output)"
       },
       {
         "command": "nexysvhdl.openLocation",
         "title": "Open Source Location",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.installToolchain",
         "title": "Install FPGA Toolchain…",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(desktop-download)"
       },
       {
         "command": "nexysvhdl.verifyToolchain",
         "title": "Verify FPGA Toolchain",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
+      },
+      {
+        "command": "nexysvhdl.verifyEnvironment",
+        "title": "Verify Environment",
+        "category": "MIX-FPGA"
+      },
+      {
+        "command": "nexysvhdl.restartFpgaEngine",
+        "title": "Restart FPGA Engine",
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.gettingStarted",
         "title": "Getting Started",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(book)"
       },
       {
         "command": "nexysvhdl.openThirdPartyNotices",
         "title": "Third-Party Notices",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.showConsole",
-        "title": "Show NexysVHDL Console",
-        "category": "NexysVHDL",
+        "title": "Show MIX-FPGA Console",
+        "category": "MIX-FPGA",
         "icon": "$(output)"
       },
       {
         "command": "nexysvhdl.toggleConsoleDetail",
         "title": "Toggle Detailed Console Output",
-        "category": "NexysVHDL"
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.createProjectFile",
-        "title": "Create NexysVHDL Project File",
-        "category": "NexysVHDL",
+        "title": "Create MIX-FPGA Project File",
+        "category": "MIX-FPGA",
         "icon": "$(new-file)"
       },
       {
         "command": "nexysvhdl.clearProblems",
-        "title": "Clear NexysVHDL Problems",
-        "category": "NexysVHDL"
+        "title": "Clear MIX-FPGA Problems",
+        "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.closeProject",
         "title": "Close Project",
-        "category": "NexysVHDL",
+        "category": "MIX-FPGA",
         "icon": "$(close)"
       }
     ],
@@ -672,7 +682,7 @@
       ]
     },
     "configuration": {
-      "title": "NexysVHDL",
+      "title": "MIX-FPGA",
       "properties": {
         "nexysvhdl.checkOnSave": {
           "type": "boolean",
@@ -697,10 +707,10 @@
           ],
           "default": "normal",
           "enumDescriptions": [
-            "The NexysVHDL Console shows progress, results and errors.",
-            "The NexysVHDL Console also streams the raw output of the FPGA tools while an action runs."
+            "The MIX-FPGA Console shows progress, results and errors.",
+            "The MIX-FPGA Console also streams the raw output of the FPGA tools while an action runs."
           ],
-          "description": "How much the NexysVHDL Console shows. Normal is meant for students; Detailed adds every line the FPGA tools print."
+          "description": "How much the MIX-FPGA Console shows. Normal is meant for students; Detailed adds every line the FPGA tools print."
         }
       }
     },
@@ -728,13 +738,13 @@
     "walkthroughs": [
       {
         "id": "nexysvhdl.gettingStarted",
-        "title": "Get started with NexysVHDL",
+        "title": "Get started with MIX-FPGA",
         "description": "From VHDL to a programmed Nexys A7-100T: set up, create a project, check, simulate, build and program.",
         "steps": [
           {
             "id": "setup",
             "title": "Verify your setup",
-            "description": "Check that the NexysVHDL FPGA toolchain is installed (and, on Windows, the Digilent USB/JTAG support needed only for programming).\n[Show Environment](command:nexysvhdl.showEnvironment)\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)",
+            "description": "Check that the MIX-FPGA FPGA toolchain is installed (and, on Windows, the Digilent USB/JTAG support needed only for programming).\n[Show Environment](command:nexysvhdl.showEnvironment)\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)",
             "media": {
               "markdown": "resources/walkthrough/setup.md"
             },
@@ -745,7 +755,7 @@
           {
             "id": "project",
             "title": "Create or open a project",
-            "description": "A NexysVHDL project is a folder with nexysvhdl.json, src/, sim/ and constraints/.\n[Create NexysVHDL Project](command:nexysvhdl.createProject)\n[Open NexysVHDL Project](command:nexysvhdl.openProject)",
+            "description": "A MIX-FPGA project is a folder with nexysvhdl.json, src/, sim/ and constraints/.\n[Create MIX-FPGA Project](command:nexysvhdl.createProject)\n[Open MIX-FPGA Project](command:nexysvhdl.openProject)",
             "media": {
               "markdown": "resources/walkthrough/project.md"
             },
@@ -888,7 +898,7 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": false,
-      "description": "NexysVHDL runs its FPGA tools on the project files, so the folder must be trusted."
+      "description": "MIX-FPGA runs its FPGA tools on the project files, so the folder must be trusted."
     },
     "virtualWorkspaces": false
   }

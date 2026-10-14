@@ -38,7 +38,7 @@ describe('NexysVhdlService: project and hierarchy', () => {
         const { service } = await openService(t, root);
         const snap = service.snapshot!;
         assert.equal(snap.project?.config.name, 'Demo');
-        assert.equal(snap.boardName, 'Digilent Nexys A7-100T');
+        assert.equal(snap.boardName, 'Nexys A7-100T');
         assert.deepEqual(snap.validation, []);
         assert.deepEqual(snap.files.sources.map((f) => [f.path, f.top]), [['src/top.vhd', true]]);
         assert.deepEqual(snap.files.constraints.map((f) => [f.path, f.inUse]), [['constraints/nexys-a7-100t.xdc', true]]);

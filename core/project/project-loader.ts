@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { type Diagnostic, errorDiag } from '../results/diagnostic';
+import { resolveProjectBoard } from './board-resolution';
 import { PROJECT_DEFAULTS, PROJECT_FILE_NAME, type Project, type ProjectFile } from './types';
 
 export type ProjectLoadResult =
@@ -38,6 +39,12 @@ export async function loadProject(dirOrFile: string): Promise<ProjectLoadResult>
         return { ok: false, diagnostics: [errorDiag('project', 'PROJECT_FILE_INVALID_JSON', `${file} must contain a JSON object.`, { file })] };
     }
 
-    const config = { ...PROJECT_DEFAULTS, ...(data as Partial<ProjectFile>) } as ProjectFile;
-    return { ok: true, project: { root: dirname(file), file, config } };
+    const root = dirname(file);
+    // Never reinterpret a malformed project: the board is resolved explicitly (see resolveProjectBoard).
+    const board = await resolveProjectBoard(data as Record<string, unknown>, root, file);
+    if (!board.ok) return { ok: false, diagnostics: board.diagnostics };
+    const { board: _ignored, ...rest } = PROJECT_DEFAULTS as Record<string, unknown>;
+    void _ignored;
+    const config = { ...rest, ...(data as Partial<ProjectFile>), board: board.board } as ProjectFile;
+    return { ok: true, project: { root, file, config, ...(board.legacyDefault ? { legacyBoardDefault: true } : {}) } };
 }

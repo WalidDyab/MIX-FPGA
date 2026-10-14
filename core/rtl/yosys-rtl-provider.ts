@@ -20,6 +20,39 @@ export function rtlYosysScript(verilogFile: string, top: string): string {
     return `read_verilog ${verilogFile}; hierarchy -check -top ${top}; proc; opt_clean; write_json ${RTL_NETLIST}`;
 }
 
+/** Runs the RTL script with `executable` (+ `prefix` arguments) and checks that the netlist appeared. Shared by the providers below. */
+async function elaborateWith(executable: string, prefix: readonly string[], runner: ToolRunner, req: RtlRequest, label: string): Promise<RtlProviderResult> {
+    const started = Date.now();
+    const logs: LogRef[] = [];
+    const dir = req.workspace.paths.rtl;
+    const fail = (diagnostics: Diagnostic[]): RtlProviderResult => ({ status: 'failed', diagnostics, logs, durationMs: Date.now() - started });
+
+    const run = await runner.run({
+        executable,
+        args: [...prefix, '-q', '-p', rtlYosysScript(basename(req.verilog.path), req.top)],
+        cwd: dir,
+        timeoutMs: RTL_TIMEOUT_MS,
+        ...(req.signal ? { signal: req.signal } : {}),
+    });
+    const logPath = join(req.workspace.paths.logs, 'yosys-rtl.log');
+    await writeFile(logPath, `${run.stdout}\n${run.stderr}`, 'utf8');
+    logs.push({ label: 'yosys-rtl', path: logPath });
+
+    if (run.outcome === 'spawn-failed') return fail([errorDiag('implementation', 'RTL_NOT_STARTED', `Could not start the RTL analysis (${label}): ${run.errorMessage ?? 'unknown error'}`)]);
+    if (run.outcome !== 'exited') return fail([errorDiag('implementation', `RTL_${run.outcome.toUpperCase().replace('-', '_')}`, `RTL analysis ${run.outcome}.`)]);
+    if (!succeeded(run)) {
+        const reason = `${run.stdout}\n${run.stderr}`.split(/\r?\n/).find((l) => /ERROR/i.test(l))?.trim();
+        return fail([errorDiag('implementation', 'RTL_FAILED', `RTL analysis failed${reason ? `: ${reason}` : ` (exit code ${run.exitCode})`}.`)]);
+    }
+    const path = join(dir, RTL_NETLIST);
+    try {
+        const s = await stat(path);
+        return { status: 'succeeded', diagnostics: [], logs, durationMs: Date.now() - started, netlist: { kind: 'rtl-netlist', path, canonical: false, sizeBytes: s.size } };
+    } catch {
+        return fail([errorDiag('implementation', 'RTL_NO_NETLIST', `RTL analysis reported success but ${path} is missing.`)]);
+    }
+}
+
 /**
  * RtlProvider running the Yosys that ships with Apio/openXC7 through
  * `apio raw -- yosys` (the same way the toolchain detector reaches it).
@@ -34,35 +67,21 @@ export class ApioYosysRtlProvider implements RtlProvider {
         private readonly runner: ToolRunner,
     ) {}
 
-    async elaborate(req: RtlRequest): Promise<RtlProviderResult> {
-        const started = Date.now();
-        const logs: LogRef[] = [];
-        const dir = req.workspace.paths.rtl;
-        const fail = (diagnostics: Diagnostic[]): RtlProviderResult => ({ status: 'failed', diagnostics, logs, durationMs: Date.now() - started });
+    elaborate(req: RtlRequest): Promise<RtlProviderResult> {
+        return elaborateWith(this.apio, ['raw', '--', 'yosys'], this.runner, req, this.apio);
+    }
+}
 
-        const run = await this.runner.run({
-            executable: this.apio,
-            args: ['raw', '--', 'yosys', '-q', '-p', rtlYosysScript(basename(req.verilog.path), req.top)],
-            cwd: dir,
-            timeoutMs: RTL_TIMEOUT_MS,
-            ...(req.signal ? { signal: req.signal } : {}),
-        });
-        const logPath = join(req.workspace.paths.logs, 'yosys-rtl.log');
-        await writeFile(logPath, `${run.stdout}\n${run.stderr}`, 'utf8');
-        logs.push({ label: 'yosys-rtl', path: logPath });
+/** RtlProvider running a Yosys executable directly (a MIX-FPGA-owned Yosys; no Apio). Same script, same netlist. */
+export class DirectYosysRtlProvider implements RtlProvider {
+    readonly id = 'yosys-rtl';
 
-        if (run.outcome === 'spawn-failed') return fail([errorDiag('implementation', 'RTL_NOT_STARTED', `Could not start the RTL analysis (${this.apio}): ${run.errorMessage ?? 'unknown error'}`)]);
-        if (run.outcome !== 'exited') return fail([errorDiag('implementation', `RTL_${run.outcome.toUpperCase().replace('-', '_')}`, `RTL analysis ${run.outcome}.`)]);
-        if (!succeeded(run)) {
-            const reason = `${run.stdout}\n${run.stderr}`.split(/\r?\n/).find((l) => /ERROR/i.test(l))?.trim();
-            return fail([errorDiag('implementation', 'RTL_FAILED', `RTL analysis failed${reason ? `: ${reason}` : ` (exit code ${run.exitCode})`}.`)]);
-        }
-        const path = join(dir, RTL_NETLIST);
-        try {
-            const s = await stat(path);
-            return { status: 'succeeded', diagnostics: [], logs, durationMs: Date.now() - started, netlist: { kind: 'rtl-netlist', path, canonical: false, sizeBytes: s.size } };
-        } catch {
-            return fail([errorDiag('implementation', 'RTL_NO_NETLIST', `RTL analysis reported success but ${path} is missing.`)]);
-        }
+    constructor(
+        private readonly yosys: string,
+        private readonly runner: ToolRunner,
+    ) {}
+
+    elaborate(req: RtlRequest): Promise<RtlProviderResult> {
+        return elaborateWith(this.yosys, [], this.runner, req, this.yosys);
     }
 }

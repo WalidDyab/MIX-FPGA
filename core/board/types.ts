@@ -63,10 +63,36 @@ export interface BoardIdentification {
     readonly productNames?: readonly string[];
 }
 
+/** Constraint file family a board's implementation backend consumes. */
+export type BoardConstraintFormat = 'xdc' | 'qsf-sdc';
+
+/**
+ * How a board is built and programmed (MIX-FPGA multi-board). Optional: a board
+ * without it is the original open-source XDC flow (xdc, openxc7, platform programmer, bitstream).
+ * Provider ids are looked up in the backend router; the UI never branches on them.
+ */
+export interface BoardBackend {
+    readonly constraints: BoardConstraintFormat;
+    readonly implementation: string;
+    readonly programming: string;
+    readonly programmingFormat: 'bit' | 'svf';
+    /** Key the board's programming backend uses for this board (opaque to the core). */
+    readonly programmerBoardKey?: string;
+    /** JTAG IDCODE of the FPGA as hex text, e.g. `0x031050dd`. */
+    readonly jtagIdcode?: string;
+    /** Student-facing metric names in this vendor's words. */
+    readonly metricLabels?: { readonly logic: string; readonly registers: string; readonly memory: string; readonly dsp: string };
+    /** Host platforms this board's backend supports (e.g. `macos-arm64`); absent = every host the base flow supports. */
+    readonly hosts?: readonly string[];
+}
+
 export interface BoardDefinition {
     readonly schemaVersion: 1;
     readonly id: string;
     readonly name: string;
+    /** Short student-facing name (e.g. `DE10-Lite`); falls back to `name`. */
+    readonly displayName?: string;
+    readonly backend?: BoardBackend;
     readonly vendor: string;
     readonly fpga: FpgaSpec;
     /** Identifiers used by specific backends, keyed by backend name (e.g. `apio`). */

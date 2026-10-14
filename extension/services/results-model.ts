@@ -1,4 +1,5 @@
 import type { BuildResult, LogRef, ResourceUsage, SimulationResult, VhdlCheckResult } from '../../core';
+import type { NormalizedBuildResult, VendorMetric } from '../../core/backend';
 import { formatSimTime } from './workflow-state';
 
 export interface ResultRow {
@@ -57,7 +58,9 @@ export function buildResultsModel(check?: VhdlCheckResult, sim?: SimulationResul
             logs: sim.logs,
         };
     }
-    if (build) {
+    if (build?.normalized) {
+        model.build = normalizedBuildRows(build.normalized, build);
+    } else if (build) {
         const timing: ResultRow[] = [];
         if (build.timing) {
             if (build.timing.passed !== undefined) timing.push({ label: 'Timing', value: build.timing.passed ? 'PASS' : 'FAIL', good: build.timing.passed });
@@ -88,4 +91,46 @@ export function buildResultsModel(check?: VhdlCheckResult, sim?: SimulationResul
         };
     }
     return model;
+}
+
+/** `+16.6 ns`; below 1 ns two decimals keep the value readable (`+0.16 ns`). */
+const signed = (v: number) => `${v >= 0 ? '+' : ''}${Math.abs(v) >= 1 ? Math.round(v * 10) / 10 : Math.round(v * 100) / 100} ns`;
+const metricText = (m: VendorMetric | undefined) => (m ? `${count(m.used)}${m.available !== undefined ? ` / ${count(m.available)}` : ''}` : 'not reported');
+
+/**
+ * Build rows from a vendor-neutral result. Resource names are the board's own words (Logic Elements are
+ * not LUTs); timing uses one presentation for every board. A metric the tool did not report is shown as
+ * "not reported", never guessed.
+ */
+function normalizedBuildRows(n: NormalizedBuildResult, build: BuildResult): NonNullable<ResultsModel['build']> {
+    const timing: ResultRow[] = [];
+    if (n.timingStatus === 'met' || n.timingStatus === 'not-met') timing.push({ label: 'Timing', value: n.timingStatus === 'met' ? 'PASS' : 'FAIL', good: n.timingStatus === 'met' });
+    const many = n.clocks.length > 1;
+    for (const c of n.clocks) {
+        const suffix = many ? ` (${c.name})` : '';
+        if (c.targetMHz !== undefined) timing.push({ label: `Target${suffix}`, value: mhz(c.targetMHz) });
+        if (c.fmaxMHz !== undefined) timing.push({ label: `Fmax${suffix}`, value: mhz(c.fmaxMHz), ...(c.targetMHz !== undefined ? { good: c.fmaxMHz >= c.targetMHz } : {}) });
+        if (c.worstSetupSlackNs !== undefined) timing.push({ label: `Setup slack${suffix}`, value: signed(c.worstSetupSlackNs), good: c.worstSetupSlackNs >= 0 });
+        if (c.worstHoldSlackNs !== undefined) timing.push({ label: `Hold slack${suffix}`, value: signed(c.worstHoldSlackNs), good: c.worstHoldSlackNs >= 0 });
+    }
+    const L = n.labels;
+    const r = n.resources;
+    const resources: ResultRow[] = [];
+    if (L && (Object.keys(r).length > 0 || n.implementationStatus === 'passed')) {
+        resources.push(
+            { label: L.logic, value: metricText(r.logic) },
+            { label: L.registers, value: metricText(r.registers) },
+            { label: L.memory, value: metricText(r.memoryBlocks ?? r.memoryBits) },
+            { label: L.dsp, value: metricText(r.dsp) },
+        );
+        if (r.pins) resources.push({ label: 'I/O pins', value: metricText(r.pins) });
+    }
+    const file = build.bitstream ? build.bitstream.path.split(/[\\/]/).pop()! : undefined;
+    return {
+        success: build.success,
+        timing,
+        resources,
+        ...(file ? { bitstream: { label: n.programmingArtifact?.format === 'svf' ? 'Programming file' : 'Bitstream', value: file } } : {}),
+        logs: build.logs,
+    };
 }

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { describe, it, type TestContext } from 'node:test';
 import { createProject } from '../../extension/project/scaffold';
 import {
-    ADD_FILE_KINDS,
+    addFileKindsFor,
     checkCopySource,
     copyIntoProject,
     entityNameOf,
@@ -167,7 +167,7 @@ describe('service: simulation stop time', () => {
 
 describe('Add File: names, folders and formats', () => {
     it('goes to src/, sim/ and constraints/ and accepts only .vhd, .vhd and .xdc', () => {
-        assert.deepEqual(ADD_FILE_KINDS.map((k) => [k.label, k.folder, k.extension]), [
+        assert.deepEqual(addFileKindsFor('xdc').map((k) => [k.label, k.folder, k.extension]), [
             ['Source', 'src', '.vhd'],
             ['Simulation Testbench', 'sim', '.vhd'],
             ['Constraint', 'constraints', '.xdc'],

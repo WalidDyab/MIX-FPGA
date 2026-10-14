@@ -7,7 +7,7 @@ describe('board definition: Nexys A7-100T', () => {
     it('loads from boards/ data without diagnostics', async () => {
         const { registry, diagnostics } = await BoardRegistry.loadDirectory(dataPaths(REPO).boards);
         assert.deepEqual(diagnostics, []);
-        assert.deepEqual(registry.ids(), ['nexys-a7-100t']);
+        assert.deepEqual(registry.ids(), ['de10-lite', 'nexys-a7-100t']);
     });
 
     it('describes the FPGA and backend ids', async () => {

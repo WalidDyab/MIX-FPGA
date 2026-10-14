@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { PROJECT_FILE_NAME, PROJECT_FOLDERS, type ProjectFile, WORKSPACE_DIR_NAME } from '../../core';
+import { type BoardConstraintFormat, PROJECT_FILE_NAME, PROJECT_FOLDERS, type ProjectFile, WORKSPACE_DIR_NAME } from '../../core';
 
 /**
  * The Phase 4A project folder contract:
@@ -13,17 +13,25 @@ import { PROJECT_FILE_NAME, PROJECT_FOLDERS, type ProjectFile, WORKSPACE_DIR_NAM
  */
 export const VHDL_FILE = /\.(vhd|vhdl)$/i;
 export const XDC_FILE = /\.xdc$/i;
+export const QSF_FILE = /\.qsf$/i;
+export const SDC_FILE = /\.sdc$/i;
+
+/** Constraint file name pattern for a board's constraint format (the Quartus format lists top-level files only). */
+export const constraintPattern = (format: BoardConstraintFormat): RegExp => (format === 'qsf-sdc' ? /\.(qsf|sdc)$/i : XDC_FILE);
+
+/** What a student sees in empty-folder hints, e.g. `.xdc` or `.qsf and .sdc`. */
+export const constraintExtensionsText = (format: BoardConstraintFormat): string => (format === 'qsf-sdc' ? '.qsf and .sdc' : '.xdc');
 
 export type ProjectFileKind = 'source' | 'simulation' | 'constraints' | 'settings';
 
 /** Classifies a project-relative path (`/`-separated) by the folder contract. */
-export function classifyProjectPath(rel: string): ProjectFileKind | undefined {
+export function classifyProjectPath(rel: string, format: BoardConstraintFormat = 'xdc'): ProjectFileKind | undefined {
     const p = rel.replace(/\\/g, '/');
     if (p === PROJECT_FILE_NAME) return 'settings';
     if (p.startsWith(`${WORKSPACE_DIR_NAME}/`)) return undefined;
     if (p.startsWith(`${PROJECT_FOLDERS.sources}/`) && VHDL_FILE.test(p)) return 'source';
     if (p.startsWith(`${PROJECT_FOLDERS.simulation}/`) && VHDL_FILE.test(p)) return 'simulation';
-    if (p.startsWith(`${PROJECT_FOLDERS.constraints}/`) && XDC_FILE.test(p)) return 'constraints';
+    if (p.startsWith(`${PROJECT_FOLDERS.constraints}/`) && constraintPattern(format).test(p) && (format !== 'qsf-sdc' || !p.slice(PROJECT_FOLDERS.constraints.length + 1).includes('/'))) return 'constraints';
     return undefined;
 }
 
@@ -34,7 +42,7 @@ export interface ScannedFiles {
     readonly constraints: readonly string[];
 }
 
-async function listRecursive(root: string, dir: string, accept: RegExp): Promise<string[]> {
+async function listRecursive(root: string, dir: string, accept: RegExp, recursive = true): Promise<string[]> {
     let entries;
     try {
         entries = await readdir(join(root, dir), { withFileTypes: true });
@@ -45,19 +53,21 @@ async function listRecursive(root: string, dir: string, accept: RegExp): Promise
     for (const e of entries) {
         if (e.name.startsWith('.')) continue;
         const rel = `${dir}/${e.name}`;
-        if (e.isDirectory()) out.push(...(await listRecursive(root, rel, accept)));
+        if (e.isDirectory()) {
+            if (recursive) out.push(...(await listRecursive(root, rel, accept, recursive)));
+        }
         else if (e.isFile() && accept.test(e.name)) out.push(rel);
     }
     return out;
 }
 
 /** Lists the project's VHDL and XDC files by the folder contract. Never looks inside `.nexysvhdl/`. */
-export async function scanProjectFiles(root: string): Promise<ScannedFiles> {
+export async function scanProjectFiles(root: string, format: BoardConstraintFormat = 'xdc'): Promise<ScannedFiles> {
     const sort = (a: string[]) => a.sort((x, y) => x.localeCompare(y));
     return {
         sources: sort(await listRecursive(root, PROJECT_FOLDERS.sources, VHDL_FILE)),
         simulation: sort(await listRecursive(root, PROJECT_FOLDERS.simulation, VHDL_FILE)),
-        constraints: sort(await listRecursive(root, PROJECT_FOLDERS.constraints, XDC_FILE)),
+        constraints: sort(await listRecursive(root, PROJECT_FOLDERS.constraints, constraintPattern(format), format !== 'qsf-sdc')),
     };
 }
 
@@ -85,6 +95,8 @@ export interface ProjectFilesModel {
     readonly constraints: readonly ProjectFileEntry[];
     /** The project generates its XDC from `pins` instead of using a file. */
     readonly generatedConstraints: boolean;
+    /** Constraint file types of the board, for hints: `.xdc` or `.qsf and .sdc`. */
+    readonly constraintExtensions: string;
 }
 
 function entry(path: string, group: string, found: boolean, flags: Partial<ProjectFileEntry>): ProjectFileEntry {
@@ -106,6 +118,7 @@ export function buildProjectFilesModel(
     config: Pick<ProjectFile, 'sources' | 'simulation' | 'constraints' | 'pins'>,
     topFiles: ReadonlySet<string> = new Set(),
     testbenchFiles: ReadonlySet<string> = new Set(),
+    format: BoardConstraintFormat = 'xdc',
 ): ProjectFilesModel {
     const merge = (found: readonly string[], listed: readonly string[] | undefined) => {
         const set = new Set(found);
@@ -118,6 +131,7 @@ export function buildProjectFilesModel(
     );
     const used = config.constraints;
     const constraintPaths = used !== undefined && !scanned.constraints.includes(used) ? [...scanned.constraints, used] : scanned.constraints;
-    const constraints = constraintPaths.map((p) => entry(p, PROJECT_FOLDERS.constraints, scanned.constraints.includes(p), { inUse: p === used }));
-    return { sources, simulation, constraints, generatedConstraints: used === undefined && config.pins !== undefined };
+    // Quartus boards use every .qsf/.sdc of constraints/; the Nexys flow uses the one XDC the project names (or its pin mapping).
+    const constraints = constraintPaths.map((p) => entry(p, PROJECT_FOLDERS.constraints, scanned.constraints.includes(p), { inUse: format === 'qsf-sdc' ? true : p === used }));
+    return { sources, simulation, constraints, generatedConstraints: format !== 'qsf-sdc' && used === undefined && config.pins !== undefined, constraintExtensions: constraintExtensionsText(format) };
 }

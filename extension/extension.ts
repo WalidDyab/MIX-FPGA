@@ -11,6 +11,7 @@ import { SchematicPanel } from './schematic/schematic-panel';
 import { LAYOUT_STATE_KEY, RADIX_STATE_KEY, WaveformPanel } from './waveform/waveform-panel';
 import { loadRequirement } from '../runtime/classroom';
 import { CoreBackend } from './services/backend';
+import { MixFpgaBackend } from './services/multiboard-backend';
 import { type ConsoleVerbosity, NexysConsole } from './services/console';
 import type { Logger } from './services/events';
 import { NexysVhdlService } from './services/nexys-service';
@@ -44,8 +45,8 @@ let shutdown: (() => Promise<void>) | undefined;
 export async function activate(context: vscode.ExtensionContext): Promise<NexysVhdlApi> {
     // Two surfaces, one purpose each: the NexysVHDL Console is what a student reads (workflow progress, results, errors);
     // the NexysVHDL Log keeps the engineering detail (timestamps, diagnostic codes, log-file paths).
-    const output = vscode.window.createOutputChannel('NexysVHDL Log', { log: true });
-    const consoleChannel = vscode.window.createOutputChannel('NexysVHDL Console');
+    const output = vscode.window.createOutputChannel('MIX-FPGA Log', { log: true });
+    const consoleChannel = vscode.window.createOutputChannel('MIX-FPGA Console');
     const nexysConsole = new NexysConsole(
         { appendLine: (l) => consoleChannel.appendLine(l), reveal: () => consoleChannel.show(true) },
         () => (vscode.workspace.getConfiguration('nexysvhdl').get<string>('console.detail', 'normal') === 'detailed' ? 'detailed' : 'normal') satisfies ConsoleVerbosity,
@@ -57,7 +58,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
     // this release requires (installed once per user, shared by extension updates).
     const required = loadRequirement(context.extensionPath);
     for (const d of required.diagnostics) output.error(d.message);
-    const backend = new CoreBackend({ ...(required.requirement ? { classroom: { requirement: required.requirement } } : {}), onToolOutput: (text) => nexysConsole.raw(text) });
+    // MIX-FPGA: one backend that routes Check / Simulate / Build / Detect / Program to the open project's board.
+    const backend = new MixFpgaBackend(new CoreBackend({ ...(required.requirement ? { classroom: { requirement: required.requirement } } : {}), onToolOutput: (text) => nexysConsole.raw(text) }));
     const service = new NexysVhdlService({ backend, logger, console: nexysConsole, checkOnSave: () => config().get<boolean>('checkOnSave', true) });
     const state = new ProjectState();
     // One Dark/Light choice for both schematics, kept with the project.
@@ -138,7 +140,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
                 if (state === 'not-installed' && !toolchainPrompted) {
                     toolchainPrompted = true;
                     void vscode.window
-                        .showInformationMessage(`NexysVHDL needs its FPGA toolchain ${service.environment!.toolchain!.requiredVersion} before it can check, simulate or build designs.`, 'Install FPGA Toolchain…', 'Getting Started')
+                        .showInformationMessage(`MIX-FPGA needs its FPGA toolchain ${service.environment!.toolchain!.requiredVersion} before it can check, simulate or build designs.`, 'Install FPGA Toolchain…', 'Getting Started')
                         .then((c) => c && vscode.commands.executeCommand(c === 'Getting Started' ? 'nexysvhdl.gettingStarted' : 'nexysvhdl.installToolchain'));
                 }
             }
@@ -149,7 +151,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
     let watchers: vscode.Disposable[] = [];
     const watch = (root: string) => {
         watchers.forEach((w) => w.dispose());
-        watchers = ['nexysvhdl.json', 'src/**/*.{vhd,vhdl}', 'sim/**/*.{vhd,vhdl}', 'constraints/**/*.xdc'].map((glob) => {
+        watchers = ['nexysvhdl.json', 'src/**/*.{vhd,vhdl}', 'sim/**/*.{vhd,vhdl}', 'constraints/**/*.{xdc,qsf,sdc}'].map((glob) => {
             const w = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(root, glob));
             const changed = (uri: vscode.Uri) => service.notifyFileEvent(uri.fsPath);
             w.onDidCreate(changed);
@@ -175,7 +177,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         watch(root);
         if (appearance.shouldAsk(config().get<boolean>('promptForClassroomAppearance', true))) {
             void vscode.window
-                .showInformationMessage('NexysVHDL has an optional Classroom appearance (navy and orange). It applies to this project folder only; your VS Code theme stays as it is everywhere else.', USE_CLASSROOM, KEEP_MINE)
+                .showInformationMessage('MIX-FPGA has an optional Classroom appearance (navy and orange). It applies to this project folder only; your VS Code theme stays as it is everywhere else.', USE_CLASSROOM, KEEP_MINE)
                 .then((choice) => appearance.answer(choice));
         }
         void service.refreshEnvironment();

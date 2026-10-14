@@ -100,7 +100,7 @@ export class NexysConsole {
     initialize(projectName: string, root: string): void {
         this.endAction();
         this.blankPending = true;
-        this.write(`NexysVHDL Console — project ${projectName}`);
+        this.write(`MIX-FPGA Console — project ${projectName}`);
         this.write(root);
         this.blankPending = true;
     }

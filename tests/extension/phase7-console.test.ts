@@ -45,7 +45,7 @@ async function openService(t: TestContext, backend = new FakeBackend(), verbosit
 describe('NexysVHDL Console: formatting and reveal policy', () => {
     it('initialises with the project when it opens, without revealing anything', async (t) => {
         const { sink } = await openService(t);
-        assert.match(sink.lines[0]!, /^NexysVHDL Console — project Demo$/);
+        assert.match(sink.lines[0]!, /^MIX-FPGA Console — project Demo$/);
         assert.equal(sink.reveals, 0, 'opening a project never pops the panel');
     });
 

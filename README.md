@@ -1,8 +1,15 @@
-# NexysVHDL
+# MIX-FPGA
 
-NexysVHDL is a VHDL-first FPGA workflow in VS Code for the Digilent Nexys A7-100T (XC7A100T-1CSG324C).
+MIX-FPGA is an EMXplore project: one student-friendly VS Code environment for VHDL FPGA design on several boards. It is the multi-board successor of NexysVHDL and keeps its history and interface.
 
-**Current release:** NexysVHDL **0.6.0** (Classroom Preview, FPGA toolchain 1.0). It is an installable classroom package with its own FPGA toolchain and, on Windows, a per-user installer with a launcher; it is not on the Visual Studio Marketplace.
+| Board | FPGA | Constraints | Build | Program |
+|---|---|---|---|---|
+| Nexys A7-100T | XC7A100T-1CSG324C | XDC | open-source toolchain (GHDL, Yosys, nextpnr-xilinx, Project X-Ray) | USB/JTAG (SRAM) |
+| DE10-Lite (macOS, Apple silicon) | MAX 10 10M50DAF484C7G | QSF + SDC | Quartus Prime Lite (vendor-supplied, runs invisibly in a hidden Linux engine) | USB-Blaster (SRAM) |
+
+Check, Simulate, the waveform viewer and both schematics are the same for every board. Choose the board when you create a project; MIX-FPGA picks the right tools.
+
+**Current release (Nexys A7-100T):** NexysVHDL **0.6.0** (Classroom Preview, FPGA toolchain 1.0). It is an installable classroom package with its own FPGA toolchain and, on Windows, a per-user installer with a launcher; it is not on the Visual Studio Marketplace.
 
 Target platforms:
 - Windows x64 (Classroom Preview package validated)

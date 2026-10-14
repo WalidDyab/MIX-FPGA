@@ -82,6 +82,7 @@ const required = [
     ...pkg.contributes.grammars.map((g) => g.path),
     ...pkg.contributes.walkthroughs.flatMap((w) => w.steps.map((s) => s.media.markdown)),
     'boards/nexys-a7-100t/board.json',
+    'boards/de10-lite/board.json',
     'toolchains/bundle/requirement.json',
     'LICENSE',
     'NOTICE',

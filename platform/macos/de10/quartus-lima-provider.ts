@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { basename, dirname, join, relative, sep } from 'node:path';
 import { QsfSdcConstraintProvider } from '../../../core/backend/qsf-sdc';
-import type { BoardProfile, BuildProgressEvent, BuildRequest, BuildStage, ConstraintProvider, ImplementationProvider, NormalizedBuildResult, ProgrammingArtifactRef, RawReport } from '../../../core/backend/types';
+import type { BoardProfile, BuildProgressEvent, BuildRequest, BuildStage, ConstraintProvider, ImplementationProvider, NormalizedBuildResult, ProgrammingArtifactInfo, ProgrammingArtifactRef, RawReport } from '../../../core/backend/types';
 import { combineClocks, parseFmax, parseQuartusMessages, parseSdcClocks, parseStaSummary, parseStageSummary, stageSucceeded, timingStatus } from '../../../core/implementation/quartus/parsers';
 import { errorDiag, hasErrors, type Diagnostic, type LogRef } from '../../../core/results/diagnostic';
 import type { De10Paths } from './config';
@@ -42,18 +42,21 @@ export function inferTop(vhdl: readonly string[]): string {
     return names.size === 1 ? [...names][0]! : 'top';
 }
 
+/** Written next to the artifact by a successful build. */
+export const BUILD_INFO = 'build-info.json';
+
 export interface QuartusStep {
     readonly stage: BuildStage;
     readonly name: string;
     readonly command: (top: string) => string;
 }
 
-/** The proven command chain (Phase 1). `quartus_cpf -n p` writes the SVF the native programmer plays into SRAM. */
+/** The proven command chain (Phase 1), ordered as the Build row shows it: synthesis, implementation (fit, timing), programming file. `quartus_cpf -n p` writes the SVF the native programmer plays into SRAM. */
 export const QUARTUS_STEPS: readonly QuartusStep[] = [
     { stage: 'synthesis', name: '1-map', command: (t) => `quartus_map ${t} --read_settings_files=on` },
     { stage: 'fit', name: '2-fit', command: (t) => `quartus_fit ${t}` },
-    { stage: 'assemble', name: '3-asm', command: (t) => `quartus_asm ${t}` },
-    { stage: 'timing', name: '4-sta', command: (t) => `quartus_sta ${t}` },
+    { stage: 'timing', name: '3-sta', command: (t) => `quartus_sta ${t}` },
+    { stage: 'assemble', name: '4-asm', command: (t) => `quartus_asm ${t}` },
     { stage: 'package', name: '5-svf', command: (t) => `cd output_files && mixfpga-q quartus_cpf -c -q 10MHz -g 3.3 -n p ${t}.sof ${t}.svf` },
 ];
 
@@ -69,6 +72,29 @@ export class QuartusLimaImplementationProvider implements ImplementationProvider
 
     supports(board: BoardProfile): boolean {
         return board.implementationProviderId === this.id;
+    }
+
+    /** The artifact of the last good build, with the board and input hashes recorded when it was built. */
+    async artifactFor(projectDir: string, top: string): Promise<ProgrammingArtifactInfo | undefined> {
+        const dir = join(projectDir, '.mix-fpga', 'build', 'de10-lite');
+        const path = join(dir, `${top}.svf`);
+        try {
+            const st = await stat(path);
+            const info = JSON.parse(await readFile(join(dir, BUILD_INFO), 'utf8')) as { board?: string; artifact?: { sha256?: string }; inputs?: Record<string, string> };
+            if (!info.artifact?.sha256 || !st.isFile()) return undefined;
+            return { path, format: 'svf', sizeBytes: st.size, sha256: info.artifact.sha256, modifiedMs: st.mtimeMs, ...(info.board ? { boardId: info.board } : {}), ...(info.inputs ? { inputs: info.inputs } : {}) };
+        } catch {
+            return undefined;
+        }
+    }
+
+    /** Hashes of the files a build would read now (same keys as `build-info.json`). */
+    async currentInputs(projectDir: string, sources: readonly string[], exclude?: readonly string[]): Promise<Readonly<Record<string, string>>> {
+        const set = await this.constraints.collect(projectDir, exclude);
+        const out: Record<string, string> = {};
+        const files = [...sources.map((rel) => join(projectDir, ...rel.split('/'))), ...set.files.map((f) => f.path)];
+        for (const abs of files) out[relative(projectDir, abs).split(sep).join('/')] = (await exists(abs)) ? await sha256File(abs) : 'missing';
+        return out;
     }
 
     /** Aborts the running build (host side) and stops Quartus inside the VM. Safe to call when idle. */
@@ -108,6 +134,7 @@ export class QuartusLimaImplementationProvider implements ImplementationProvider
                 ...(failedStage ? { failedStage } : {}),
                 timingStatus: 'not-run',
                 clocks: [],
+                labels: board.metricLabels,
                 resources: {},
                 warnings: diagnostics.filter((d) => d.severity === 'warning'),
                 diagnostics,
@@ -131,15 +158,21 @@ export class QuartusLimaImplementationProvider implements ImplementationProvider
 
         // ---- prepare: project, constraints, engine ------------------------------------------------
         const prep = await stage('prepare', async () => {
+            // The project's own source list (compile order) when the caller has one; else the `src/` folder convention.
             const srcDir = join(req.projectDir, 'src');
-            const vhdl = (await readdir(srcDir).catch(() => [] as string[])).filter((n) => n.toLowerCase().endsWith('.vhd') || n.toLowerCase().endsWith('.vhdl')).sort();
+            const vhdl =
+                req.sources !== undefined
+                    ? [...req.sources]
+                    : (await readdir(srcDir).catch(() => [] as string[])).filter((n) => n.toLowerCase().endsWith('.vhd') || n.toLowerCase().endsWith('.vhdl')).sort().map((n) => `src/${n}`);
             if (vhdl.length === 0) diagnostics.push(E('PROJECT_NO_VHDL', `No .vhd files in ${srcDir}.`));
-            const set = await this.constraints.collect(req.projectDir);
+            const outside = vhdl.find((rel) => rel.startsWith('/') || rel.split('/').includes('..') || rel.includes('\\'));
+            if (outside) diagnostics.push(E('PROJECT_SOURCE_OUTSIDE', `Source ${outside} is not inside the project.`));
+            const set = await this.constraints.collect(req.projectDir, req.project?.config.exclude);
             diagnostics.push(...(await this.constraints.validate(set, board)));
             if (hasErrors(diagnostics)) return undefined;
-            const texts = await Promise.all(vhdl.map((n) => readFile(join(srcDir, n), 'utf8')));
+            const texts = await Promise.all(vhdl.map((rel) => readFile(join(req.projectDir, ...rel.split('/')), 'utf8').catch(() => '')));
             const top = req.top ?? inferTop(texts);
-            const studentFiles = [...vhdl.map((n) => join(srcDir, n)), ...set.files.map((f) => f.path)];
+            const studentFiles = [...vhdl.map((rel) => join(req.projectDir, ...rel.split('/'))), ...set.files.map((f) => f.path)];
             const before = await fingerprint(studentFiles);
             const eng = await this.engine.ensureReady(signal);
             diagnostics.push(...eng.problems);
@@ -166,13 +199,16 @@ export class QuartusLimaImplementationProvider implements ImplementationProvider
             for (const old of (await readdir(jobsDir).catch(() => [] as string[])).filter((n) => n.startsWith(`${id}-`))) await rm(join(jobsDir, old), { recursive: true, force: true });
             await mkdir(join(job, 'src'), { recursive: true });
             await mkdir(join(job, 'constraints'), { recursive: true });
-            for (const n of vhdl) await cp(join(req.projectDir, 'src', n), join(job, 'src', n));
+            for (const rel of vhdl) {
+                await mkdir(dirname(join(job, ...rel.split('/'))), { recursive: true });
+                await cp(join(req.projectDir, ...rel.split('/')), join(job, ...rel.split('/')));
+            }
             for (const f of set.files) await cp(f.path, join(job, 'constraints', basename(f.path)));
             const qsf = [
                 '# generated by MIX-FPGA — do not edit',
                 `set_global_assignment -name TOP_LEVEL_ENTITY ${top}`,
                 'set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files',
-                ...vhdl.map((n) => `set_global_assignment -name VHDL_FILE src/${n}`),
+                ...vhdl.map((rel) => `set_global_assignment -name VHDL_FILE ${rel}`),
                 ...set.files.filter((f) => f.kind === 'sdc').map((f) => `set_global_assignment -name SDC_FILE constraints/${basename(f.path)}`),
                 ...(await Promise.all(set.files.filter((f) => f.kind === 'qsf').map((f) => readFile(f.path, 'utf8')))),
             ].join('\n');
@@ -180,7 +216,7 @@ export class QuartusLimaImplementationProvider implements ImplementationProvider
             await writeFile(join(job, `${top}.qpf`), `PROJECT_REVISION = "${top}"\n`);
             await rm(out, { recursive: true, force: true });
             await mkdir(join(out, 'logs'), { recursive: true });
-            const staged = [...vhdl.map((n) => `src/${n}`), ...set.files.map((f) => `constraints/${basename(f.path)}`), `${top}.qsf`, `${top}.qpf`];
+            const staged = [...vhdl, ...set.files.map((f) => `constraints/${basename(f.path)}`), `${top}.qsf`, `${top}.qpf`];
             const manifest = (await Promise.all(staged.map(async (rel) => `${await sha256File(join(job, rel))}  ${rel}`))).join('\n');
             await writeFile(join(job, 'MANIFEST.sha256'), manifest + '\n');
             // Copy into the VM's own disk and prove, inside the VM, that every byte arrived.
@@ -273,6 +309,12 @@ export class QuartusLimaImplementationProvider implements ImplementationProvider
         const svfPath = join(out, `${top}.svf`);
         const artifact: ProgrammingArtifactRef = { path: svfPath, format: 'svf', sizeBytes: (await stat(svfPath)).size, sha256: await sha256File(svfPath) };
         const ok = !hasErrors(diagnostics);
+        if (ok) {
+            // What this artifact was built from and for: Program refuses an artifact of another board or of changed sources.
+            const inputs: Record<string, string> = {};
+            for (const [abs, hash] of before) inputs[relative(req.projectDir, abs).split(sep).join('/')] = hash;
+            await writeFile(join(out, BUILD_INFO), JSON.stringify({ schema: 1, board: board.id, device: board.fpga.device, top, builtAt: new Date().toISOString(), artifact: { sha256: artifact.sha256, sizeBytes: artifact.sizeBytes }, inputs }, null, 2) + '\n');
+        }
         return finish(ok ? 'passed' : 'failed', ok ? undefined : 'collect', {
             timingStatus: timingStatus(sta, targets),
             clocks: combineClocks(sta, parseFmax(await read('sta.rpt')), targets),

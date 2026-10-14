@@ -1,4 +1,5 @@
 import { ALL_TOOL_IDS, type ToolCompatibility, type ToolId } from '../../core';
+import type { BoardEnvironment } from '../../core/backend';
 import { TOOL_LABELS } from '../../runtime/classroom';
 import type { EnvironmentReport } from '../../runtime/environment';
 import type { HardwareState } from './hardware-state';
@@ -15,7 +16,7 @@ export interface EnvironmentItem {
 
 /** One line of the student setup overview (Show Environment, Getting Started). */
 export interface SetupRow {
-    readonly id: 'toolchain' | 'programmer' | 'board';
+    readonly id: 'toolchain' | 'programmer' | 'board' | 'board-name' | 'vhdl' | 'engine';
     readonly label: string;
     readonly state: 'ready' | 'setup-required' | 'problem' | 'not-connected' | 'not-checked';
     /** e.g. `Ready`, `Setup Required`, `Not Connected`. */
@@ -52,6 +53,10 @@ export interface EnvironmentSummary {
     /** Every tool, for advanced details. */
     readonly tools: readonly ToolCompatibility[];
     readonly problems: readonly string[];
+    /** Present for a board with its own engine: the FPGA-engine actions (Verify Environment, Restart FPGA Engine) apply. */
+    readonly engine?: { readonly state: BoardEnvironment['engine']['state'] };
+    /** Label of the connected-hardware row (`Hardware` for boards with an engine, `Board` otherwise). */
+    readonly hardwareLabel?: string;
 }
 
 /** The tools a student sees; the full user-space tool list only for the bundled toolchain. */
@@ -81,6 +86,7 @@ function toolchainSummary(report: EnvironmentReport): ToolchainSummary | undefin
 
 /** Summarizes the shared doctor/platform inspection for the sidebar. Pure. */
 export function summarizeEnvironment(report: EnvironmentReport): EnvironmentSummary {
+    if (report.board) return summarizeBoardEnvironment(report.board);
     const toolchain = toolchainSummary(report);
     const items: EnvironmentItem[] = [];
     for (const id of toolchain ? BUNDLED_TOOLS : DISCOVERY_TOOLS) {
@@ -101,7 +107,7 @@ export function summarizeEnvironment(report: EnvironmentReport): EnvironmentSumm
     items.push({ label: programmerLabel, ok: programmerReady, warn: false, detail: prog ? `${prog.displayName}: ${prog.availability.detail}` : 'not configured on this platform' });
 
     const problems: string[] = [];
-    if (toolchain && toolchain.state === 'not-installed') problems.push(`The NexysVHDL FPGA toolchain ${toolchain.requiredVersion} is not installed: Check, Simulate and Build are unavailable until it is installed.`);
+    if (toolchain && toolchain.state === 'not-installed') problems.push(`The MIX-FPGA FPGA toolchain ${toolchain.requiredVersion} is not installed: Check, Simulate and Build are unavailable until it is installed.`);
     else {
         if (!report.providers.ghdl) problems.push('The VHDL tools (GHDL) are not available: Check, Simulate and Build are unavailable.');
         if (!report.providers.apio) problems.push('The FPGA build tools are not available: Build and the RTL Schematic are unavailable.');
@@ -166,18 +172,58 @@ export function summarizeEnvironment(report: EnvironmentReport): EnvironmentSumm
 }
 
 /** The board row: a missing board is not a setup problem (only Program needs it). */
-export function boardRow(hardware: HardwareState): SetupRow {
+export function boardRow(hardware: HardwareState, label = 'Board'): SetupRow {
     switch (hardware.status) {
         case 'one':
         case 'many':
-            return { id: 'board', label: 'Board', state: 'ready', status: 'Connected', detail: hardware.boards.map((b) => `${b.productName ?? 'board'}${b.serialNumber ? ` (${b.serialNumber})` : ''}`).join(', ') };
+            return { id: 'board', label, state: 'ready', status: 'Connected', detail: hardware.boards.map((b) => `${b.productName ?? 'board'}${b.serialNumber ? ` (${b.serialNumber})` : ''}`).join(', ') };
         case 'none':
-            return { id: 'board', label: 'Board', state: 'not-connected', status: 'Not Connected', detail: 'Connect the board by USB and turn it on to program it.' };
+            return { id: 'board', label, state: 'not-connected', status: 'Not Connected', detail: 'Connect the board by USB and turn it on to program it.' };
         case 'unavailable':
-            return { id: 'board', label: 'Board', state: 'not-checked', status: 'Not Checked', detail: 'Board detection needs the programmer support.' };
+            return { id: 'board', label, state: 'not-checked', status: 'Not Checked', detail: 'Board detection needs the programmer support.' };
         case 'detecting':
-            return { id: 'board', label: 'Board', state: 'not-checked', status: 'Checking…' };
+            return { id: 'board', label, state: 'not-checked', status: 'Checking…' };
         case 'unknown':
-            return { id: 'board', label: 'Board', state: 'not-checked', status: 'Not Checked' };
+            return { id: 'board', label, state: 'not-checked', status: 'Not Checked' };
     }
+}
+
+/**
+ * Environment of a board that brings its own tools and engine (DE10-Lite). Student words only:
+ * Board, VHDL Tools, FPGA Engine, Programmer; the real tools are listed as Details. A stopped
+ * engine is normal (it starts when a build needs it), not a problem. Pure.
+ */
+export function summarizeBoardEnvironment(b: BoardEnvironment): EnvironmentSummary {
+    const e = b.engine;
+    const engineRow: SetupRow =
+        e.state === 'running'
+            ? { id: 'engine', label: 'FPGA Engine', state: 'ready', status: 'Ready' }
+            : e.state === 'stopped' || e.state === 'starting'
+              ? { id: 'engine', label: 'FPGA Engine', state: 'ready', status: 'Ready', detail: 'Starts when you build.' }
+              : e.state === 'not-installed'
+                ? { id: 'engine', label: 'FPGA Engine', state: 'setup-required', status: 'Not Installed', detail: 'The FPGA engine has not been set up on this computer yet.' }
+                : { id: 'engine', label: 'FPGA Engine', state: 'problem', status: 'Problem', detail: e.problems.find((p) => p.severity === 'error')?.message ?? 'The FPGA engine is not working. Use Verify Environment.' };
+    const setup: SetupRow[] = [
+        { id: 'board-name', label: 'Board', state: 'ready', status: b.displayName },
+        { id: 'vhdl', label: 'VHDL Tools', state: b.vhdlReady ? 'ready' : 'setup-required', status: b.vhdlReady ? 'Ready' : 'Not Installed', ...(b.vhdlReady ? {} : { detail: 'The VHDL tools are missing: Check, Simulate and the RTL Schematic are unavailable.' }) },
+        engineRow,
+        { id: 'programmer', label: 'Programmer', state: b.programmer.available ? 'ready' : 'setup-required', status: b.programmer.available ? 'Ready' : 'Not Installed', ...(b.programmer.available ? {} : { detail: b.programmer.detail }) },
+    ];
+    const items: EnvironmentItem[] = b.tools.map((t) => ({
+        label: t.label,
+        // Quartus and the MAX 10 package can only be seen once the engine runs; "checked when the engine starts" is not a failure.
+        ok: t.found || (e.state !== 'running' && e.state !== 'unhealthy' && t.ownership === 'external' && t.detail?.startsWith('checked when') === true),
+        warn: false,
+        detail: t.found ? (t.version ?? 'installed') : (t.detail ?? 'not found'),
+    }));
+    const problems: string[] = [];
+    if (!b.vhdlReady) problems.push('The VHDL tools are not available: Check, Simulate and the RTL Schematic are unavailable.');
+    if (e.state === 'not-installed') problems.push('The FPGA engine is not set up on this computer: Build is unavailable.');
+    for (const p of e.problems) if (p.severity !== 'info') problems.push(p.message);
+    if (!b.programmer.available) problems.push(`The programmer is not available: Program is unavailable (${b.programmer.detail}).`);
+    const engineBad = e.state === 'not-installed' || e.state === 'unhealthy';
+    const level: EnvironmentLevel = !b.vhdlReady || e.state === 'not-installed' ? 'setup-required' : engineBad || !b.programmer.available ? 'warning' : 'ready';
+    const headline = level === 'setup-required' ? 'Setup required' : engineBad ? 'Problem with the FPGA engine' : !b.programmer.available ? 'Ready (programming needs setup)' : 'Ready';
+    const status = level === 'setup-required' ? 'Setup required: see the notes below' : level === 'warning' ? 'Some parts need attention' : 'Ready for design, build and programming';
+    return { level, headline, status, items, setup, tools: [], problems, engine: { state: e.state }, hardwareLabel: 'Hardware' };
 }

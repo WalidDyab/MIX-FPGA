@@ -100,9 +100,9 @@ async function resolveClassroom(host: HostInfo, env: Readonly<Record<string, str
     const target = bundleTarget(host);
     const base = { requirement: options.requirement, target };
     const facts = platformHostFacts(host);
-    if (!facts) return { ...base, diagnostics: [errorDiag('toolchain', 'TOOLCHAIN_TARGET_UNSUPPORTED', `NexysVHDL does not support ${target}.`)] };
+    if (!facts) return { ...base, diagnostics: [errorDiag('toolchain', 'TOOLCHAIN_TARGET_UNSUPPORTED', `MIX-FPGA does not support ${target}.`)] };
     const dataRoot = options.dataRoot ?? facts.userDataRoot(env);
-    if (!dataRoot) return { ...base, diagnostics: [errorDiag('toolchain', 'TOOLCHAIN_DATA_ROOT_UNKNOWN', 'Cannot determine the per-user NexysVHDL folder on this computer.')] };
+    if (!dataRoot) return { ...base, diagnostics: [errorDiag('toolchain', 'TOOLCHAIN_DATA_ROOT_UNKNOWN', 'Cannot determine the per-user MIX-FPGA folder on this computer.')] };
     const installed = await installedToolchain(dataRoot, target, options.requirement);
     if (installed.status !== 'installed') return { ...base, dataRoot, installed, diagnostics: installed.diagnostics };
     const resolution = await loadBundledToolchain({

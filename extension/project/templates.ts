@@ -86,7 +86,7 @@ end architecture rtl;
 }
 
 export function starterTestbenchVhdl(): string {
-    return `-- ${STARTER_TESTBENCH}.vhd: testbench for ${STARTER_TOP}. Run it with "NexysVHDL: Simulate".
+    return `-- ${STARTER_TESTBENCH}.vhd: testbench for ${STARTER_TOP}. Run it with "MIX-FPGA: Simulate".
 --
 -- A small BLINK_BITS makes the LED toggle every few clock cycles, so the
 -- whole test takes well under a microsecond of simulated time.
@@ -203,7 +203,7 @@ export function starterXdc(projectName: string, board: BoardDefinition, options:
 }
 
 export function starterGitignore(): string {
-    return `# Everything NexysVHDL generates (GHDL libraries, netlists, bitstreams, logs)
+    return `# Everything MIX-FPGA generates (GHDL libraries, netlists, bitstreams, logs)
 .nexysvhdl/
 
 # Waveforms and editor/OS noise

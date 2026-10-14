@@ -1,4 +1,4 @@
-import { stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 import type { BoardRegistry } from '../board/board-registry';
 import { generateXdc } from '../board/constraints';
@@ -111,6 +111,11 @@ export async function validateProject(project: Project, boards: BoardRegistry): 
     }
 
     const hasPins = typeof c.pins === 'object' && c.pins !== null && Object.keys(c.pins).length > 0;
+    if (board?.backend?.constraints === 'qsf-sdc') {
+        // Quartus boards: constraints are the .qsf (device, pins) and .sdc (clocks) files of constraints/.
+        d.push(...(await validateQsfSdc(project, board.fpga.device, board.name, hasPins)));
+        return { valid: !d.some((x) => x.severity === 'error'), diagnostics: d };
+    }
     if (c.constraints !== undefined) {
         if (hasPins) {
             d.push(errorDiag('project', 'PROJECT_CONSTRAINTS_AND_PINS', 'Use either a constraints file ("constraints") or pin mappings ("pins"), not both.', loc));
@@ -133,4 +138,41 @@ export async function validateProject(project: Project, boards: BoardRegistry): 
     }
 
     return { valid: !d.some((x) => x.severity === 'error'), diagnostics: d };
+}
+
+/** QSF + SDC constraint check for boards whose backend is `qsf-sdc` (top level of `constraints/`). */
+async function validateQsfSdc(project: Project, device: string, boardName: string, hasPins: boolean): Promise<Diagnostic[]> {
+    const d: Diagnostic[] = [];
+    const loc = { file: project.file };
+    const c = project.config;
+    if (hasPins) d.push(errorDiag('project', 'PROJECT_PINS_UNSUPPORTED', `${boardName} takes its pin assignments from a .qsf file in constraints/, not from "pins".`, loc));
+    if (c.constraints !== undefined) d.push(errorDiag('project', 'PROJECT_CONSTRAINTS_WRONG_FORMAT', `${boardName} uses .qsf and .sdc files in constraints/, not an .xdc file ("constraints").`, loc));
+    let names: string[] = [];
+    // Files the student removed from the project stay on disk but do not count (and are never built).
+    const excluded = new Set(Array.isArray(c.exclude) ? c.exclude : []);
+    try {
+        names = (await readdir(resolve(project.root, 'constraints'))).filter((n) => !excluded.has(`constraints/${n}`)).sort();
+    } catch {
+        /* reported below as missing files */
+    }
+    const qsf = names.filter((n) => /\.qsf$/i.test(n));
+    const sdc = names.filter((n) => /\.sdc$/i.test(n));
+    const xdc = names.filter((n) => /\.xdc$/i.test(n));
+    if (qsf.length === 0) d.push(errorDiag('project', 'PROJECT_NO_QSF', 'No .qsf file in constraints/. A QSF assigns the FPGA device, pins and I/O standards.', loc));
+    if (sdc.length === 0) d.push(errorDiag('project', 'PROJECT_NO_SDC', 'No .sdc file in constraints/. An SDC declares the clock so timing can be checked.', loc));
+    if (xdc.length > 0) d.push(warningDiag('project', 'PROJECT_XDC_IGNORED', `${xdc.join(', ')}: .xdc files are for the Nexys A7 and are ignored for ${boardName}.`, loc));
+    for (const n of qsf) {
+        let text = '';
+        try {
+            text = await readFile(resolve(project.root, 'constraints', n), 'utf8');
+        } catch {
+            d.push(errorDiag('project', 'PROJECT_CONSTRAINTS_NOT_FOUND', `Cannot read constraints/${n}.`, loc));
+            continue;
+        }
+        // Quartus ignores `#` comments, so they must not count (a comment may mention DEVICE).
+        const m = /^\s*set_global_assignment\s+-name\s+DEVICE\s+("?)([A-Za-z0-9]+)\1/im.exec(text.replace(/^\s*#.*$/gm, ''));
+        if (!m) d.push(errorDiag('project', 'PROJECT_QSF_NO_DEVICE', `constraints/${n} has no DEVICE assignment; ${boardName} is ${device}.`, loc));
+        else if (m[2]!.toUpperCase() !== device.toUpperCase()) d.push(errorDiag('project', 'PROJECT_QSF_WRONG_DEVICE', `constraints/${n} targets ${m[2]} but ${boardName} has ${device}.`, loc));
+    }
+    return d;
 }

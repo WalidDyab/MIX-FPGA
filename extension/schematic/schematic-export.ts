@@ -35,7 +35,7 @@ export class SchematicExporter {
         vscode.window.showSaveDialog({
             defaultUri: suggested,
             saveLabel: `Export ${format.toUpperCase()}`,
-            title: `NexysVHDL: export the ${this.source.kind === 'rtl' ? 'RTL' : 'Design'} Schematic as ${format.toUpperCase()}`,
+            title: `MIX-FPGA: export the ${this.source.kind === 'rtl' ? 'RTL' : 'Design'} Schematic as ${format.toUpperCase()}`,
             filters: format === 'svg' ? { 'SVG image': ['svg'] } : { 'PNG image': ['png'] },
         });
     lastExport: ExportRecord | undefined;
@@ -74,7 +74,7 @@ export class SchematicExporter {
         this.pending.delete(m.id);
         if (m.error || !m.data) {
             this.lastError = m.error ?? 'no image data';
-            void vscode.window.showWarningMessage(`NexysVHDL: the PNG could not be created (${this.lastError}). Try Export SVG… instead.`);
+            void vscode.window.showWarningMessage(`MIX-FPGA: the PNG could not be created (${this.lastError}). Try Export SVG… instead.`);
             return;
         }
         await this.write(job.uri, Buffer.from(m.data, 'base64'), 'png', job.appearance, m.width && m.height ? { width: m.width, height: m.height } : undefined);
@@ -85,7 +85,7 @@ export class SchematicExporter {
             await writeFile(uri.fsPath, bytes);
         } catch (err) {
             this.lastError = (err as Error).message;
-            void vscode.window.showErrorMessage(`NexysVHDL: could not save ${uri.fsPath}: ${this.lastError}`);
+            void vscode.window.showErrorMessage(`MIX-FPGA: could not save ${uri.fsPath}: ${this.lastError}`);
             return;
         }
         this.lastError = undefined;

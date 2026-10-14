@@ -323,7 +323,7 @@ describe('RTL Schematic view state', () => {
     });
 });
 
-describe('Clear NexysVHDL Problems', () => {
+describe('Clear MIX-FPGA Problems', () => {
     const diag = (file: string): Diagnostic => ({ severity: 'error', source: 'vhdl', code: 'GHDL_ERROR', message: 'boom', location: { file, line: 1, column: 1 } });
 
     it('clears only the diagnostics NexysVHDL owns; others, the Console and the Log are untouched; new results report again', async (t) => {
@@ -357,7 +357,7 @@ describe('Clear NexysVHDL Problems', () => {
 
     it('is a command-palette and Workflow/Results "..." menu command, not a toolbar button; the Problems panel itself offers no menu contribution point', () => {
         const pkg = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8')) as { contributes: { commands: Array<{ command: string; title: string }>; menus: Record<string, Array<{ command: string; group?: string; when?: string }>> } };
-        assert.ok(pkg.contributes.commands.some((c) => c.command === 'nexysvhdl.clearProblems' && c.title === 'Clear NexysVHDL Problems'));
+        assert.ok(pkg.contributes.commands.some((c) => c.command === 'nexysvhdl.clearProblems' && c.title === 'Clear MIX-FPGA Problems'));
         const entries = Object.entries(pkg.contributes.menus).flatMap(([menu, items]) => items.filter((i) => i.command === 'nexysvhdl.clearProblems').map((i) => ({ menu, ...i })));
         assert.ok(entries.some((e) => e.menu === 'commandPalette'));
         for (const e of entries.filter((x) => x.menu === 'view/title')) assert.ok(!e.group?.startsWith('navigation'), 'in the overflow menu, never an inline toolbar button');

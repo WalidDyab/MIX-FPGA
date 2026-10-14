@@ -139,7 +139,7 @@ export class SchematicPanel implements vscode.Disposable {
 
     private model(): { model?: SchematicModel; problem?: string } {
         const snap = this.service.snapshot;
-        if (!snap?.project) return { problem: 'No NexysVHDL project is open.' };
+        if (!snap?.project) return { problem: 'No MIX-FPGA project is open.' };
         const root = snap.hierarchy.root;
         if (!root) return { problem: `The top entity "${snap.project.config.top}" was not found in src/.` };
         const model = buildSchematic(snap.index, root, this.nodeId) ?? buildSchematic(snap.index, root);

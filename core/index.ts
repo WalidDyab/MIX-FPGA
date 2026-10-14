@@ -19,6 +19,7 @@ export * from './board/constraints';
 export * from './board/xdc';
 
 export * from './project/types';
+export * from './project/board-resolution';
 export * from './project/project-loader';
 export * from './project/validation';
 export * from './project/project-writer';

@@ -46,7 +46,7 @@ export class FilesView extends ServiceTree {
             g.children = entries.length ? entries.map((f) => this.fileNode(root, f, kind)) : [info(empty)];
             return g;
         };
-        const constraints = group('Constraints', 'pinned', files.constraints, 'constraints', 'No .xdc files in constraints/');
+        const constraints = group('Constraints', 'pinned', files.constraints, 'constraints', `No ${files.constraintExtensions} files in constraints/`);
         if (files.generatedConstraints) {
             const gen = info('Generated from "pins" in nexysvhdl.json', '', 'gear');
             gen.tooltip = 'This project lists pin mappings instead of an XDC file. Right-click an .xdc file and choose "Use This Constraints File" to switch.';

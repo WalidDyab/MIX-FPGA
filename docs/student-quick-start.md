@@ -1,10 +1,12 @@
-# NexysVHDL quick start
+# MIX-FPGA quick start
 
-From an empty folder to a blinking LED on the Nexys A7-100T. First install NexysVHDL and its FPGA toolchain ([Windows](student-install-windows.md), [macOS](student-install-macos.md)). **NexysVHDL: Getting Started** in VS Code walks through the same steps.
+From an empty folder to a blinking LED on the Nexys A7-100T or the DE10-Lite (macOS). First install NexysVHDL and its FPGA toolchain ([Windows](student-install-windows.md), [macOS](student-install-macos.md)). **NexysVHDL: Getting Started** in VS Code walks through the same steps.
 
 ## 1. Create a project
 
-**NexysVHDL: Create NexysVHDL Project** → choose a parent folder → name it (letters, digits, `_`, `-`; e.g. `BlinkDemo`) → board **Nexys A7-100T** → open it.
+**MIX-FPGA: Create MIX-FPGA Project** → choose a parent folder → name it (letters, digits, `_`, `-`; e.g. `BlinkDemo`) → choose your board (**Nexys A7-100T** or **DE10-Lite**) → open it.
+
+The board decides the constraint files: a Nexys A7 project has an `.xdc` file in `constraints/`; a DE10-Lite project has a `.qsf` (device and pins) and an `.sdc` (clock). The DE10-Lite starter blinks **LEDR0** while switch **SW0** is up; button **KEY0** restarts it. Everything else on this page works the same for both boards. The first DE10-Lite Build starts the FPGA engine (about 35 seconds); later builds take about 27.
 
 ```
 BlinkDemo/

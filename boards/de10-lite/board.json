@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "de10-lite",
+  "name": "Terasic DE10-Lite",
+  "displayName": "DE10-Lite",
+  "vendor": "Terasic",
+  "fpga": {
+    "family": "MAX 10",
+    "device": "10M50DAF484C7G",
+    "part": "10M50DAF484C7G"
+  },
+  "backend": {
+    "constraints": "qsf-sdc",
+    "implementation": "quartus-lima",
+    "programming": "native-jtag",
+    "programmingFormat": "svf",
+    "programmerBoardKey": "de10lite",
+    "jtagIdcode": "0x031050dd",
+    "metricLabels": { "logic": "Logic Elements", "registers": "Registers", "memory": "Memory Bits", "dsp": "DSP Blocks" },
+    "hosts": ["macos-arm64"]
+  },
+  "backendIds": {
+    "quartus": "10M50DAF484C7G"
+  },
+  "identification": {
+    "usb": { "vendorId": "09fb", "productId": "6001" },
+    "productNames": ["USB-Blaster"]
+  },
+  "resources": [
+    {
+      "id": "MAX10_CLK1_50",
+      "kind": "clock",
+      "description": "50 MHz clock input (Bank 3B) — Terasic DE10-Lite User Manual v1.7, Table 3-2",
+      "pins": ["P11"],
+      "ioStandard": "3.3-V LVTTL",
+      "clock": { "frequencyHz": 50000000 }
+    },
+    {
+      "id": "KEY0",
+      "kind": "button",
+      "description": "Push-button 0 — Table 3-3",
+      "pins": ["B8"],
+      "ioStandard": "3.3 V SCHMITT TRIGGER"
+    },
+    {
+      "id": "KEY1",
+      "kind": "button",
+      "description": "Push-button 1 — Table 3-3",
+      "pins": ["A7"],
+      "ioStandard": "3.3 V SCHMITT TRIGGER"
+    },
+    {
+      "id": "SW",
+      "kind": "switch",
+      "description": "Ten slide switches SW0..SW9 — Table 3-4",
+      "pins": ["C10", "C11", "D12", "C12", "A12", "B12", "A13", "A14", "B14", "F15"],
+      "ioStandard": "3.3-V LVTTL"
+    },
+    {
+      "id": "LEDR",
+      "kind": "led",
+      "description": "Ten red LEDs LEDR0..LEDR9, active high — Table 3-5",
+      "pins": ["A8", "A9", "A10", "B10", "D13", "C13", "E14", "D14", "A11", "B11"],
+      "ioStandard": "3.3-V LVTTL"
+    }
+  ]
+}
