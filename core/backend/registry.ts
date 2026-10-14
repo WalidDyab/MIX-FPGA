@@ -32,7 +32,8 @@ export class ProviderRegistry {
 
     /** `host` is a platform key like `macos-arm64`; a board without `hosts` runs wherever the base flow does. */
     supportsHost(board: BoardProfile): boolean {
-        return !board.hosts || this.host === undefined || board.hosts.includes(this.host);
+        // A host this product does not know is not a supported host for a board that lists its hosts.
+        return !board.hosts || (this.host !== undefined && board.hosts.includes(this.host));
     }
 
     private unsupported(board: BoardProfile): Diagnostic {

@@ -967,7 +967,7 @@ export class NexysVhdlService {
                 if (r.timing.passed) this.console.say('Build', `Timing met${mhz}`);
                 else this.console.warning('Build', `Timing not met${mhz}: the design may not work at the requested clock speed.`);
             }
-            if (r.success) this.console.say('Build', r.normalized?.programmingArtifact?.format === 'svf' ? 'Programming file ready' : 'Bitstream ready');
+            if (r.success) this.console.say('Build', r.normalized?.programmingArtifact && r.normalized.programmingArtifact.format !== 'bit' ? 'Programming file ready' : 'Bitstream ready');
             else this.console.fail('Build', `FAIL${r.implementationStage ? ` during ${r.implementationStage}` : ''}`);
         }
         this.console.endAction();

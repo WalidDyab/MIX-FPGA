@@ -3,6 +3,7 @@ export * from './profiles';
 export * from './qsf-sdc';
 export * from './environment';
 export * from '../implementation/quartus/parsers';
+export * from '../implementation/quartus/provider';
 export * from './nexys';
 export * from './registry';
 export * from './flow';

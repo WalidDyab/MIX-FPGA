@@ -26,8 +26,11 @@ export async function run_(): Promise<void> {
     const exec = (cmd: string, ...args: unknown[]) => vscode.commands.executeCommand(cmd, ...args) as Promise<any>;
     const repo = ext.extensionPath;
     const limactl = join(repo, 'toolchains', 'experimental', 'lima-2.2.1', 'bin', 'limactl');
-    const limaHome = join(process.env['HOME']!, 'Library', 'MIX-FPGA', 'lima');
+    const isMac = process.platform === 'darwin';
+    const limaHome = join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA', 'lima');
+    // The Linux engine exists only on macOS; on Windows there is nothing to ask (and it must never be needed).
     const vmState = async (): Promise<string> => {
+        if (!isMac) return 'not-applicable';
         try {
             const r = await run(limactl, ['list', '--format', '{{.Status}}', 'mix-fpga-de10'], { env: { ...process.env, LIMA_HOME: limaHome } });
             return r.stdout.trim() || 'missing';
@@ -67,7 +70,7 @@ export async function run_(): Promise<void> {
         step('vmAfterEnvironment', await vmState());
 
         // ---- Check / Simulate / schematics must not start the engine (DE10)
-        if (stage === 'de10') {
+        if (stage === 'de10' && isMac) {
             await run(limactl, ['stop', 'mix-fpga-de10'], { env: { ...process.env, LIMA_HOME: limaHome } }).catch(() => undefined);
             step('vmStoppedForTest', await vmState());
         }
@@ -85,7 +88,7 @@ export async function run_(): Promise<void> {
         step('vmAfterCheckSimulateSchematics', await vmState());
 
         // ---- Build (DE10: starts the engine; Nexys: only with MIXFPGA_NEXYS_BUILD=1)
-        if (stage === 'de10' || process.env['MIXFPGA_NEXYS_BUILD'] === '1') {
+        if ((stage === 'de10' || process.env['MIXFPGA_NEXYS_BUILD'] === '1') && process.env['MIXFPGA_SKIP_BUILD'] !== '1') {
             for (const label of stage === 'de10' ? ['cold', 'warm'] : ['build']) {
                 const seen: string[] = [];
                 const stages: string[] = [];
@@ -139,6 +142,8 @@ export async function run_(): Promise<void> {
             await exec('nexysvhdl.program');
             await waitFor('program done', () => (service.workflow.program.state === 'passed' || service.workflow.program.state === 'failed' ? service.workflow.program : undefined), 120_000);
             step('program', service.workflow.program);
+            const lp = service.lastProgram;
+            step('programResult', { status: lp?.status, destination: lp?.destination, durationMs: lp?.durationMs, target: lp?.target, diagnostics: lp?.diagnostics.map((d) => `${d.severity}:${d.code}`) });
         }
         step('result', 'PASS');
     } catch (err) {

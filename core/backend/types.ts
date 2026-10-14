@@ -16,8 +16,12 @@ import type { BuildProgress, BuildResult } from '../workflow/types';
 /** Constraint file family a board's implementation backend consumes. */
 export type ConstraintFormat = 'xdc' | 'qsf-sdc';
 
-/** What the board's programmer is given. `bit` = canonical bitstream, `svf` = serial vector file. */
-export type ProgrammingFormat = 'bit' | 'svf';
+/**
+ * A programming file a build can produce and a programmer can load. `bit` = canonical bitstream, `svf` = serial vector
+ * file (openFPGALoader), `sof` = Quartus SRAM object file (quartus_pgm). A build may produce several; the host's
+ * ProgrammingProvider says which one it loads (`artifactFormat`).
+ */
+export type ProgrammingFormat = 'bit' | 'svf' | 'sof';
 
 /** Vendor-native names for the headline metrics (students see `Logic Elements`, `LUTs`, ...). */
 export interface MetricLabels {
@@ -43,6 +47,7 @@ export interface BoardProfile {
     readonly constraintFormat: ConstraintFormat;
     readonly implementationProviderId: string;
     readonly programmingProviderId: string;
+    /** The board family's default programming file (`bit` = the original bitstream flow). A host's programmer may load another format of the same build. */
     readonly programmingFormat: ProgrammingFormat;
     /** Key the board's programming backend uses for this board (opaque to the core). */
     readonly programmerBoardKey?: string;
@@ -147,7 +152,10 @@ export interface NormalizedBuildResult {
     };
     readonly warnings: readonly Diagnostic[];
     readonly diagnostics: readonly Diagnostic[];
+    /** The artifact this host's programmer loads. */
     readonly programmingArtifact?: ProgrammingArtifactRef;
+    /** Every programming file the build produced, typed (a DE10 Quartus build yields `.sof` and `.svf`). */
+    readonly programmingArtifacts?: readonly ProgrammingArtifactRef[];
     readonly rawReports: readonly RawReport[];
     readonly logs: readonly LogRef[];
     readonly stageDurationsMs: Readonly<Partial<Record<BuildStage, number>>>;
@@ -190,7 +198,7 @@ export interface ImplementationProvider {
     supports(board: BoardProfile): boolean;
     build(request: BuildRequest): Promise<NormalizedBuildResult>;
     /** The programming artifact of the project's last good build, if any. */
-    artifactFor?(projectDir: string, top: string): Promise<ProgrammingArtifactInfo | undefined>;
+    artifactFor?(projectDir: string, top: string, format?: ProgrammingFormat): Promise<ProgrammingArtifactInfo | undefined>;
     /** The project files an artifact would be built from, hashed now (to detect a stale artifact). */
     currentInputs?(projectDir: string, sources: readonly string[], exclude?: readonly string[]): Promise<Readonly<Record<string, string>>>;
 }
@@ -242,6 +250,8 @@ export interface ProgramOutcome {
 
 export interface ProgrammingProvider {
     readonly id: string;
+    /** The programming file this provider loads; absent = the board's `programmingFormat`. */
+    readonly artifactFormat?: ProgrammingFormat;
     availability(): Promise<{ readonly available: boolean; readonly detail: string }>;
     detect(board: BoardProfile): Promise<HardwareDetection>;
     program(request: ProgramRequest): Promise<ProgramOutcome>;

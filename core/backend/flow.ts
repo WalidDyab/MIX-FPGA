@@ -3,7 +3,7 @@ import type { Project } from '../project/types';
 import type { WorkflowController } from '../workflow/workflow-controller';
 import type { ProviderRegistry } from './registry';
 import type { BoardEnvironment, EnvironmentVerification } from './environment';
-import type { BoardProfile, EngineProvider } from './types';
+import type { BoardProfile, EngineProvider, ImplementationProvider, ProgrammingProvider } from './types';
 
 /**
  * Everything the multi-board backend needs from the composition root: the providers of every
@@ -30,4 +30,22 @@ export interface BoardFlows {
     programWorkDir(project: Project, board: BoardProfile): string;
     /** The project's VHDL sources in compile order (project-relative). */
     sourcesOf(project: Project): readonly string[];
+}
+
+/**
+ * Everything one host brings for a board family that has its own tools (DE10-Lite today): its VHDL tools,
+ * implementation and programming providers, the engine behind them, and its Environment page data. The macOS
+ * runtime (Quartus in a VM) and the Windows runtime (native Quartus) both implement this; the composition
+ * root picks one by host, and nothing else in the product knows which.
+ */
+export interface FamilyRuntime {
+    readonly implementation: ImplementationProvider;
+    readonly programmer: ProgrammingProvider;
+    readonly engine: EngineProvider;
+    /** Check / Simulate / RTL controller using MIX-FPGA's own GHDL and Yosys. Starts nothing by itself. */
+    workflow(): WorkflowController;
+    /** The environment page's data. Starts nothing. */
+    environment(displayName: string, boardId: string): Promise<BoardEnvironment>;
+    /** Hash-checks the owned tools, then proves the engine really runs Quartus. */
+    verify(signal?: AbortSignal): Promise<EnvironmentVerification>;
 }

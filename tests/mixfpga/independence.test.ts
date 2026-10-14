@@ -13,10 +13,11 @@ describe('MIX-FPGA DE10 backend independence', () => {
     it('defaults every tool path to MIX-FPGA\'s own locations', () => {
         const p = defaultPaths({ repoRoot: '/repo', home: '/home/u' });
         for (const v of [p.limactl, p.programmer, p.programmerDataDir, p.provisionScript, p.limaHome, p.shareDir]) assert.doesNotMatch(v, /nexys/i, v);
-        assert.equal(p.limactl, '/repo/toolchains/experimental/lima-2.2.1/bin/limactl');
-        assert.equal(p.programmer, '/repo/toolchains/experimental/openfpgaloader-1.1.1/libexec/openFPGALoader');
-        assert.equal(p.limaHome, '/home/u/Library/MIX-FPGA/lima');
-        assert.equal(p.shareDir, '/home/u/Library/MIX-FPGA/staging');
+        // join(): the same expectations hold on a host whose path separator is a backslash.
+        assert.equal(p.limactl, join('/repo', 'toolchains', 'experimental', 'lima-2.2.1', 'bin', 'limactl'));
+        assert.equal(p.programmer, join('/repo', 'toolchains', 'experimental', 'openfpgaloader-1.1.1', 'libexec', 'openFPGALoader'));
+        assert.equal(p.limaHome, join('/home/u', 'Library', 'MIX-FPGA', 'lima'));
+        assert.equal(p.shareDir, join('/home/u', 'Library', 'MIX-FPGA', 'staging'));
     });
 
     it('has no reference to the NexysVHDL toolchain in the backend sources', async () => {

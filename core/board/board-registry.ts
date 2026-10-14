@@ -36,7 +36,7 @@ export function validateBoardDefinition(data: unknown, origin: string): Diagnost
         const be = b.backend as Partial<NonNullable<BoardDefinition['backend']>>;
         if (be.constraints !== 'xdc' && be.constraints !== 'qsf-sdc') fail('BOARD_BACKEND_INVALID', 'backend.constraints must be "xdc" or "qsf-sdc"');
         for (const k of ['implementation', 'programming'] as const) if (typeof be[k] !== 'string' || be[k] === '') fail('BOARD_BACKEND_INVALID', `backend.${k} is required`);
-        if (be.programmingFormat !== 'bit' && be.programmingFormat !== 'svf') fail('BOARD_BACKEND_INVALID', 'backend.programmingFormat must be "bit" or "svf"');
+        if (be.programmingFormat !== 'bit' && be.programmingFormat !== 'svf' && be.programmingFormat !== 'sof') fail('BOARD_BACKEND_INVALID', 'backend.programmingFormat must be "bit", "svf" or "sof"');
         if (be.jtagIdcode !== undefined && !/^0x[0-9a-fA-F]{1,8}$/.test(String(be.jtagIdcode))) fail('BOARD_BACKEND_INVALID', 'backend.jtagIdcode must be hex text like "0x031050dd"');
     }
     if (!Array.isArray(b.resources)) {

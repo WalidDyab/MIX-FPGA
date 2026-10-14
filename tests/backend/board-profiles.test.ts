@@ -18,7 +18,7 @@ describe('board profiles come from board data', () => {
         assert.equal(p.hosts, undefined, 'the original flow is not host-restricted by board data');
     });
 
-    it('DE10-Lite: QSF+SDC, Quartus in Lima, native JTAG, SVF, exact MAX 10 part', async () => {
+    it('DE10-Lite: QSF+SDC, Quartus (one provider id, host-specific executor), native JTAG, SVF, exact MAX 10 part', async () => {
         const def = (await repoBoards()).get('de10-lite')!;
         const p = profileFromBoardDefinition(def);
         assert.equal(p.displayName, 'DE10-Lite');
@@ -26,11 +26,11 @@ describe('board profiles come from board data', () => {
         assert.equal(p.fpga.family, 'MAX 10');
         assert.equal(p.fpga.jtagIdcode, 0x031050dd);
         assert.equal(p.constraintFormat, 'qsf-sdc');
-        assert.equal(p.implementationProviderId, 'quartus-lima');
+        assert.equal(p.implementationProviderId, 'quartus');
         assert.equal(p.programmingProviderId, 'native-jtag');
         assert.equal(p.programmingFormat, 'svf');
         assert.deepEqual(p.metricLabels, { logic: 'Logic Elements', registers: 'Registers', memory: 'Memory Bits', dsp: 'DSP Blocks' });
-        assert.deepEqual(p.hosts, ['macos-arm64']);
+        assert.deepEqual(p.hosts, ['macos-arm64', 'windows-x64']);
     });
 
     it('the Phase 1 constant and the board data describe the same DE10-Lite', async () => {
@@ -63,11 +63,11 @@ describe('provider dispatch is centralized in the registry', () => {
     const { hosts: _h, ...nexysNoHosts } = nexys;
 
     it('maps each board to its own providers', () => {
-        const r = new ProviderRegistry('macos-arm64').addImplementation(impl('openxc7')).addImplementation(impl('quartus-lima')).addProgramming(prog('platform-default')).addProgramming(prog('native-jtag'));
+        const r = new ProviderRegistry('macos-arm64').addImplementation(impl('openxc7')).addImplementation(impl('quartus')).addProgramming(prog('platform-default')).addProgramming(prog('native-jtag'));
         const a = r.implementation(nexysNoHosts);
         const b = r.implementation(DE10_LITE_PROFILE);
         assert.ok(a.ok && a.provider.id === 'openxc7');
-        assert.ok(b.ok && b.provider.id === 'quartus-lima');
+        assert.ok(b.ok && b.provider.id === 'quartus');
         const pa = r.programming(nexysNoHosts);
         const pb = r.programming(DE10_LITE_PROFILE);
         assert.ok(pa.ok && pa.provider.id === 'platform-default');
@@ -75,7 +75,7 @@ describe('provider dispatch is centralized in the registry', () => {
     });
 
     it('refuses a board on a host it does not support, with a student-readable reason', () => {
-        const r = new ProviderRegistry('win32-x64').addImplementation(impl('quartus-lima')).addProgramming(prog('native-jtag'));
+        const r = new ProviderRegistry('linux-x64').addImplementation(impl('quartus')).addProgramming(prog('native-jtag'));
         const x = r.implementation(DE10_LITE_PROFILE);
         assert.ok(!x.ok);
         assert.equal(x.diagnostic.code, 'BOARD_HOST_UNSUPPORTED');

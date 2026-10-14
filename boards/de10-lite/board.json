@@ -11,13 +11,13 @@
   },
   "backend": {
     "constraints": "qsf-sdc",
-    "implementation": "quartus-lima",
+    "implementation": "quartus",
     "programming": "native-jtag",
     "programmingFormat": "svf",
     "programmerBoardKey": "de10lite",
     "jtagIdcode": "0x031050dd",
     "metricLabels": { "logic": "Logic Elements", "registers": "Registers", "memory": "Memory Bits", "dsp": "DSP Blocks" },
-    "hosts": ["macos-arm64"]
+    "hosts": ["macos-arm64", "windows-x64"]
   },
   "backendIds": {
     "quartus": "10M50DAF484C7G"

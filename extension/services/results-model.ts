@@ -130,7 +130,7 @@ function normalizedBuildRows(n: NormalizedBuildResult, build: BuildResult): NonN
         success: build.success,
         timing,
         resources,
-        ...(file ? { bitstream: { label: n.programmingArtifact?.format === 'svf' ? 'Programming file' : 'Bitstream', value: file } } : {}),
+        ...(file ? { bitstream: { label: n.programmingArtifact && n.programmingArtifact.format !== 'bit' ? 'Programming file' : 'Bitstream', value: file } } : {}),
         logs: build.logs,
     };
 }

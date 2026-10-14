@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "product": "MIX-FPGA",
+  "target": "windows-x64",
+  "description": "What the MIX-FPGA Windows (x64) DE10-Lite toolchain consists of, who owns each part, and how it is verified. Nothing is packaged or released from this file yet. Runtime location (development): toolchains/experimental, or $MIXFPGA_TOOLCHAIN_ROOT; created by scripts/mixfpga/assemble-windows.mjs.",
+  "architecture": "x86-64 (PE machine 0x8664) for every owned executable and DLL; Windows system DLLs come from the OS",
+  "components": [
+    {
+      "id": "ghdl",
+      "name": "GHDL",
+      "version": "6.0.0",
+      "ownership": "owned",
+      "role": "VHDL check, simulation, VHDL-to-netlist synthesis",
+      "license": "GPL-2.0-or-later; runtime DLLs: GCC Runtime Library Exception (libgcc_s_seh-1, libgnat-15), MIT-style (libwinpthread-1), Zlib (zlib1); IEEE library sources carry their own LICENSE",
+      "source": "https://github.com/ghdl/ghdl/releases/tag/v6.0.0 (ghdl-mcode-6.0.0-ucrt64.zip, mcode backend, MSYS2 UCRT64, GNAT 15.2.0)",
+      "upstreamArchiveSha256": "76e160ceec35834c73ada6e4e484416d13aed4b64cbc7c74c5cca53a7ef60e41",
+      "sourceOffer": "https://github.com/ghdl/ghdl/archive/refs/tags/v6.0.0.tar.gz (offer required on redistribution)",
+      "provenance": "Copied byte-for-byte from the validated NexysVHDL Toolchain 1.0 (win32-x64) into toolchains/experimental/ghdl-6.0.0 by scripts/mixfpga/assemble-windows.mjs; the original is untouched and is never used at run time.",
+      "dir": "ghdl-6.0.0",
+      "executable": "ghdl-6.0.0/bin/ghdl.exe",
+      "sha256": "5bb01f50bb56fd68af8bbc47e479acb79ee969a905188ec25491272ac7a31dc2",
+      "treeSha256": "a6c3876ed24f2f2813de18401e6c57646f0685ec42fdcb7f0b73a40d923f2fba",
+      "fileCount": 119
+    },
+    {
+      "id": "yosys",
+      "name": "Yosys",
+      "version": "0.63+173",
+      "ownership": "owned",
+      "role": "RTL Schematic (read GHDL netlist, proc, write JSON); no synthesis or place and route",
+      "license": "ISC; DLLs: libstdc++/libgcc (GPL-3.0 with GCC Runtime Library Exception), readline 8 (GPL-3.0), Tcl 8.6 (Tcl/Tk license), libffi (MIT), termcap, libwinpthread (MIT-style), zlib (Zlib)",
+      "source": "https://github.com/YosysHQ/yosys (git 66306a8ca) via YosysHQ OSS CAD Suite windows-x64 as packaged by FPGAwars tools-oss-cad-suite 2026-09-15",
+      "upstreamArchiveSha256": "7e221239a5c866b58c7fdbcf118b29bcae69b27ff61e2ace706a3e211ad1200b",
+      "provenance": "yosys.exe, the DLLs its PE import table needs (resolved recursively) and share/yosys copied byte-for-byte from NexysVHDL Toolchain 1.0 apio/packages/oss-cad-suite into toolchains/experimental/yosys-0.63. The original is untouched and never used at run time.",
+      "dir": "yosys-0.63",
+      "executable": "yosys-0.63/bin/yosys.exe",
+      "sha256": "1d5532cd6bae5259b83857c4a25e2a9648df241b4a3e2b018353e5206dd92573",
+      "treeSha256": "8aa567453be2f29370e71e7f1805751492948fdd0a3281ca54c5b71b8514a461",
+      "fileCount": 362
+    },
+    {
+      "id": "mixfpga-adapters",
+      "name": "MIX-FPGA adapters and scripts",
+      "version": "phase3",
+      "ownership": "owned",
+      "role": "Board profiles, providers, Windows Quartus executor (platform/windows/de10)",
+      "license": "Apache-2.0",
+      "source": "this repository"
+    },
+    {
+      "id": "quartus",
+      "name": "Quartus Prime Lite Edition",
+      "version": "25.1std.0 Build 1129",
+      "ownership": "external",
+      "supplier": "Altera",
+      "role": "FPGA implementation for the DE10-Lite (MAX 10); native Windows command-line tools",
+      "install": "Supplied by the student from Altera's official download page after accepting the Altera license. Not redistributed by MIX-FPGA."
+    },
+    {
+      "id": "quartus_pgm",
+      "name": "Quartus Programmer (quartus_pgm, jtagconfig)",
+      "version": "25.1std.0 Build 1129",
+      "ownership": "external",
+      "supplier": "Altera",
+      "role": "Windows DE10-Lite programming: .sof into SRAM over JTAG through the standard Altera USB-Blaster driver. openFPGALoader cannot open that driver, and MIX-FPGA never replaces drivers.",
+      "install": "Installed with Quartus Prime Lite. Not redistributed by MIX-FPGA."
+    },
+    {
+      "id": "max10-device-package",
+      "name": "MAX 10 device support",
+      "version": "25.1std.0.1129",
+      "ownership": "external",
+      "supplier": "Altera",
+      "role": "Device data for 10M50DAF484C7G",
+      "install": "Supplied by the student (max10-25.1std.0.1129.qdz) together with Quartus. Not redistributed by MIX-FPGA."
+    }
+  ]
+}

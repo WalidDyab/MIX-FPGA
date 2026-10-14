@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import {
     type BoardFlows,
+    type FamilyRuntime,
     LegacyProgrammingProvider,
     OpenXC7ImplementationProvider,
     ProviderRegistry,
@@ -12,6 +13,7 @@ import {
 } from '../core/backend';
 import { loadProject, packageRoot, type HostInfo, type Project, type ToolInvocation } from '../core';
 import { De10Runtime } from '../platform/macos/de10/runtime';
+import { WindowsDe10Runtime } from '../platform/windows/de10/runtime';
 import { loadCanonicalBitstream, workspacePaths } from './bitstream';
 import { controllerFor, programmingFor, type RuntimeContext } from './context';
 
@@ -27,7 +29,7 @@ export interface BoardFlowOptions {
     /** Receives everything every MIX-FPGA-owned tool prints, as it prints it (the console). */
     readonly onToolOutput?: (text: string, invocation: ToolInvocation) => void;
     /** Tests inject a ready-made DE10 runtime (fake runner); production builds one. */
-    readonly de10?: De10Runtime;
+    readonly de10?: FamilyRuntime;
     readonly repoRoot?: string;
 }
 
@@ -70,12 +72,21 @@ export function createBoardFlows(opts: BoardFlowOptions): BoardFlows {
     );
 
     // Quartus family (DE10-Lite): only on hosts that support it.
-    let de10: De10Runtime | undefined = opts.de10;
+    let de10: FamilyRuntime | undefined = opts.de10;
     if (!de10 && hostKey === 'macos-arm64') {
         de10 = new De10Runtime({
             repoRoot: opts.repoRoot ?? packageRoot(__dirname),
             boards: ctx.boards,
             ...(process.env['MIXFPGA_TOOLCHAIN_ROOT'] ? { toolchainRoot: process.env['MIXFPGA_TOOLCHAIN_ROOT'] } : {}),
+            ...(opts.onToolOutput ? { onToolOutput: opts.onToolOutput } : {}),
+        });
+    }
+    if (!de10 && hostKey === 'windows-x64') {
+        de10 = new WindowsDe10Runtime({
+            repoRoot: opts.repoRoot ?? packageRoot(__dirname),
+            boards: ctx.boards,
+            ...(process.env['MIXFPGA_TOOLCHAIN_ROOT'] ? { toolchainRoot: process.env['MIXFPGA_TOOLCHAIN_ROOT'] } : {}),
+            ...(process.env['MIXFPGA_QUARTUS_ROOT'] ? { quartusRoot: process.env['MIXFPGA_QUARTUS_ROOT'] } : {}),
             ...(opts.onToolOutput ? { onToolOutput: opts.onToolOutput } : {}),
         });
     }
@@ -99,7 +110,7 @@ export function createBoardFlows(opts: BoardFlowOptions): BoardFlows {
         engineFor: (board): EngineProvider | undefined => (de10 && board.implementationProviderId === de10.implementation.id ? de10.engine : undefined),
         environmentFor: async (board) => (de10 && board.implementationProviderId === de10.implementation.id ? de10.environment(board.displayName, board.id) : undefined),
         verifyEnvironment: async (board, signal) => (de10 && board.implementationProviderId === de10.implementation.id ? de10.verify(signal) : undefined),
-        programWorkDir: (project, board) => (board.programmingFormat === 'svf' ? join(project.root, '.mix-fpga', 'build', 'de10-lite', 'program') : workspacePaths(project).program),
+        programWorkDir: (project, board) => (board.programmingFormat !== 'bit' ? join(project.root, '.mix-fpga', 'build', 'de10-lite', 'program') : workspacePaths(project).program),
         sourcesOf: (project) => (Array.isArray(project.config.sources) ? project.config.sources.filter((s): s is string => typeof s === 'string') : []),
     };
 }

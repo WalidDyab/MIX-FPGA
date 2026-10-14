@@ -5,7 +5,7 @@ import { describe, it } from 'node:test';
 import { loadProject, type BuildProgress } from '../../core';
 import { nexysA7BoardProfile, normalizeLegacyBuild } from '../../core/backend';
 import { buildResultsModel } from '../../extension/services/results-model';
-import { makeHarness, MAC, WIN } from './harness';
+import { makeHarness, LINUX, MAC } from './harness';
 import { tempDir, writeFiles, VALID_CONFIG } from '../helpers';
 
 const limaVerbs = (h: { vm: { limaArgs: string[][] } }) => h.vm.limaArgs.map((a) => a[0]);
@@ -137,7 +137,7 @@ describe('Build dispatch', () => {
     });
 
     it('DE10-Lite on an unsupported computer is refused clearly, with no tool run', async (t) => {
-        const h = await makeHarness(t, { host: WIN, withDe10: false });
+        const h = await makeHarness(t, { host: LINUX, withDe10: false });
         const p = await h.de10Project();
         const r = await h.backend.build(p, () => undefined);
         assert.equal(r.success, false);

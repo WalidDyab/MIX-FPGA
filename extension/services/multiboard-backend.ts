@@ -201,7 +201,8 @@ export class MixFpgaBackend implements NexysBackend {
         const profile = flows.profileOf(project.config.board);
         if (!profile || profile.programmingFormat === 'bit') return this.core.bitstream(project);
         const impl = flows.registry.implementation(profile);
-        const a = impl.ok ? await impl.provider.artifactFor?.(project.root, project.config.top) : undefined;
+        const prog = flows.registry.programming(profile);
+        const a = impl.ok ? await impl.provider.artifactFor?.(project.root, project.config.top, prog.ok ? prog.provider.artifactFormat : undefined) : undefined;
         return a ? { path: a.path, sizeBytes: a.sizeBytes, modifiedMs: a.modifiedMs } : undefined;
     }
 
@@ -220,7 +221,8 @@ export class MixFpgaBackend implements NexysBackend {
         if (!prog.ok) return { status: 'failed', destination: 'volatile', diagnostics: [prog.diagnostic], logs: [], durationMs: 0 };
 
         const impl = flows.registry.implementation(profile);
-        const info = impl.ok ? await impl.provider.artifactFor?.(project.root, project.config.top) : undefined;
+        // The host's programmer says which of the build's programming files it loads (macOS: .svf, Windows: .sof).
+        const info = impl.ok ? await impl.provider.artifactFor?.(project.root, project.config.top, prog.provider.artifactFormat) : undefined;
         if (!info) return failed('PROGRAM_NO_BITSTREAM', PROGRAM_NO_FILE(profile));
         if (info.boardId !== undefined && info.boardId !== profile.id) {
             return failed('PROGRAM_ARTIFACT_WRONG_BOARD', `The last build was made for a different board (${info.boardId}), not ${profile.displayName}. Run Build again.`);

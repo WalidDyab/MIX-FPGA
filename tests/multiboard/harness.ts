@@ -13,6 +13,7 @@ import { FakeVm, makeDe10Project, testPaths, type VmOptions } from '../mixfpga/f
 import { FakeProgrammerBinary, type Script } from '../mixfpga/fake-programmer';
 
 export const MAC: HostInfo = { platform: 'darwin', arch: 'arm64', nodeVersion: 'v24.0.0-test' };
+export const LINUX: HostInfo = { platform: 'linux', arch: 'x64', nodeVersion: 'v24.0.0-test' };
 export const WIN: HostInfo = { platform: 'win32', arch: 'x64', nodeVersion: 'v24.0.0-test' };
 
 /** Routes each executable to its fake: limactl -> the VM, ghdl -> a GHDL that succeeds, the programmer -> its script. Never starts a process. */

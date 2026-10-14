@@ -75,7 +75,7 @@ export interface BoardBackend {
     readonly constraints: BoardConstraintFormat;
     readonly implementation: string;
     readonly programming: string;
-    readonly programmingFormat: 'bit' | 'svf';
+    readonly programmingFormat: 'bit' | 'svf' | 'sof';
     /** Key the board's programming backend uses for this board (opaque to the core). */
     readonly programmerBoardKey?: string;
     /** JTAG IDCODE of the FPGA as hex text, e.g. `0x031050dd`. */
