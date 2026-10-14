@@ -1,0 +1,12 @@
+--------------------------------------------------------------------------
+--                                                                      --
+-- Copyright (c) 1990,1991,1992 by Synopsys, Inc.  All rights reserved. --
+--                                                                      --
+-- This source file may be used and distributed without restriction     --
+-- provided that this copyright statement is not removed from the file  --
+-- and that any derivative work contains this copyright notice.         --
+--                                                                      --
+--	Package name: STD_LOGIC_ARITH					--
+--									--
+--	Purpose: 							--
+--	 A set of arithemtic, conversion, and comparison functions 	--

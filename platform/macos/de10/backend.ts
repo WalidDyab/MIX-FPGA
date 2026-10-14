@@ -4,7 +4,9 @@ import { DE10_LITE_PROFILE } from '../../../core/backend/profiles';
 import type { BoardProfile, BuildRequest, EngineStatus, HardwareDetection, NormalizedBuildResult, ProgramOutcome, ProgrammingArtifactRef } from '../../../core/backend/types';
 import { describeEnvironment, type EnvironmentSummary } from '../../../core/backend/environment';
 import { NodeToolRunner, type ToolRunner } from '../../../core/process/tool-runner';
-import { defaultPaths, type De10Paths } from './config';
+import type { De10Paths } from './config';
+import { resolveRuntimeLayout } from '../install/layout';
+import { installedDe10Paths } from '../install/paths';
 import { LimaEngine } from './engine';
 import { NativeJtagProgrammer } from './ofl-programmer';
 import { QuartusLimaImplementationProvider } from './quartus-lima-provider';
@@ -12,7 +14,6 @@ import { QuartusLimaImplementationProvider } from './quartus-lima-provider';
 export interface De10BackendOptions {
     readonly repoRoot: string;
     readonly home?: string;
-    readonly toolchainRoot?: string;
     readonly runner?: ToolRunner;
     readonly paths?: De10Paths;
     readonly board?: BoardProfile;
@@ -28,7 +29,7 @@ export class De10LiteBackend {
 
     constructor(opts: De10BackendOptions) {
         const runner = opts.runner ?? new NodeToolRunner();
-        this.paths = opts.paths ?? defaultPaths({ repoRoot: opts.repoRoot, home: opts.home ?? homedir(), ...(opts.toolchainRoot ? { toolchainRoot: opts.toolchainRoot } : {}) });
+        this.paths = opts.paths ?? installedDe10Paths(resolveRuntimeLayout({ ...(opts.home ? { home: opts.home } : {}) }));
         this.board = opts.board ?? DE10_LITE_PROFILE;
         this.engine = new LimaEngine(this.paths, runner);
         this.implementation = new QuartusLimaImplementationProvider(this.paths, this.engine);

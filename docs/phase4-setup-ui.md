@@ -1,0 +1,18 @@
+# Phase 4 · Setup UI, Altera licence, adoption dry run
+
+## Altera licence (how it was established, read-only)
+* The official 25.1std Build 1129 installer is a BitRock InstallBuilder program; its licence is not readable from the file. Its own `--help` documents `--install_lic <dir>` ("install the license agreement files"), and unattended mode without acceptance refuses with a message that calls it the "Altera End User License Agreement".
+* Run in the existing engine in text mode with `--install_lic`, answering nothing and stopping it as soon as the files were written (nothing installed; the install folder was unchanged), the installer produced `licenses/license.txt`: **sha256 `0b1173f88d318001f865ae71d8fb46ad3cb08fc36598fff52325d1f10ddc62ab`, 56,500 bytes**, titled "QUARTUS PRIME AND INTEL FPGA IP LICENSE AGREEMENT, VERSION 25.1std". It is byte-identical to the file the installer installs and, ignoring its pager prompts, to the text its own wizard displays.
+* Setup therefore obtains the text the same way at run time (after the student's files are verified), checks its hash against the pinned one, and shows that vendor file unchanged. If the hash differs, or the installer provides no licence, Setup stops (`LICENSE_UNVERIFIED` / `LICENSE_NOT_AVAILABLE`). The licence is not copied or paraphrased into MIX-FPGA's terms.
+* Reference link: Altera's official Quartus licensing page (`https://www.altera.com/support/support-resources/licensing/q-and-a`, found on altera.com). **Not confirmed:** an exact URL of this build's agreement (guessed paths on download.altera.com return 403), and Altera's pages could not be fetched from the command line (403). The vendor file is the primary source; the link is reference only.
+* The licence is issued under Intel's name ("Intel Corporation … and You") while the installer calls it the Altera agreement; the checkbox uses the wording you specified.
+* Acceptance: the exact sentence "I have reviewed and accept the Altera Quartus Prime Software License Agreement." in an untouched checkbox; recorded (`state/quartus.json`) with product, version, installer sha256, licence source and sha256, reference URL and timestamp **before** the installer receives `--accept_eula 1`. It is valid only for a licence that was offered on this computer with the same hash.
+
+## Setup page
+Rows: VHDL Tools, FPGA Engine, Programmer, Hardware. Actions: Install FPGA Toolchain, Repair, Verify Environment (shown by state). No tool names, Linux terms or paths in this view (a test enforces a term list); everything technical is under "Details in the Console". Opening the page reads state only and never starts the engine.
+Code: `platform/macos/install/setup-view.ts`, `setup-controller.ts`; VS Code side `extension/setup/` (licence panel, dialogs, Rosetta terminal), commands `nexysvhdl.setup.install|repair|verify`; the Environment page switches to it for boards with an FPGA engine when the build carries the Toolchain 1.0 manifest and the controller exists.
+**Not yet in a real VS Code:** the dialogs, the licence webview and the Rosetta terminal are type-checked and their pure parts tested; they have not been driven in the real UI. That is Checkpoint I.
+**Packaging (not done, release phase):** the VSIX allowlist does not yet include the Toolchain 1.0 manifest, and a release needs a real toolchain archive source instead of `MIXFPGA_DEV_PAYLOAD`.
+**Runtime switch (not done):** De10Runtime still resolves tools from the repository's development folder. The switch to the installed toolchain (`installedDe10Paths`) is made after adoption is approved.
+
+## Adoption dry run (this Mac) — see the report in the session; `node scripts/mixfpga/adoption-dry-run.mjs`

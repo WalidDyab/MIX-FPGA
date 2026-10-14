@@ -25,7 +25,7 @@ export async function run_(): Promise<void> {
     const out = process.env['NEXYS_EDH_REPORT']!;
     const exec = (cmd: string, ...args: unknown[]) => vscode.commands.executeCommand(cmd, ...args) as Promise<any>;
     const repo = ext.extensionPath;
-    const limactl = join(repo, 'toolchains', 'experimental', 'lima-2.2.1', 'bin', 'limactl');
+    const limactl = join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA', 'toolchains', '1.0', 'macos-arm64', 'lima', 'bin', 'limactl');
     const isMac = process.platform === 'darwin';
     const limaHome = join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA', 'lima');
     // The Linux engine exists only on macOS; on Windows there is nothing to ask (and it must never be needed).
@@ -57,6 +57,33 @@ export async function run_(): Promise<void> {
             errors: snap.validation.filter((d) => d.severity === 'error').map((d) => d.code),
             legacyDefault: snap.project?.legacyBoardDefault ?? false,
         });
+
+        // ---- MIXFPGA_STAGE=hardware: Detect, Program (SRAM, .svf) and Detect again, on the artifact already built. Builds nothing, starts nothing.
+        if (stage === 'hardware') {
+            const { createHash } = await import('node:crypto');
+            const buildDir = join(service.projectRoot ?? '', '.mix-fpga', 'build', 'de10-lite');
+            const info = JSON.parse(await readFile(join(buildDir, 'build-info.json'), 'utf8')) as { builtAt: string; artifact: { sha256: string; sizeBytes: number }; inputs: Record<string, string> };
+            const shaOf = async (f: string) => createHash('sha256').update(await readFile(f)).digest('hex');
+            const inputsNow: Record<string, string> = {};
+            for (const f of Object.keys(info.inputs)) inputsNow[f] = await shaOf(join(service.projectRoot ?? '', f));
+            step('artifactBefore', { builtAt: info.builtAt, svfSha256: await shaOf(join(buildDir, 'blink.svf')), recordedSha256: info.artifact.sha256, hashMatches: (await shaOf(join(buildDir, 'blink.svf'))) === info.artifact.sha256, inputsUnchangedSinceBuild: Object.entries(info.inputs).every(([f, h]) => inputsNow[f] === h) });
+            step('vmBefore', await vmState());
+            const detect = async (label: string) => {
+                await exec('nexysvhdl.detectBoards');
+                await waitFor('detection finished', () => (service.hardware.status !== 'detecting' && service.hardware.status !== 'unknown' ? service.hardware : undefined), 60_000);
+                step(label, { status: service.hardware.status, count: service.hardware.boards.length, boards: service.hardware.boards.map((b) => `${b.productName} ${b.serialNumber ?? ''}`), diagnostics: service.hardware.diagnostics.map((d) => `${d.severity}:${d.code}:${d.message}`) });
+            };
+            await detect('detectBefore');
+            await exec('nexysvhdl.program');
+            await waitFor('program done', () => (service.workflow.program.state === 'passed' || service.workflow.program.state === 'failed' ? service.workflow.program : undefined), 180_000);
+            step('program', service.workflow.program);
+            const lp = service.lastProgram;
+            step('programResult', { status: lp?.status, destination: lp?.destination, durationMs: lp?.durationMs, target: lp?.target, diagnostics: lp?.diagnostics.map((d) => `${d.severity}:${d.code}:${d.message}`) });
+            await detect('detectAfter');
+            step('vmAfter', await vmState());
+            step('result', 'PASS');
+            return;
+        }
 
         // ---- Add File offers the active board's constraint types only
         const addFile = require(join(repo, 'dist', 'extension', 'project', 'add-file.js')) as typeof import('../../extension/project/add-file');
@@ -121,10 +148,12 @@ export async function run_(): Promise<void> {
             }
         }
 
-        // ---- Hardware
-        await exec('nexysvhdl.detectBoards');
-        await waitFor('detection finished', () => (service.hardware.status !== 'detecting' && service.hardware.status !== 'unknown' ? service.hardware : undefined), 60_000);
-        step('hardware', { status: service.hardware.status, boards: service.hardware.boards.map((b) => `${b.productName} ${b.serialNumber ?? ''}`), diagnostics: service.hardware.diagnostics.map((d) => d.code) });
+        // ---- Hardware (MIXFPGA_SKIP_HARDWARE=1: no board is connected yet; Detect and Program are validated separately)
+        if (process.env['MIXFPGA_SKIP_HARDWARE'] !== '1') {
+            await exec('nexysvhdl.detectBoards');
+            await waitFor('detection finished', () => (service.hardware.status !== 'detecting' && service.hardware.status !== 'unknown' ? service.hardware : undefined), 60_000);
+            step('hardware', { status: service.hardware.status, boards: service.hardware.boards.map((b) => `${b.productName} ${b.serialNumber ?? ''}`), diagnostics: service.hardware.diagnostics.map((d) => d.code) });
+        }
 
         // ---- Verify Environment and Restart FPGA Engine (boards with an engine)
         if (stage === 'de10') {

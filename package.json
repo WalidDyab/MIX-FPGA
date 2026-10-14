@@ -294,6 +294,21 @@
         "category": "MIX-FPGA"
       },
       {
+        "command": "nexysvhdl.setup.install",
+        "title": "Install FPGA Toolchain (DE10-Lite Setup)",
+        "category": "MIX-FPGA"
+      },
+      {
+        "command": "nexysvhdl.setup.repair",
+        "title": "Repair Setup",
+        "category": "MIX-FPGA"
+      },
+      {
+        "command": "nexysvhdl.setup.verify",
+        "title": "Verify Setup",
+        "category": "MIX-FPGA"
+      },
+      {
         "command": "nexysvhdl.restartFpgaEngine",
         "title": "Restart FPGA Engine",
         "category": "MIX-FPGA"

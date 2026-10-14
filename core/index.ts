@@ -58,3 +58,6 @@ export * from './workflow/workflow-controller';
 export * from './workflow/project-lock';
 
 export * from './util/hash';
+export * from './install/model';
+export * from './install/state-store';
+export * from './install/engine';

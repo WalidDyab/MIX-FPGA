@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { AppearanceManager, KEEP_MINE, type ThemeSettings, USE_CLASSROOM } from './appearance/appearance-manager';
 import { registerCommands } from './commands/commands';
+import { hardwareViewOf } from './setup/hardware-view';
+import { SetupService } from './setup/setup-service';
 import { routeUri } from './commands/uri-routes';
 import { ProblemsPublisher } from './diagnostics/vscode-diagnostics';
 import { findNvprojFiles } from '../core';
@@ -128,7 +130,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
         }),
     );
 
-    registerCommands(context, { service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? ''), flush: () => (shutdown ? shutdown() : Promise.resolve()) });
+    const setup = new SetupService({ extensionPath: context.extensionPath, hardware: () => hardwareViewOf(service.hardware) });
+    registerCommands(context, { setup, service, backend, schematic, rtl, waveform, design, appearance, output, console: nexysConsole, extensionVersion: String((context.extension.packageJSON as { version?: string }).version ?? ''), flush: () => (shutdown ? shutdown() : Promise.resolve()) });
 
     let toolchainPrompted = false;
     context.subscriptions.push(

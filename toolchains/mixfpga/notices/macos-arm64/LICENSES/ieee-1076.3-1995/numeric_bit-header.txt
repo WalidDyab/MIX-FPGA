@@ -1,0 +1,14 @@
+-- -----------------------------------------------------------------------------
+--
+-- Copyright 1995 by IEEE. All rights reserved.
+--
+-- This source file is considered by the IEEE to be an essential part of the use
+-- of the standard 1076.3 and as such may be distributed without change, except
+-- as permitted by the standard. This source file may not be sold or distributed
+-- for profit. This package may be modified to include additional data required
+-- by tools, but must in no way change the external interfaces or simulation
+-- behaviour of the description. It is permissible to add comments and/or
+-- attributes to the package declarations, but not to change or delete any
+-- original lines of the approved package declaration. The package body may be
+-- changed only in accordance with the terms of clauses 7.1 and 7.2 of the
+-- standard.

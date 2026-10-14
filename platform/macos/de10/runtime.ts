@@ -6,9 +6,12 @@ import { WorkflowController } from '../../../core/workflow/workflow-controller';
 import { WorkspaceManager } from '../../../core/workspace/build-workspace';
 import type { BoardRegistry } from '../../../core/board/board-registry';
 import type { BoardEnvironment, EnvironmentVerification, ToolReport } from '../../../core/backend/environment';
-import { homedir } from 'node:os';
 import { stat } from 'node:fs/promises';
-import { defaultPaths, type De10Paths } from './config';
+import type { De10Paths } from './config';
+import { loadExpectedToolchain } from '../install/expected';
+import { type RuntimeLayout, resolveRuntimeLayout } from '../install/layout';
+import { installedDe10Paths } from '../install/paths';
+import { checkUnit, readMarker, unitProblem } from '../install/toolchain-installer';
 import { LimaEngine } from './engine';
 import { NativeJtagProgrammer } from './ofl-programmer';
 import { QuartusLimaImplementationProvider } from './quartus-lima-provider';
@@ -18,11 +21,13 @@ export interface De10RuntimeOptions {
     readonly repoRoot: string;
     readonly boards: BoardRegistry;
     readonly home?: string;
-    readonly toolchainRoot?: string;
     readonly runner?: ToolRunner;
     /** Receives everything every tool prints, as it prints it (the console). */
     readonly onToolOutput?: (text: string, invocation: ToolInvocation) => void;
+    /** Tool locations. Absent: the installed MIX-FPGA Toolchain (~/Library/MIX-FPGA, or $MIXFPGA_HOME). There is no repository fallback. */
     readonly paths?: De10Paths;
+    /** Verify Environment checks the installed toolchain against this recorded manifest (full-tree). Absent: the older per-executable check. */
+    readonly installed?: { readonly layout: RuntimeLayout; readonly manifestFile: string };
 }
 
 /**
@@ -41,9 +46,11 @@ export class De10Runtime {
     /** Version probes and health checks: never echoed to the student's console. */
     private readonly quiet: ToolRunner;
     private readonly repoRoot: string;
+    private readonly installed: De10RuntimeOptions['installed'];
 
     constructor(opts: De10RuntimeOptions) {
-        this.paths = opts.paths ?? defaultPaths({ repoRoot: opts.repoRoot, home: opts.home ?? homedir(), ...(opts.toolchainRoot ? { toolchainRoot: opts.toolchainRoot } : {}) });
+        this.paths = opts.paths ?? installedDe10Paths(resolveRuntimeLayout({ ...(opts.home ? { home: opts.home } : {}) }));
+        this.installed = opts.installed;
         const base = opts.runner ?? new NodeToolRunner();
         this.quiet = base;
         this.repoRoot = opts.repoRoot;
@@ -109,11 +116,24 @@ export class De10Runtime {
     /** Hash-checks the owned tools, then proves the engine really runs Quartus (this may start the VM). */
     async verify(signal?: AbortSignal): Promise<EnvironmentVerification> {
         const steps: { label: string; ok: boolean; detail?: string }[] = [];
-        const manifest = await loadManifest(this.repoRoot);
-        if (!manifest) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'toolchains/mixfpga/macos-arm64.json is missing or unreadable' });
-        else {
-            for (const r of await verifyOwnedComponents(manifest, this.paths.toolchainRoot)) {
-                steps.push({ label: `${r.component.name} ${r.component.version}`, ok: r.state === 'ok', ...(r.state === 'ok' ? {} : { detail: r.state === 'missing' ? 'not installed' : r.state === 'modified' ? 'files differ from the recorded version' : 'no recorded checksum' }) });
+        if (this.installed) {
+            const expected = await loadExpectedToolchain(this.installed.manifestFile).catch(() => undefined);
+            if (!expected) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'the recorded manifest is missing or unreadable' });
+            else {
+                for (const u of expected.toolchain.units) {
+                    const c = await checkUnit(this.installed.layout, u, 'full');
+                    steps.push({ label: `${u.name}${u.version ? ` ${u.version}` : ''}`, ok: c.state === 'ok', ...(c.state === 'ok' ? {} : { detail: unitProblem(c) }) });
+                }
+                const marker = await readMarker(this.installed.layout);
+                steps.push({ label: 'Installation record', ok: marker?.manifestSha256 === expected.sha256, ...(marker?.manifestSha256 === expected.sha256 ? {} : { detail: 'the installation was not completed or is for another toolchain' }) });
+            }
+        } else {
+            const manifest = await loadManifest(this.repoRoot);
+            if (!manifest) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'toolchains/mixfpga/macos-arm64.json is missing or unreadable' });
+            else {
+                for (const r of await verifyOwnedComponents(manifest, this.paths.toolchainRoot)) {
+                    steps.push({ label: `${r.component.name} ${r.component.version}`, ok: r.state === 'ok', ...(r.state === 'ok' ? {} : { detail: r.state === 'missing' ? 'not installed' : r.state === 'modified' ? 'files differ from the recorded version' : 'no recorded checksum' }) });
+                }
             }
         }
         const rosetta = await stat('/Library/Apple/usr/share/rosetta/rosetta').then((s) => s.isFile(), () => false);
