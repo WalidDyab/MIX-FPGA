@@ -1,0 +1,13 @@
+# DE10-Lite board constraints for the MIX-FPGA blink experiment.
+# Pin source: Terasic "DE10-Lite User Manual" v1.7, Table 3-2 (clock) and Table 3-5 (LEDs).
+# Device: MAX 10 10M50DAF484C7G (Terasic product page No=1021; manual section 1).
+set_global_assignment -name FAMILY "MAX 10"
+set_global_assignment -name DEVICE 10M50DAF484C7G
+
+set_location_assignment PIN_P11 -to clk_50
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk_50
+set_location_assignment PIN_A8 -to ledr0
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ledr0
+
+# Do not drive unused pins.
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED WITH WEAK PULL-UP"

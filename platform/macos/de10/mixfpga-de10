@@ -1,0 +1,3 @@
+#!/bin/bash
+# MIX-FPGA DE10-Lite validation driver (run `npm run build` first).
+exec node "$(cd "$(dirname "$0")/../../.." && pwd)/dist/platform/macos/de10/cli.js" "$@"

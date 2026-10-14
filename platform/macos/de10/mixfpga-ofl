@@ -1,0 +1,7 @@
+#!/bin/bash
+# MIX-FPGA native macOS openFPGALoader wrapper (pinned copy under toolchains/experimental).
+REPO=$(cd "$(dirname "$0")/../../.." && pwd)
+T=${MIXFPGA_OFL_DIR:-$REPO/toolchains/experimental/openfpgaloader-1.1.1}
+[ -x "$T/libexec/openFPGALoader" ] || { echo "mixfpga-ofl: openFPGALoader not found at $T" >&2; exit 127; }
+export OPENFPGALOADER_SOJ_DIR="$T/share/openFPGALoader"
+exec "$T/libexec/openFPGALoader" "$@"

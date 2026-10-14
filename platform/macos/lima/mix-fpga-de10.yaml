@@ -1,0 +1,36 @@
+# MIX-FPGA — hidden implementation-engine VM for the DE10-Lite (MAX 10) backend.
+# Copyright 2026 Walid Dyab — Apache-2.0. An EMXplore project.
+#
+# Create:  limactl create --name mix-fpga-de10 platform/macos/lima/mix-fpga-de10.yaml
+# Headless Linux guest (no desktop, no containers). x86-64 Quartus runs via Rosetta.
+minimumLimaVersion: 2.0.0
+vmType: vz
+arch: aarch64
+cpus: 4
+memory: 8GiB
+disk: 60GiB
+
+# Pinned Ubuntu 24.04 LTS server cloud image (sha256 from Lima 2.2.1's own template).
+images:
+- location: "https://cloud-images.ubuntu.com/releases/noble/release-20260926/ubuntu-24.04-server-cloudimg-arm64.img"
+  arch: aarch64
+  digest: "sha256:1d6bffe64b848468ac97f821d369a4846d983de1800ccf6b5ec8853e85cefc55"
+
+vmOpts:
+  vz:
+    rosetta:
+      enabled: true
+      binfmt: true
+
+# Only the private staging area is shared, and it is writable. Nothing else of the
+# student's home directory is exposed to the guest.
+mounts:
+- location: "~/Library/MIX-FPGA/staging"
+  mountPoint: /mnt/mixfpga
+  writable: true
+
+containerd:
+  system: false
+  user: false
+ssh:
+  loadDotSSHPubKeys: false

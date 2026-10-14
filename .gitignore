@@ -92,3 +92,7 @@ desktop.ini
 # Phase 4B classroom bundle: downloaded archives, assembled private toolchain, packages
 .artifacts/
 /toolchain/
+
+# MIX-FPGA experimental macOS/DE10 backend (vendor tools, VM images, generated)
+toolchains/experimental/
+.mix-fpga/
