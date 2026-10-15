@@ -1,10 +1,10 @@
 # MIX-FPGA quick start
 
-From an empty folder to a blinking LED on the Nexys A7-100T or the DE10-Lite (macOS). First install NexysVHDL and its FPGA toolchain ([Windows](student-install-windows.md), [macOS](student-install-macos.md)). **NexysVHDL: Getting Started** in VS Code walks through the same steps.
+From an empty folder to a blinking LED on the Nexys A7-100T or the DE10-Lite (macOS). First install MIX-FPGA and the support for your board ([macOS](student-install-macos.md), [Windows](student-install-windows.md)). **MIX-FPGA: Getting Started** in VS Code walks through the same steps.
 
 ## 1. Create a project
 
-**MIX-FPGA: Create MIX-FPGA Project** → choose a parent folder → name it (letters, digits, `_`, `-`; e.g. `BlinkDemo`) → choose your board (**Nexys A7-100T** or **DE10-Lite**) → open it.
+**MIX-FPGA: Create MIX-FPGA Project** → choose a parent folder → name it (letters, digits, `_`, `-`; e.g. `BlinkDemo`) → choose your board (**Nexys A7-100T** or **DE10-Lite**) → open it. If that board's support is not installed yet, MIX-FPGA offers to install it first.
 
 The board decides the constraint files: a Nexys A7 project has an `.xdc` file in `constraints/`; a DE10-Lite project has a `.qsf` (device and pins) and an `.sdc` (clock). The DE10-Lite starter blinks **LEDR0** while switch **SW0** is up; button **KEY0** restarts it. Everything else on this page works the same for both boards. The first DE10-Lite Build starts the FPGA engine (about 35 seconds); later builds take about 27.
 
@@ -16,11 +16,11 @@ BlinkDemo/
 └── constraints/nexys-a7-100t.xdc  pins and the 100 MHz clock (Xilinx XDC)
 ```
 
-To work on a course project instead, use **Open NexysVHDL Project** on its folder (it must contain `nexysvhdl.json`).
+To work on a course project instead, use **Open Project** on its folder or its `.nvproj` file (it must contain `nexysvhdl.json`).
 
 **Adding files.** Click **Add File** at the top of the **Design** view. Choose *Source* (a `.vhd` design file → `src/`), *Simulation Testbench* (a `.vhd` file → `sim/`) or *Constraint* (an `.xdc` file → `constraints/`), then *Create New* (a VHDL-2008 skeleton) or *Copy From Computer* (a copy is placed inside the project, so the project folder stays complete and portable). If the name already exists you choose *Replace* or *Rename*. Only `.vhd` and `.xdc` files are accepted here; rename a `.vhdl` file to `.vhd` first.
 
-## 2. The NexysVHDL sidebar
+## 2. The MIX-FPGA sidebar
 
 | View | Shows |
 |---|---|
@@ -45,7 +45,7 @@ To work on a course project instead, use **Open NexysVHDL Project** on its folde
 
 ## 5. Pins: standard XDC, as in Vivado
 
-NexysVHDL uses ordinary **Xilinx XDC** files. You edit them as text, exactly as in Vivado; there is no graphical pin editor.
+For the Nexys A7, MIX-FPGA uses ordinary **Xilinx XDC** files. You edit them as text, exactly as in Vivado; there is no graphical pin editor.
 
 ```tcl
 ## Clock: 100 MHz on pin E3
@@ -80,8 +80,8 @@ The FPGA forgets the design when the board is switched off (SRAM programming).
 
 ## Optional appearance
 
-NexysVHDL offers an optional navy-and-orange color theme the first time you open a project. It applies to that project folder only and never changes your VS Code theme elsewhere. Switch any time with **NexysVHDL: Use NexysVHDL Classroom Appearance** and **NexysVHDL: Use My VS Code Appearance**.
+MIX-FPGA offers an optional navy-and-orange color theme the first time you open a project. It applies to that project folder only and never changes your VS Code theme elsewhere. Switch any time with **MIX-FPGA: Use NexysVHDL Classroom Appearance** (the theme keeps its earlier name so existing projects keep it) and **MIX-FPGA: Use My VS Code Appearance**.
 
-## What NexysVHDL does not do (Classroom Preview)
+## What MIX-FPGA does not do (Classroom Preview)
 
 One board (Nexys A7-100T), VHDL (VHDL-2008) only, no Verilog/SystemVerilog, no graphical pin assignment, no flash programming.

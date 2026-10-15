@@ -1,18 +1,21 @@
 # Verify your setup
 
-NexysVHDL has two parts:
+MIX-FPGA is one VS Code environment for two FPGA boards:
 
-| Part | What it is | When you install it |
-|---|---|---|
-| **NexysVHDL extension** | the VS Code views, commands and editors | from the `.vsix` file, and again for each NexysVHDL update |
-| **NexysVHDL FPGA toolchain** | the VHDL simulator and FPGA build tools, private to NexysVHDL | **once** (about 3 GB on disk); updates of the extension reuse it |
+| Board | What MIX-FPGA installs for it |
+|---|---|
+| **Nexys A7-100T** | the VHDL tools, the FPGA build tools and the programmer (about 3 GB) |
+| **DE10-Lite** | the VHDL tools, the programmer and a hidden FPGA engine; Altera's free Quartus Prime Lite, which you download from Altera, is installed into it (about 12 GB in total) |
 
-Run **Show Environment**. You should see:
+You only install support for the boards you use, and you can add the other board later.
 
-- `Bundled FPGA Toolchain — Ready`
-- on Windows only: `Digilent USB/JTAG Support — Ready` (needed only to **program** the board)
-- `Board — Not Connected` is fine: you only need the board to program it.
+Run **Show Environment**. Under **Board Support** each board shows **Installed** or **Not installed**:
 
-If the toolchain is *Not Installed*, click **Install FPGA Toolchain…** and choose the `nexysvhdl-toolchain-…` file from the classroom download.
+- **Install FPGA Toolchain** (first time): choose your boards; MIX-FPGA installs only what they need.
+- **Install … Support** next to a board adds it later.
+- **Verify Environment** checks everything that is installed.
+- `Hardware — Not connected` is fine: you only need the board to program it.
 
-You never need to install GHDL, Apio, Yosys, nextpnr, Python or Vivado for NexysVHDL.
+If you used NexysVHDL before, your Nexys A7 projects and tools keep working: MIX-FPGA is its update.
+
+You never need to install GHDL, Yosys, nextpnr, Python, Vivado or Linux tools yourself.

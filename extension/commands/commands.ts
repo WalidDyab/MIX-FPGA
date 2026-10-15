@@ -42,7 +42,7 @@ import type { DesignView } from '../views/design-view';
 import type { HierarchyPayload } from '../views/hierarchy-view';
 import type { SetupService } from '../setup/setup-service';
 import { VsCodeSetupInteraction } from '../setup/setup-ui';
-import type { SetupResult } from '../../runtime/setup';
+import { type BoardSupportId, isBoardSupportId, type SetupResult } from '../../runtime/setup';
 
 export interface CommandDeps {
     readonly service: NexysVhdlService;
@@ -169,6 +169,14 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             );
             if (!pick) return undefined;
             boardId = pick.id;
+            // A board whose support is not installed yet: offer to install it, then continue with the project.
+            const controller = await setup?.controller();
+            if (controller && !(await controller.isBoardReady(boardId))) {
+                const choice = await vscode.window.showWarningMessage(`${pick.label} support is not installed.`, { modal: true, detail: 'MIX-FPGA can install it now; the new project is created afterwards.' }, 'Install Support');
+                if (choice !== 'Install Support') return undefined;
+                const installed = await runSetup('install', isBoardSupportId(boardId) ? [boardId] : undefined);
+                if (installed?.outcome !== 'complete' || !(await controller.isBoardReady(boardId))) return undefined;
+            }
             const kind = await vscode.window.showQuickPick(
                 PROJECT_TEMPLATES.map((t) => ({ label: `${t.recommended ? '$(file-directory)' : '$(lightbulb)'} ${t.label}`, description: t.description, template: t.template })),
                 { title: 'MIX-FPGA: what should the new project contain?', placeHolder: 'Empty project or starter example' },
@@ -883,7 +891,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     register('nexysvhdl.showEnvironment', async () => {
         const summary = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'MIX-FPGA: Inspecting tools' }, () => service.refreshEnvironment());
         if (!summary) throw new NexysError('The environment could not be inspected; see the log.');
-        const controller = summary.engine ? await setup?.controller() : undefined;
+        // Apple-silicon Macs: the Setup page (Board Support and Environment) replaces the older list for every board.
+        const controller = await setup?.controller();
         if (controller) return showSetupPage(controller);
         const rows = [...summary.setup, boardRow(service.hardware, summary.hardwareLabel)];
         const tc = summary.toolchain;
@@ -926,15 +935,15 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
 
     // ------------------------------------------------------------- Setup (Install / Repair / Verify) for boards with an FPGA engine
 
-    const runSetup = async (kind: 'install' | 'repair'): Promise<SetupResult | undefined> => {
+    const runSetup = async (kind: 'install' | 'repair', boards?: BoardSupportId[]): Promise<SetupResult | undefined> => {
         const controller = await setup?.controller();
         if (!controller) throw new NexysError('Setup is not available in this build of MIX-FPGA.');
-        nexysConsole.begin('Environment', kind === 'install' ? 'Install FPGA Toolchain' : 'Repair');
-        const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: kind === 'install' ? 'MIX-FPGA: Installing the FPGA toolchain' : 'MIX-FPGA: Repairing', cancellable: true }, async (progress, token) => {
+        nexysConsole.begin('Environment', kind === 'install' ? 'Install Board Support' : 'Repair');
+        const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: kind === 'install' ? 'MIX-FPGA: Installing board support' : 'MIX-FPGA: Repairing', cancellable: true }, async (progress, token) => {
             const abort = new AbortController();
             token.onCancellationRequested(() => abort.abort());
             const ui = new VsCodeSetupInteraction((m) => progress.report({ message: m }), (l) => nexysConsole.say('Environment', l));
-            return kind === 'install' ? controller.install(ui, abort.signal) : controller.repair(ui, abort.signal);
+            return kind === 'install' ? controller.install(ui, abort.signal, boards) : controller.repair(ui, abort.signal, boards);
         });
         if (result.outcome === 'complete') nexysConsole.pass('Environment', result.message);
         else nexysConsole.fail('Environment', result.message);
@@ -945,8 +954,21 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         return result;
     };
 
-    register('nexysvhdl.setup.install', () => runSetup('install'));
-    register('nexysvhdl.setup.repair', () => runSetup('repair'));
+    const boardArg = (b: unknown): BoardSupportId[] | undefined => (isBoardSupportId(b) ? [b] : undefined);
+    register('nexysvhdl.setup.install', (board?: unknown) => runSetup('install', boardArg(board)));
+    register('nexysvhdl.setup.repair', (board?: unknown) => runSetup('repair', boardArg(board)));
+    /** Upgrade from NexysVHDL: take its validated Nexys A7 tools over into MIX-FPGA (verified, APFS clone, no download). */
+    register('nexysvhdl.setup.adoptNexys', async (scripted?: { dryRun?: boolean }) => {
+        const controller = await setup?.controller();
+        if (!controller) throw new NexysError('Setup is not available in this build of MIX-FPGA.');
+        const out = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'MIX-FPGA: Taking over your Nexys A7 tools (no download)', cancellable: false }, (progress) => controller.adoptNexysVhdl({ dryRun: scripted?.dryRun === true, progress: (m) => progress.report({ message: m }) }));
+        nexysConsole.begin('Environment', 'Nexys A7 tools from NexysVHDL');
+        nexysConsole.say('Environment', `${out.plan.status}: ${out.plan.reasons.join('; ')}${out.plan.files ? ` (${out.plan.files} files)` : ''}`);
+        if (out.result) nexysConsole[out.result.ok ? 'pass' : 'fail']('Environment', out.result.message);
+        nexysConsole.endAction();
+        await service.refreshEnvironment();
+        return out;
+    });
     register('nexysvhdl.setup.verify', async () => {
         const controller = await setup?.controller();
         if (!controller) throw new NexysError('Setup is not available in this build of MIX-FPGA.');
@@ -967,11 +989,14 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         const { view } = await controller.status();
         type Item = vscode.QuickPickItem & { action?: () => unknown };
         const ICON = { ready: '$(pass)', 'not-installed': '$(warning)', working: '$(sync)', 'needs-repair': '$(warning)', problem: '$(error)', 'not-connected': '$(circle-outline)', 'not-checked': '$(circle-outline)' } as const;
+        const BOARD_ICON = { installed: '$(pass)', 'not-installed': '$(circle-outline)', installing: '$(sync)', incomplete: '$(warning)', 'needs-repair': '$(warning)', 'not-supported': '$(error)' } as const;
         const items: Item[] = [
-            { label: `MIX-FPGA ${extensionVersion} — Setup`, kind: vscode.QuickPickItemKind.Separator },
+            { label: `MIX-FPGA ${extensionVersion} — Board Support`, kind: vscode.QuickPickItemKind.Separator },
+            ...view.boards.map((b): Item => ({ label: `${BOARD_ICON[b.state]} ${b.name}`, description: b.word, ...(b.action ? { detail: b.action === 'install' ? 'Choose to install' : 'Choose to repair', action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${b.action}`, b.id) } : {}) })),
+            { label: 'Environment', kind: vscode.QuickPickItemKind.Separator },
             ...view.rows.map((r) => ({ label: `${ICON[r.state]} ${r.label}`, description: r.word, ...(r.hint ? { detail: r.hint } : {}) })),
             { label: 'Actions', kind: vscode.QuickPickItemKind.Separator },
-            ...view.actions.map((a): Item => ({ label: `${a.id === 'install' ? '$(desktop-download)' : a.id === 'repair' ? '$(tools)' : '$(verified)'} ${a.label}`, detail: a.detail, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${a.id}`) })),
+            ...view.actions.map((a): Item => ({ label: `${a.id === 'install' ? '$(desktop-download)' : a.id === 'repair' ? '$(tools)' : '$(verified)'} ${a.label}`, detail: a.detail, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${a.id}`, a.board) })),
             { label: '$(book) Getting Started', action: () => vscode.commands.executeCommand('nexysvhdl.gettingStarted') },
             { label: '$(law) Third-Party Notices', action: () => vscode.commands.executeCommand('nexysvhdl.openThirdPartyNotices') },
             { label: '$(output) Details in the Console', detail: 'Every part with its version and who supplies it.', action: () => { for (const d of view.details) nexysConsole.say('Environment', `${d.label}: ${d.word} — ${d.owner}${d.version ? `, ${d.version}` : ''}${d.note ? ` (${d.note})` : ''}`); nexysConsole.show(); } },

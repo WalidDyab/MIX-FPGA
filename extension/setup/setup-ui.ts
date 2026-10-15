@@ -2,7 +2,7 @@ import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
-import { ALTERA_DOWNLOADS, type InstallSummary, type LicenseOffer, type QuartusFiles, type RosettaCommand, type RosettaConsent, type SetupInteraction } from '../../runtime/setup';
+import { ALTERA_DOWNLOADS, type BoardSupportId, type InstallSummary, type LicenseOffer, type QuartusFiles, type RosettaCommand, type RosettaConsent, type SetupInteraction } from '../../runtime/setup';
 import { showLicensePanel } from './license-panel';
 
 /** The Setup questions as VS Code dialogs. Student words only; engineering detail goes to `log`. */
@@ -12,11 +12,25 @@ export class VsCodeSetupInteraction implements SetupInteraction {
         private readonly onLog: (line: string) => void,
     ) {}
 
+    async chooseBoards(boards: readonly { readonly id: BoardSupportId; readonly name: string; readonly installed: boolean }[]): Promise<BoardSupportId[] | undefined> {
+        type Item = vscode.QuickPickItem & { id: BoardSupportId };
+        const items: Item[] = boards.map((b) => ({ id: b.id, label: b.name, ...(b.installed ? { description: 'installed', picked: true } : {}), detail: b.id === 'de10-lite' ? 'Terasic DE10-Lite (MAX 10). Also asks for Altera\'s free Quartus download.' : 'Nexys A7-100T (Artix-7 FPGA).' }));
+        const picked = await vscode.window.showQuickPick(items, { title: 'Welcome to MIX-FPGA: which FPGA boards will you use?', placeHolder: 'Choose one or both. You can add support for another board later.', canPickMany: true, ignoreFocusOut: true });
+        return picked && picked.length > 0 ? picked.map((p) => p.id) : undefined;
+    }
+
+    async askNexysArchive(): Promise<string | undefined> {
+        const ok = await vscode.window.showInformationMessage('Nexys A7 support file', { modal: true, detail: 'Choose the Nexys A7 support file your course provides (nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz). MIX-FPGA checks every file before using it.' }, 'Choose File…');
+        if (!ok) return undefined;
+        const r = await vscode.window.showOpenDialog({ canSelectMany: false, canSelectFiles: true, canSelectFolders: false, openLabel: 'Use This File', title: 'Choose the Nexys A7 support file', filters: { 'MIX-FPGA support': ['gz'] } });
+        return r?.[0]?.fsPath;
+    }
+
     async confirmInstall(s: InstallSummary): Promise<boolean> {
         const lines = [`This will set up: ${s.items.join('; ')}.`, s.storageGB >= 1 ? `It uses about ${s.storageGB.toFixed(1)} GB on this computer once finished (have about ${s.requiredFreeGB} GB free).` : 'It needs very little space.'];
         if (s.needsInternet) lines.push('It needs an internet connection.');
         if (s.askedForAltera) lines.push('Later it asks you for two free files from Altera and to accept Altera\'s licence.');
-        const pick = await vscode.window.showInformationMessage('Install FPGA Toolchain', { modal: true, detail: lines.join('\n') }, 'Continue');
+        const pick = await vscode.window.showInformationMessage('Install board support', { modal: true, detail: lines.join('\n') }, 'Continue');
         return pick === 'Continue';
     }
 

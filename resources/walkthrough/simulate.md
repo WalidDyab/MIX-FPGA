@@ -6,4 +6,4 @@ A good testbench checks itself with `assert … report … severity error;` and 
 
 A failed assertion marks the simulation as failed and shows the message.
 
-If a testbench has a free-running clock but never calls `std.env.stop`, the simulation never ends. Either add `std.env.stop;`, or give the project a fixed length: click **Simulation length** in the Project view (or run **NexysVHDL: Set Simulation Stop Time…**) and choose, for example, `1us`. Projects that do not set a stop time behave exactly as before.
+If a testbench has a free-running clock but never calls `std.env.stop`, the simulation never ends. Either add `std.env.stop;`, or give the project a fixed length: click **Simulation length** in the Project view (or run **MIX-FPGA: Set Simulation Stop Time…**) and choose, for example, `1us`. Projects that do not set a stop time behave exactly as before.

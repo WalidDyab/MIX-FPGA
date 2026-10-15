@@ -1,5 +1,5 @@
 import type { HostInfo } from '../core';
-import { createMacosPlatform, macosPathAlias, macosSystemPath, macosUserDataRoot } from './macos';
+import { createMacosPlatform, macosLegacyDataRoots, macosPathAlias, macosSystemPath, macosUserDataRoot } from './macos';
 import type { PlatformContext, PlatformFactory, PlatformHostFacts, PlatformServices } from './types';
 import { createWindowsPlatform, windowsPathAlias, windowsSystemPath, windowsUserDataRoot } from './windows';
 
@@ -14,7 +14,7 @@ interface Registration extends PlatformHostFacts {
 /** The single place where a host is mapped to its adapter. Only validated host kinds are listed. */
 const REGISTRY: readonly Registration[] = [
     { platform: 'win32', arch: 'x64', factory: createWindowsPlatform, userDataRoot: windowsUserDataRoot, systemPath: windowsSystemPath, pathAlias: (target, env) => windowsPathAlias(target, env) },
-    { platform: 'darwin', arch: 'arm64', factory: createMacosPlatform, userDataRoot: macosUserDataRoot, systemPath: macosSystemPath, pathAlias: (target, env) => macosPathAlias(target, env) },
+    { platform: 'darwin', arch: 'arm64', factory: createMacosPlatform, userDataRoot: macosUserDataRoot, legacyDataRoots: macosLegacyDataRoots, systemPath: macosSystemPath, pathAlias: (target, env) => macosPathAlias(target, env) },
 ];
 
 /** Why a host has no adapter, for doctor and command output. */

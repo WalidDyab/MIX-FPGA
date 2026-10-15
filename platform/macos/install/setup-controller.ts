@@ -14,11 +14,21 @@ import type { PayloadSource } from './payload';
 import { type LicenseOffer, QUARTUS_SPEC, QuartusInstaller, type QuartusFiles, type QuartusSpec, verifyQuartus, acceptanceFor } from './quartus-install';
 import { type RosettaCommandRunner, type RosettaConsent, type RosettaHost, rosettaDefinition } from './rosetta';
 import { buildSetupView, type HardwareView, type SetupView, studentFailure } from './setup-view';
+import { ArchivePayload } from './archive-payload';
+import { BOARD_SUPPORT, BoardSelectionStore, type BoardSupportId, boardEntry, boardState } from './boards';
+import { adoptNexys, type NexysArchive, nexysDefinition, planNexysAdoption, type NexysAdoptionPlan } from './nexys-support';
+import type { ToolchainRequirement } from '../../../core/toolchain/store';
+import { join } from 'node:path';
+import { stat } from 'node:fs/promises';
 import { toolchainDefinitions } from './toolchain-components';
 import type { HostFacts, InstallHooks } from './toolchain-installer';
 
 /** Every question the student can be asked during setup. The VS Code side answers them with dialogs; tests answer them directly. */
 export interface SetupInteraction {
+    /** First run: which boards will the student use? Undefined: they declined. */
+    chooseBoards(boards: readonly { readonly id: BoardSupportId; readonly name: string; readonly installed: boolean }[]): Promise<BoardSupportId[] | undefined>;
+    /** Nexys A7 support on a computer with nothing to adopt and no packaged source: the student's support file, or undefined. */
+    askNexysArchive(): Promise<string | undefined>;
     /** Before anything starts: what will happen and what it needs. Return false to stop. */
     confirmInstall(summary: InstallSummary): Promise<boolean>;
     askRosettaConsent(): Promise<RosettaConsent | undefined>;
@@ -64,8 +74,13 @@ export interface VerifyResult {
 export interface SetupDeps {
     readonly layout: RuntimeLayout;
     readonly expected: LoadedExpected;
-    /** Where the tools are copied from. Absent: nothing can be installed (a release provides it). */
+    /** Folder source of the DE10-Lite tools (installer development). Used when no payload archive is available. */
     readonly payload: PayloadSource | undefined;
+    /** Folder holding the support archives (see toolchains/mixfpga/payloads-1.0.json); each is checked against its pinned sha256. */
+    readonly payloadDir?: string;
+    readonly payloadPins?: Readonly<Record<string, { readonly file: string; readonly sha256: string }>>;
+    /** Nexys A7 support: the validated toolchain requirement, its MIX-FPGA store, and NexysVHDL stores it may adopt. */
+    readonly nexys?: { readonly requirement: ToolchainRequirement; readonly dataRoot: string; readonly legacyRoots: readonly string[] };
     readonly runner: ToolRunner;
     readonly downloader: Downloader;
     readonly freeBytes: (path: string) => Promise<number>;
@@ -79,7 +94,7 @@ export interface SetupDeps {
 
 const NO_PAYLOAD: PayloadSource = { kind: 'directory', describe: () => 'none', has: async () => false, materialize: async () => undefined };
 
-const STUDENT_ITEM: Record<string, string> = { toolchain: 'VHDL tools and the programmer', rosetta: 'Rosetta (from Apple)', 'linux-vm': 'the FPGA engine', quartus: 'Quartus Prime Lite and MAX 10 support (from Altera)' };
+const STUDENT_ITEM: Record<string, string> = { 'nexys-toolchain': 'the Nexys A7 tools', toolchain: 'VHDL tools and the programmer', rosetta: 'Rosetta (from Apple)', 'linux-vm': 'the FPGA engine', quartus: 'Quartus Prime Lite and MAX 10 support (from Altera)' };
 
 /**
  * The one place the Setup page talks to. It owns the component states, drives the install/repair/verify flows,
@@ -91,17 +106,51 @@ export class SetupController {
     private readonly store: InstallStateStore;
     private readonly provisioner: EngineProvisioner;
     private readonly quartus: QuartusInstaller;
+    private readonly selection: BoardSelectionStore;
+    /** Set for the duration of a run: where the Nexys archive comes from when the student must choose it. */
+    private askNexys: (() => Promise<string | undefined>) | undefined;
+    private de10Archive: ArchivePayload | undefined;
 
     constructor(private readonly deps: SetupDeps) {
+        this.selection = new BoardSelectionStore(join(deps.layout.stateDir, 'board-support.json'));
         this.spec = deps.quartusSpec ?? QUARTUS_SPEC;
         this.store = new InstallStateStore(deps.layout.installStateFile, deps.layout.lockFile);
         this.provisioner = new EngineProvisioner({ layout: deps.layout, runner: deps.runner, downloader: deps.downloader, freeBytes: deps.freeBytes });
         this.quartus = new QuartusInstaller({ layout: deps.layout, runner: deps.runner, freeBytes: deps.freeBytes, spec: this.spec });
     }
 
+    private async pinnedArchive(id: string): Promise<{ path: string; sha256: string } | undefined> {
+        const pin = this.deps.payloadPins?.[id];
+        if (!pin || !this.deps.payloadDir) return undefined;
+        const path = join(this.deps.payloadDir, pin.file);
+        return (await stat(path).then((x) => x.isFile(), () => false)) ? { path, sha256: pin.sha256 } : undefined;
+    }
+
+    private nexysDeps() {
+        const n = this.deps.nexys!;
+        return {
+            requirement: n.requirement,
+            dataRoot: n.dataRoot,
+            legacyRoots: n.legacyRoots,
+            runner: this.deps.runner,
+            freeBytes: this.deps.freeBytes,
+            archive: async (): Promise<NexysArchive | undefined> => {
+                const pinned = await this.pinnedArchive('nexys-a7-100t');
+                if (pinned) return pinned;
+                const chosen = await this.askNexys?.();
+                return chosen ? { path: chosen } : undefined;
+            },
+        };
+    }
+
+    private payload(): PayloadSource {
+        return this.de10Archive ?? this.deps.payload ?? NO_PAYLOAD;
+    }
+
     private definitions(depth: 'quick' | 'full'): ComponentDefinition[] {
-        const ctx = { layout: this.deps.layout, expected: this.deps.expected, payload: this.deps.payload ?? NO_PAYLOAD, freeBytes: this.deps.freeBytes, ...(this.deps.host ? { host: this.deps.host } : {}), ...(this.deps.toolchainHooks ? { hooks: this.deps.toolchainHooks } : {}) };
+        const ctx = { layout: this.deps.layout, expected: this.deps.expected, payload: this.payload(), freeBytes: this.deps.freeBytes, ...(this.deps.host ? { host: this.deps.host } : {}), ...(this.deps.toolchainHooks ? { hooks: this.deps.toolchainHooks } : {}) };
         return [
+            ...(this.deps.nexys ? [nexysDefinition(this.nexysDeps(), depth)] : []),
             ...toolchainDefinitions(ctx, depth),
             rosettaDefinition({ host: this.deps.rosettaHost, runCommand: this.deps.runRosettaCommand }),
             this.provisioner.definition(),
@@ -125,7 +174,35 @@ export class SetupController {
     /** What the Setup page shows. Reads files and Lima's list only: never starts the engine. */
     async status(): Promise<{ statuses: ComponentStatus[]; view: SetupView }> {
         const statuses = await this.engine().inspectAll();
-        return { statuses, view: buildSetupView(statuses, await this.deps.hardware()) };
+        return { statuses, view: buildSetupView(statuses, await this.deps.hardware(), await this.selection.read()) };
+    }
+
+    /** Is this board's support completely installed? (New Project asks before creating a project for it.) */
+    async isBoardReady(board: string): Promise<boolean> {
+        const entry = boardEntry(board);
+        if (!entry) return true; // a board without managed support (none today) needs nothing here
+        if (entry.id === 'nexys-a7-100t' && !this.deps.nexys) return true; // this computer's Nexys flow is not managed by this Setup
+        return boardState(await this.engine().inspectAll(), entry) === 'installed';
+    }
+
+    /**
+     * Upgrade from NexysVHDL: the Nexys A7 tools already on this computer, verified file by file and taken over into the
+     * MIX-FPGA store as an APFS clone. `dryRun` only reports.
+     */
+    async adoptNexysVhdl(opts: { dryRun: boolean; progress?: (m: string) => void; signal?: AbortSignal }): Promise<{ plan: NexysAdoptionPlan; result?: { ok: boolean; message: string } }> {
+        if (!this.deps.nexys) throw new Error('Nexys A7 support is not managed on this computer.');
+        const d = this.nexysDeps();
+        const plan = await planNexysAdoption(d, { verify: true });
+        if (opts.dryRun || plan.status !== 'adoptable') return { plan };
+        const release = await this.store.acquireLock('adopt-nexys');
+        if (!release) return { plan, result: { ok: false, message: 'Setup is already running.' } };
+        try {
+            const r = await adoptNexys(d, opts.progress, opts.signal);
+            if (r.ok) await this.selection.add(['nexys-a7-100t']);
+            return { plan, result: r.ok ? { ok: true, message: r.detail ?? 'adopted' } : { ok: false, message: r.message } };
+        } finally {
+            await release();
+        }
     }
 
     private async view(): Promise<SetupView> {
@@ -144,26 +221,73 @@ export class SetupController {
         };
     }
 
-    /** Install FPGA Toolchain: everything that is missing, resuming whatever was already done. */
-    install(ui: SetupInteraction, signal?: AbortSignal): Promise<SetupResult> {
-        return this.drive(ui, signal, false);
+    /**
+     * Install support for `boards` (default: the boards already chosen or present; on a fresh computer the student is asked).
+     * Only what those boards need is installed; whatever was already done is resumed, never redone.
+     */
+    async install(ui: SetupInteraction, signal?: AbortSignal, boards?: readonly BoardSupportId[]): Promise<SetupResult> {
+        const chosen = await this.resolveBoards(ui, boards);
+        if (!chosen) return { outcome: 'stopped', message: 'No board was chosen. Nothing was changed.', view: await this.view() };
+        return this.drive(ui, signal, false, chosen);
     }
 
-    /** Repair: only what is already there but interrupted, damaged or changed. */
-    repair(ui: SetupInteraction, signal?: AbortSignal): Promise<SetupResult> {
-        return this.drive(ui, signal, true);
+    /** Repair: only what is already there but interrupted, damaged or changed (for `boards`, default every board present). */
+    async repair(ui: SetupInteraction, signal?: AbortSignal, boards?: readonly BoardSupportId[]): Promise<SetupResult> {
+        const present = await this.presentBoards();
+        return this.drive(ui, signal, true, boards ?? present);
     }
 
-    private async drive(ui: SetupInteraction, signal: AbortSignal | undefined, repairOnly: boolean): Promise<SetupResult> {
-        const first = await this.engine().inspectAll(signal);
-        const plan = this.engine().plan(first).filter((p) => !repairOnly || p.mode === 'repair' || first.find((s) => s.id === p.id)?.state === 'failed');
-        if (plan.length === 0) return { outcome: 'complete', message: 'Everything is already set up.', view: await this.view() };
+    private async presentBoards(): Promise<BoardSupportId[]> {
+        const statuses = await this.engine().inspectAll();
+        const selected = await this.selection.read();
+        return BOARD_SUPPORT.filter((b) => this.managed(b.id) && (selected.includes(b.id) || boardState(statuses, b) !== 'not-installed')).map((b) => b.id);
+    }
+
+    private managed(id: BoardSupportId): boolean {
+        return id !== 'nexys-a7-100t' || this.deps.nexys !== undefined;
+    }
+
+    private async resolveBoards(ui: SetupInteraction, boards: readonly BoardSupportId[] | undefined): Promise<BoardSupportId[] | undefined> {
+        if (boards && boards.length > 0) return boards.filter((b) => this.managed(b));
+        const present = await this.presentBoards();
+        if (present.length > 0) return present;
+        const statuses = await this.engine().inspectAll();
+        const offered = BOARD_SUPPORT.filter((b) => this.managed(b.id)).map((b) => ({ id: b.id, name: b.name, installed: boardState(statuses, b) === 'installed' }));
+        const picked = await ui.chooseBoards(offered);
+        return picked && picked.length > 0 ? picked : undefined;
+    }
+
+    private async drive(ui: SetupInteraction, signal: AbortSignal | undefined, repairOnly: boolean, boards: readonly BoardSupportId[]): Promise<SetupResult> {
+        const steps = [...new Set(boards.flatMap((b) => boardEntry(b)?.steps ?? []))];
+        if (steps.length === 0) return { outcome: 'complete', message: 'Everything is already set up.', view: await this.view() };
+        this.askNexys = () => ui.askNexysArchive();
+        try {
+            const pinned = boards.includes('de10-lite') ? await this.pinnedArchive('de10-lite') : undefined;
+            if (pinned) this.de10Archive = new ArchivePayload(pinned.path, pinned.sha256, join(this.deps.layout.root, '.payload'));
+            return await this.driveSteps(ui, signal, repairOnly, boards, steps);
+        } finally {
+            this.askNexys = undefined;
+            await this.de10Archive?.dispose().catch(() => undefined);
+            this.de10Archive = undefined;
+        }
+    }
+
+    private async driveSteps(ui: SetupInteraction, signal: AbortSignal | undefined, repairOnly: boolean, boards: readonly BoardSupportId[], steps: readonly string[]): Promise<SetupResult> {
+        // Repair looks at every byte (a changed file is invisible to the quick check); Install only needs the quick one.
+        const depth = repairOnly ? 'full' : 'quick';
+        const first = await this.engine(depth).inspectAll(signal);
+        const plan = this.engine(depth).plan(first, steps).filter((p) => !repairOnly || p.mode === 'repair' || first.find((s) => s.id === p.id)?.state === 'failed');
+        if (plan.length === 0) {
+            if (!repairOnly) await this.selection.add(boards);
+            return { outcome: 'complete', message: 'Everything is already set up.', view: await this.view() };
+        }
         if (!(await ui.confirmInstall(this.summary(first, plan)))) return { outcome: 'stopped', message: 'Nothing was changed.', view: await this.view() };
+        if (!repairOnly) await this.selection.add(boards);
 
         const inputs: Record<string, unknown> = {};
-        const only = repairOnly ? plan.map((p) => p.id) : undefined;
+        const only = repairOnly ? plan.map((p) => p.id) : steps;
         for (let round = 0; round < 10; round++) {
-            const run: RunResult = await this.engine().run({ inputs, ...(only ? { only } : {}), ...(signal ? { signal } : {}), onProgress: (p) => ui.progress(p.message) });
+            const run: RunResult = await this.engine(depth).run({ inputs, ...(only ? { only } : {}), ...(signal ? { signal } : {}), onProgress: (p) => ui.progress(p.message) });
             for (const s of run.steps) ui.log(`${s.id}: ${s.outcome}${s.code ? ` ${s.code}` : ''}${s.message ? ` — ${s.message}` : ''}`);
             if (run.outcome === 'busy') return { outcome: 'busy', message: 'Setup is already running.', view: await this.view() };
             if (run.outcome === 'cancelled') return { outcome: 'cancelled', message: studentFailure('CANCELLED'), view: await this.view() };
@@ -177,11 +301,11 @@ export class SetupController {
             const stop = async (message: string): Promise<SetupResult> => ({ outcome: 'stopped', message, view: await this.view() });
             if (awaiting.id === 'rosetta') {
                 const consent = await ui.askRosettaConsent();
-                if (!consent) return stop('Rosetta was not installed. The FPGA engine needs it. Choose Install FPGA Toolchain to continue.');
+                if (!consent) return stop('Rosetta was not installed. The DE10-Lite\'s FPGA engine needs it. Choose Install DE10-Lite Support to continue.');
                 inputs['rosetta'] = consent;
             } else if (awaiting.id === 'quartus') {
                 const files = await ui.askQuartusFiles();
-                if (!files) return stop('Quartus was not installed. Choose Install FPGA Toolchain when you have Altera\'s two files.');
+                if (!files) return stop('Quartus was not installed. Choose Install DE10-Lite Support when you have Altera\'s two files.');
                 const prepared = await this.quartus.prepareLicense(files, signal, (m) => ui.progress(m));
                 if (!prepared.ok) {
                     ui.log(`quartus: ${prepared.code} — ${prepared.message}`);
@@ -197,7 +321,10 @@ export class SetupController {
     /** Verify Environment: a full check of every installed file, then a real run of the FPGA engine (it may start, and is stopped again). */
     async verify(signal?: AbortSignal): Promise<VerifyResult> {
         const steps: VerifyStep[] = [];
-        const statuses = await this.engine('full').inspectAll(signal);
+        // Only the boards this computer has (or the student chose): a board nobody installed is not a failure.
+        const boards = await this.presentBoards();
+        const wanted = new Set(boards.flatMap((b) => boardEntry(b)?.components ?? []));
+        const statuses = (await this.engine('full').inspectAll(signal)).filter((s) => wanted.has(s.id));
         for (const s of statuses) steps.push({ label: MACOS_CATALOG.find((c) => c.id === s.id)?.label ?? s.id, ok: s.state === 'ready', detail: s.state === 'ready' ? (s.version ?? '') : (s.detail ?? s.state) });
         const vm = statuses.find((s) => s.id === 'linux-vm')?.state;
         const quartus = statuses.find((s) => s.id === 'quartus');

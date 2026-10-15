@@ -1,5 +1,6 @@
 import type { ComponentState, ComponentStatus, Ownership } from '../../../core/install/model';
-import { MACOS_CATALOG, studentRows, type StudentGroup } from './catalog';
+import { BOARD_SUPPORT, type BoardState, type BoardSupportEntry, type BoardSupportId, boardState } from './boards';
+import { MACOS_CATALOG } from './catalog';
 import { EXPECTED_STORAGE } from './engine-config';
 
 /**
@@ -20,8 +21,20 @@ export interface SetupRowView {
 
 export type SetupActionId = 'install' | 'verify' | 'repair';
 
+export interface BoardRowView {
+    readonly id: BoardSupportId;
+    readonly name: string;
+    readonly state: BoardState;
+    /** `Installed`, `Not installed`, `Setup not finished`, … */
+    readonly word: string;
+    /** The one thing the student can do for this board, if anything. */
+    readonly action?: 'install' | 'repair';
+}
+
 export interface SetupActionView {
     readonly id: SetupActionId;
+    /** For a board's own Install / Repair; absent for the global actions. */
+    readonly board?: BoardSupportId;
     readonly label: string;
     readonly detail: string;
     readonly primary: boolean;
@@ -44,7 +57,11 @@ export interface HardwareView {
 
 export interface SetupView {
     readonly headline: string;
+    /** Every board the student chose or has is installed and working. */
     readonly allReady: boolean;
+    /** No board support at all yet: the first-run choice applies. */
+    readonly fresh: boolean;
+    readonly boards: readonly BoardRowView[];
     readonly rows: readonly SetupRowView[];
     readonly actions: readonly SetupActionView[];
     /** Technical list for the Details section only. */
@@ -61,7 +78,9 @@ const WORD: Record<ComponentState, string> = {
 };
 const ROW_STATE: Record<ComponentState, RowState> = { ready: 'ready', 'not-installed': 'not-installed', installing: 'working', repairable: 'needs-repair', incompatible: 'problem', failed: 'problem' };
 
-const HINT: Partial<Record<`${StudentGroup}:${ComponentState}`, string>> = {
+const BOARD_WORD: Record<BoardState, string> = { installed: 'Installed', 'not-installed': 'Not installed', installing: 'Installing…', incomplete: 'Setup not finished', 'needs-repair': 'Needs repair', 'not-supported': 'Not supported' };
+
+const HINT: Partial<Record<`${Exclude<SetupRowId, 'hardware'>}:${ComponentState}`, string>> = {
     'vhdl-tools:not-installed': 'Check, Simulate and the schematics need these.',
     'vhdl-tools:repairable': 'Some files are missing or changed. Repair puts them back.',
     'vhdl-tools:incompatible': 'This computer cannot run MIX-FPGA\'s tools.',
@@ -76,37 +95,61 @@ const HINT: Partial<Record<`${StudentGroup}:${ComponentState}`, string>> = {
 const OWNER: Record<Ownership, string> = { managed: 'Installed by MIX-FPGA', external: 'Supplied by you (Altera)', system: 'Provided by macOS' };
 
 /** The words of the student-facing view must never include these (they are shown only under Details). */
-export const TECHNICAL_TERMS = /limactl|\blima\b|ubuntu|mixfpga-q|rosettad|namespace|\/opt\/|\/mnt\/|\/usr\/|sudo|\bbash\b|\blinux\b|\.sh\b/i;
+export const TECHNICAL_TERMS = /limactl|\blima\b|ubuntu|mixfpga-q|rosettad|namespace|\/opt\/|\/mnt\/|\/usr\/|sudo|\bbash\b|\blinux\b|\.sh\b|\bapio\b|openxc7|nextpnr|\bbsp\b/i;
 
-export function buildSetupView(statuses: readonly ComponentStatus[], hardware: HardwareView): SetupView {
-    const rows: SetupRowView[] = studentRows(statuses).map((r) => {
-        const hint = HINT[`${r.group}:${r.state}`];
-        return { id: r.group, label: r.label, state: ROW_STATE[r.state], word: WORD[r.state], ...(hint ? { hint } : {}) };
+const SEVERITY: ComponentState[] = ['incompatible', 'failed', 'installing', 'repairable', 'not-installed', 'ready'];
+
+function worst(statuses: ReadonlyMap<string, ComponentStatus>, ids: readonly string[]): ComponentState {
+    const states = ids.map((id) => statuses.get(id)?.state ?? 'not-installed');
+    return SEVERITY.find((s) => states.includes(s)) ?? 'not-installed';
+}
+
+/**
+ * The Setup page. `selected` are the boards the student chose; a board that is (partly) present counts as chosen too.
+ * The Environment rows only describe the chosen boards: a Nexys-only computer has no FPGA Engine row at all.
+ */
+export function buildSetupView(statuses: readonly ComponentStatus[], hardware: HardwareView, selected: readonly BoardSupportId[] = []): SetupView {
+    const by = new Map(statuses.map((s) => [s.id, s]));
+    const boards: BoardRowView[] = BOARD_SUPPORT.map((b) => {
+        const state = boardState(statuses, b);
+        const action = state === 'not-installed' || state === 'incomplete' ? 'install' : state === 'needs-repair' ? 'repair' : undefined;
+        return { id: b.id, name: b.name, state, word: BOARD_WORD[state], ...(action ? { action } : {}) };
     });
+    const relevant: BoardSupportEntry[] = BOARD_SUPPORT.filter((b) => selected.includes(b.id) || boards.find((x) => x.id === b.id)!.state !== 'not-installed');
+    const fresh = relevant.length === 0;
+
+    const row = (id: Exclude<SetupRowId, 'hardware'>, label: string, ids: readonly string[]): SetupRowView => {
+        const st = worst(by, ids);
+        const hint = HINT[`${id}:${st}`];
+        return { id, label, state: ROW_STATE[st], word: WORD[st], ...(hint ? { hint } : {}) };
+    };
+    const rows: SetupRowView[] = [];
+    if (!fresh) {
+        rows.push(row('vhdl-tools', 'VHDL Tools', relevant.flatMap((b) => b.vhdlTools)));
+        const engine = relevant.flatMap((b) => b.engine);
+        if (engine.length > 0) rows.push(row('fpga-engine', 'FPGA Engine', engine));
+        rows.push(row('programmer', 'Programmer', relevant.flatMap((b) => b.programmer)));
+    }
     rows.push({ id: 'hardware', label: 'Hardware', state: hardware.state, word: hardware.word, ...(hardware.hint ? { hint: hardware.hint } : {}) });
 
-    const by = new Map(statuses.map((s) => [s.id, s]));
-    const states = MACOS_CATALOG.map((c) => by.get(c.id)?.state ?? 'not-installed');
-    const some = (s: ComponentState) => states.includes(s);
-    const allReady = states.every((s) => s === 'ready');
-    const anyInstalled = states.some((s) => s === 'ready' || s === 'repairable');
-
     const actions: SetupActionView[] = [];
-    if (some('not-installed')) {
-        actions.push({ id: 'install', label: 'Install FPGA Toolchain', detail: `Installs everything the DE10-Lite needs (about ${EXPECTED_STORAGE.vmAfterQuartusGB} GB on this computer once finished; an internet connection is needed).`, primary: !anyInstalled });
+    if (fresh) actions.push({ id: 'install', label: 'Install FPGA Toolchain', detail: 'Choose the boards you will use; only what they need is installed.', primary: true });
+    for (const b of boards) {
+        if (b.action === 'install') actions.push({ id: 'install', board: b.id, label: `Install ${b.name} Support`, detail: b.id === 'de10-lite' ? `Uses about ${EXPECTED_STORAGE.vmAfterQuartusGB} GB once finished, needs an internet connection and Altera's free download.` : 'Installs the Nexys A7 tools.', primary: !fresh && relevant.some((r) => r.id === b.id) });
+        if (b.action === 'repair') actions.push({ id: 'repair', board: b.id, label: `Repair ${b.name} Support`, detail: 'Continues an interrupted setup or puts back anything missing or changed.', primary: true });
     }
-    if (some('repairable') || some('failed')) {
-        actions.push({ id: 'repair', label: 'Repair', detail: 'Continues an interrupted setup or puts back anything missing or changed.', primary: true });
-    }
-    if (anyInstalled || allReady) actions.push({ id: 'verify', label: 'Verify Environment', detail: 'Checks every part and proves the FPGA engine really builds.', primary: allReady });
+    const installedBoards = boards.filter((b) => b.state === 'installed');
+    if (installedBoards.length > 0) actions.push({ id: 'verify', label: 'Verify Environment', detail: 'Checks every installed part and proves it really works.', primary: false });
 
-    const headline = allReady ? 'Ready' : some('incompatible') ? 'Needs attention' : some('installing') ? 'Installing…' : some('failed') ? 'Needs attention' : some('repairable') ? 'Needs repair' : 'Setup required';
+    const relevantRows = relevant.map((b) => boards.find((x) => x.id === b.id)!);
+    const allReady = !fresh && relevantRows.every((b) => b.state === 'installed');
+    const headline = fresh ? 'Setup required' : allReady ? 'Ready' : relevantRows.some((b) => b.state === 'not-supported') ? 'Needs attention' : relevantRows.some((b) => b.state === 'installing') ? 'Installing…' : relevantRows.some((b) => b.state === 'needs-repair') ? 'Needs repair' : 'Setup not finished';
 
     const details: DetailRow[] = MACOS_CATALOG.map((c) => {
-        const s = by.get(c.id);
-        return { label: c.label, word: WORD[s?.state ?? 'not-installed'], owner: OWNER[s?.ownership ?? c.ownership], ...(s?.version ? { version: s.version } : {}), ...(s?.detail ? { note: s.detail } : {}) };
+        const st = by.get(c.id);
+        return { label: c.label, word: WORD[st?.state ?? 'not-installed'], owner: OWNER[st?.ownership ?? c.ownership], ...(st?.version ? { version: st.version } : {}), ...(st?.detail ? { note: st.detail } : {}) };
     });
-    return { headline, allReady, rows, actions, details };
+    return { headline, allReady, fresh, boards, rows, actions, details };
 }
 
 /** Student wording for a failed step; the raw message always goes to the Console / Details. */

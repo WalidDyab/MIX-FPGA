@@ -1,25 +1,29 @@
-# NexysVHDL — Classroom Preview
+# MIX-FPGA — Classroom Preview
 
-VHDL-2008 design for the **Digilent Nexys A7-100T** in Visual Studio Code: create a project, check and simulate your VHDL, view waveforms and schematics, build a bitstream and program the board.
+One VS Code environment for VHDL-2008 FPGA design on two boards, the **Digilent Nexys A7-100T** and the **Terasic DE10-Lite**: create a project, check and simulate your VHDL, view waveforms and schematics, build and program the board. MIX-FPGA is the update of NexysVHDL: NexysVHDL projects and their Nexys A7 tools keep working.
+
+MIX-FPGA is an EMXplore project. Copyright 2026 Walid Dyab.
 
 ## Setup
 
 1. Install this extension (Extensions → … → Install from VSIX…).
-2. Click the **NexysVHDL** icon → **Install FPGA Toolchain…** → choose the `nexysvhdl-toolchain-…tar.gz` file from your classroom download. It is installed once for your user account and reused by NexysVHDL updates.
-3. Windows only, for programming: if **Show Environment** says *Digilent USB/JTAG Support — Setup Required*, install the official Digilent Adept Runtime and Adept Utilities (see the installation guide).
+2. Click the **MIX-FPGA** icon → **Show Environment** → **Install FPGA Toolchain**, and choose the boards you will use. Only their support is installed; you can add the other board later.
+   - Nexys A7-100T: the course's Nexys A7 support file (or, after an update from NexysVHDL, nothing: the existing tools are reused).
+   - DE10-Lite (macOS Apple silicon): MIX-FPGA installs its tools and a hidden FPGA engine, and asks for Altera's free Quartus Prime Lite download and your acceptance of Altera's licence.
+3. Windows only, for programming the Nexys A7: if **Show Environment** says *Digilent USB/JTAG Support — Setup Required*, install the official Digilent Adept Runtime and Adept Utilities (see the installation guide).
 
-You do not need to install GHDL, Apio, Yosys, nextpnr, Python or Vivado (macOS: nor Homebrew, Xcode Command Line Tools, openFPGALoader or a USB driver; the board programmer is included).
+You do not need to install GHDL, Apio, Yosys, nextpnr, Python, Vivado or any Linux tool.
 
 ## Use
 
-**NexysVHDL: Getting Started** walks you through: Create/Open Project → edit VHDL → edit the XDC → Check → Simulate → Waveform → RTL Schematic → Build → Program.
+**MIX-FPGA: Getting Started** walks you through: Create/Open Project → edit VHDL → constraints → Check → Simulate → Waveform → RTL Schematic → Build → Program.
 
-Pins are set in standard Xilinx **XDC** files, exactly as in Vivado.
+Nexys A7 pins are standard Xilinx **XDC** files; DE10-Lite pins and clocks are Quartus **QSF** and **SDC** files.
 
 ## Documentation
 
-- `docs/student-install-windows.md`, `docs/student-install-macos.md`
+- `docs/student-install-macos.md`, `docs/student-install-windows.md`
 - `docs/student-quick-start.md`
-- `LICENSE` (Apache-2.0, NexysVHDL itself), `NOTICE`, `THIRD_PARTY_NOTICES.md` (the FPGA toolchain's components keep their own licenses), `CHANGELOG.md`
+- `LICENSE` (Apache-2.0, MIX-FPGA itself), `NOTICE`, `THIRD_PARTY_NOTICES.md` (the FPGA tools keep their own licenses), `CHANGELOG.md`
 
-Supported: Windows x64, macOS Apple silicon, VS Code 1.120+.
+Supported: macOS Apple silicon (both boards), Windows x64, VS Code 1.120+.

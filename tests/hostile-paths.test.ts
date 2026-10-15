@@ -215,7 +215,7 @@ describe('hostile paths: ASCII alias for the toolchain (macOS home folder with s
         assert.match((await macosPathAlias('/nowhere', env, fakeMacFs().fs)).problem!, /does not exist/);
     });
 
-    it('classroom mode on macOS: a HOME with spaces/accents/CJK keeps the real ~/Library/NexysVHDL store and runs Apio through a private alias', { skip: process.platform === 'win32' }, async (t) => {
+    it('classroom mode on macOS: a HOME with spaces/accents/CJK keeps the real MIX-FPGA store and runs Apio through a private alias', { skip: process.platform === 'win32' }, async (t) => {
         trapProcesses(t);
         const dir = await tempDir(t, 'nexys-machome-');
         const home = join(dir, 'Users', HOSTILE);
@@ -225,9 +225,9 @@ describe('hostile paths: ASCII alias for the toolchain (macOS home folder with s
         await writeFakeBundle(bundle, { target: 'darwin-arm64', programmer: true });
         await symlink('../bin/apio', join(bundle, 'apio', 'packages', 'oss-cad-suite', 'apio-alias'));
         const { archive, requirement } = await fakeArchive(dir, bundle, { target: 'darwin-arm64' });
-        const dataRoot = join(home, 'Library', 'NexysVHDL');
+        const dataRoot = join(home, 'Library', 'MIX-FPGA', 'support', 'nexys-a7');
         assert.equal((await installToolchainArchive({ archive, dataRoot, target: 'darwin-arm64', requirement })).status, 'installed');
-        // The real registry hook (platform/index.ts) with the real filesystem; HOME is never changed or written outside Library/NexysVHDL.
+        // The real registry hook (platform/index.ts) with the real filesystem; HOME is never changed or written outside the MIX-FPGA store.
         const ctx = await createContext({ host: MAC, env: { HOME: home, TMPDIR: `${tmp}/` }, runner: new FakeRunner(), classroom: { requirement } });
         const tc = ctx.classroom!.toolchain!;
         assert.equal(ctx.classroom!.dataRoot, dataRoot);

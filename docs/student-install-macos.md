@@ -1,70 +1,48 @@
-# Installing NexysVHDL on macOS
+# Installing MIX-FPGA on macOS
 
-NexysVHDL — **Classroom Preview** — for the Digilent Nexys A7-100T.
+MIX-FPGA — **Classroom Preview** — one VS Code environment for the **Digilent Nexys A7-100T** and the **Terasic DE10-Lite**.
 Supported: **macOS on Apple silicon (M1 or newer)**. Intel Macs are not supported.
+MIX-FPGA is an EMXplore project. Copyright 2026 Walid Dyab.
 
-You need two things. Everything else (the VHDL simulator, the FPGA synthesis, place-and-route and bitstream tools, the board programmer and the Python they use) comes with NexysVHDL. **Do not install Homebrew, Python, Xcode or its Command Line Tools, GHDL, Apio, Yosys, nextpnr, openXC7, openFPGALoader, Vivado or Digilent software for NexysVHDL**; if you already have any of them, NexysVHDL ignores them and never changes them.
-
-| # | What | Why |
-|---|---|---|
-| 1 | Visual Studio Code **1.120 or newer** | the editor NexysVHDL runs in |
-| 2 | **NexysVHDL** (extension + FPGA toolchain) | design, check, simulate, build and program |
+You install the support only for the boards you use; you can add the other board at any time. Everything the boards need (VHDL simulator, FPGA build tools, board programmer, and for the DE10-Lite a hidden FPGA engine) is installed and managed by MIX-FPGA. **Do not install Homebrew, Python, Xcode Command Line Tools, GHDL, Apio, Yosys, nextpnr, openXC7, openFPGALoader, Vivado, Linux tools or Digilent software for MIX-FPGA**; if you already have any of them, MIX-FPGA ignores them and never changes them.
 
 ## 1. Visual Studio Code
 
-Install VS Code from <https://code.visualstudio.com/> (the *Apple silicon* or *Universal* download) and move it to **Applications**. If you already have it, check **Code → About Visual Studio Code**: the version must be 1.120 or newer.
+Install VS Code from <https://code.visualstudio.com/> (the *Apple silicon* or *Universal* download) and move it to **Applications**. The version must be 1.120 or newer (**Code → About Visual Studio Code**).
 
-## 2. NexysVHDL
+## 2. MIX-FPGA
 
-Your course provides the NexysVHDL classroom download `NexysVHDL-<version>-darwin-arm64.zip`. Double-click it to unzip it (Safari may already have done that for you). The folder contains:
+In VS Code open the Extensions view (⇧⌘X), click **…** → **Install from VSIX…**, and choose the `nexysvhdl-<version>-darwin-arm64.vsix` file from your course (the file name keeps its earlier name so that NexysVHDL installations update to MIX-FPGA).
 
-| File | What it is |
-|---|---|
-| `nexysvhdl-<version>-darwin-arm64.vsix` | the NexysVHDL extension (small) |
-| `nexysvhdl-toolchain-<toolchain version>-darwin-arm64.tar.gz` | the NexysVHDL FPGA toolchain (about 630 MB; about 2.8 GB once installed) |
-| `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.md` | checksums and licenses |
+**Already using NexysVHDL?** Installing MIX-FPGA updates it. Your projects open as before, nothing in them is rewritten, and your Nexys A7 tools keep working without a new download. **Show Environment** shows *Nexys A7-100T — Installed*; you can add the DE10-Lite whenever you like.
 
-Do **not** double-click the `.tar.gz` file; NexysVHDL installs it for you.
+## 3. Board support
 
-**a. Install the extension.** In VS Code open the Extensions view (⇧⌘X), click **…** (top right) → **Install from VSIX…**, and choose the `.vsix` file.
+Click the **MIX-FPGA** icon and run **Show Environment**, then **Install FPGA Toolchain**, and tick the boards you will use:
 
-**b. Install the FPGA toolchain.** Click the **NexysVHDL** icon in the Activity Bar. NexysVHDL tells you that it needs its FPGA toolchain: click **Install FPGA Toolchain…** and choose the `nexysvhdl-toolchain-…tar.gz` file. Installation takes less than a minute. The toolchain is installed for your macOS user account in `~/Library/NexysVHDL` (no administrator password is needed) and is reused by later NexysVHDL updates, so you install it only once per toolchain version. NexysVHDL checks every file against the validated toolchain before using it.
+| Board | What happens | Disk space |
+|---|---|---|
+| **Nexys A7-100T** | choose the Nexys A7 support file from your course (`nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz`); every file is checked | about 2.8 GB |
+| **DE10-Lite** | MIX-FPGA installs its tools and prepares its FPGA engine (internet needed once). If Apple's **Rosetta** is missing, Apple's own installer opens and asks you to agree to Apple's licence. Then MIX-FPGA asks for two free files from Altera — `QuartusLiteSetup-25.1std.0.1129-linux.run` and `max10-25.1std.0.1129.qdz` (Quartus Prime Lite 25.1, Linux) — shows Altera's licence from the installer itself, and installs Quartus only after you tick *I have reviewed and accept the Altera Quartus Prime Software License Agreement.* | about 12 GB once finished (the engine's disk can grow to at most 60 GB; it is not reserved) |
 
-**c. Check.** Run **NexysVHDL: Show Environment** (⇧⌘P). You should see:
+Later, **Install … Support** next to a board adds it; **Verify Environment** checks everything; **Repair** continues an interrupted setup or puts back anything that changed.
 
-```
-Extension                           Ready
-Bundled FPGA Toolchain              Ready — 1.0 (macOS Apple silicon)
-Board programmer (openFPGALoader)   Ready (bundled)
-Board                               Not Connected   (fine until you program)
-Status: Ready for design, build and programming
-```
+When you create a project for a board whose support is not installed, MIX-FPGA offers to install it first.
 
-You can now create projects, check, simulate, build and program without anything else.
+## 4. Programming the board
 
-If macOS asks whether Visual Studio Code may access files in your Documents, Desktop or Downloads folder, click **Allow**: NexysVHDL needs to read your project and the toolchain file.
-
-## 3. Programming the board
-
-macOS needs **no driver** for the Nexys A7: the board programmer included in NexysVHDL talks to it directly over USB. Connect the board's **PROG/UART** USB port to your Mac, switch the board **ON**, and click **Refresh** in the NexysVHDL Hardware view; then **Program FPGA**.
+macOS needs **no driver**: the board programmer included in MIX-FPGA talks to both boards over USB. Connect the board (Nexys A7: the **PROG/UART** port; DE10-Lite: the **USB-Blaster** port), switch it **ON**, click **Refresh** in the Hardware view, then **Program FPGA**. Programming is temporary (it lasts until the board is switched off).
 
 ## If something is wrong
 
 | Message | What to do |
 |---|---|
-| *FPGA toolchain not installed* | Install it from the `nexysvhdl-toolchain-…` file (step 2b). |
-| *The archive content does not match the validated toolchain* | The file is damaged or the wrong one; download the classroom package again. |
-| *This archive is the NexysVHDL toolchain for win32-x64* | You chose the Windows toolchain; use the `…-darwin-arm64.tar.gz` file. |
-| *Could not create a plain-ASCII path …* | Your home folder's path contains a space or a non-English letter and NexysVHDL could not create its small private link folder in your temporary folder. Restart VS Code; if it persists, ask your instructor. Check and Simulate still work. |
-| *GHDL cannot use the file name …* | Rename that VHDL file using only English letters, digits, `_` and `-` (folder names may contain any characters). |
-| *No Nexys A7 detected* | USB cable in the **PROG/UART** port, board switched **ON**, try another cable or USB port (some cables only charge). |
+| *… support is not installed* | **Show Environment** → **Install … Support**. |
+| *The file you chose is not the one Setup needs* | Download that file again (from your course, or from Altera for the two Quartus files). |
+| *Setup needs an internet connection* | Connect, then **Repair**: it continues where it stopped. |
+| *There is not enough free space* | Free some space (see the table above), then **Repair**. |
+| *The licence could not be shown, so nothing was installed* | Download the Quartus installer again from Altera. |
+| *GHDL cannot use the file name …* | Rename that VHDL file using only English letters, digits, `_` and `-`. |
+| *No board detected* | Check the USB port and cable (some cables only charge) and that the board is switched **ON**. |
 
-**NexysVHDL: Verify FPGA Toolchain** re-checks every installed file. **NexysVHDL: Third-Party Notices** shows the licenses of the included tools.
-
-## Folders with spaces or non-English letters
-
-Project folders like "Documents/Mis Proyectos" or "学生" work, and so does a home folder whose path contains spaces or non-English letters: some FPGA build tools only accept plain English paths, so NexysVHDL then gives them a small private link (in your own temporary folder) that points to its folder in your Library. Your files stay where they are. VHDL *file* names should use English letters (VHDL itself only allows English letters in names).
-
-## Uninstalling
-
-Uninstall the extension in the Extensions view. The FPGA toolchain stays in `~/Library/NexysVHDL` (so a reinstall or update does not need it again). To remove it, in Finder choose **Go → Go to Folder…**, enter `~/Library`, and move the `NexysVHDL` folder to the Trash.
+If macOS asks whether Visual Studio Code may access your Documents, Desktop or Downloads folder, click **Allow**: MIX-FPGA needs to read your project and the files you choose.

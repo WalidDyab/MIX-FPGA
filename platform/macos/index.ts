@@ -47,12 +47,24 @@ export function macosSystemPath(): string[] {
 }
 
 /**
- * Per-user NexysVHDL data root: ~/Library/NexysVHDL. Not "Application
- * Support": Apio refuses paths that contain a space. A home folder whose path
- * itself has a space or non-ASCII character is reached through macosPathAlias.
+ * Per-user store of the Nexys A7 support (the NexysVHDL Toolchain 1.0 bundle, unchanged): <MIX-FPGA root>/support/nexys-a7,
+ * the MIX-FPGA root being $MIXFPGA_HOME or ~/Library/MIX-FPGA. Not "Application Support": Apio refuses paths that contain a
+ * space. A home folder whose path itself has a space or non-ASCII character is reached through macosPathAlias.
  */
 export function macosUserDataRoot(env: Readonly<Record<string, string | undefined>>): string | undefined {
-    return env['HOME'] ? posix.join(env['HOME'], 'Library', 'NexysVHDL') : undefined;
+    const override = env['MIXFPGA_HOME'];
+    const root = override && override.length > 0 ? override : env['HOME'] ? posix.join(env['HOME'], 'Library', 'MIX-FPGA') : undefined;
+    return root ? posix.join(root, 'support', 'nexys-a7') : undefined;
+}
+
+/**
+ * Where a NexysVHDL 0.6.0 installation keeps the same validated toolchain (~/Library/NexysVHDL). MIX-FPGA is its update: it
+ * may reuse that toolchain read-only (the installed marker must match the validated content hash) until it is adopted into the
+ * MIX-FPGA store. Never written to. Not consulted when MIXFPGA_HOME relocates MIX-FPGA (isolated and fresh-install tests).
+ */
+export function macosLegacyDataRoots(env: Readonly<Record<string, string | undefined>>): string[] {
+    if (env['MIXFPGA_HOME']) return [];
+    return env['HOME'] ? [posix.join(env['HOME'], 'Library', 'NexysVHDL')] : [];
 }
 
 /** The real macOS adapter: PlatformServices plus the pieces a composition root needs. */

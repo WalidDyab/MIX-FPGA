@@ -94,14 +94,16 @@ describe('classroom mode: the bundled toolchain only', () => {
         assert.equal(ctx.platform.id, 'unsupported');
     });
 
-    it('uses the per-user data root of the platform (LOCALAPPDATA on Windows, ~/Library/NexysVHDL on macOS)', async (t) => {
+    it('uses the per-user data root of the platform (LOCALAPPDATA on Windows, ~/Library/MIX-FPGA/support/nexys-a7 on macOS)', async (t) => {
         trapProcesses(t);
         const requirement: ToolchainRequirement = { schemaVersion: 1, bundleVersion: '1.0', targets: { 'win32-x64': { status: 'validated', treeSha256: 'a'.repeat(64) }, 'darwin-arm64': { status: 'pending' } } };
         const win = await createContext({ host: WIN, env: { LOCALAPPDATA: 'C:\\Users\\student\\AppData\\Local' }, runner: toolRunner(), classroom: { requirement } });
         assert.equal(win.classroom!.dataRoot, win32.join('C:\\Users\\student\\AppData\\Local', 'NexysVHDL'));
         const mac = await createContext({ host: MAC, env: { HOME: '/Users/student' }, runner: toolRunner(), classroom: { requirement } });
-        assert.equal(mac.classroom!.dataRoot, '/Users/student/Library/NexysVHDL');
+        assert.equal(mac.classroom!.dataRoot, '/Users/student/Library/MIX-FPGA/support/nexys-a7');
         assert.equal(mac.classroom!.installed?.status, 'pending');
+        const relocated = await createContext({ host: MAC, env: { HOME: '/Users/student', MIXFPGA_HOME: '/tmp/mf' }, runner: toolRunner(), classroom: { requirement } });
+        assert.equal(relocated.classroom!.dataRoot, '/tmp/mf/support/nexys-a7', 'MIXFPGA_HOME relocates the Nexys store too');
     });
 
     it('macOS classroom adapter takes GHDL, Apio and the programmer only from the bundle', async (t) => {
@@ -262,5 +264,52 @@ describe('student setup summary', () => {
             ['Not Connected', 'Not Checked', 'Not Checked'],
         );
         assert.equal(boardRow({ status: 'one', boards: [{ selector: 'SN:1', serialNumber: '1', productName: 'Nexys A7-100T' } as never], diagnostics: [] }).status, 'Connected');
+    });
+});
+
+describe('upgrade from NexysVHDL 0.6.0: read-only reuse of its validated toolchain', () => {
+    async function homeWith(t: Parameters<typeof tempDir>[0], where: 'legacy' | 'primary' | 'both') {
+        const dir = await tempDir(t, 'nexys-upgrade-');
+        const home = join(dir, 'home');
+        const bundle = join(dir, 'bundle');
+        await writeFakeBundle(bundle, { target: 'darwin-arm64', programmer: true });
+        const { archive, requirement } = await fakeArchive(dir, bundle, { target: 'darwin-arm64' });
+        const legacy = join(home, 'Library', 'NexysVHDL');
+        const primary = join(home, 'Library', 'MIX-FPGA', 'support', 'nexys-a7');
+        if (where !== 'primary') assert.equal((await installToolchainArchive({ archive, dataRoot: legacy, target: 'darwin-arm64', requirement })).status, 'installed');
+        if (where !== 'legacy') assert.equal((await installToolchainArchive({ archive, dataRoot: primary, target: 'darwin-arm64', requirement })).status, 'installed');
+        return { home, legacy, primary, requirement };
+    }
+
+    it('uses the NexysVHDL store when the MIX-FPGA store has none, keeping tool state in the MIX-FPGA store', async (t) => {
+        trapProcesses(t);
+        const h = await homeWith(t, 'legacy');
+        const ctx = await createContext({ host: MAC, env: { HOME: h.home }, runner: toolRunner(), classroom: { requirement: h.requirement } });
+        const c = ctx.classroom!;
+        assert.ok(c.toolchain, JSON.stringify(c.diagnostics));
+        assert.equal(c.reusedFrom, h.legacy);
+        assert.equal(c.dataRoot, h.primary, 'installs and state still go to the MIX-FPGA store');
+        assert.equal(c.toolchain.root, join(h.legacy, 'toolchains', 'darwin-arm64', '1.0'));
+        assert.ok(c.toolchain.environment['APIO_HOME']!.startsWith(join(h.primary, 'state')), c.toolchain.environment['APIO_HOME']);
+    });
+
+    it('prefers the MIX-FPGA store once it exists', async (t) => {
+        trapProcesses(t);
+        const h = await homeWith(t, 'both');
+        const c = (await createContext({ host: MAC, env: { HOME: h.home }, runner: toolRunner(), classroom: { requirement: h.requirement } })).classroom!;
+        assert.equal(c.reusedFrom, undefined);
+        assert.equal(c.toolchain!.root, join(h.primary, 'toolchains', 'darwin-arm64', '1.0'));
+    });
+
+    it('never reuses a NexysVHDL store whose content differs from the validated toolchain, and ignores it under MIXFPGA_HOME', async (t) => {
+        trapProcesses(t);
+        const h = await homeWith(t, 'legacy');
+        const other: ToolchainRequirement = { ...h.requirement, targets: { 'darwin-arm64': { status: 'validated', treeSha256: 'b'.repeat(64) } } };
+        const c = (await createContext({ host: MAC, env: { HOME: h.home }, runner: toolRunner(), classroom: { requirement: other } })).classroom!;
+        assert.equal(c.toolchain, undefined);
+        assert.equal(c.reusedFrom, undefined);
+        const fresh = (await createContext({ host: MAC, env: { HOME: h.home, MIXFPGA_HOME: join(h.home, 'fresh') }, runner: toolRunner(), classroom: { requirement: h.requirement } })).classroom!;
+        assert.equal(fresh.toolchain, undefined, 'a relocated MIX-FPGA (fresh-install test) does not see NexysVHDL');
+        assert.equal(fresh.installed?.status, 'missing');
     });
 });

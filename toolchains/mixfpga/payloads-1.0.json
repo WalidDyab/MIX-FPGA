@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "note": "Internal Phase 4 validation payloads (built outside git into .artifacts/payloads by scripts/mixfpga/build-payloads.mjs). Not for public distribution while L1, L3 and L9 are unresolved.",
+  "payloads": {
+    "nexys-a7-100t": { "file": "nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz", "bytes": 657363463, "sha256": "d8cdf6e2a6c082d05189396b10892b1a6605a267b2f2b884c9911c9140a2359d", "content": "NexysVHDL Toolchain 1.0 (darwin-arm64), unchanged" },
+    "de10-lite": { "file": "mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz", "bytes": 91626879, "sha256": "f8cbe33f56b54018204ba4f3f9c0a6cf4a4ad8e66145e36787c3b8e47f70eebb", "content": "MIX-FPGA Toolchain 1.0 (macos-arm64), byte-reproducible" }
+  }
+}

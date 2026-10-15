@@ -1,5 +1,6 @@
 import { mkdir } from 'node:fs/promises';
 import {
+    storePaths,
     ApioImplementationProvider,
     type BundleResolution,
     bundleCompatibilityManifest,
@@ -78,6 +79,8 @@ export interface ClassroomState {
     readonly resolution?: BundleResolution;
     /** The usable installed toolchain, if any. */
     readonly toolchain?: BundledToolchain;
+    /** The toolchain is the predecessor's (NexysVHDL) store, reused read-only because the MIX-FPGA store has none yet. */
+    readonly reusedFrom?: string;
     readonly diagnostics: readonly Diagnostic[];
 }
 
@@ -103,17 +106,30 @@ async function resolveClassroom(host: HostInfo, env: Readonly<Record<string, str
     if (!facts) return { ...base, diagnostics: [errorDiag('toolchain', 'TOOLCHAIN_TARGET_UNSUPPORTED', `MIX-FPGA does not support ${target}.`)] };
     const dataRoot = options.dataRoot ?? facts.userDataRoot(env);
     if (!dataRoot) return { ...base, diagnostics: [errorDiag('toolchain', 'TOOLCHAIN_DATA_ROOT_UNKNOWN', 'Cannot determine the per-user MIX-FPGA folder on this computer.')] };
-    const installed = await installedToolchain(dataRoot, target, options.requirement);
+    let installed = await installedToolchain(dataRoot, target, options.requirement);
+    let reusedFrom: string | undefined;
+    // Upgrade path: nothing in the MIX-FPGA store yet, but the predecessor's store holds exactly the validated toolchain.
+    if (installed.status === 'missing' && !options.dataRoot) {
+        for (const legacy of facts.legacyDataRoots?.(env) ?? []) {
+            const old = await installedToolchain(legacy, target, options.requirement);
+            if (old.status === 'installed') {
+                installed = old;
+                reusedFrom = legacy;
+                break;
+            }
+        }
+    }
     if (installed.status !== 'installed') return { ...base, dataRoot, installed, diagnostics: installed.diagnostics };
     const resolution = await loadBundledToolchain({
         bundleDir: installed.paths.versionDir,
         host,
-        stateDir: installed.paths.stateDir,
+        // Writable tool state always lives in the MIX-FPGA store, never in the predecessor's folder.
+        stateDir: storePaths(dataRoot, target, options.requirement.bundleVersion).stateDir,
         systemPath: facts.systemPath(env),
         inheritedEnv: env,
         ...(options.pathAlias ? { pathAlias: options.pathAlias } : facts.pathAlias ? { pathAlias: (t: string) => facts.pathAlias!(t, env) } : {}),
     });
-    return { ...base, dataRoot, installed, resolution, ...(resolution.toolchain ? { toolchain: resolution.toolchain } : {}), diagnostics: resolution.diagnostics };
+    return { ...base, dataRoot, installed, resolution, ...(resolution.toolchain ? { toolchain: resolution.toolchain } : {}), ...(reusedFrom ? { reusedFrom } : {}), diagnostics: resolution.diagnostics };
 }
 
 export async function createContext(overrides: ContextOverrides = {}): Promise<RuntimeContext> {

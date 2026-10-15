@@ -65,8 +65,8 @@ describe('Toolchain 1.0 manifest and catalog', () => {
         await check('notices', join(notices, 'THIRD_PARTY_NOTICES.txt'));
     });
 
-    it('lists every one of the ten components once, with ownership, and no student-facing Linux terms', () => {
-        assert.deepEqual(MACOS_CATALOG.map((c) => c.id), ['toolchain', 'ghdl', 'yosys', 'openfpgaloader', 'lima', 'rosetta', 'linux-vm', 'quartus', 'max10', 'programmer']);
+    it('lists every component once (the Nexys A7 bundle and the ten DE10-Lite parts), with ownership, and no student-facing Linux terms', () => {
+        assert.deepEqual(MACOS_CATALOG.map((c) => c.id), ['nexys-toolchain', 'toolchain', 'ghdl', 'yosys', 'openfpgaloader', 'lima', 'rosetta', 'linux-vm', 'quartus', 'max10', 'programmer']);
         const own = Object.fromEntries(MACOS_CATALOG.map((c) => [c.id, c.ownership]));
         assert.deepEqual([own['rosetta'], own['quartus'], own['max10'], own['ghdl'], own['linux-vm']], ['system', 'external', 'external', 'managed', 'managed']);
         for (const c of MACOS_CATALOG) assert.doesNotMatch(c.label, /limactl|ubuntu|mixfpga-q|rosettad/i);

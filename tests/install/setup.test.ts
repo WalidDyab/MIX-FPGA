@@ -1,114 +1,26 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { chmod, mkdir, readdir, stat, writeFile } from 'node:fs/promises';
+import { chmod, readdir, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import type { TestContext } from 'node:test';
 import type { ComponentState, ComponentStatus } from '../../core';
-import type { Downloader } from '../../platform/macos/install/download';
 import { MACOS_CATALOG } from '../../platform/macos/install/catalog';
-import { installedDe10Paths } from '../../platform/macos/install/paths';
-import { QUARTUS_SPEC, type LicenseOffer, type QuartusSpec } from '../../platform/macos/install/quartus-install';
-import type { RosettaConsent } from '../../platform/macos/install/rosetta';
-import { SetupController, type InstallSummary, type SetupInteraction } from '../../platform/macos/install/setup-controller';
+import { SetupController } from '../../platform/macos/install/setup-controller';
 import { buildSetupView, type HardwareView, studentFailure, TECHNICAL_TERMS } from '../../platform/macos/install/setup-view';
-import { SimulatedCrash } from '../../platform/macos/install/toolchain-installer';
-import { FakeMachine } from './fake-machine';
-import { expectedFor, fixture } from './fixtures';
+import { expectedFor } from './fixtures';
 import { DirectoryPayload } from '../../platform/macos/install/payload';
+import { rig, word } from './setup-rig';
 
-const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
 const DE10: HardwareView = { state: 'ready', word: 'DE10-Lite' };
 
-interface Rig {
-    ctl: SetupController;
-    m: FakeMachine;
-    ui: ScriptedUi;
-    layout: ReturnType<typeof installedDe10Paths> extends never ? never : import('../../platform/macos/install/layout').RuntimeLayout;
-    downloads: string;
-    sources: Record<string, string>;
-    free: number;
-    hardware: HardwareView;
-    crashToolchainOnce: boolean;
-}
-
-class ScriptedUi implements SetupInteraction {
-    summaries: InstallSummary[] = [];
-    questions: string[] = [];
-    messages: string[] = [];
-    logs: string[] = [];
-    confirm = true;
-    rosetta: RosettaConsent | undefined = { method: 'apple-prompt' };
-    files: { installerPath: string; devicePackagePath: string } | undefined;
-    accept = true;
-    offers: LicenseOffer[] = [];
-    async confirmInstall(s: InstallSummary) {
-        this.summaries.push(s);
-        this.questions.push('confirm');
-        return this.confirm;
-    }
-    async askRosettaConsent() {
-        this.questions.push('rosetta');
-        return this.rosetta;
-    }
-    async askQuartusFiles() {
-        this.questions.push('files');
-        return this.files;
-    }
-    async showLicense(o: LicenseOffer) {
-        this.questions.push('license');
-        this.offers.push(o);
-        return this.accept;
-    }
-    progress(m: string) {
-        this.messages.push(m);
-    }
-    log(l: string) {
-        this.logs.push(l);
-    }
-}
-
-async function rig(t: TestContext): Promise<Rig> {
-    const f = await fixture(t, {}, { realEngine: true, shortRoot: true });
-    const downloads = join(f.dir, 'Downloads');
-    await mkdir(downloads);
-    const installer = Buffer.from('#!/bin/sh\nfake quartus installer'.repeat(40));
-    const pkg = Buffer.from('fake max10 package'.repeat(60));
-    const licenseBytes = Buffer.from('QUARTUS PRIME AND INTEL FPGA IP LICENSE AGREEMENT (test text)\n');
-    await writeFile(join(downloads, QUARTUS_SPEC.installer.name), installer);
-    await writeFile(join(downloads, QUARTUS_SPEC.devicePackage.name), pkg);
-    const spec: QuartusSpec = { ...QUARTUS_SPEC, license: { ...QUARTUS_SPEC.license, sha256: sha(licenseBytes), bytes: licenseBytes.length }, installer: { name: QUARTUS_SPEC.installer.name, sha256: sha(installer), bytes: installer.length }, devicePackage: { name: QUARTUS_SPEC.devicePackage.name, sha256: sha(pkg), bytes: pkg.length } };
-    const m = new FakeMachine(installedDe10Paths(f.ctx.layout).limactl, f.ctx.layout.shareDir);
-    const ui = new ScriptedUi();
-    ui.files = { installerPath: join(downloads, spec.installer.name), devicePackagePath: join(downloads, spec.devicePackage.name) };
-    const r = { m, ui, downloads, sources: f.sources, free: 1e12, hardware: DE10, crashToolchainOnce: false, layout: f.ctx.layout } as Rig;
-    const downloader: Downloader = async () => ({ ok: true, reused: false });
-    r.ctl = new SetupController({
-        layout: f.ctx.layout,
-        expected: f.ctx.expected,
-        payload: f.ctx.payload,
-        runner: m,
-        downloader,
-        freeBytes: async () => r.free,
-        rosettaHost: m,
-        runRosettaCommand: (c) => m.runRosetta(c),
-        hardware: async () => r.hardware,
-        host: { platform: 'darwin', arch: 'arm64' },
-        quartusSpec: spec,
-        toolchainHooks: { beforeActivate: () => { if (r.crashToolchainOnce) { r.crashToolchainOnce = false; throw new SimulatedCrash('power cut'); } } },
-    });
-    return r;
-}
-
-const word = (v: { rows: readonly { id: string; word: string }[] }, id: string) => v.rows.find((x) => x.id === id)!.word;
-
 describe('Setup page model', () => {
-    it('on a fresh machine shows four student rows, all not installed, and Install FPGA Toolchain', async (t) => {
+    it('on a fresh machine shows both boards not installed, no environment rows yet, and Install FPGA Toolchain', async (t) => {
         const r = await rig(t);
         const { view } = await r.ctl.status();
-        assert.deepEqual(view.rows.map((x) => [x.label, x.word]), [['VHDL Tools', 'Not installed'], ['FPGA Engine', 'Not installed'], ['Programmer', 'Not installed'], ['Hardware', 'DE10-Lite']]);
+        assert.deepEqual(view.boards.map((b) => [b.name, b.word]), [['Nexys A7-100T', 'Not installed'], ['DE10-Lite', 'Not installed']]);
+        assert.equal(view.fresh, true);
+        assert.deepEqual(view.rows.map((x) => [x.label, x.word]), [['Hardware', 'DE10-Lite']]);
         assert.equal(view.headline, 'Setup required');
-        assert.deepEqual(view.actions.map((a) => [a.id, a.label, a.primary]), [['install', 'Install FPGA Toolchain', true]]);
+        assert.deepEqual(view.actions.filter((a) => !a.board).map((a) => [a.id, a.label, a.primary]), [['install', 'Install FPGA Toolchain', true]]);
         assert.deepEqual(r.m.calls.length, 0, 'nothing touches Lima before Lima is installed');
     });
 
@@ -151,9 +63,9 @@ describe('Setup flows on an isolated root', () => {
         const r = await rig(t);
         const out = await r.ctl.install(r.ui);
         assert.equal(out.outcome, 'complete', `${out.message} ${r.ui.logs.join(' | ')}`);
-        assert.deepEqual(r.ui.questions, ['confirm', 'rosetta', 'files', 'license']);
+        assert.deepEqual(r.ui.questions, ['boards', 'confirm', 'rosetta', 'files', 'license']);
         assert.deepEqual(out.view.rows.map((x) => x.word), ['Ready', 'Ready', 'Ready', 'DE10-Lite']);
-        assert.deepEqual(out.view.actions.map((a) => a.id), ['verify']);
+        assert.deepEqual(out.view.actions.map((a) => `${a.id}:${a.board ?? ''}`), ['install:nexys-a7-100t', 'verify:'], 'the other board can be added later');
         assert.equal(r.ui.summaries[0]!.askedForAltera, true);
         assert.equal(r.ui.summaries[0]!.needsInternet, true);
         assert.equal(r.ui.summaries[0]!.storageGB < 15 && r.ui.summaries[0]!.requiredFreeGB === 20, true);
@@ -255,7 +167,7 @@ describe('Setup flows on an isolated root', () => {
         await writeFile(tool, '#!/bin/sh\necho tampered\n');
         const { view } = await r.ctl.status();
         assert.equal(word(view, 'vhdl-tools'), 'Needs repair');
-        assert.deepEqual(view.actions.map((a) => a.id), ['repair', 'verify']);
+        assert.deepEqual(view.actions.map((a) => `${a.id}:${a.board ?? ''}`), ['install:nexys-a7-100t', 'repair:de10-lite']);
         r.ui.questions.length = 0;
         const out = await r.ctl.repair(r.ui);
         assert.equal(out.outcome, 'complete', out.message);

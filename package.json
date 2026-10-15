@@ -295,12 +295,17 @@
       },
       {
         "command": "nexysvhdl.setup.install",
-        "title": "Install FPGA Toolchain (DE10-Lite Setup)",
+        "title": "Install Board Support…",
         "category": "MIX-FPGA"
       },
       {
         "command": "nexysvhdl.setup.repair",
         "title": "Repair Setup",
+        "category": "MIX-FPGA"
+      },
+      {
+        "command": "nexysvhdl.setup.adoptNexys",
+        "title": "Reuse Nexys A7 Tools from the Earlier Installation",
         "category": "MIX-FPGA"
       },
       {
@@ -759,7 +764,7 @@
           {
             "id": "setup",
             "title": "Verify your setup",
-            "description": "Check that the MIX-FPGA FPGA toolchain is installed (and, on Windows, the Digilent USB/JTAG support needed only for programming).\n[Show Environment](command:nexysvhdl.showEnvironment)\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)",
+            "description": "Check which board support is installed and add the board you need (and, on Windows, the Digilent USB/JTAG support needed only for programming).\n[Show Environment](command:nexysvhdl.showEnvironment)\n[Install FPGA Toolchain…](command:nexysvhdl.installToolchain)",
             "media": {
               "markdown": "resources/walkthrough/setup.md"
             },

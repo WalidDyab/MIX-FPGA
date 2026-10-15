@@ -1,6 +1,6 @@
 # Edit the XDC constraints
 
-NexysVHDL uses **ordinary Xilinx XDC files** — the same format you know from Vivado. There is no separate pin editor.
+For the Nexys A7, MIX-FPGA uses **ordinary Xilinx XDC files** — the same format you know from Vivado. There is no separate pin editor.
 
 ```tcl
 set_property -dict { PACKAGE_PIN E3  IOSTANDARD LVCMOS33 } [get_ports { clk }]

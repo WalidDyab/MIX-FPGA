@@ -27,3 +27,8 @@ export function devPayloadFromEnv(env: Readonly<Record<string, string | undefine
     if (!toolsRoot) return undefined;
     return devPayload({ toolsRoot, engineDir: join(repoRoot, 'platform', 'macos', 'lima'), noticesDir: join(repoRoot, 'toolchains', 'mixfpga', 'notices', 'macos-arm64') });
 }
+
+/** INSTALLER DEVELOPMENT ONLY: a folder that holds the support archives named in toolchains/mixfpga/payloads-1.0.json. */
+export function devPayloadDirFromEnv(env: Readonly<Record<string, string | undefined>>): string | undefined {
+    return env[DEV_PAYLOAD_VARIABLE] || undefined;
+}

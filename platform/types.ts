@@ -71,8 +71,10 @@ export type PlatformFactory = (host: HostInfo, context: PlatformContext) => Plat
 
 /** Host facts the composition root needs before an adapter exists (classroom toolchain store, tool PATH). */
 export interface PlatformHostFacts {
-    /** Per-user NexysVHDL data root (installed toolchains, tool state). */
+    /** Per-user store of the board-support toolchain (installed toolchains, tool state). */
     userDataRoot(env: Readonly<Record<string, string | undefined>>): string | undefined;
+    /** Stores of the predecessor product that may hold the same validated toolchain; reused read-only, never written. */
+    legacyDataRoots?(env: Readonly<Record<string, string | undefined>>): string[];
     /** Operating-system folders every bundled tool may need on PATH. */
     systemPath(env: Readonly<Record<string, string | undefined>>): string[];
     /** An ASCII path resolving to `target`, for folders Apio refuses (Windows profile names, or a macOS home folder, with spaces/Unicode). */

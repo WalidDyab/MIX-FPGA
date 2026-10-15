@@ -14,12 +14,13 @@ export interface CatalogEntry {
 }
 
 /**
- * The ten components of the macOS setup. `ownership` says who is responsible for each:
+ * The components of the macOS setup: the Nexys A7 bundle, and the ten parts of the DE10-Lite support. `ownership` says who is responsible for each:
  *  managed  MIX-FPGA installs, verifies and repairs it
  *  external supplied by the student under the vendor's own licence (Altera); MIX-FPGA installs it only on their explicit approval
  *  system   provided by macOS (Apple's Rosetta); MIX-FPGA detects it and can only start Apple's own installer on the student's request
  */
 export const MACOS_CATALOG: readonly CatalogEntry[] = [
+    { id: 'nexys-toolchain', label: 'Nexys A7 tools (GHDL, Yosys, openXC7, programmer)', ownership: 'managed', group: 'vhdl-tools', requires: [] },
     { id: 'toolchain', label: 'MIX-FPGA Toolchain', ownership: 'managed', group: 'vhdl-tools', requires: [] },
     { id: 'ghdl', label: 'GHDL', ownership: 'managed', group: 'vhdl-tools', requires: [] },
     { id: 'yosys', label: 'Yosys', ownership: 'managed', group: 'vhdl-tools', requires: [] },
