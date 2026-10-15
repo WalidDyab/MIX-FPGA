@@ -37,6 +37,8 @@ const child = spawn(
         `--user-data-dir=${process.env['NEXYS_P6_USER_DATA'] ?? join(userData, 'user')}`,
         `--extensions-dir=${installed ?? join(userData, 'extensions')}`,
         ...(installed ? [] : ['--disable-extensions']),
+        // A private HOME has no keychain: macOS would stop VS Code with a "Keychain Not Found" dialog. The mock keychain never touches the real one.
+        ...(process.env['NEXYS_P6_MOCK_KEYCHAIN'] ? ['--use-mock-keychain'] : []),
         '--disable-workspace-trust',
         '--skip-welcome',
         '--skip-release-notes',

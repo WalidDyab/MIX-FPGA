@@ -980,7 +980,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         nexysConsole.endAction();
         await service.refreshEnvironment();
         if (v.ok) void vscode.window.showInformationMessage('MIX-FPGA: the environment is ready.');
-        else void vscode.window.showWarningMessage('MIX-FPGA: some parts of the environment need attention.', 'Show Console').then((c) => c && nexysConsole.show());
+        else void vscode.window.showWarningMessage('MIX-FPGA: some parts of the environment need attention.', 'Repair', 'Show Console').then((c) => (c === 'Repair' ? vscode.commands.executeCommand('nexysvhdl.setup.repair') : c && nexysConsole.show()));
         return v;
     });
 
@@ -992,11 +992,14 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         const BOARD_ICON = { installed: '$(pass)', 'not-installed': '$(circle-outline)', installing: '$(sync)', incomplete: '$(warning)', 'needs-repair': '$(warning)', 'not-supported': '$(error)' } as const;
         const items: Item[] = [
             { label: `MIX-FPGA ${extensionVersion} — Board Support`, kind: vscode.QuickPickItemKind.Separator },
-            ...view.boards.map((b): Item => ({ label: `${BOARD_ICON[b.state]} ${b.name}`, description: b.word, ...(b.action ? { detail: b.action === 'install' ? 'Choose to install' : 'Choose to repair', action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${b.action}`, b.id) } : {}) })),
+            ...view.boards.map((b): Item => {
+                const act = view.actions.find((a) => a.board === b.id);
+                return { label: `${BOARD_ICON[b.state]} ${b.name}`, description: b.word, ...(b.action ? { detail: `${act?.label ?? (b.action === 'install' ? 'Install' : 'Repair')} — ${act?.detail ?? ''}`, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${b.action}`, b.id) } : {}) };
+            }),
             { label: 'Environment', kind: vscode.QuickPickItemKind.Separator },
             ...view.rows.map((r) => ({ label: `${ICON[r.state]} ${r.label}`, description: r.word, ...(r.hint ? { detail: r.hint } : {}) })),
             { label: 'Actions', kind: vscode.QuickPickItemKind.Separator },
-            ...view.actions.map((a): Item => ({ label: `${a.id === 'install' ? '$(desktop-download)' : a.id === 'repair' ? '$(tools)' : '$(verified)'} ${a.label}`, detail: a.detail, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${a.id}`, a.board) })),
+            ...view.actions.filter((a) => !a.board).map((a): Item => ({ label: `${a.id === 'install' ? '$(desktop-download)' : a.id === 'repair' ? '$(tools)' : '$(verified)'} ${a.label}`, detail: a.detail, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${a.id}`, a.board) })),
             { label: '$(book) Getting Started', action: () => vscode.commands.executeCommand('nexysvhdl.gettingStarted') },
             { label: '$(law) Third-Party Notices', action: () => vscode.commands.executeCommand('nexysvhdl.openThirdPartyNotices') },
             { label: '$(output) Details in the Console', detail: 'Every part with its version and who supplies it.', action: () => { for (const d of view.details) nexysConsole.say('Environment', `${d.label}: ${d.word} — ${d.owner}${d.version ? `, ${d.version}` : ''}${d.note ? ` (${d.note})` : ''}`); nexysConsole.show(); } },

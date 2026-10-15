@@ -139,6 +139,8 @@ export function buildSetupView(statuses: readonly ComponentStatus[], hardware: H
         if (b.action === 'repair') actions.push({ id: 'repair', board: b.id, label: `Repair ${b.name} Support`, detail: 'Continues an interrupted setup or puts back anything missing or changed.', primary: true });
     }
     const installedBoards = boards.filter((b) => b.state === 'installed');
+    // The page itself only does a quick look, so a file changed inside an installed board cannot show here. Repair checks every file.
+    if (installedBoards.length > 0 && !actions.some((a) => a.id === 'repair' && !a.board)) actions.push({ id: 'repair', label: 'Repair', detail: 'Checks every file of the installed boards and puts back anything missing or changed.', primary: false });
     if (installedBoards.length > 0) actions.push({ id: 'verify', label: 'Verify Environment', detail: 'Checks every installed part and proves it really works.', primary: false });
 
     const relevantRows = relevant.map((b) => boards.find((x) => x.id === b.id)!);

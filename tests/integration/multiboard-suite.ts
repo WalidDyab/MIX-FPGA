@@ -9,7 +9,7 @@
  * Both stages write facts to the report; nothing here edits a student file except the scripted Add File round trip.
  */
 import { execFile } from 'node:child_process';
-import { readFile, rm, writeFile } from 'node:fs/promises';
+import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import * as vscode from 'vscode';
@@ -25,9 +25,10 @@ export async function run_(): Promise<void> {
     const out = process.env['NEXYS_EDH_REPORT']!;
     const exec = (cmd: string, ...args: unknown[]) => vscode.commands.executeCommand(cmd, ...args) as Promise<any>;
     const repo = ext.extensionPath;
-    const limactl = join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA', 'toolchains', '1.0', 'macos-arm64', 'lima', 'bin', 'limactl');
+    const mixfpgaRoot = process.env['MIXFPGA_HOME'] || join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA');
+    const limactl = join(mixfpgaRoot, 'toolchains', '1.0', 'macos-arm64', 'lima', 'bin', 'limactl');
     const isMac = process.platform === 'darwin';
-    const limaHome = join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA', 'lima');
+    const limaHome = join(mixfpgaRoot, 'lima');
     // The Linux engine exists only on macOS; on Windows there is nothing to ask (and it must never be needed).
     const vmState = async (): Promise<string> => {
         if (!isMac) return 'not-applicable';
@@ -61,12 +62,20 @@ export async function run_(): Promise<void> {
         // ---- MIXFPGA_STAGE=hardware: Detect, Program (SRAM, .svf) and Detect again, on the artifact already built. Builds nothing, starts nothing.
         if (stage === 'hardware') {
             const { createHash } = await import('node:crypto');
-            const buildDir = join(service.projectRoot ?? '', '.mix-fpga', 'build', 'de10-lite');
-            const info = JSON.parse(await readFile(join(buildDir, 'build-info.json'), 'utf8')) as { builtAt: string; artifact: { sha256: string; sizeBytes: number }; inputs: Record<string, string> };
             const shaOf = async (f: string) => createHash('sha256').update(await readFile(f)).digest('hex');
-            const inputsNow: Record<string, string> = {};
-            for (const f of Object.keys(info.inputs)) inputsNow[f] = await shaOf(join(service.projectRoot ?? '', f));
-            step('artifactBefore', { builtAt: info.builtAt, svfSha256: await shaOf(join(buildDir, 'blink.svf')), recordedSha256: info.artifact.sha256, hashMatches: (await shaOf(join(buildDir, 'blink.svf'))) === info.artifact.sha256, inputsUnchangedSinceBuild: Object.entries(info.inputs).every(([f, h]) => inputsNow[f] === h) });
+            if (process.env['MIXFPGA_HW_BOARD'] === 'nexys') {
+                // Nexys A7: the bitstream already built by Build (Apio), hashed before and after; Program loads it into SRAM only.
+                const bit = join(service.projectRoot ?? '', '.nexysvhdl', 'impl', '_build', 'default', 'hardware.bit');
+                const bitInfo = await stat(bit);
+                step('artifactBefore', { bitstream: bit, sizeBytes: bitInfo.size, modified: bitInfo.mtime.toISOString(), sha256: await shaOf(bit) });
+            } else {
+                const buildDir = join(service.projectRoot ?? '', '.mix-fpga', 'build', 'de10-lite');
+                const info = JSON.parse(await readFile(join(buildDir, 'build-info.json'), 'utf8')) as { builtAt: string; artifact: { sha256: string; sizeBytes: number }; inputs: Record<string, string> };
+                const svfName = (await readdir(buildDir)).find((f) => f.endsWith('.svf')) ?? 'blink.svf';
+                const inputsNow: Record<string, string> = {};
+                for (const f of Object.keys(info.inputs)) inputsNow[f] = await shaOf(join(service.projectRoot ?? '', f));
+                step('artifactBefore', { builtAt: info.builtAt, svfFile: svfName, svfSha256: await shaOf(join(buildDir, svfName)), recordedSha256: info.artifact.sha256, hashMatches: (await shaOf(join(buildDir, svfName))) === info.artifact.sha256, inputsUnchangedSinceBuild: Object.entries(info.inputs).every(([f, h]) => inputsNow[f] === h) });
+            }
             step('vmBefore', await vmState());
             const detect = async (label: string) => {
                 await exec('nexysvhdl.detectBoards');

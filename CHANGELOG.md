@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0 — MIX-FPGA (the update of NexysVHDL)
+
+MIX-FPGA is the successor of NexysVHDL and installs as its update (same extension id `emxplore.nexysvhdl`; `.nvproj`, `nexysvhdl.json`, command and setting ids are unchanged).
+
+- **Two boards, one environment:** Nexys A7-100T and DE10-Lite (macOS Apple silicon: Check, Simulate, schematics, Build, Detect, Program).
+- **Board support is chosen, not forced:** a first run asks which boards you use and installs only their support; a board can be added later from **Show Environment → Board Support**. Creating a project for a board whose support is missing offers to install it.
+- **Update from NexysVHDL:** existing projects open unchanged, and the Nexys A7 tools you already have are reused (verified file by file, read-only); no new download. They can be taken over into MIX-FPGA's own store as an APFS clone.
+- **DE10-Lite on macOS:** MIX-FPGA installs its own tools and a hidden FPGA engine; Altera's free Quartus Prime Lite is installed from your own download after you accept Altera's licence (shown from the installer itself).
+- **Fix:** two board scans can no longer run at once (a Detect during the scan that follows Program could report "no board"); the second request now joins the running scan.
+- Student-facing text says MIX-FPGA. An EMXplore project. Copyright 2026 Walid Dyab.
+
 ## 0.6.0 — Classroom Preview (requires NexysVHDL toolchain 1.0, unchanged)
 
 Second classroom release. The FPGA toolchain is the same validated **toolchain 1.0** installed by 0.5.0; an existing installation is reused. Windows now also ships a per-user installer (`NexysVHDL-Setup-0.6.0-win32-x64.exe`: launcher, extension, Start Menu entry, optional Desktop shortcut, `.nvproj` association, uninstaller). macOS (Apple silicon) ships `NexysVHDL-0.6.0-darwin-arm64.dmg`: a native `NexysVHDL.app` launcher with the same New/Open/Recent Projects, one-click extension install/update and `.nvproj` double-click, as an early build that is not yet signed or notarized.

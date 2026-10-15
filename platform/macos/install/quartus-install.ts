@@ -354,7 +354,9 @@ export class QuartusInstaller {
             await rm(outDir, { recursive: true, force: true });
             await mkdir(join(layout.shareDir, 'provision'), { recursive: true });
             // The installer waits for a key after writing its licence files; it is stopped as soon as they exist. Nothing is installed.
-            const script = `d=/mnt/mixfpga/provision/license-out; rm -rf "$d"; mkdir -p "$d"; cd /mnt/mixfpga/installers && (timeout 120 ./${this.spec.installer.name} --mode text --install_lic "$d" < /dev/null 2>&1 | head -c 20000 > /dev/null); pkill -f '[Q]uartusLiteSetup' ; test -s "$d/${this.spec.license.file}" && echo MIXFPGA_LICENSE_OK`;
+            // The installer waits for a key after writing its licence files, so it runs in the background and is stopped by its own
+            // process id as soon as they exist (a name-based kill would also match this very script). Nothing is installed.
+            const script = `d=/mnt/mixfpga/provision/license-out; rm -rf "$d"; mkdir -p "$d"; cd /mnt/mixfpga/installers && { timeout 120 ./${this.spec.installer.name} --mode text --install_lic "$d" < /dev/null > /dev/null 2>&1 & p=$!; for i in $(seq 1 200); do [ -s "$d/${this.spec.license.file}" ] && break; sleep 0.5; done; kill $p 2>/dev/null; pkill -P $p 2>/dev/null; wait $p 2>/dev/null; }; test -s "$d/${this.spec.license.file}" && echo MIXFPGA_LICENSE_OK`;
             return this.engine.guest(script, { ...(signal ? { signal } : {}), timeoutMs: 180_000 });
         });
         if ('failed' in w) return w.failed;

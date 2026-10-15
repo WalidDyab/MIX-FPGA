@@ -1,0 +1,230 @@
+/**
+ * Phase 4B Setup validation inside a real VS Code (NOT part of `npm test`). Run with run-phase6.ts (NEXYS_P6_SUITE=phase4b), always with
+ * MIXFPGA_HOME pointing at an isolated root (or HOME at a private home): it refuses to run against the real ~/Library/MIX-FPGA.
+ *
+ * It drives the REAL extension commands (Show Environment, Install, New Project, Verify) and the real controller, installer, Lima and
+ * Quartus. VS Code's native dialogs (quick picks, modal messages, file pickers) are answered by script, because a test cannot click
+ * them; every question and every list the student would see is recorded. The Altera licence page is NEVER scripted: it is the real
+ * webview, and the run waits for a person to read it and tick the box.
+ *
+ *   P4B_SCENARIO=nexys-only  first run: choose Nexys A7 only, install, New Project (DE10-Lite offers support first, Nexys is created).
+ *   P4B_SCENARIO=de10-only   choose DE10-Lite only (engine, Quartus, licence page), then New Project for it.
+ *   P4B_SCENARIO=add-nexys   from Board Support: add the Nexys A7 later; create a Nexys project.
+ *   P4B_SCENARIO=upgrade     after updating NexysVHDL 0.6.0: Nexys A7 Installed (reused), DE10-Lite offered; install it; both New Project choices.
+ *   P4B_SCENARIO=page        only show the Setup page and record it.
+ *   P4B_WORK=<folder for created projects>   P4B_MARKERS=<folder for marker files>
+ */
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+import * as vscode from 'vscode';
+import type { NexysVhdlApi } from '../../extension/extension';
+import { EXTENSION_ID, log, report, step, waitFor } from './edh-suite';
+
+const scenario = process.env['P4B_SCENARIO'] ?? 'page';
+const work = process.env['P4B_WORK'] ?? join(homedir(), 'MF', 'projects');
+const markers = process.env['P4B_MARKERS'] ?? join(work, '.markers');
+const w = vscode.window as unknown as Record<string, unknown>;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+interface Prompt {
+    readonly kind: string;
+    readonly title: string;
+    readonly text: string;
+    readonly items: readonly string[];
+    readonly modal: boolean;
+    readonly answered: string;
+}
+const transcript: Prompt[] = [];
+type Answer = (ctx: { items: readonly { label: string; id?: string; description?: string; detail?: string }[]; buttons: readonly string[] }) => unknown;
+interface Handler {
+    readonly when: RegExp;
+    readonly kind: string | undefined;
+    readonly answer: Answer;
+    used: number;
+}
+let handlers: Handler[] = [];
+const on = (when: RegExp, answer: Answer, kind?: string): void => void handlers.push({ when, answer, used: 0, kind });
+
+function dispatch(kind: string, title: string, text: string, items: readonly { label: string; id?: string; description?: string; detail?: string }[], buttons: readonly string[], modal: boolean): unknown {
+    const hay = `${title}\n${text}`;
+    const h = handlers.find((x) => (x.kind === undefined || x.kind === kind) && x.when.test(hay));
+    let answer: unknown;
+    if (h) {
+        h.used++;
+        answer = h.answer({ items, buttons });
+    }
+    const shown = typeof answer === 'string' ? answer : Array.isArray(answer) ? answer.map((a) => (a as { label?: string }).label ?? String(a)).join(' + ') : answer && typeof answer === 'object' ? ((answer as { label?: string; fsPath?: string }).label ?? (answer as { fsPath?: string }).fsPath ?? 'object') : h ? String(answer) : '(unanswered)';
+    transcript.push({ kind, title, text, items: items.map((i) => `${i.label}${i.description ? `  [${i.description}]` : ''}${i.detail ? `  — ${i.detail}` : ''}`), modal, answered: shown });
+    if (!h) step('prompt.UNEXPECTED', { kind, title, text });
+    return answer;
+}
+
+function installPrompts(): void {
+    const message = (kind: string) => async (msg: string, ...rest: unknown[]) => {
+        const opts = rest[0] && typeof rest[0] === 'object' ? (rest.shift() as { modal?: boolean; detail?: string }) : undefined;
+        return dispatch(kind, msg, opts?.detail ?? '', [], rest.filter((r): r is string => typeof r === 'string'), opts?.modal === true);
+    };
+    w['showInformationMessage'] = message('info');
+    w['showWarningMessage'] = message('warning');
+    w['showErrorMessage'] = message('error');
+    w['showQuickPick'] = async (items: unknown, options?: { title?: string; placeHolder?: string; canPickMany?: boolean }) => {
+        const list = (await items) as readonly { label: string; id?: string; description?: string; detail?: string; kind?: number }[];
+        const real = list.filter((i) => i.kind !== vscode.QuickPickItemKind.Separator);
+        const seps = list.filter((i) => i.kind === vscode.QuickPickItemKind.Separator).map((i) => `── ${i.label} ──`);
+        const out = dispatch('quickpick', options?.title ?? '', options?.placeHolder ?? '', [...seps.map((label) => ({ label })), ...real], [], false);
+        // the answer is an item (or items) of this list, matched by label
+        const pick = (a: unknown) => real.find((i) => i.label === (a as { label?: string })?.label) ?? a;
+        return Array.isArray(out) ? out.map(pick) : out ? pick(out) : undefined;
+    };
+    w['showOpenDialog'] = async (o?: { title?: string }) => dispatch('opendialog', o?.title ?? '', '', [], [], false);
+    w['showInputBox'] = async (o?: { title?: string; prompt?: string }) => dispatch('inputbox', o?.title ?? '', o?.prompt ?? '', [], [], false);
+    // Creating a project asks VS Code to switch this window to it; the test keeps this window (the next session opens the project).
+    const exec = vscode.commands.executeCommand.bind(vscode.commands);
+    (vscode.commands as unknown as Record<string, unknown>)['executeCommand'] = (command: string, ...args: unknown[]) => {
+        if (command === 'vscode.openFolder') {
+            step('openFolder.requested', String((args[0] as vscode.Uri | undefined)?.fsPath));
+            return Promise.resolve(undefined);
+        }
+        return exec(command, ...args);
+    };
+}
+
+/** The licence page is real: report when it opens and when it closes, so the person running the test knows to act. */
+function watchLicensePanel(): () => void {
+    let open = false;
+    const timer = setInterval(() => {
+        const tab = vscode.window.tabGroups.all.flatMap((g) => g.tabs).find((t) => t.label === 'Altera licence');
+        if (tab && !open) {
+            open = true;
+            step('licensePanel', 'OPEN: waiting for a person to read the licence, tick the box and choose Accept and install (or Cancel)');
+            void mkdir(markers, { recursive: true }).then(() => writeFile(join(markers, 'LICENSE_PANEL_OPEN'), new Date().toISOString()));
+        } else if (!tab && open) {
+            open = false;
+            step('licensePanel', 'CLOSED');
+        }
+    }, 500);
+    return () => clearInterval(timer);
+}
+
+const label = (re: RegExp): Answer => ({ items }) => items.find((i) => re.test(i.label));
+const page = (): Prompt | undefined => [...transcript].reverse().find((p) => p.kind === 'quickpick' && /MIX-FPGA Setup/.test(p.title));
+
+async function showPage(choice: RegExp | undefined, label2: string): Promise<void> {
+    handlers = handlers.filter((h) => !/MIX-FPGA Setup/.test(h.when.source));
+    on(/MIX-FPGA Setup/, choice ? label(choice) : () => undefined);
+    await vscode.commands.executeCommand('nexysvhdl.showEnvironment');
+    const p = page();
+    step(`setupPage.${label2}`, p ? { headline: p.text, shown: p.items, chose: p.answered } : 'no setup page (the older Environment list was used)');
+}
+
+
+
+/** Answers shared by every install: the confirmation, the Altera files from Downloads, and result messages. */
+function commonAnswers(): void {
+    on(/Install board support/, ({ buttons }) => buttons.find((b) => b === 'Continue'));
+    on(/Altera's files found/, ({ buttons }) => buttons.find((b) => /Use These Files/.test(b)));
+    on(/^MIX-FPGA: /, () => undefined, 'info');
+    on(/^MIX-FPGA: /, () => undefined, 'warning');
+    on(/Welcome to MIX-FPGA\. Choose the FPGA boards/, () => undefined, 'info');
+}
+
+const boardsChoice = (...names: RegExp[]): void => on(/which FPGA boards/, ({ items }) => items.filter((i) => names.some((n) => n.test(i.label))));
+
+async function newProject(boardPattern: RegExp, name: string, expectGate: boolean, installOnGate = false): Promise<string | undefined> {
+    const parent = join(work, 'ws');
+    await mkdir(parent, { recursive: true });
+    handlers = handlers.filter((h) => !/choose the folder|project name|New MIX-FPGA Project|support is not installed|what should the new project/.test(h.when.source));
+    on(/choose the folder that will contain/, () => [vscode.Uri.file(parent)]);
+    on(/project name/, () => name);
+    on(/New MIX-FPGA Project: board/, label(boardPattern));
+    on(/support is not installed/, ({ buttons }) => (installOnGate ? buttons.find((b) => /Install Support/.test(b)) : undefined));
+    on(/what should the new project contain/, ({ items }) => items.find((i) => /Starter/i.test(i.label)) ?? items.find((i) => !/^──/.test(i.label)));
+    const before = transcript.length;
+    await vscode.commands.executeCommand('nexysvhdl.createProject');
+    const asked = transcript.slice(before);
+    const boards = asked.find((p) => /New MIX-FPGA Project: board/.test(p.title));
+    const gate = asked.find((p) => /support is not installed/.test(`${p.title}\n${p.text}`));
+    step(`newProject.${name}`, { boardsOffered: boards?.items, gate: gate ? { message: gate.title, detail: gate.text, answered: gate.answered } : null });
+    if (expectGate) step(`newProject.${name}.gateShown`, gate !== undefined);
+    const root = join(parent, name);
+    const made = await readFile(join(root, 'nexysvhdl.json'), 'utf8').then((t) => JSON.parse(t) as { board: string }, () => undefined);
+    step(`newProject.${name}.created`, made ? { board: made.board, root } : false);
+    return made ? root : undefined;
+}
+
+export async function run(): Promise<void> {
+    const out = process.env['NEXYS_EDH_REPORT']!;
+    try {
+        if (!process.env['MIXFPGA_HOME'] && !(process.env['HOME'] ?? '').includes('/MFU')) throw new Error('refusing to run: MIXFPGA_HOME (or a private HOME) must point at an isolated root');
+        const ext = vscode.extensions.getExtension<NexysVhdlApi>(EXTENSION_ID)!;
+        const pkg = ext.packageJSON as { version: string; displayName: string };
+        step('product', { displayName: pkg.displayName, version: pkg.version, extensionPath: ext.extensionPath, mixfpgaHome: process.env['MIXFPGA_HOME'] ?? null, home: process.env['HOME'], scenario });
+        await ext.activate();
+        installPrompts();
+        const stopWatching = watchLicensePanel();
+        commonAnswers();
+        try {
+            if (scenario === 'page') {
+                await showPage(undefined, 'now');
+            } else if (scenario === 'nexys-only') {
+                await showPage(undefined, 'fresh');
+                boardsChoice(/Nexys/);
+                await showPage(/Install FPGA Toolchain/, 'install');
+                await showPage(undefined, 'afterInstall');
+                await newProject(/DE10/, 'GateOnly', true, false);
+                await newProject(/Nexys/, 'NexysClean', false);
+            } else if (scenario === 'nexys-projects') {
+                await showPage(undefined, 'now');
+                await newProject(/DE10/, 'GateOnly', true, false);
+                await newProject(/Nexys/, 'NexysClean', false);
+            } else if (scenario === 'de10-only') {
+                await showPage(undefined, 'fresh');
+                boardsChoice(/DE10/);
+                await showPage(/Install FPGA Toolchain/, 'install');
+                await showPage(undefined, 'afterInstall');
+                await newProject(/DE10/, 'De10Clean', false);
+            } else if (scenario === 'verify') {
+                await showPage(undefined, 'before');
+                await vscode.commands.executeCommand('nexysvhdl.setup.verify');
+            } else if (scenario === 'repair-nexys') {
+                // Damage one file of this root's Nexys A7 tools (a changed byte only a full check can see), then Verify, Repair, Verify.
+                const victim = join(process.env['MIXFPGA_HOME']!, 'support', 'nexys-a7', 'toolchains', 'darwin-arm64', '1.0', 'ghdl', 'bin', 'ghdl');
+                await chmod(join(victim, '..'), 0o755);
+                await chmod(victim, 0o755);
+                await writeFile(victim, '#!/bin/sh\necho damaged\n');
+                step('damaged', victim.replace(process.env['HOME'] ?? '', '~'));
+                await showPage(undefined, 'beforeVerify');
+                await vscode.commands.executeCommand('nexysvhdl.setup.verify');
+                await showPage(/^\$\(tools\) Repair$|Repair$/, 'repair');
+                await vscode.commands.executeCommand('nexysvhdl.setup.verify');
+                await showPage(undefined, 'afterRepair');
+            } else if (scenario === 'de10-resume') {
+                // An interrupted DE10-Lite setup: the board row offers to continue it.
+                await showPage(/DE10-Lite/, 'resume');
+                await showPage(undefined, 'afterInstall');
+                await newProject(/DE10/, 'De10Clean', false);
+            } else if (scenario === 'add-nexys') {
+                await showPage(/Nexys A7-100T/, 'addNexys');
+                await showPage(undefined, 'afterAdd');
+                await newProject(/Nexys/, 'NexysAfter', false);
+            } else if (scenario === 'upgrade') {
+                await showPage(undefined, 'afterUpdate');
+                await newProject(/DE10/, 'De10Upgrade', true, true);
+                await newProject(/Nexys/, 'NexysUpgrade', false);
+                await showPage(undefined, 'afterAddingDe10');
+            } else throw new Error(`unknown scenario ${scenario}`);
+        } finally {
+            stopWatching();
+        }
+        step('unansweredPrompts', transcript.filter((p) => p.answered === '(unanswered)').map((p) => `${p.kind}: ${p.title} ${p.text}`.slice(0, 160)));
+        step('result', 'PASS');
+    } catch (err) {
+        step('result', `FAILED: ${(err as Error).stack ?? String(err)}`);
+        throw err;
+    } finally {
+        await mkdir(markers, { recursive: true }).catch(() => undefined);
+        await writeFile(out, JSON.stringify({ report, log, prompts: transcript }, null, 2));
+    }
+}
+export { run as runPhase4b, waitFor, sleep };

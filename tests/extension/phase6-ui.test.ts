@@ -156,12 +156,12 @@ describe('package contributions for the new features', () => {
         assert.equal(c.configuration.properties['nexysvhdl.promptForClassroomAppearance']!.default, true);
     });
 
-    it('the extension version is the one release version (0.6.0) in the manifest and the lock file', async () => {
+    it('the extension version is the one release version (0.7.0) in the manifest and the lock file', async () => {
         const pkg = JSON.parse(await readFile(join(REPO, 'package.json'), 'utf8')) as { version: string };
-        assert.equal(pkg.version, '0.6.0');
+        assert.equal(pkg.version, '0.7.0');
         const lock = JSON.parse(await readFile(join(REPO, 'package-lock.json'), 'utf8')) as { version: string; packages: Record<string, { version: string }> };
-        assert.equal(lock.version, '0.6.0');
-        assert.equal(lock.packages['']!.version, '0.6.0');
+        assert.equal(lock.version, '0.7.0');
+        assert.equal(lock.packages['']!.version, '0.7.0');
     });
 });
 

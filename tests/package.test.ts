@@ -38,7 +38,7 @@ describe('package manifest (Classroom Preview)', () => {
         assert.equal(p.name, 'nexysvhdl');
         assert.equal(p.displayName, 'MIX-FPGA');
         assert.equal(p.publisher, 'emxplore');
-        assert.equal(p.version, '0.6.0');
+        assert.equal(p.version, '0.7.0');
         assert.equal(p.engines['vscode'], '^1.120.0');
         // The API typings must not be newer than the declared minimum VS Code.
         assert.match(p.devDependencies['@types/vscode']!, /^~?1\.120\./);

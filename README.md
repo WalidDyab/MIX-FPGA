@@ -9,7 +9,7 @@ MIX-FPGA is an EMXplore project: one student-friendly VS Code environment for VH
 
 Check, Simulate, the waveform viewer and both schematics are the same for every board. Choose the board when you create a project; MIX-FPGA picks the right tools.
 
-**Current release (Nexys A7-100T):** NexysVHDL **0.6.0** (Classroom Preview, FPGA toolchain 1.0). It is an installable classroom package with its own FPGA toolchain and, on Windows, a per-user installer with a launcher; it is not on the Visual Studio Marketplace.
+**Current release (Nexys A7-100T, DE10-Lite):** MIX-FPGA **0.7.0**, the update of NexysVHDL 0.6.0 (Classroom Preview, FPGA toolchain 1.0). It is an installable classroom package with its own FPGA toolchain and, on Windows, a per-user installer with a launcher; it is not on the Visual Studio Marketplace.
 
 Target platforms:
 - Windows x64 (Classroom Preview package validated)

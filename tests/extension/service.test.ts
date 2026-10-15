@@ -281,6 +281,17 @@ describe('NexysVhdlService: hardware and program', () => {
         assert.equal(service.hardware.status, 'unavailable');
     });
 
+    it('overlapping detections share one scan, because the programmer cable allows a single user', async (t) => {
+        const { service, backend } = await built(t);
+        backend.detection = { configured: true, boards: [board('210292BCFFE4')], diagnostics: [] };
+        const [a, b] = await Promise.all([service.detectBoards(), service.detectBoards()]);
+        assert.equal(a.status, 'one');
+        assert.equal(b.status, 'one');
+        assert.equal(backend.calls.filter((c) => c === 'detect').length, 1);
+        await service.detectBoards();
+        assert.equal(backend.calls.filter((c) => c === 'detect').length, 2, 'a later request scans again');
+    });
+
     it('with several boards Program asks for a choice instead of picking one, then uses it', async (t) => {
         const { service, backend } = await built(t);
         backend.detection = { configured: true, boards: [board('A'), board('B')], diagnostics: [] };

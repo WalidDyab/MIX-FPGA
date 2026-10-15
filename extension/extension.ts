@@ -142,9 +142,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<NexysV
                 setContext('nexysvhdl.toolchainState', state);
                 if (state === 'not-installed' && !toolchainPrompted) {
                     toolchainPrompted = true;
-                    void vscode.window
-                        .showInformationMessage(`MIX-FPGA needs its FPGA toolchain ${service.environment!.toolchain!.requiredVersion} before it can check, simulate or build designs.`, 'Install FPGA Toolchain…', 'Getting Started')
-                        .then((c) => c && vscode.commands.executeCommand(c === 'Getting Started' ? 'nexysvhdl.gettingStarted' : 'nexysvhdl.installToolchain'));
+                    // With board support (Apple-silicon Macs) a missing Nexys toolchain is not a problem by itself: only a computer with
+                    // no board support at all is "new" and gets the welcome. Anything else is reachable from Show Environment.
+                    void setup.controller().then(async (controller) => {
+                        if (!controller) {
+                            const c = await vscode.window.showInformationMessage(`MIX-FPGA needs its FPGA toolchain ${service.environment!.toolchain!.requiredVersion} before it can check, simulate or build designs.`, 'Install FPGA Toolchain…', 'Getting Started');
+                            if (c) void vscode.commands.executeCommand(c === 'Getting Started' ? 'nexysvhdl.gettingStarted' : 'nexysvhdl.installToolchain');
+                            return;
+                        }
+                        const { view } = await controller.status();
+                        if (!view.fresh) return;
+                        const c = await vscode.window.showInformationMessage('Welcome to MIX-FPGA. Choose the FPGA boards you will use to finish setting up.', 'Choose Boards…', 'Getting Started');
+                        if (c) void vscode.commands.executeCommand(c === 'Getting Started' ? 'nexysvhdl.gettingStarted' : 'nexysvhdl.showEnvironment');
+                    });
                 }
             }
         }),

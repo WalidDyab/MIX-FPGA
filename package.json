@@ -1,7 +1,7 @@
 {
   "name": "nexysvhdl",
   "displayName": "MIX-FPGA",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Classroom Preview: one VS Code environment for VHDL-2008 FPGA design on several boards (Nexys A7-100T, DE10-Lite). Check, simulate, waveforms, design and RTL schematics, build and program. MIX-FPGA is an EMXplore project.",
   "publisher": "emxplore",
   "private": true,

@@ -41,11 +41,11 @@ describe('Setup page model', () => {
     it('the actions follow the states: Install, Repair, Verify', () => {
         const mk = (over: Record<string, ComponentState>): ComponentStatus[] => MACOS_CATALOG.map((c) => ({ id: c.id, state: over[c.id] ?? 'ready', ownership: c.ownership }));
         const ids = (s: ComponentStatus[]) => buildSetupView(s, DE10).actions.map((a) => a.id);
-        assert.deepEqual(ids(mk({})), ['verify']);
-        assert.deepEqual(ids(mk({ quartus: 'not-installed', max10: 'not-installed' })), ['install', 'verify']);
-        assert.deepEqual(ids(mk({ ghdl: 'repairable', toolchain: 'repairable' })), ['repair', 'verify']);
-        assert.deepEqual(ids(mk({ 'linux-vm': 'failed' })), ['repair', 'verify']);
-        assert.deepEqual(ids(mk({ 'linux-vm': 'incompatible' })), ['verify'], 'an unusable existing setup is not "fixed" by a button');
+        assert.deepEqual(ids(mk({})), ['repair', 'verify'], 'Repair checks every file, so it is always offered once a board is installed');
+        assert.deepEqual(ids(mk({ quartus: 'not-installed', max10: 'not-installed' })), ['install', 'repair', 'verify']);
+        assert.deepEqual(ids(mk({ ghdl: 'repairable', toolchain: 'repairable' })), ['repair', 'repair', 'verify']);
+        assert.deepEqual(ids(mk({ 'linux-vm': 'failed' })), ['repair', 'repair', 'verify']);
+        assert.deepEqual(ids(mk({ 'linux-vm': 'incompatible' })), ['repair', 'verify'], 'no Install or board-Repair button for an unusable engine; the global Repair only checks files');
         assert.equal(buildSetupView(mk({ 'linux-vm': 'incompatible' }), DE10).headline, 'Needs attention');
     });
 
@@ -65,7 +65,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(out.outcome, 'complete', `${out.message} ${r.ui.logs.join(' | ')}`);
         assert.deepEqual(r.ui.questions, ['boards', 'confirm', 'rosetta', 'files', 'license']);
         assert.deepEqual(out.view.rows.map((x) => x.word), ['Ready', 'Ready', 'Ready', 'DE10-Lite']);
-        assert.deepEqual(out.view.actions.map((a) => `${a.id}:${a.board ?? ''}`), ['install:nexys-a7-100t', 'verify:'], 'the other board can be added later');
+        assert.deepEqual(out.view.actions.map((a) => `${a.id}:${a.board ?? ''}`), ['install:nexys-a7-100t', 'repair:', 'verify:'], 'the other board can be added later');
         assert.equal(r.ui.summaries[0]!.askedForAltera, true);
         assert.equal(r.ui.summaries[0]!.needsInternet, true);
         assert.equal(r.ui.summaries[0]!.storageGB < 15 && r.ui.summaries[0]!.requiredFreeGB === 20, true);

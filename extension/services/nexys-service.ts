@@ -1117,7 +1117,19 @@ export class NexysVhdlService {
 
     // ----------------------------------------------------------------- hardware
 
-    async detectBoards(): Promise<HardwareState> {
+    private detecting: Promise<HardwareState> | undefined;
+
+    /** One scan at a time: the programmer cable allows a single user, so a second request joins the scan already running. */
+    detectBoards(): Promise<HardwareState> {
+        if (!this.detecting) {
+            this.detecting = this.scanBoards().finally(() => {
+                this.detecting = undefined;
+            });
+        }
+        return this.detecting;
+    }
+
+    private async scanBoards(): Promise<HardwareState> {
         const project = this.project;
         if (!project) return this.hardware;
         this.hardware = detectionStarted(this.hardware);
