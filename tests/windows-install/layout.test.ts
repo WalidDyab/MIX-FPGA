@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, win32 } from 'node:path';
+import { ONLY_WINDOWS } from '../platform';
 import { describe, it } from 'node:test';
 import { InstallStateStore, SetupEngine } from '../../core';
 import { compareTree, inventoryTree, makeWritable, treeIsIdentical } from '../../core/install/tree';
@@ -142,7 +143,7 @@ describe('Windows Toolchain 1.0 manifest', () => {
     });
 });
 
-describe('real validated tools (skipped when toolchains/experimental is absent)', () => {
+describe('real validated tools (skipped when toolchains/experimental is absent)', { skip: ONLY_WINDOWS }, () => {
     it('install into an isolated root, then run from the installed location only, with nothing but the Windows folders on PATH', async (t) => {
         if (!(await stat(EXPERIMENTAL).then(() => true, () => false))) return t.skip('no development payload on this machine');
         const dir = await mkdtemp(join(tmpdir(), 'mixfpga real '));

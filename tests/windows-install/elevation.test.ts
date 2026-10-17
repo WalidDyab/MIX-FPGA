@@ -171,7 +171,7 @@ describe('the real helper script, run for real (without the permission prompt)',
         assert.equal(alive, false);
     });
 
-    it('a refused permission prompt is reported as such (no helper, no files)', async (t) => {
+    it('a refused permission prompt is reported as such (no helper, no files)', { skip: ONLY_WINDOWS }, async (t) => {
         const declined = { run: async () => ({ invocation: { executable: '', args: [] }, outcome: 'exited' as const, exitCode: 1, stdout: '', stderr: 'Start-Process : This command cannot be run due to the error: The operation was canceled by the user.', durationMs: 1 }) };
         const dir = await mkdtemp(join(tmpdir(), 'mfe '));
         t.after(() => rm(dir, { recursive: true, force: true }));

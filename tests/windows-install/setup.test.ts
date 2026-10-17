@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { ONLY_WINDOWS } from '../platform';
 import { describe, it } from 'node:test';
 import { inventoryTree, makeWritable, treeDigest } from '../../core/install/tree';
 import { buildSetupView } from '../../platform/macos/install/setup-view';
@@ -10,7 +11,7 @@ import { boardWord, rig, word } from './rig';
 const gone = (p: string) => stat(p).then(() => false, () => true);
 const textOf = (v: ReturnType<typeof buildSetupView>) => JSON.stringify({ headline: v.headline, boards: v.boards, rows: v.rows, actions: v.actions });
 
-describe('Windows Setup: fresh installation, Nexys / DE10 / both', () => {
+describe('Windows Setup: fresh installation, Nexys / DE10 / both', { skip: ONLY_WINDOWS }, () => {
     it('opening Setup on a fresh computer runs no installation, shows both boards as not installed and no technical words', async (t) => {
         const r = await rig(t);
         const { view } = await r.ctl.status();
@@ -117,7 +118,7 @@ describe('Windows Setup: fresh installation, Nexys / DE10 / both', () => {
     });
 });
 
-describe('Windows Setup: Altera Quartus, licence and administrator rights', () => {
+describe('Windows Setup: Altera Quartus, licence and administrator rights', { skip: ONLY_WINDOWS }, () => {
     it('declining the licence installs nothing from Altera, never asks the installer to accept, and ends the helper', async (t) => {
         const r = await rig(t);
         r.ui.accept = false;
@@ -211,7 +212,7 @@ describe('Windows Setup: Altera Quartus, licence and administrator rights', () =
     });
 });
 
-describe('Windows Setup: upgrade from NexysVHDL 0.6.0', () => {
+describe('Windows Setup: upgrade from NexysVHDL 0.6.0', { skip: ONLY_WINDOWS }, () => {
     it('the existing validated NexysVHDL tools are Ready (reused read-only) with nothing installed; DE10-Lite is offered', async (t) => {
         const r = await rig(t, { legacyNexys: true });
         const before = treeDigest(await inventoryTree(r.legacyRoot));
@@ -277,7 +278,7 @@ describe('Windows Setup: upgrade from NexysVHDL 0.6.0', () => {
     });
 });
 
-describe('Windows Setup: Repair, Verify, interruption, cancellation', () => {
+describe('Windows Setup: Repair, Verify, interruption, cancellation', { skip: ONLY_WINDOWS }, () => {
     it('Repair puts back a damaged DE10 tool without asking for Altera again', async (t) => {
         const r = await rig(t, { quartusPresent: true });
         r.ui.boards = ['nexys-a7-100t', 'de10-lite'];
@@ -359,7 +360,7 @@ describe('Windows Setup: Repair, Verify, interruption, cancellation', () => {
     });
 });
 
-describe('Windows Setup: path-length preflight', () => {
+describe('Windows Setup: path-length preflight', { skip: ONLY_WINDOWS }, () => {
     const deep = 'C:\\' + 'folder-name-that-is-long\\'.repeat(6) + 'MIX-FPGA';
 
     it('a root that is too deep for the path limit stops before anything is installed, names the problem in Details, and changes nothing', async (t) => {
@@ -392,7 +393,7 @@ describe('Windows Setup: path-length preflight', () => {
     });
 });
 
-describe('Windows Setup: the student never sees Windows internals', () => {
+describe('Windows Setup: the student never sees Windows internals', { skip: ONLY_WINDOWS }, () => {
     it('no view of any state contains a driver name, a Quartus command, a path or PowerShell', async (t) => {
         const r = await rig(t, { quartusPresent: true });
         const words: string[] = [textOf((await r.ctl.status()).view)];
