@@ -9,6 +9,7 @@ import { buildSetupView, TECHNICAL_TERMS } from '../../platform/macos/install/se
 import { makeWritable } from '../../core/install/tree';
 import { FakeRunner, trapProcesses } from '../helpers';
 import { boardWord, DE10, rig, type Rig, word } from './setup-rig';
+import { ONLY_MACOS } from '../platform';
 
 const MAC = { platform: 'darwin', arch: 'arm64', nodeVersion: 'v24.0.0-test' } as const;
 const exists = (p: string) => stat(p).then(() => true, () => false);
@@ -64,7 +65,7 @@ describe('fresh installation: choose Nexys, DE10 or both', () => {
         assert.equal((await inventoryDirectory(nexysDir(r), { exclude: ['.nexysvhdl-installed.json'] })).treeSha256, r.nexysRequirement.targets['darwin-arm64']!.treeSha256);
     });
 
-    it('Case 2, DE10 only: installs the DE10-Lite support from its archive and none of the Nexys tools', async (t) => {
+    it('Case 2, DE10 only: installs the DE10-Lite support from its archive and none of the Nexys tools', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t, { de10Archive: true });
         r.ui.boards = ['de10-lite'];
         const out = await r.ctl.install(r.ui);
@@ -79,7 +80,7 @@ describe('fresh installation: choose Nexys, DE10 or both', () => {
         assert.equal(await nexysFlowRoot(r), undefined, 'the Nexys flow has nothing to run');
     });
 
-    it('Case 3, both: each board\'s support once, both installed', async (t) => {
+    it('Case 3, both: each board\'s support once, both installed', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t, { de10Archive: true });
         r.ui.boards = ['nexys-a7-100t', 'de10-lite'];
         const out = await r.ctl.install(r.ui);
@@ -94,7 +95,7 @@ describe('fresh installation: choose Nexys, DE10 or both', () => {
         assert.equal(await nexysFlowRoot(r), nexysDir(r));
     });
 
-    it('a board can be added later: Nexys first, then DE10 installs only the DE10 parts', async (t) => {
+    it('a board can be added later: Nexys first, then DE10 installs only the DE10 parts', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.ui.boards = ['nexys-a7-100t'];
         await r.ctl.install(r.ui);
@@ -108,7 +109,7 @@ describe('fresh installation: choose Nexys, DE10 or both', () => {
         assert.equal(await tree(nexysDir(r)), nexysBefore);
     });
 
-    it('…and DE10 first, then Nexys installs only the Nexys tools', async (t) => {
+    it('…and DE10 first, then Nexys installs only the Nexys tools', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.ctl.install(r.ui);
         const creates = r.m.count('create');
@@ -134,7 +135,7 @@ describe('fresh installation: choose Nexys, DE10 or both', () => {
         assert.deepEqual([again.outcome, r.ui.questions], ['complete', []], 'Setup opened again: nothing to ask, nothing to do');
     });
 
-    it('an interrupted addition leaves the first board working and resumes', async (t) => {
+    it('an interrupted addition leaves the first board working and resumes', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.ui.boards = ['nexys-a7-100t'];
         await r.ctl.install(r.ui);
@@ -197,7 +198,7 @@ describe('update from NexysVHDL 0.6.0', () => {
         assert.equal(await exists(r.nexysRoot), false, 'nothing was copied just by looking');
     });
 
-    it('taking over the NexysVHDL tools: dry run first, then a verified APFS clone; NexysVHDL is never modified', async (t) => {
+    it('taking over the NexysVHDL tools: dry run first, then a verified APFS clone; NexysVHDL is never modified', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t, { legacyNexys: true, pinnedNexys: false });
         const legacyDir = join(r.legacyRoot, 'toolchains', 'darwin-arm64', '1.0');
         const before = await tree(legacyDir);
@@ -233,7 +234,7 @@ describe('update from NexysVHDL 0.6.0', () => {
         assert.equal(await tree(join(r.legacyRoot, 'toolchains', 'darwin-arm64', '1.0')), before);
     });
 
-    it('after the update DE10-Lite support can be added and both boards are ready from the same Setup', async (t) => {
+    it('after the update DE10-Lite support can be added and both boards are ready from the same Setup', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t, { legacyNexys: true, pinnedNexys: false });
         const out = await r.ctl.install(r.ui, undefined, ['de10-lite']);
         assert.equal(out.outcome, 'complete', out.message);

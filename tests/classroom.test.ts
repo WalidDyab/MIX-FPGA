@@ -9,6 +9,7 @@ import { controllerFor, createContext, toolLocatorFor } from '../runtime/context
 import { inspectEnvironment } from '../runtime/environment';
 import { fakeArchive, writeFakeBundle } from './bundle-fixture';
 import { FakeRunner, makeProject, tempDir, trapProcesses } from './helpers';
+import { ONLY_MACOS } from './platform';
 
 const WIN: HostInfo = { platform: 'win32', arch: 'x64', nodeVersion: 'v24.0.0-test' };
 const MAC: HostInfo = { platform: 'darwin', arch: 'arm64', nodeVersion: 'v24.0.0-test' };
@@ -98,7 +99,7 @@ describe('classroom mode: the bundled toolchain only', () => {
         trapProcesses(t);
         const requirement: ToolchainRequirement = { schemaVersion: 1, bundleVersion: '1.0', targets: { 'win32-x64': { status: 'validated', treeSha256: 'a'.repeat(64) }, 'darwin-arm64': { status: 'pending' } } };
         const win = await createContext({ host: WIN, env: { LOCALAPPDATA: 'C:\\Users\\student\\AppData\\Local' }, runner: toolRunner(), classroom: { requirement } });
-        assert.equal(win.classroom!.dataRoot, win32.join('C:\\Users\\student\\AppData\\Local', 'NexysVHDL'));
+        assert.equal(win.classroom!.dataRoot, win32.join('C:\\Users\\student\\AppData\\Local', 'MIX-FPGA', 'support', 'nexys-a7'));
         const mac = await createContext({ host: MAC, env: { HOME: '/Users/student' }, runner: toolRunner(), classroom: { requirement } });
         assert.equal(mac.classroom!.dataRoot, '/Users/student/Library/MIX-FPGA/support/nexys-a7');
         assert.equal(mac.classroom!.installed?.status, 'pending');
@@ -281,7 +282,7 @@ describe('upgrade from NexysVHDL 0.6.0: read-only reuse of its validated toolcha
         return { home, legacy, primary, requirement };
     }
 
-    it('uses the NexysVHDL store when the MIX-FPGA store has none, keeping tool state in the MIX-FPGA store', async (t) => {
+    it('uses the NexysVHDL store when the MIX-FPGA store has none, keeping tool state in the MIX-FPGA store', { skip: ONLY_MACOS }, async (t) => {
         trapProcesses(t);
         const h = await homeWith(t, 'legacy');
         const ctx = await createContext({ host: MAC, env: { HOME: h.home }, runner: toolRunner(), classroom: { requirement: h.requirement } });

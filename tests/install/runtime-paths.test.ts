@@ -6,6 +6,7 @@ import { BoardRegistry } from '../../core';
 import { De10LiteBackend } from '../../platform/macos/de10/backend';
 import { De10Runtime } from '../../platform/macos/de10/runtime';
 import { REPO } from '../helpers';
+import { ONLY_MACOS } from '../platform';
 
 const boards = BoardRegistry.fromDefinitions([]);
 
@@ -24,7 +25,7 @@ describe('normal runtime resolves tools from the installed MIX-FPGA Toolchain on
         }
     });
 
-    it('no repository path, development variable or old override changes them', () => {
+    it('no repository path, development variable or old override changes them', { skip: ONLY_MACOS }, () => {
         const saved = { ...process.env };
         try {
             process.env['MIXFPGA_TOOLCHAIN_ROOT'] = '/repo/toolchains/experimental';

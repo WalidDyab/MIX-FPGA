@@ -1,6 +1,8 @@
 /**
- * Phase 4B Setup validation inside a real VS Code (NOT part of `npm test`). Run with run-phase6.ts (NEXYS_P6_SUITE=phase4b), always with
- * MIXFPGA_HOME pointing at an isolated root (or HOME at a private home): it refuses to run against the real ~/Library/MIX-FPGA.
+ * Phase 4B/4C Setup validation inside a real VS Code (NOT part of `npm test`). Run with run-phase6.ts (NEXYS_P6_SUITE=phase4b), always with
+ * MIXFPGA_HOME pointing at an isolated root (or HOME at a private home): it refuses to run against the real MIX-FPGA root
+ * (~/Library/MIX-FPGA on macOS, %LOCALAPPDATA%\MIX-FPGA on Windows). The same scenarios run on both; the Windows-only parts are the
+ * Altera file dialogs (P4B_ALTERA_DIR holds the two files) and the damaged file of the repair scenario.
  *
  * It drives the REAL extension commands (Show Environment, Install, New Project, Verify) and the real controller, installer, Lima and
  * Quartus. VS Code's native dialogs (quick picks, modal messages, file pickers) are answered by script, because a test cannot click
@@ -14,7 +16,7 @@
  *   P4B_SCENARIO=page        only show the Setup page and record it.
  *   P4B_WORK=<folder for created projects>   P4B_MARKERS=<folder for marker files>
  */
-import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
@@ -22,6 +24,8 @@ import type { NexysVhdlApi } from '../../extension/extension';
 import { EXTENSION_ID, log, report, step, waitFor } from './edh-suite';
 
 const scenario = process.env['P4B_SCENARIO'] ?? 'page';
+const ALTERA_INSTALLER = process.platform === 'win32' ? 'QuartusLiteSetup-25.1std.0.1129-windows.exe' : 'QuartusLiteSetup-25.1std.0.1129-linux.run';
+const ALTERA_PACKAGE = 'max10-25.1std.0.1129.qdz';
 const work = process.env['P4B_WORK'] ?? join(homedir(), 'MF', 'projects');
 const markers = process.env['P4B_MARKERS'] ?? join(work, '.markers');
 const w = vscode.window as unknown as Record<string, unknown>;
@@ -124,6 +128,10 @@ async function showPage(choice: RegExp | undefined, label2: string): Promise<voi
 function commonAnswers(): void {
     on(/Install board support/, ({ buttons }) => buttons.find((b) => b === 'Continue'));
     on(/Altera's files found/, ({ buttons }) => buttons.find((b) => /Use These Files/.test(b)));
+    // Windows (and a Mac whose Downloads folder does not hold them): the student chooses the two files.
+    on(/Altera's free software is needed/, ({ buttons }) => buttons.find((b) => /Choose Files/.test(b)));
+    on(/^Choose QuartusLiteSetup/, () => [vscode.Uri.file(join(process.env['P4B_ALTERA_DIR'] ?? '', ALTERA_INSTALLER))], 'opendialog');
+    on(/^Choose max10/, () => [vscode.Uri.file(join(process.env['P4B_ALTERA_DIR'] ?? '', ALTERA_PACKAGE))], 'opendialog');
     on(/^MIX-FPGA: /, () => undefined, 'info');
     on(/^MIX-FPGA: /, () => undefined, 'warning');
     on(/Welcome to MIX-FPGA\. Choose the FPGA boards/, () => undefined, 'info');
@@ -157,6 +165,7 @@ export async function run(): Promise<void> {
     const out = process.env['NEXYS_EDH_REPORT']!;
     try {
         if (!process.env['MIXFPGA_HOME'] && !(process.env['HOME'] ?? '').includes('/MFU')) throw new Error('refusing to run: MIXFPGA_HOME (or a private HOME) must point at an isolated root');
+        if (process.env['MIXFPGA_HOME'] && /[\\/]AppData[\\/]Local[\\/]MIX-FPGA$/i.test(process.env['MIXFPGA_HOME'])) throw new Error('refusing to run against the real MIX-FPGA root');
         const ext = vscode.extensions.getExtension<NexysVhdlApi>(EXTENSION_ID)!;
         const pkg = ext.packageJSON as { version: string; displayName: string };
         step('product', { displayName: pkg.displayName, version: pkg.version, extensionPath: ext.extensionPath, mixfpgaHome: process.env['MIXFPGA_HOME'] ?? null, home: process.env['HOME'], scenario });
@@ -189,10 +198,13 @@ export async function run(): Promise<void> {
                 await vscode.commands.executeCommand('nexysvhdl.setup.verify');
             } else if (scenario === 'repair-nexys') {
                 // Damage one file of this root's Nexys A7 tools (a changed byte only a full check can see), then Verify, Repair, Verify.
-                const victim = join(process.env['MIXFPGA_HOME']!, 'support', 'nexys-a7', 'toolchains', 'darwin-arm64', '1.0', 'ghdl', 'bin', 'ghdl');
+                const win = process.platform === 'win32';
+                const victim = join(process.env['MIXFPGA_HOME']!, 'support', 'nexys-a7', 'toolchains', win ? 'win32-x64' : 'darwin-arm64', '1.0', 'ghdl', 'bin', win ? 'ghdl.exe' : 'ghdl');
                 await chmod(join(victim, '..'), 0o755);
                 await chmod(victim, 0o755);
-                await writeFile(victim, '#!/bin/sh\necho damaged\n');
+                // Same size is not needed: any change is found by a full check (the quick check compares sizes, so keep the length).
+                const size = (await stat(victim)).size;
+                await writeFile(victim, win ? Buffer.alloc(size, 0x41) : '#!/bin/sh\necho damaged\n');
                 step('damaged', victim.replace(process.env['HOME'] ?? '', '~'));
                 await showPage(undefined, 'beforeVerify');
                 await vscode.commands.executeCommand('nexysvhdl.setup.verify');
@@ -204,6 +216,10 @@ export async function run(): Promise<void> {
                 await showPage(/DE10-Lite/, 'resume');
                 await showPage(undefined, 'afterInstall');
                 await newProject(/DE10/, 'De10Clean', false);
+            } else if (scenario === 'add-de10') {
+                await showPage(/DE10-Lite/, 'addDe10');
+                await showPage(undefined, 'afterAdd');
+                await newProject(/DE10/, 'De10After', false);
             } else if (scenario === 'add-nexys') {
                 await showPage(/Nexys A7-100T/, 'addNexys');
                 await showPage(undefined, 'afterAdd');

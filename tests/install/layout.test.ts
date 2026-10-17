@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { checkLimaSocketLength, HOME_OVERRIDE_VARIABLE, isInsideForeignProduct, resolveRuntimeLayout, UNIX_SOCKET_PATH_LIMIT } from '../../platform/macos/install/layout';
+import { ONLY_MACOS } from '../platform';
 
 describe('macOS runtime layout', () => {
-    it('lives under ~/Library/MIX-FPGA and keeps the proven LIMA_HOME', () => {
+    it('lives under ~/Library/MIX-FPGA and keeps the proven LIMA_HOME', { skip: ONLY_MACOS }, () => {
         const l = resolveRuntimeLayout({ home: '/Users/s', env: {} });
         assert.equal(l.root, '/Users/s/Library/MIX-FPGA');
         assert.equal(l.limaHome, '/Users/s/Library/MIX-FPGA/lima');
@@ -15,7 +16,7 @@ describe('macOS runtime layout', () => {
         assert.ok(l.toolchainMarker.startsWith(l.stateDir), 'the completion marker is outside the immutable toolchain folder');
     });
 
-    it('MIXFPGA_HOME is the only override and relocates everything', () => {
+    it('MIXFPGA_HOME is the only override and relocates everything', { skip: ONLY_MACOS }, () => {
         const l = resolveRuntimeLayout({ home: '/Users/s', env: { [HOME_OVERRIDE_VARIABLE]: '/tmp/m' } });
         for (const p of [l.root, l.toolchainDir, l.limaHome, l.shareDir, l.stateDir, l.logsDir, l.downloadsDir, l.toolchainMarker]) assert.ok(p.startsWith('/tmp/m'), p);
         // Old and unrelated variables change nothing.

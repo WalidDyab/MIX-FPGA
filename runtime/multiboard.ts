@@ -14,6 +14,7 @@ import {
 import { loadProject, packageRoot, type HostInfo, type Project, type ToolInvocation } from '../core';
 import { De10Runtime } from '../platform/macos/de10/runtime';
 import { resolveRuntimeLayout } from '../platform/macos/install/layout';
+import { resolveWindowsLayout } from '../platform/windows/install/layout';
 import { WindowsDe10Runtime } from '../platform/windows/de10/runtime';
 import { loadCanonicalBitstream, workspacePaths } from './bitstream';
 import { controllerFor, programmingFor, type RuntimeContext } from './context';
@@ -86,8 +87,7 @@ export function createBoardFlows(opts: BoardFlowOptions): BoardFlows {
         de10 = new WindowsDe10Runtime({
             repoRoot: opts.repoRoot ?? packageRoot(__dirname),
             boards: ctx.boards,
-            ...(process.env['MIXFPGA_TOOLCHAIN_ROOT'] ? { toolchainRoot: process.env['MIXFPGA_TOOLCHAIN_ROOT'] } : {}),
-            ...(process.env['MIXFPGA_QUARTUS_ROOT'] ? { quartusRoot: process.env['MIXFPGA_QUARTUS_ROOT'] } : {}),
+            installed: { layout: resolveWindowsLayout(), manifestFile: join(opts.repoRoot ?? packageRoot(__dirname), 'toolchains', 'mixfpga', 'toolchain-1.0-windows-x64.json') },
             ...(opts.onToolOutput ? { onToolOutput: opts.onToolOutput } : {}),
         });
     }

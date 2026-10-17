@@ -1,4 +1,4 @@
-export { createWindowsPlatform, createWindowsPlatformServices, defaultWindowsEnvironment, DigilentSystemLocator, windowsSystemPath, windowsUserDataRoot } from './windows-platform';
+export { createWindowsPlatform, createWindowsPlatformServices, defaultWindowsEnvironment, DigilentSystemLocator, MIXFPGA_HOME_VARIABLE, windowsLegacyDataRoots, windowsMixFpgaRoot, windowsSystemPath, windowsToolStateRoot, windowsUserDataRoot } from './windows-platform';
 export type { WindowsPlatformOptions, WindowsPlatformServices } from './windows-platform';
 export { DigilentArtifactError, DigilentProgrammer, prepareDigilentBitstream, PREPARED_BITSTREAM_NAME } from './digilent/digilent-programmer';
 export { digilentPartName, normalizeForDigilent, parseBitHeader } from './digilent/bit-header';

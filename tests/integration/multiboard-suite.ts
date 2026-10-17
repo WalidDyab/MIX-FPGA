@@ -70,11 +70,14 @@ export async function run_(): Promise<void> {
                 step('artifactBefore', { bitstream: bit, sizeBytes: bitInfo.size, modified: bitInfo.mtime.toISOString(), sha256: await shaOf(bit) });
             } else {
                 const buildDir = join(service.projectRoot ?? '', '.mix-fpga', 'build', 'de10-lite');
-                const info = JSON.parse(await readFile(join(buildDir, 'build-info.json'), 'utf8')) as { builtAt: string; artifact: { sha256: string; sizeBytes: number }; inputs: Record<string, string> };
-                const svfName = (await readdir(buildDir)).find((f) => f.endsWith('.svf')) ?? 'blink.svf';
+                const info = JSON.parse(await readFile(join(buildDir, 'build-info.json'), 'utf8')) as { builtAt: string; artifact: { sha256: string; sizeBytes: number }; artifacts?: Record<string, { sha256: string; sizeBytes: number }>; inputs: Record<string, string> };
+                // The file this computer's programmer loads: .sof through quartus_pgm on Windows, .svf through the native programmer on macOS.
+                const ext = process.platform === 'win32' ? 'sof' : 'svf';
+                const svfName = (await readdir(buildDir)).find((f) => f.endsWith(`.${ext}`)) ?? `blink.${ext}`;
+                const recorded = info.artifacts?.[ext]?.sha256 ?? info.artifact.sha256;
                 const inputsNow: Record<string, string> = {};
                 for (const f of Object.keys(info.inputs)) inputsNow[f] = await shaOf(join(service.projectRoot ?? '', f));
-                step('artifactBefore', { builtAt: info.builtAt, svfFile: svfName, svfSha256: await shaOf(join(buildDir, svfName)), recordedSha256: info.artifact.sha256, hashMatches: (await shaOf(join(buildDir, svfName))) === info.artifact.sha256, inputsUnchangedSinceBuild: Object.entries(info.inputs).every(([f, h]) => inputsNow[f] === h) });
+                step('artifactBefore', { builtAt: info.builtAt, svfFile: svfName, svfSha256: await shaOf(join(buildDir, svfName)), recordedSha256: recorded, hashMatches: (await shaOf(join(buildDir, svfName))) === recorded, builtAtOlderThanNow: info.builtAt, inputsUnchangedSinceBuild: Object.entries(info.inputs).every(([f, h]) => inputsNow[f] === h) });
             }
             step('vmBefore', await vmState());
             const detect = async (label: string) => {

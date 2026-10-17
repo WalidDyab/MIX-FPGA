@@ -7,6 +7,7 @@ import { inventoryTree, makeWritable, treeDigest } from '../../core/install/tree
 import { toolchainDefinitions } from '../../platform/macos/install/toolchain-components';
 import { installToolchain, readMarker, SimulatedCrash, type ToolchainContext } from '../../platform/macos/install/toolchain-installer';
 import { fixture, noProgress } from './fixtures';
+import { ONLY_MACOS } from '../platform';
 
 const exists = (p: string) => lstat(p).then(() => true, () => false);
 const engineFor = (ctx: ToolchainContext, depth: 'quick' | 'full' = 'quick') => new SetupEngine(toolchainDefinitions(ctx, depth), new InstallStateStore(ctx.layout.installStateFile, ctx.layout.lockFile));
@@ -19,7 +20,7 @@ async function modify(path: string, change: () => Promise<void>): Promise<void> 
 }
 
 describe('toolchain installer', () => {
-    it('installs a clean machine: exact tree, executable bits, links, read-only, manifest, marker last', async (t) => {
+    it('installs a clean machine: exact tree, executable bits, links, read-only, manifest, marker last', { skip: ONLY_MACOS }, async (t) => {
         const f = await fixture(t);
         const before = await states(f.ctx);
         assert.deepEqual(before, { ghdl: 'not-installed', yosys: 'not-installed', openfpgaloader: 'not-installed', lima: 'not-installed', toolchain: 'not-installed' });
@@ -89,7 +90,7 @@ describe('toolchain installer', () => {
         assert.equal((await stat(join(L.unit('ghdl'), 'bin', 'ghdl'))).mode & 0o222, 0, 'repaired unit is read-only again');
     });
 
-    it('repairs a missing tool, a lost executable bit, an unexpected file and a changed manifest', async (t) => {
+    it('repairs a missing tool, a lost executable bit, an unexpected file and a changed manifest', { skip: ONLY_MACOS }, async (t) => {
         const f = await fixture(t);
         await installToolchain(f.ctx, noProgress);
         const L = f.ctx.layout;

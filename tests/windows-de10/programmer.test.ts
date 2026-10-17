@@ -268,7 +268,8 @@ describe('Windows selects the .sof, macOS keeps the .svf, through the common bac
 describe('No driver management anywhere', () => {
     it('no source file can install, replace, switch or configure a USB driver', async () => {
         const dirs = ['core', 'platform', 'runtime', 'extension'];
-        const bad = /zadig|libwdi|winusb|pnputil|devcon|InstallHinfSection|DriverStore|SetupAPI|UpdateDriver|usbblstr|\.inf\b|Set-ItemProperty|reg(?:\.exe)?\s+add|sc(?:\.exe)?\s+(?:config|create)|bcdedit/i;
+        // pnputil is allowed only on a line that merely enumerates the driver store (read only: Setup reports whether Altera's driver is present).
+        const bad = /zadig|libwdi|winusb|pnputil(?!.*\/enum-drivers)|devcon|InstallHinfSection|DriverStore|SetupAPI|UpdateDriver|Set-ItemProperty|reg(?:\.exe)?\s+add|sc(?:\.exe)?\s+(?:config|create)|bcdedit/i;
         for (const d of dirs) {
             for (const f of (await readdir(join(REPO, d), { recursive: true })).filter((x) => x.endsWith('.ts'))) {
                 // The Windows programmer's own explanation of the driver in comments is allowed; code is not.

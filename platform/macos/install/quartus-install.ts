@@ -3,12 +3,14 @@ import { copyFile, chmod, mkdir, readFile, rename, rm, stat, writeFile } from 'n
 import { join } from 'node:path';
 import type { ComponentDefinition, ComponentStatus, SetupStepResult } from '../../../core/install/model';
 import type { ToolRunResult, ToolRunner } from '../../../core/process/tool-runner';
-import { writeFileAtomic } from '../../../core/util/atomic-write';
 import { sha256File } from '../../../core/util/hash';
 import { LimaEngine } from '../de10/engine';
 import { LIMA_INSTANCE, type RuntimeLayout } from './layout';
 import { installedDe10Paths } from './paths';
 import { LinuxVmRecordStore } from './engine-provision';
+import { acceptanceFor, ACCEPT_STATEMENT, checkAlteraFile as checkFile, isQuartusInput as isInput, QuartusRecordStore, type EulaAcceptance, type FileCheck, type LicenseOffer, type QuartusFiles, type QuartusInput, type QuartusRecord } from '../../shared/install/quartus-vendor';
+export { acceptanceFor, ACCEPT_STATEMENT, QuartusRecordStore };
+export type { EulaAcceptance, FileCheck, LicenseOffer, QuartusFiles, QuartusInput, QuartusRecord };
 
 /**
  * Altera Quartus Prime Lite and the MAX 10 device package are NOT MIX-FPGA's and are never redistributed.
@@ -48,107 +50,12 @@ export const QUARTUS_SPEC = {
     requiredFreeGB: 14,
 } as const;
 
-/** The words next to the checkbox. Exact; the acceptance is only valid with this text. */
-export const ACCEPT_STATEMENT = 'I have reviewed and accept the Altera Quartus Prime Software License Agreement.';
-
 type FileSpec = { name: string; sha256: string; bytes: number };
 export type QuartusSpec = Omit<typeof QUARTUS_SPEC, 'installer' | 'devicePackage' | 'license'> & { installer: FileSpec; devicePackage: FileSpec; license: { source: string; file: string; title: string; installerName: string; sha256: string; bytes: number; references: readonly { label: string; url: string }[] } };
 
-/** What the student was shown, from the vendor's own file. */
-export interface LicenseOffer {
-    readonly product: string;
-    readonly version: string;
-    readonly title: string;
-    /** The vendor's licence text, unchanged. */
-    readonly text: string;
-    readonly sha256: string;
-    readonly bytes: number;
-    readonly source: string;
-    readonly installerSha256: string;
-    readonly references: readonly { label: string; url: string }[];
-    /** The exact words next to the checkbox. */
-    readonly statement: string;
-}
-
-/**
- * The student's explicit acceptance. It is only valid for the licence that was actually shown on this Mac
- * (same hash), for this installer, with the exact checkbox wording.
- */
-export interface EulaAcceptance {
-    readonly accepted: true;
-    readonly acceptedAt: string;
-    readonly statement: string;
-    readonly product: string;
-    readonly version: string;
-    readonly installerSha256: string;
-    readonly licenseSource: string;
-    readonly licenseSha256: string;
-    readonly referenceUrls: readonly string[];
-}
-
-/** Built by the Setup page when the student ticks the box and continues. */
-export function acceptanceFor(offer: LicenseOffer, now: Date = new Date()): EulaAcceptance {
-    return { accepted: true, acceptedAt: now.toISOString(), statement: offer.statement, product: offer.product, version: offer.version, installerSha256: offer.installerSha256, licenseSource: offer.source, licenseSha256: offer.sha256, referenceUrls: offer.references.map((r) => r.url) };
-}
-
-/** What the Setup page collects: the two files the student downloaded, and (after the licence was shown) their acceptance. */
-export interface QuartusFiles {
-    readonly installerPath: string;
-    readonly devicePackagePath: string;
-}
-
-export interface QuartusInput extends QuartusFiles {
-    readonly eula: EulaAcceptance;
-}
-
-export function isQuartusInput(x: unknown, spec: QuartusSpec = QUARTUS_SPEC): x is QuartusInput {
-    const i = x as Partial<QuartusInput> | null;
-    if (typeof i !== 'object' || i === null || typeof i.installerPath !== 'string' || typeof i.devicePackagePath !== 'string' || typeof i.eula !== 'object' || i.eula === null) return false;
-    const e = i.eula;
-    return (
-        e.accepted === true &&
-        typeof e.acceptedAt === 'string' &&
-        e.statement === ACCEPT_STATEMENT &&
-        e.product === spec.product &&
-        e.version === spec.banner &&
-        e.installerSha256 === spec.installer.sha256 &&
-        e.licenseSha256 === spec.license.sha256 &&
-        typeof e.licenseSource === 'string' &&
-        e.licenseSource.length > 0 &&
-        Array.isArray(e.referenceUrls)
-    );
-}
-
-export interface QuartusRecord {
-    readonly schemaVersion: 1;
-    /** The licence text was produced by the vendor installer on this Mac and offered to the student. */
-    readonly licenseOffered?: { readonly sha256: string; readonly installerSha256: string; readonly offeredAt: string };
-    readonly eula?: EulaAcceptance;
-    readonly installAttemptAt?: string;
-    readonly installedAt?: string;
-    readonly verifiedAt?: string;
-    readonly version?: string;
-    readonly device?: string;
-    /** Found already installed and verified; MIX-FPGA did not install it and holds no acceptance record for it. */
-    readonly adoptedAt?: string;
-    readonly adoptedFrom?: string;
-}
-
-export class QuartusRecordStore {
-    constructor(private readonly file: string) {}
-    async read(): Promise<QuartusRecord> {
-        try {
-            const r = JSON.parse(await readFile(this.file, 'utf8')) as QuartusRecord;
-            return r.schemaVersion === 1 ? r : { schemaVersion: 1 };
-        } catch {
-            return { schemaVersion: 1 };
-        }
-    }
-    async merge(patch: Partial<QuartusRecord>): Promise<void> {
-        await mkdir(join(this.file, '..'), { recursive: true });
-        await writeFileAtomic(this.file, `${JSON.stringify({ ...(await this.read()), ...patch }, null, 2)}\n`);
-    }
-}
+/** Is this the file Altera publishes? The name alone is never trusted: size and sha256 must match. Reads the file; never modifies it. */
+export const checkAlteraFile = (path: string, want: 'installer' | 'devicePackage', spec: QuartusSpec = QUARTUS_SPEC): Promise<FileCheck> => checkFile(path, want, spec);
+export const isQuartusInput = (x: unknown, spec: QuartusSpec = QUARTUS_SPEC): x is QuartusInput => isInput(x, spec);
 
 export interface QuartusDeps {
     readonly layout: RuntimeLayout;
@@ -164,27 +71,6 @@ type Failure = { readonly ok: false; readonly code: string; readonly message: st
 const fail = (code: string, message: string): Failure => ({ ok: false, code, message });
 const tail = (r: ToolRunResult): string => `${r.stderr || r.stdout}`.trim().split('\n').slice(-2).join(' ').slice(0, 240);
 const gb = (n: number): string => `${(n / 1e9).toFixed(1)} GB`;
-
-export type FileCheck = { readonly ok: true } | { readonly ok: false; readonly code: string; readonly message: string };
-
-/**
- * Is this the file Altera publishes? The name alone is never trusted: size and sha256 must match.
- * Reads the file; never modifies it.
- */
-export async function checkAlteraFile(path: string, want: 'installer' | 'devicePackage', spec: QuartusSpec = QUARTUS_SPEC): Promise<FileCheck> {
-    const exp = spec[want];
-    const other = spec[want === 'installer' ? 'devicePackage' : 'installer'];
-    const s = await stat(path).catch(() => undefined);
-    if (!s?.isFile()) return { ok: false, code: 'FILE_NOT_FOUND', message: `${path} was not found.` };
-    const label = want === 'installer' ? 'the Quartus installer' : 'the MAX 10 device package';
-    const looksRight = path.endsWith(exp.name) || path.split('/').pop() === exp.name;
-    if (s.size !== exp.bytes) {
-        if (s.size === other.bytes) return { ok: false, code: 'FILES_SWAPPED', message: `This looks like ${want === 'installer' ? 'the MAX 10 device package' : 'the Quartus installer'}; ${label} (${exp.name}) is needed here.` };
-        return { ok: false, code: looksRight ? 'FILE_DIFFERENT_VERSION' : 'WRONG_FILE', message: looksRight ? `${exp.name} has an unexpected size (${s.size} bytes); it may be incomplete or a different version. Download ${exp.name} again from Altera.` : `This is not ${label}. MIX-FPGA needs ${exp.name} from Altera.` };
-    }
-    if ((await sha256File(path)) !== exp.sha256) return { ok: false, code: 'FILE_HASH_MISMATCH', message: `${exp.name} does not match the version MIX-FPGA supports (Quartus ${QUARTUS_SPEC.banner}). Download it again from Altera.` };
-    return { ok: true };
-}
 
 /** Result of the proof that Quartus really works. */
 export interface QuartusVerification {

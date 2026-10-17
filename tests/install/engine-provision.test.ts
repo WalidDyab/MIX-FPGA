@@ -11,6 +11,7 @@ import { EngineProvisioner } from '../../platform/macos/install/engine-provision
 import { resolveRuntimeLayout, type RuntimeLayout } from '../../platform/macos/install/layout';
 import { installedDe10Paths } from '../../platform/macos/install/paths';
 import { REPO } from '../helpers';
+import { ONLY_MACOS } from '../platform';
 
 /** A scripted stand-in for limactl and the VM: it builds the instance description from the YAML it was given, like Lima does. */
 class FakeLima implements ToolRunner {
@@ -140,7 +141,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.deepEqual(r.lima.calls, []);
     });
 
-    it('creates the engine from nothing: verified image, create, start, Linux setup, check, stop; ends ready and stopped', async (t) => {
+    it('creates the engine from nothing: verified image, create, start, Linux setup, check, stop; ends ready and stopped', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         const run = await r.engine.run();
         assert.equal(run.outcome, 'complete', JSON.stringify(run.steps));
@@ -156,7 +157,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.match(await readFile(join(r.layout.shareDir, 'provision', 'provision-quartus-env.sh'), 'utf8'), /mixfpga-q/);
     });
 
-    it('opening MIX-FPGA afterwards (inspection) does not start the VM', async (t) => {
+    it('opening MIX-FPGA afterwards (inspection) does not start the VM', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.engine.run();
         r.lima.calls.length = 0;
@@ -165,7 +166,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.equal(r.lima.instance!.status, 'Stopped');
     });
 
-    it('is resumable: a lost internet connection inside the VM stops setup, and the next run continues without re-downloading or re-creating', async (t) => {
+    it('is resumable: a lost internet connection inside the VM stops setup, and the next run continues without re-downloading or re-creating', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.lima.guestNetworkDown = true;
         const first = await r.engine.run();
@@ -181,7 +182,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.equal((await vm(r)).state, 'ready');
     });
 
-    it('resumes after a failed creation', async (t) => {
+    it('resumes after a failed creation', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.lima.createFails = true;
         assert.equal((await r.engine.run()).steps[0]!.code, 'ENGINE_CREATE_FAILED');
@@ -221,7 +222,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.deepEqual(r.downloads, []);
     });
 
-    it('an unfinished engine of ours is replaced; one that ever held Quartus is never deleted automatically', async (t) => {
+    it('an unfinished engine of ours is replaced; one that ever held Quartus is never deleted automatically', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.engine.run();
         r.lima.instance!.status = 'Broken';
@@ -238,7 +239,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.equal(r.lima.count('delete'), 1, 'not deleted a second time');
     });
 
-    it('a different configuration under our name is incompatible and left alone; a settings drift is repaired in place', async (t) => {
+    it('a different configuration under our name is incompatible and left alone; a settings drift is repaired in place', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.engine.run();
         const cfg = r.lima.instance!.config as { images: { digest: string }[]; cpus: number };
@@ -256,7 +257,7 @@ describe('managed FPGA engine (Lima)', () => {
         assert.ok(r.lima.calls.slice(before).every((c) => c[0] === 'list'), 'only reads');
     });
 
-    it('an existing, correctly configured engine without a setup record needs verification, not re-creation', async (t) => {
+    it('an existing, correctly configured engine without a setup record needs verification, not re-creation', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.engine.run();
         await rm(join(r.layout.stateDir, 'linux-vm.json'));

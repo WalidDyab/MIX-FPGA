@@ -7,6 +7,9 @@ import { writeFileAtomic } from '../../../core/util/atomic-write';
 import { sha256File } from '../../../core/util/hash';
 import { executablePaths, type LoadedExpected, totalBytes, type ToolchainUnit } from './expected';
 import { isInsideForeignProduct, type RuntimeLayout, TOOLCHAIN_TARGET, TOOLCHAIN_VERSION } from './layout';
+
+/** The part of a layout the installer uses: the macOS RuntimeLayout and the Windows layout both provide it. */
+export type ToolchainLayout = Pick<RuntimeLayout, 'root' | 'toolchainStaging' | 'toolchainDir' | 'manifestFile' | 'stateDir' | 'toolchainMarker' | 'unit'>;
 import type { PayloadSource } from './payload';
 
 export interface HostFacts {
@@ -26,8 +29,10 @@ export class SimulatedCrash extends Error {
     override readonly name = 'SimulatedCrash';
 }
 
-export interface ToolchainContext {
-    readonly layout: RuntimeLayout;
+export interface ToolchainContext<L extends ToolchainLayout = RuntimeLayout> {
+    readonly layout: L;
+    /** The toolchain version and target this host installs, and whether it can run here. Default: macOS Apple silicon, Toolchain 1.0. */
+    readonly target?: { readonly version: string; readonly target: string; readonly supported: (host?: HostFacts) => boolean; readonly unsupportedMessage: string };
     readonly expected: LoadedExpected;
     readonly payload: PayloadSource;
     readonly host?: HostFacts;
@@ -66,7 +71,7 @@ export function hostSupported(host: HostFacts = { platform: process.platform, ar
  * `quick` (every time MIX-FPGA opens): the files exist, have the recorded size, permissions and links, and each
  * tool's main executable has the recorded hash. `full` (Verify, and after every install): every byte is hashed.
  */
-export async function checkUnit(layout: RuntimeLayout, unit: ToolchainUnit, depth: CheckDepth): Promise<UnitCheck> {
+export async function checkUnit(layout: ToolchainLayout, unit: ToolchainUnit, depth: CheckDepth): Promise<UnitCheck> {
     const path = layout.unit(unit.path);
     if (!(await lstat(path).then(() => true, () => false))) return { unit, state: 'missing' };
     try {
@@ -83,11 +88,11 @@ export async function checkUnit(layout: RuntimeLayout, unit: ToolchainUnit, dept
     }
 }
 
-export async function manifestFileMatches(layout: RuntimeLayout, expected: LoadedExpected): Promise<boolean> {
+export async function manifestFileMatches(layout: ToolchainLayout, expected: LoadedExpected): Promise<boolean> {
     return sha256File(layout.manifestFile).then((h) => h === expected.sha256, () => false);
 }
 
-export async function readMarker(layout: RuntimeLayout): Promise<CompleteMarker | undefined> {
+export async function readMarker(layout: ToolchainLayout): Promise<CompleteMarker | undefined> {
     try {
         const m = JSON.parse(await readFile(layout.toolchainMarker, 'utf8')) as CompleteMarker;
         return m.schemaVersion === MARKER_SCHEMA ? m : undefined;
@@ -133,14 +138,15 @@ const gb = (n: number): string => `${(n / 1e9).toFixed(1)} GB`;
  *  - Running it again on a good install changes nothing; running it after any interruption continues from what is there.
  *  - Nothing outside this MIX-FPGA root is touched (in particular not NexysVHDL Toolchain 1.0).
  */
-export async function installToolchain(ctx: ToolchainContext, request: Pick<InstallRequest, 'signal' | 'progress'>): Promise<SetupStepResult> {
+export async function installToolchain<L extends ToolchainLayout = RuntimeLayout>(ctx: ToolchainContext<L>, request: Pick<InstallRequest, 'signal' | 'progress'>): Promise<SetupStepResult> {
     const { layout, expected, payload } = ctx;
     const hooks = ctx.hooks ?? {};
     const cancelled = (): boolean => request.signal?.aborted === true;
     if (isInsideForeignProduct(layout.root)) return fail('FOREIGN_PRODUCT_PATH', 'MIX-FPGA will not install inside another product\'s folder.');
-    if (!hostSupported(ctx.host)) return fail('UNSUPPORTED_HOST', 'MIX-FPGA Toolchain 1.0 needs a Mac with Apple silicon.');
-    if (expected.toolchain.toolchainVersion !== TOOLCHAIN_VERSION || expected.toolchain.target !== TOOLCHAIN_TARGET) {
-        return fail('MANIFEST_MISMATCH', `The toolchain manifest is for ${expected.toolchain.toolchainVersion} ${expected.toolchain.target}, not ${TOOLCHAIN_VERSION} ${TOOLCHAIN_TARGET}.`);
+    const want = ctx.target ?? { version: TOOLCHAIN_VERSION, target: TOOLCHAIN_TARGET, supported: hostSupported, unsupportedMessage: 'MIX-FPGA Toolchain 1.0 needs a Mac with Apple silicon.' };
+    if (!want.supported(ctx.host)) return fail('UNSUPPORTED_HOST', want.unsupportedMessage);
+    if (expected.toolchain.toolchainVersion !== want.version || expected.toolchain.target !== want.target) {
+        return fail('MANIFEST_MISMATCH', `The toolchain manifest is for ${expected.toolchain.toolchainVersion} ${expected.toolchain.target}, not ${want.version} ${want.target}.`);
     }
 
     const opId = randomBytes(5).toString('hex');

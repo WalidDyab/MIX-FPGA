@@ -108,14 +108,35 @@ function worst(statuses: ReadonlyMap<string, ComponentStatus>, ids: readonly str
  * The Setup page. `selected` are the boards the student chose; a board that is (partly) present counts as chosen too.
  * The Environment rows only describe the chosen boards: a Nexys-only computer has no FPGA Engine row at all.
  */
-export function buildSetupView(statuses: readonly ComponentStatus[], hardware: HardwareView, selected: readonly BoardSupportId[] = []): SetupView {
+/**
+ * What differs between hosts in the Setup page: which boards exist and their components, who owns each component, and the
+ * sentences that mention disk use or downloads. The macOS profile is the default; the Windows one lives in platform/windows/install.
+ */
+export interface SetupViewProfile {
+    readonly boards: readonly BoardSupportEntry[];
+    readonly catalog: readonly { readonly id: string; readonly label: string; readonly ownership: Ownership }[];
+    readonly owner: Readonly<Record<Ownership, string>>;
+    /** The sentence under "Install <board> Support", per board. */
+    readonly installDetail: (boardId: BoardSupportId) => string;
+    /** How a board's state is derived from its components (default: the macOS rule in boards.ts). */
+    readonly boardState?: (statuses: readonly ComponentStatus[], board: BoardSupportEntry) => BoardState;
+}
+
+export const MACOS_VIEW_PROFILE: SetupViewProfile = {
+    boards: BOARD_SUPPORT,
+    catalog: MACOS_CATALOG,
+    owner: OWNER,
+    installDetail: (id) => (id === 'de10-lite' ? `Uses about ${EXPECTED_STORAGE.vmAfterQuartusGB} GB once finished, needs an internet connection and Altera's free download.` : 'Installs the Nexys A7 tools.'),
+};
+
+export function buildSetupView(statuses: readonly ComponentStatus[], hardware: HardwareView, selected: readonly BoardSupportId[] = [], profile: SetupViewProfile = MACOS_VIEW_PROFILE): SetupView {
     const by = new Map(statuses.map((s) => [s.id, s]));
-    const boards: BoardRowView[] = BOARD_SUPPORT.map((b) => {
-        const state = boardState(statuses, b);
+    const boards: BoardRowView[] = profile.boards.map((b) => {
+        const state = (profile.boardState ?? boardState)(statuses, b);
         const action = state === 'not-installed' || state === 'incomplete' ? 'install' : state === 'needs-repair' ? 'repair' : undefined;
         return { id: b.id, name: b.name, state, word: BOARD_WORD[state], ...(action ? { action } : {}) };
     });
-    const relevant: BoardSupportEntry[] = BOARD_SUPPORT.filter((b) => selected.includes(b.id) || boards.find((x) => x.id === b.id)!.state !== 'not-installed');
+    const relevant: BoardSupportEntry[] = profile.boards.filter((b) => selected.includes(b.id) || boards.find((x) => x.id === b.id)!.state !== 'not-installed');
     const fresh = relevant.length === 0;
 
     const row = (id: Exclude<SetupRowId, 'hardware'>, label: string, ids: readonly string[]): SetupRowView => {
@@ -135,7 +156,7 @@ export function buildSetupView(statuses: readonly ComponentStatus[], hardware: H
     const actions: SetupActionView[] = [];
     if (fresh) actions.push({ id: 'install', label: 'Install FPGA Toolchain', detail: 'Choose the boards you will use; only what they need is installed.', primary: true });
     for (const b of boards) {
-        if (b.action === 'install') actions.push({ id: 'install', board: b.id, label: `Install ${b.name} Support`, detail: b.id === 'de10-lite' ? `Uses about ${EXPECTED_STORAGE.vmAfterQuartusGB} GB once finished, needs an internet connection and Altera's free download.` : 'Installs the Nexys A7 tools.', primary: !fresh && relevant.some((r) => r.id === b.id) });
+        if (b.action === 'install') actions.push({ id: 'install', board: b.id, label: `Install ${b.name} Support`, detail: profile.installDetail(b.id), primary: !fresh && relevant.some((r) => r.id === b.id) });
         if (b.action === 'repair') actions.push({ id: 'repair', board: b.id, label: `Repair ${b.name} Support`, detail: 'Continues an interrupted setup or puts back anything missing or changed.', primary: true });
     }
     const installedBoards = boards.filter((b) => b.state === 'installed');
@@ -147,9 +168,9 @@ export function buildSetupView(statuses: readonly ComponentStatus[], hardware: H
     const allReady = !fresh && relevantRows.every((b) => b.state === 'installed');
     const headline = fresh ? 'Setup required' : allReady ? 'Ready' : relevantRows.some((b) => b.state === 'not-supported') ? 'Needs attention' : relevantRows.some((b) => b.state === 'installing') ? 'Installing…' : relevantRows.some((b) => b.state === 'needs-repair') ? 'Needs repair' : 'Setup not finished';
 
-    const details: DetailRow[] = MACOS_CATALOG.map((c) => {
+    const details: DetailRow[] = profile.catalog.map((c) => {
         const st = by.get(c.id);
-        return { label: c.label, word: WORD[st?.state ?? 'not-installed'], owner: OWNER[st?.ownership ?? c.ownership], ...(st?.version ? { version: st.version } : {}), ...(st?.detail ? { note: st.detail } : {}) };
+        return { label: c.label, word: WORD[st?.state ?? 'not-installed'], owner: profile.owner[st?.ownership ?? c.ownership], ...(st?.version ? { version: st.version } : {}), ...(st?.detail ? { note: st.detail } : {}) };
     });
     return { headline, allReady, fresh, boards, rows, actions, details };
 }

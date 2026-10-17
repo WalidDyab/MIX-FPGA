@@ -17,6 +17,7 @@ import { toolchainDefinitions } from '../../platform/macos/install/toolchain-com
 import { EngineProvisioner, LinuxVmRecordStore } from '../../platform/macos/install/engine-provision';
 import { QuartusInstaller, QuartusRecordStore } from '../../platform/macos/install/quartus-install';
 import { readFile, readdir, stat } from 'node:fs/promises';
+import { ONLY_MACOS } from '../platform';
 
 const IDS = ['ghdl', 'yosys', 'openfpgaloader', 'lima'];
 
@@ -139,7 +140,7 @@ describe('adoption dry run', () => {
     describe('performing it', () => {
         const snap = async (r: Awaited<ReturnType<typeof rig>>) => snapshot(r.legacy, r.f.dir + '/vendor');
 
-        it('copies and seals the tools, adopts the engine by verification only, and records no licence acceptance', async (t) => {
+        it('copies and seals the tools, adopts the engine by verification only, and records no licence acceptance', { skip: ONLY_MACOS }, async (t) => {
             const r = await rig(t);
             const before = await snap(r);
             r.m.calls.length = 0;
@@ -173,7 +174,7 @@ describe('adoption dry run', () => {
             assert.ok(r.m.calls.every((c) => c[0] === 'list'));
         });
 
-        it('the completion marker is written last, after the engine records and the sealed tools', async (t) => {
+        it('the completion marker is written last, after the engine records and the sealed tools', { skip: ONLY_MACOS }, async (t) => {
             const r = await rig(t);
             await performAdoption(r.deps);
             const L = r.f.ctx.layout;

@@ -75,6 +75,8 @@ export interface PlatformHostFacts {
     userDataRoot(env: Readonly<Record<string, string | undefined>>): string | undefined;
     /** Stores of the predecessor product that may hold the same validated toolchain; reused read-only, never written. */
     legacyDataRoots?(env: Readonly<Record<string, string | undefined>>): string[];
+    /** Where the board-support tools keep writable state, when that is not inside their own store (Windows: the MIX-FPGA state area). */
+    toolStateRoot?(env: Readonly<Record<string, string | undefined>>): string | undefined;
     /** Operating-system folders every bundled tool may need on PATH. */
     systemPath(env: Readonly<Record<string, string | undefined>>): string[];
     /** An ASCII path resolving to `target`, for folders Apio refuses (Windows profile names, or a macOS home folder, with spaces/Unicode). */

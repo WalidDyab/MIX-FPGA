@@ -890,10 +890,11 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
 
     register('nexysvhdl.showEnvironment', async () => {
         const summary = await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'MIX-FPGA: Inspecting tools' }, () => service.refreshEnvironment());
-        if (!summary) throw new NexysError('The environment could not be inspected; see the log.');
-        // Apple-silicon Macs: the Setup page (Board Support and Environment) replaces the older list for every board.
+        // Computers with board support (Apple-silicon Macs, 64-bit Windows): the Setup page (Board Support and Environment) replaces the older
+        // list for every board. It inspects for itself, so a damaged tool (which makes the older inspection fail) still leads to Repair.
         const controller = await setup?.controller();
         if (controller) return showSetupPage(controller);
+        if (!summary) throw new NexysError('The environment could not be inspected; see the log.');
         const rows = [...summary.setup, boardRow(service.hardware, summary.hardwareLabel)];
         const tc = summary.toolchain;
         type Item = vscode.QuickPickItem & { action?: () => unknown };

@@ -48,6 +48,8 @@ export interface InstallSummary {
     readonly storageGB: number;
     readonly requiredFreeGB: number;
     readonly askedForAltera: boolean;
+    /** Windows: the installation will ask Windows for permission once. */
+    readonly needsAdministrator?: boolean;
 }
 
 export type SetupOutcome = 'complete' | 'stopped' | 'failed' | 'cancelled' | 'busy';

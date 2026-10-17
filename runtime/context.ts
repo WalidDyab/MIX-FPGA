@@ -1,4 +1,5 @@
 import { mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
     storePaths,
     ApioImplementationProvider,
@@ -124,12 +125,19 @@ async function resolveClassroom(host: HostInfo, env: Readonly<Record<string, str
         bundleDir: installed.paths.versionDir,
         host,
         // Writable tool state always lives in the MIX-FPGA store, never in the predecessor's folder.
-        stateDir: storePaths(dataRoot, target, options.requirement.bundleVersion).stateDir,
+        stateDir: stateDirFor(facts, env, dataRoot, target, options),
         systemPath: facts.systemPath(env),
         inheritedEnv: env,
         ...(options.pathAlias ? { pathAlias: options.pathAlias } : facts.pathAlias ? { pathAlias: (t: string) => facts.pathAlias!(t, env) } : {}),
     });
     return { ...base, dataRoot, installed, resolution, ...(resolution.toolchain ? { toolchain: resolution.toolchain } : {}), ...(reusedFrom ? { reusedFrom } : {}), diagnostics: resolution.diagnostics };
+}
+
+/** Writable tool state: the platform's state area when it has one (and the data root was not overridden), else inside the store. */
+function stateDirFor(facts: NonNullable<ReturnType<typeof platformHostFacts>>, env: Readonly<Record<string, string | undefined>>, dataRoot: string, target: string, options: ClassroomOptions): string {
+    const version = options.requirement.bundleVersion;
+    const root = options.dataRoot ? undefined : facts.toolStateRoot?.(env);
+    return root ? join(root, `${target}-${version}`) : storePaths(dataRoot, target, version).stateDir;
 }
 
 export async function createContext(overrides: ContextOverrides = {}): Promise<RuntimeContext> {

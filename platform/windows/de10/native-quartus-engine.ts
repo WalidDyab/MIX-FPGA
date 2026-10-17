@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import type { EngineProvider, EngineState, EngineStatus } from '../../../core/backend/types';
 import type { ToolRunResult, ToolRunner } from '../../../core/process/tool-runner';
 import { errorDiag, type Diagnostic } from '../../../core/results/diagnostic';
@@ -31,19 +29,6 @@ export function classifyProbe(run: ToolRunResult, banner: string): Probe {
 
 export type PartCheck = 'ok' | 'max10-missing' | 'part-missing' | 'failed' | 'unexpected';
 
-/**
- * The Tcl Quartus runs to answer "is the MAX 10 package installed, and is this exact part available?". It asks
- * Quartus's own device database; the install's folder layout is never the source of truth.
- */
-export function partCheckTcl(part: string): string {
-    return [
-        'load_package device',
-        'set l [get_part_list -family {MAX 10}]',
-        `puts "MIXFPGA_PARTS count=[llength $l] target=[expr {[lsearch -exact $l ${part}] >= 0}]"`,
-        '',
-    ].join('\n');
-}
-
 /** Classifies the output of the part-list query. Only the marker line counts; Quartus's chatter is ignored. */
 export function classifyPartCheck(run: ToolRunResult): { kind: PartCheck; count?: number } {
     if (run.outcome !== 'exited' || run.exitCode !== 0) return { kind: 'failed' };
@@ -70,9 +55,21 @@ export class NativeQuartusEngine implements EngineProvider {
         private readonly versions: WindowsDe10Versions = WINDOWS_PINNED,
     ) {}
 
+    /** MIX-FPGA's own support script that asks Quartus for the MAX 10 part list. */
+    get partCheckScript(): string {
+        return this.paths.partCheckScript;
+    }
+
+    /** The install roots this engine looks in first (also what a different-version explanation scans beside). */
+    candidateRoots(): readonly string[] {
+        return this.paths.quartusCandidates;
+    }
+
     /** The pinned Quartus install, if one is present. */
-    install(): Promise<QuartusInstall | undefined> {
-        return findQuartus(this.paths.quartusCandidates);
+    async install(): Promise<QuartusInstall | undefined> {
+        const found = await findQuartus(this.paths.quartusCandidates);
+        if (found) return found;
+        return findQuartus([...(await this.paths.discoverRoots?.().catch(() => []) ?? [])]);
     }
 
     /** Runs one Quartus tool by full path with the install's own environment. */
@@ -100,15 +97,10 @@ export class NativeQuartusEngine implements EngineProvider {
 
     /** Asks Quartus whether the MAX 10 package is installed and the exact target part is available. */
     async checkPart(i: QuartusInstall, signal?: AbortSignal): Promise<{ kind: PartCheck; count?: number }> {
-        // A script file, not --tcl_eval: --tcl_eval evaluates its arguments one command at a time and cannot carry a multi-statement script.
-        const script = join(this.paths.stateDir, 'part-check.tcl');
-        try {
-            await mkdir(this.paths.stateDir, { recursive: true });
-            await writeFile(script, partCheckTcl(this.versions.targetPart));
-        } catch {
-            return { kind: 'failed' };
-        }
-        return classifyPartCheck(await this.run(i, 'quartus_sh', ['-t', script], { ...(signal ? { signal } : {}), timeoutMs: 120_000 }));
+        // MIX-FPGA's own support script (shipped and hash-verified with the toolchain), asking Quartus's device database whether the
+        // MAX 10 package and this exact part are there. A script file, not --tcl_eval: --tcl_eval cannot carry a multi-statement script.
+        const ran = await this.run(i, 'quartus_sh', ['-t', this.paths.partCheckScript], { ...(signal ? { signal } : {}), timeoutMs: 120_000 });
+        return classifyPartCheck(ran);
     }
 
     /** Problems found by the part check, as student-facing diagnostics (empty when the part is available). */

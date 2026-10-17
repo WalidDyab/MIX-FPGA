@@ -5,9 +5,10 @@ import { describe, it } from 'node:test';
 import { compareTree, copyTree, inventoryTree, makeReadOnly, makeWritable, treeDigest, treeIsIdentical } from '../../core/install/tree';
 import { tempDir } from '../helpers';
 import { makeSourceTools } from './fixtures';
+import { ONLY_MACOS } from '../platform';
 
 describe('tree inventory', () => {
-    it('copies a tree exactly: bytes, executable bits and symbolic links', async (t) => {
+    it('copies a tree exactly: bytes, executable bits and symbolic links', { skip: ONLY_MACOS }, async (t) => {
         const dir = await tempDir(t);
         const src = (await makeSourceTools(dir))['lima']!;
         await copyTree(src, join(dir, 'copy'));
@@ -19,7 +20,7 @@ describe('tree inventory', () => {
         assert.ok(a.links.length === 1 && a.files.some((f) => f.exec));
     });
 
-    it('notices every kind of difference', async (t) => {
+    it('notices every kind of difference', { skip: ONLY_MACOS }, async (t) => {
         const dir = await tempDir(t);
         const src = (await makeSourceTools(dir))['lima']!;
         const expected = await inventoryTree(src);
@@ -41,7 +42,7 @@ describe('tree inventory', () => {
         assert.ok(treeIsIdentical(compareTree(expected, await inventoryTree(join(dir, 'ok')))));
     });
 
-    it('makes a tree read-only and writable again, including folders', async (t) => {
+    it('makes a tree read-only and writable again, including folders', { skip: ONLY_MACOS }, async (t) => {
         const dir = await tempDir(t);
         const src = (await makeSourceTools(dir))['ghdl']!;
         await copyTree(src, join(dir, 'ro'));

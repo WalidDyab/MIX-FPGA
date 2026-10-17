@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "note": "Internal Phase 4 validation payloads for Windows (built outside git into .artifacts/payloads by scripts/mixfpga/build-payloads-windows.mjs). Not for public distribution while L1, L3 and L9 are unresolved.",
+  "payloads": {
+    "nexys-a7-100t": {
+      "file": "nexysvhdl-toolchain-1.0-win32-x64.tar.gz",
+      "bytes": 744121124,
+      "sha256": "83aeb26539fbd2d4a2aabd0c53015011bb9655da1b8cbfcdde9d841ce5508315",
+      "content": "NexysVHDL Toolchain 1.0 (win32-x64), unchanged"
+    },
+    "de10-lite": {
+      "file": "mixfpga-de10-lite-support-1.0-windows-x64.tar.gz",
+      "bytes": 48168208,
+      "sha256": "c2bbdb2407596e3d7e80682d555142c6069e84a9454cc5574db5039659eeee04",
+      "content": "MIX-FPGA Toolchain 1.0 (windows-x64): GHDL, Yosys, support scripts, notices"
+    }
+  }
+}

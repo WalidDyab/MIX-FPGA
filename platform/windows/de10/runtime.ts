@@ -1,6 +1,4 @@
 import { stat } from 'node:fs/promises';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
 import type { BoardRegistry } from '../../../core/board/board-registry';
 import type { BoardEnvironment, EnvironmentVerification, ToolReport } from '../../../core/backend/environment';
 import { QuartusImplementationProvider } from '../../../core/implementation/quartus/provider';
@@ -11,7 +9,11 @@ import { loadManifest, verifyOwnedComponents } from '../../../core/toolchain/mix
 import { GhdlVhdlProvider } from '../../../core/vhdl/ghdl/ghdl-provider';
 import { WorkflowController } from '../../../core/workflow/workflow-controller';
 import { WorkspaceManager } from '../../../core/workspace/build-workspace';
-import { defaultWindowsPaths, type WindowsDe10Paths } from './config';
+import type { WindowsDe10Paths } from './config';
+import { loadExpectedToolchain } from '../../shared/install/expected';
+import { resolveWindowsLayout, type WindowsRuntimeLayout } from '../install/layout';
+import { installedWindowsDe10Paths } from '../install/paths';
+import { checkUnit, readMarker, unitProblem } from '../../macos/install/toolchain-installer';
 import { NativeQuartusEngine } from './native-quartus-engine';
 import { NativeQuartusExecutor } from './quartus-native-executor';
 import { QuartusPgmProgrammer } from './quartus-programmer';
@@ -19,15 +21,13 @@ import { QuartusPgmProgrammer } from './quartus-programmer';
 export interface WindowsDe10RuntimeOptions {
     readonly repoRoot: string;
     readonly boards: BoardRegistry;
-    /** `%LOCALAPPDATA%`; defaults to the environment's. */
-    readonly localAppData?: string;
-    readonly toolchainRoot?: string;
-    /** Overrides where Quartus is looked for (tests, `MIXFPGA_QUARTUS_ROOT`). */
-    readonly quartusRoot?: string;
     readonly runner?: ToolRunner;
     /** Receives everything every tool prints, as it prints it (the console). */
     readonly onToolOutput?: (text: string, invocation: ToolInvocation) => void;
+    /** Tool locations. Absent: the installed MIX-FPGA Toolchain (%LOCALAPPDATA%\MIX-FPGA, or $MIXFPGA_HOME). There is no repository fallback. */
     readonly paths?: WindowsDe10Paths;
+    /** Verify Environment checks the installed toolchain against this recorded manifest (full tree). Absent: the older per-executable check. */
+    readonly installed?: { readonly layout: WindowsRuntimeLayout; readonly manifestFile: string };
 }
 
 /**
@@ -45,18 +45,12 @@ export class WindowsDe10Runtime {
     /** Version probes and health checks: never echoed to the student's console. */
     private readonly quiet: ToolRunner;
     private readonly repoRoot: string;
+    private readonly installed: WindowsDe10RuntimeOptions['installed'];
 
     constructor(opts: WindowsDe10RuntimeOptions) {
-        const localAppData = opts.localAppData ?? process.env['LOCALAPPDATA'] ?? join(homedir(), 'AppData', 'Local');
-        this.paths =
-            opts.paths ??
-            defaultWindowsPaths({
-                repoRoot: opts.repoRoot,
-                localAppData,
-                ...(opts.toolchainRoot ? { toolchainRoot: opts.toolchainRoot } : {}),
-                ...(opts.quartusRoot ? { quartusRoot: opts.quartusRoot } : {}),
-            });
         const base = opts.runner ?? new NodeToolRunner();
+        this.paths = opts.paths ?? installedWindowsDe10Paths(resolveWindowsLayout(), base);
+        this.installed = opts.installed;
         this.quiet = base;
         this.repoRoot = opts.repoRoot;
         this.runner = opts.onToolOutput ? new OutputTeeRunner(base, opts.onToolOutput) : base;
@@ -118,11 +112,24 @@ export class WindowsDe10Runtime {
     /** Hash-checks the owned tools, then proves Quartus runs and knows the exact MAX 10 part. */
     async verify(signal?: AbortSignal): Promise<EnvironmentVerification> {
         const steps: { label: string; ok: boolean; detail?: string }[] = [];
-        const manifest = await loadManifest(this.repoRoot, 'windows-x64');
-        if (!manifest) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'toolchains/mixfpga/windows-x64.json is missing or unreadable' });
-        else {
-            for (const r of await verifyOwnedComponents(manifest, this.paths.toolchainRoot)) {
-                steps.push({ label: `${r.component.name} ${r.component.version}`, ok: r.state === 'ok', ...(r.state === 'ok' ? {} : { detail: r.state === 'missing' ? 'not installed' : r.state === 'modified' ? 'files differ from the recorded version' : 'no recorded checksum' }) });
+        if (this.installed) {
+            const expected = await loadExpectedToolchain(this.installed.manifestFile).catch(() => undefined);
+            if (!expected) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'the recorded manifest is missing or unreadable' });
+            else {
+                for (const u of expected.toolchain.units) {
+                    const c = await checkUnit(this.installed.layout, u, 'full');
+                    steps.push({ label: `${u.name}${u.version ? ` ${u.version}` : ''}`, ok: c.state === 'ok', ...(c.state === 'ok' ? {} : { detail: unitProblem(c) }) });
+                }
+                const marker = await readMarker(this.installed.layout);
+                steps.push({ label: 'Installation record', ok: marker?.manifestSha256 === expected.sha256, ...(marker?.manifestSha256 === expected.sha256 ? {} : { detail: 'the installation was not completed or is for another toolchain' }) });
+            }
+        } else {
+            const manifest = await loadManifest(this.repoRoot, 'windows-x64');
+            if (!manifest) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'toolchains/mixfpga/windows-x64.json is missing or unreadable' });
+            else {
+                for (const r of await verifyOwnedComponents(manifest, this.paths.toolchainRoot)) {
+                    steps.push({ label: `${r.component.name} ${r.component.version}`, ok: r.state === 'ok', ...(r.state === 'ok' ? {} : { detail: r.state === 'missing' ? 'not installed' : r.state === 'modified' ? 'files differ from the recorded version' : 'no recorded checksum' }) });
+                }
             }
         }
         const engine = await this.engine.ensureReady(signal);

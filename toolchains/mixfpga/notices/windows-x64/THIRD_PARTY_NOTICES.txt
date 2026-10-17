@@ -1,0 +1,57 @@
+==============================================================================
+DRAFT - NOT FOR REDISTRIBUTION
+Open items remain (legal questions L1, L3 and L9, and the licence texts marked MISSING below). The notices stay marked DRAFT until each
+is closed or accepted in writing by the project owner. This payload is an internal Phase 4 validation payload.
+==============================================================================
+
+MIX-FPGA Toolchain 1.0 for Windows (x64): third-party notices
+
+MIX-FPGA Toolchain is an aggregation of separate programs and data. Each part is under its own licence, listed below; the licence
+texts that are available are in the LICENSES folder next to this file, unchanged from their sources. MIX-FPGA's own code
+(Apache-2.0) covers only the MIX-FPGA-authored parts (the support scripts in scripts/).
+
+Not part of this toolchain and not redistributed by MIX-FPGA: Altera Quartus Prime Lite, the MAX 10 device package and Altera's
+USB-Blaster driver, Digilent Adept, Windows. They belong to their owners and are used under the student's own acceptance of their
+licences.
+
+1. COMPONENTS WE REDISTRIBUTE
+
+--- ghdl/ ---
+
+GHDL 6.0.0 (mcode backend, MSYS2 UCRT64 build, GNAT 15.2.0)
+  licence:    GPL-2.0-or-later
+  files:      bin/ghdl.exe, bin/ghwdump.exe, lib/**, include/**
+  use:        Run by MIX-FPGA (Check, Simulate, Design/RTL Schematic).
+  texts:      LICENSES/ghdl/GHDL-COPYING.md, LICENSES/gpl/GPL-2.0.txt
+  source:     https://github.com/ghdl/ghdl/archive/refs/tags/v6.0.0.tar.gz (upstream release ghdl-mcode-6.0.0-ucrt64.zip, sha256 76e160ceec35834c73ada6e4e484416d13aed4b64cbc7c74c5cca53a7ef60e41)
+  OPEN:       Written source offer for the redistributed binary.
+
+GNAT / GCC runtime libraries libgnat-15, libgcc_s_seh-1
+  licence:    GPL-3.0-or-later WITH GCC-exception-3.1
+  files:      bin/libgnat-15.dll, bin/libgcc_s_seh-1.dll, lib/**
+  texts:      LICENSES/gpl/GPL-3.0.txt, LICENSES/gcc/GCC-RUNTIME-EXCEPTION-3.1.txt
+
+libwinpthread-1, zlib1 (shipped beside ghdl.exe and yosys.exe)
+  licence:    MIT-style (libwinpthread), Zlib (zlib1)
+  texts:      LICENSES/zlib/LICENSE; libwinpthread: MISSING
+
+--- yosys/ ---
+
+Yosys 0.63+173 (git 66306a8ca), YosysHQ OSS CAD Suite build via FPGAwars tools-oss-cad-suite 2026-09-15
+  licence:    ISC
+  files:      bin/yosys.exe, share/yosys/**
+  use:        Run by MIX-FPGA (RTL Schematic).
+  texts:      LICENSES/yosys/LICENSE.yosys
+  source:     https://github.com/YosysHQ/yosys (archive sha256 7e221239a5c866b58c7fdbcf118b29bcae69b27ff61e2ace706a3e211ad1200b)
+
+Libraries loaded by yosys.exe (MSYS2 UCRT64 builds): libstdc++-6, libgcc_s_seh-1, libreadline8, libtermcap-0, tcl86, libffi-8, libwinpthread-1, zlib1
+  licence:    libstdc++/libgcc GPL-3.0-or-later WITH GCC-exception-3.1; readline GPL-3.0-or-later; Tcl BSD-style; libffi MIT; termcap/libwinpthread MIT-style; zlib Zlib
+  texts:      LICENSES/gpl/GPL-3.0.txt, LICENSES/gcc/GCC-RUNTIME-EXCEPTION-3.1.txt, LICENSES/readline/COPYING, LICENSES/tcl/license.terms, LICENSES/zlib/LICENSE
+  MISSING:    licence texts for libffi, termcap and libwinpthread
+  OPEN:       Source offer for the GPL-licensed libraries (readline, libstdc++).
+
+--- scripts/ ---
+
+MIX-FPGA support scripts (part-check.tcl)
+  licence:    Apache-2.0 (MIX-FPGA)
+  texts:      LICENSES/mix-fpga/LICENSE

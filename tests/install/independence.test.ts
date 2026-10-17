@@ -13,6 +13,7 @@ import { toolchainDefinitions } from '../../platform/macos/install/toolchain-com
 import { REPO } from '../helpers';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { ONLY_MACOS } from '../platform';
 
 const run = promisify(execFile);
 const MANIFEST = join(REPO, 'toolchains', 'mixfpga', 'toolchain-1.0-macos-arm64.json');
@@ -28,7 +29,7 @@ describe('installer independence', () => {
             const text = await code(f);
             if (text.includes(DEV_PAYLOAD_VARIABLE) || text.includes('MIXFPGA_DEV_PAYLOAD')) offenders.push(f);
         }
-        assert.deepEqual(offenders, [join('platform', 'macos', 'install', 'dev-payload.ts')]);
+        assert.deepEqual(offenders.sort(), [join('platform', 'macos', 'install', 'dev-payload.ts'), join('platform', 'windows', 'install', 'dev-payload.ts')]);
     });
 
     it('layout, installer, inspectors and manifest reader never mention the repository tool folder or the dev payload', async () => {
@@ -52,7 +53,7 @@ describe('Toolchain 1.0 manifest and catalog', () => {
         for (const u of toolchain.units.filter((x) => x.kind === 'tool')) assert.ok(u.files.some((f) => f.path === u.executable && f.exec), `${u.id} executable`);
     });
 
-    it('the manifest is current for the engine scripts and notices committed in this repository', async () => {
+    it('the manifest is current for the engine scripts and notices committed in this repository', { skip: ONLY_MACOS }, async () => {
         const { toolchain } = await loadExpectedToolchain(MANIFEST);
         const check = async (id: string, dir: string) => {
             const unit = toolchain.units.find((u) => u.id === id)!;
@@ -85,7 +86,7 @@ describe('Toolchain 1.0 manifest and catalog', () => {
 });
 
 describe('real validated tools (skipped when toolchains/experimental is absent)', () => {
-    it('install into an isolated root, then run from the installed location only', async (t) => {
+    it('install into an isolated root, then run from the installed location only', { skip: ONLY_MACOS }, async (t) => {
         if (!(await stat(EXPERIMENTAL).then(() => true, () => false))) return t.skip('no development payload on this machine');
         const dir = await mkdtemp(join(tmpdir(), 'mixfpga real '));
         t.after(async () => {

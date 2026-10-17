@@ -9,6 +9,7 @@ import { buildSetupView, type HardwareView, studentFailure, TECHNICAL_TERMS } fr
 import { expectedFor } from './fixtures';
 import { DirectoryPayload } from '../../platform/macos/install/payload';
 import { rig, word } from './setup-rig';
+import { ONLY_MACOS } from '../platform';
 
 const DE10: HardwareView = { state: 'ready', word: 'DE10-Lite' };
 
@@ -59,7 +60,7 @@ describe('Setup page model', () => {
 });
 
 describe('Setup flows on an isolated root', () => {
-    it('a fresh student: Install FPGA Toolchain asks only what it must, in order, and everything ends Ready', async (t) => {
+    it('a fresh student: Install FPGA Toolchain asks only what it must, in order, and everything ends Ready', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         const out = await r.ctl.install(r.ui);
         assert.equal(out.outcome, 'complete', `${out.message} ${r.ui.logs.join(' | ')}`);
@@ -78,7 +79,7 @@ describe('Setup flows on an isolated root', () => {
         assert.deepEqual(await readdir(r.layout.installersDir), [], 'temporary Altera copies removed');
     });
 
-    it('the licence the student is shown is the vendor\'s text, with the exact checkbox words and reference link', async (t) => {
+    it('the licence the student is shown is the vendor\'s text, with the exact checkbox words and reference link', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.ctl.install(r.ui);
         const o = r.ui.offers[0]!;
@@ -87,7 +88,7 @@ describe('Setup flows on an isolated root', () => {
         assert.match(o.references[0]!.url, /^https:\/\/www\.altera\.com\//);
     });
 
-    it('opening Setup (status) never starts the engine; Setup opened again after success asks nothing', async (t) => {
+    it('opening Setup (status) never starts the engine; Setup opened again after success asks nothing', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.ctl.install(r.ui);
         r.m.calls.length = 0;
@@ -107,7 +108,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(await stat(r.layout.toolchainDir).then(() => true, () => false), false);
     });
 
-    it('declining Rosetta stops at that point with a clear message; the next run does not repeat finished work', async (t) => {
+    it('declining Rosetta stops at that point with a clear message; the next run does not repeat finished work', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.ui.rosetta = undefined;
         const out = await r.ctl.install(r.ui);
@@ -123,7 +124,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(r.ui.summaries[1]!.items.some((i) => /VHDL/.test(i)), false, 'the finished VHDL tools are not on the second plan');
     });
 
-    it('not accepting Altera\'s licence installs nothing from Altera and never passes --accept_eula', async (t) => {
+    it('not accepting Altera\'s licence installs nothing from Altera and never passes --accept_eula', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.ui.accept = false;
         const out = await r.ctl.install(r.ui);
@@ -134,7 +135,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(word(out.view, 'fpga-engine'), 'Not installed');
     });
 
-    it('a wrong Altera file is rejected in student words and nothing is installed', async (t) => {
+    it('a wrong Altera file is rejected in student words and nothing is installed', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await writeFile(join(r.downloads, 'other.run'), 'something else');
         r.ui.files = { installerPath: join(r.downloads, 'other.run'), devicePackagePath: r.ui.files!.devicePackagePath };
@@ -145,7 +146,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(r.ui.questions.includes('license'), false);
     });
 
-    it('an interrupted install is resumed by Install or Repair without starting over', async (t) => {
+    it('an interrupted install is resumed by Install or Repair without starting over', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         r.crashToolchainOnce = true;
         const first = await r.ctl.install(r.ui);
@@ -157,7 +158,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(second.outcome, 'complete', second.message);
     });
 
-    it('Repair puts back a damaged tool without asking for Apple or Altera again', async (t) => {
+    it('Repair puts back a damaged tool without asking for Apple or Altera again', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.ctl.install(r.ui);
         const tool = join(r.layout.unit('ghdl'), 'bin', 'ghdl');
@@ -175,7 +176,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(word(out.view, 'vhdl-tools'), 'Ready');
     });
 
-    it('Verify Environment checks every file, proves Quartus in the engine, and stops the engine again', async (t) => {
+    it('Verify Environment checks every file, proves Quartus in the engine, and stops the engine again', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         await r.ctl.install(r.ui);
         const v = await r.ctl.verify();
@@ -198,7 +199,7 @@ describe('Setup flows on an isolated root', () => {
         assert.equal(r.m.count('create'), 0);
     });
 
-    it('a cancelled install stops cleanly and can be continued', async (t) => {
+    it('a cancelled install stops cleanly and can be continued', { skip: ONLY_MACOS }, async (t) => {
         const r = await rig(t);
         const ctl = new AbortController();
         ctl.abort();

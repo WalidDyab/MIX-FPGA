@@ -54,8 +54,39 @@ export function windowsSystemPath(env: EnvironmentVariables): string[] {
  * classroom profile, and it is shared by every VS Code flavour/profile.
  */
 export function windowsUserDataRoot(env: EnvironmentVariables): string | undefined {
+    const root = windowsMixFpgaRoot(env);
+    return root ? win32.join(root, 'support', 'nexys-a7') : undefined;
+}
+
+/** The one runtime override. Relocates the whole MIX-FPGA root (tests, lab images). Students never set it. */
+export const MIXFPGA_HOME_VARIABLE = 'MIXFPGA_HOME';
+
+/** MIX-FPGA's per-user root: %LOCALAPPDATA%\MIX-FPGA, or $MIXFPGA_HOME. */
+export function windowsMixFpgaRoot(env: EnvironmentVariables): string | undefined {
+    const override = getEnv(env, MIXFPGA_HOME_VARIABLE);
+    if (override && override.length > 0) return override;
     const local = getEnv(env, 'LOCALAPPDATA');
-    return local ? win32.join(local, 'NexysVHDL') : undefined;
+    return local ? win32.join(local, 'MIX-FPGA') : undefined;
+}
+
+/**
+ * Writable state of the Nexys tools (Apio's home and caches): under the MIX-FPGA state area, never inside the immutable
+ * toolchain folder and never in a NexysVHDL folder.
+ */
+export function windowsToolStateRoot(env: EnvironmentVariables): string | undefined {
+    const root = windowsMixFpgaRoot(env);
+    return root ? win32.join(root, 'state', 'nexys-a7') : undefined;
+}
+
+/**
+ * Where a NexysVHDL 0.6.0 installation keeps the same validated toolchain (%LOCALAPPDATA%\NexysVHDL). MIX-FPGA is its update: it may
+ * reuse that toolchain read-only (the installed marker must match the validated content hash) until it is taken over into the
+ * MIX-FPGA store. Never written to. Not consulted when MIXFPGA_HOME relocates MIX-FPGA (isolated and fresh-install tests).
+ */
+export function windowsLegacyDataRoots(env: EnvironmentVariables): string[] {
+    if (getEnv(env, MIXFPGA_HOME_VARIABLE)) return [];
+    const local = getEnv(env, 'LOCALAPPDATA');
+    return local ? [win32.join(local, 'NexysVHDL')] : [];
 }
 
 /**

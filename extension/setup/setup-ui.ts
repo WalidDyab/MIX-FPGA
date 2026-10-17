@@ -2,7 +2,7 @@ import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
-import { ALTERA_DOWNLOADS, type BoardSupportId, type InstallSummary, type LicenseOffer, type QuartusFiles, type RosettaCommand, type RosettaConsent, type SetupInteraction } from '../../runtime/setup';
+import { ALTERA_DOWNLOADS, NEXYS_SUPPORT_FILE, type BoardSupportId, type InstallSummary, type LicenseOffer, type QuartusFiles, type RosettaCommand, type RosettaConsent, type SetupInteraction } from '../../runtime/setup';
 import { showLicensePanel } from './license-panel';
 
 /** The Setup questions as VS Code dialogs. Student words only; engineering detail goes to `log`. */
@@ -20,7 +20,7 @@ export class VsCodeSetupInteraction implements SetupInteraction {
     }
 
     async askNexysArchive(): Promise<string | undefined> {
-        const ok = await vscode.window.showInformationMessage('Nexys A7 support file', { modal: true, detail: 'Choose the Nexys A7 support file your course provides (nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz). MIX-FPGA checks every file before using it.' }, 'Choose File…');
+        const ok = await vscode.window.showInformationMessage('Nexys A7 support file', { modal: true, detail: `Choose the Nexys A7 support file your course provides (${NEXYS_SUPPORT_FILE}). MIX-FPGA checks every file before using it.` }, 'Choose File…');
         if (!ok) return undefined;
         const r = await vscode.window.showOpenDialog({ canSelectMany: false, canSelectFiles: true, canSelectFolders: false, openLabel: 'Use This File', title: 'Choose the Nexys A7 support file', filters: { 'MIX-FPGA support': ['gz'] } });
         return r?.[0]?.fsPath;
@@ -30,6 +30,7 @@ export class VsCodeSetupInteraction implements SetupInteraction {
         const lines = [`This will set up: ${s.items.join('; ')}.`, s.storageGB >= 1 ? `It uses about ${s.storageGB.toFixed(1)} GB on this computer once finished (have about ${s.requiredFreeGB} GB free).` : 'It needs very little space.'];
         if (s.needsInternet) lines.push('It needs an internet connection.');
         if (s.askedForAltera) lines.push('Later it asks you for two free files from Altera and to accept Altera\'s licence.');
+        if (s.needsAdministrator) lines.push('Windows will ask for your permission once while Altera\'s software is installed.');
         const pick = await vscode.window.showInformationMessage('Install board support', { modal: true, detail: lines.join('\n') }, 'Continue');
         return pick === 'Continue';
     }
@@ -54,14 +55,14 @@ export class VsCodeSetupInteraction implements SetupInteraction {
         } else {
             const ok = await vscode.window.showInformationMessage(
                 'Altera\'s free software is needed',
-                { modal: true, detail: `Download these two files from Altera (Quartus Prime Lite ${ALTERA_DOWNLOADS.version}, Linux, with MAX 10 device support):\n\n${wanted.join('\n')}\n\nThen choose them here. MIX-FPGA does not download them for you.` },
+                { modal: true, detail: `Download these two files from Altera (Quartus Prime Lite ${ALTERA_DOWNLOADS.version}, ${ALTERA_DOWNLOADS.system}, with MAX 10 device support):\n\n${wanted.join('\n')}\n\nThen choose them here. MIX-FPGA does not download them for you.` },
                 'Choose Files…',
             );
             if (!ok) return undefined;
         }
         const pick = (name: string, ext: string) =>
             vscode.window.showOpenDialog({ canSelectMany: false, canSelectFiles: true, canSelectFolders: false, defaultUri: vscode.Uri.file(downloads), openLabel: 'Use This File', title: `Choose ${name}`, filters: { 'Altera download': [ext] } }).then((r) => r?.[0]?.fsPath);
-        const installer = await pick(wanted[0]!, 'run');
+        const installer = await pick(wanted[0]!, ALTERA_DOWNLOADS.installerExtension);
         if (!installer) return undefined;
         const pkg = await pick(wanted[1]!, 'qdz');
         return pkg ? { installerPath: installer, devicePackagePath: pkg } : undefined;

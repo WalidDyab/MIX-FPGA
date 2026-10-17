@@ -1,7 +1,7 @@
 import type { HostInfo } from '../core';
 import { createMacosPlatform, macosLegacyDataRoots, macosPathAlias, macosSystemPath, macosUserDataRoot } from './macos';
 import type { PlatformContext, PlatformFactory, PlatformHostFacts, PlatformServices } from './types';
-import { createWindowsPlatform, windowsPathAlias, windowsSystemPath, windowsUserDataRoot } from './windows';
+import { createWindowsPlatform, windowsLegacyDataRoots, windowsPathAlias, windowsSystemPath, windowsToolStateRoot, windowsUserDataRoot } from './windows';
 
 export type { PlatformContext, PlatformFactory, PlatformHostFacts, PlatformServices, ProgrammerSetup, ToolchainInspection, ToolchainInspectionRequest } from './types';
 
@@ -13,7 +13,7 @@ interface Registration extends PlatformHostFacts {
 
 /** The single place where a host is mapped to its adapter. Only validated host kinds are listed. */
 const REGISTRY: readonly Registration[] = [
-    { platform: 'win32', arch: 'x64', factory: createWindowsPlatform, userDataRoot: windowsUserDataRoot, systemPath: windowsSystemPath, pathAlias: (target, env) => windowsPathAlias(target, env) },
+    { platform: 'win32', arch: 'x64', factory: createWindowsPlatform, userDataRoot: windowsUserDataRoot, legacyDataRoots: windowsLegacyDataRoots, toolStateRoot: windowsToolStateRoot, systemPath: windowsSystemPath, pathAlias: (target, env) => windowsPathAlias(target, env) },
     { platform: 'darwin', arch: 'arm64', factory: createMacosPlatform, userDataRoot: macosUserDataRoot, legacyDataRoots: macosLegacyDataRoots, systemPath: macosSystemPath, pathAlias: (target, env) => macosPathAlias(target, env) },
 ];
 
