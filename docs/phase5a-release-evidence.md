@@ -66,3 +66,12 @@ Quartus Prime Lite 25.1std.0 Build 1129 with MAX 10 support, device `10M50DAF484
 ## Open items not covered by earlier evidence
 
 - A fresh Quartus installation on a no-Quartus macOS machine has never been run end to end (existing Quartus was adopted by verification only). Phase 5A clean-machine testing is intended to close this.
+
+## Phase 5A clean-machine results (macOS, 2026-10-18)
+
+Environment: RC `NexysVHDL-0.7.0-darwin-arm64.zip` (sha256 `30aa1f8805edfb60b844fc9fc6d6927059abef2dc7b41aa49b9a6dc4a9a9c878`, built from `3c87fec`), VSIX installed into a fresh VS Code profile outside the repository, sanitised environment (no `MIXFPGA_*`, minimal PATH), production root `~/Library/MIX-FPGA`, `/Applications/Apio` and `~/.apio` hidden, Rosetta pre-existing. The DE10-Lite support archive (`f8cbe33f…feb`, **internal validation material, not approved for student distribution while L1/L3/L9 are open**) was supplied through the new file picker.
+
+- **Nexys A7-100T:** installed from the course archive via the file picker; user reported OK; on-disk Nexys bundle executables match (ghdl `38a99c1cc18b`, apio `a9000808a018`, programmer `06457ddf53f3`).
+- **DE10-Lite:** support installed from the picked archive (marker source = the archive, manifest sha256 `204532e3…fafe9`, tools ghdl 6.0.0 / yosys 0.63 / openFPGALoader 1.1.1 / lima 2.2.1); engine VM `mix-fpga-de10` created; Quartus Prime Lite 25.1std.0 Build 1129 installed **fresh by MIX-FPGA** (first real no-Quartus installation; licence offered 15:18:20Z, accepted by the user 15:20:05Z, install attempt after acceptance, verified 15:22:04Z, device `10M50DAF484C7G`). Altera installer hash `518433ec…c4eb`. Temporary installer copies were removed from `staging/installers`.
+- **Hardware:** user reported the DE10-Lite starter project built and programmed successfully.
+- Disk use after both boards: `~/Library/MIX-FPGA` about 15 GB (Lima disk about 11 GB, Nexys 2.6 GB, Ubuntu image cache 0.6 GB).
