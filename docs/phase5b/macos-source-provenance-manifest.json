@@ -1,0 +1,3869 @@
+{
+ "schemaVersion": 1,
+ "kind": "DRAFT provenance manifest (Phase 5B). Engineering record, not legal advice.",
+ "generatedFrom": [
+  "toolchains/mixfpga/compliance/macos-arm64.inventory.json",
+  "toolchains/compliance/toolchain-1.0.json",
+  "NexysVHDL-Toolchain-1.0-Sources.zip manifest.json (sha256 69f496eb2b852f922ce0f1a7b8322ee467be2e23b1da665e35e6f170d1d095b6)",
+  "toolchains/mixfpga/compliance/go-licenses.json"
+ ],
+ "distributedArtifacts": {
+  "de10-lite-support-archive": {
+   "file": "mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz",
+   "sha256": "f8cbe33f56b54018204ba4f3f9c0a6cf4a4ad8e66145e36787c3b8e47f70eebb",
+   "bytes": 91626879,
+   "manifestSha256": "204532e3b49d8edad92a47577982e1bf383904cc3c889e70df63f8c7453fafe9",
+   "components": [
+    {
+     "component": "ghdl-program",
+     "name": "GHDL (ghdl, ghwdump)",
+     "version": "6.0.0 (6.0.0.r0.ge589c698c)",
+     "license": "GPL-2.0-or-later",
+     "binaryFiles": [
+      "bin/ghdl",
+      "bin/ghwdump",
+      "license/**"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "strong-copyleft",
+     "sources": [
+      {
+       "sourceId": "ghdl-6.0.0",
+       "upstream": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "archives": [
+        {
+         "file": "sources/ghdl-6.0.0.tar.gz",
+         "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+         "size": 7899777,
+         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "inherited",
+     "openItems": [
+      "The build recipe of this GHDL (LLVM-JIT build on macOS) is not recorded beyond the tool versions; confirm what 'complete corresponding source' includes for it (build scripts)."
+     ],
+     "flags": [
+      "L6"
+     ]
+    },
+    {
+     "component": "ghdl-llvm-static",
+     "name": "LLVM (statically linked into ghdl)",
+     "version": "22.1.0 (Homebrew build)",
+     "license": "Apache-2.0 WITH LLVM-exception",
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "gnat-gcc-runtime",
+     "name": "GNAT / GCC runtime libraries",
+     "version": "libgnat-14, libgcc_s 1.1",
+     "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+     "binaryFiles": [
+      "bin/libgcc_s.1.1.dylib",
+      "lib/libgcc_s.1.1.dylib",
+      "lib/libgnat-14.dylib"
+     ],
+     "sourceObligation": "none-required-by-exception",
+     "sourceClass": "runtime-exception",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "Exact GCC/GNAT version and build origin are recorded only as 'GNAT 14' (the review's non-blocking item darwin-ghdl-gnat-runtime). Record it when convenient."
+     ],
+     "flags": [
+      "L6"
+     ]
+    },
+    {
+     "component": "ghdl-libs",
+     "name": "libghdl, libghdlvpi, libghdl.a",
+     "version": "6.0.0",
+     "license": "GPL-2.0-or-later",
+     "binaryFiles": [
+      "lib/libghdl-6_0_0.dylib",
+      "lib/libghdl.a",
+      "lib/libghdl.link",
+      "lib/libghdlvpi.dylib"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "strong-copyleft",
+     "sources": [
+      {
+       "sourceId": "ghdl-6.0.0",
+       "upstream": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "archives": [
+        {
+         "file": "sources/ghdl-6.0.0.tar.gz",
+         "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+         "size": 7899777,
+         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "inherited",
+     "openItems": [],
+     "flags": [
+      "L6"
+     ]
+    },
+    {
+     "component": "libghw",
+     "name": "libghw (GHDL waveform library) and its header",
+     "version": "6.0.0",
+     "license": "LGPL-2.1-or-later",
+     "binaryFiles": [
+      "lib/libghw.dylib",
+      "include/ghdl/libghw.h"
+     ],
+     "sourceObligation": "library-source-and-replaceability",
+     "sourceClass": "weak-copyleft",
+     "sources": [
+      {
+       "sourceId": "ghdl-6.0.0",
+       "upstream": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "archives": [
+        {
+         "file": "sources/ghdl-6.0.0.tar.gz",
+         "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+         "size": 7899777,
+         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "verified",
+     "openItems": [],
+     "flags": [
+      "L9"
+     ]
+    },
+    {
+     "component": "ghdl-gpl-headers",
+     "name": "GHDL synthesis headers",
+     "version": "6.0.0",
+     "license": "GPL-2.0-or-later",
+     "binaryFiles": [
+      "include/ghdl/synth.h",
+      "include/ghdl/synth_gates.h"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "strong-copyleft",
+     "sources": [
+      {
+       "sourceId": "ghdl-6.0.0",
+       "upstream": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "archives": [
+        {
+         "file": "sources/ghdl-6.0.0.tar.gz",
+         "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+         "size": 7899777,
+         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "unclear",
+     "openItems": [
+      "synth_gates.h has no licence header."
+     ],
+     "flags": [
+      "L8"
+     ]
+    },
+    {
+     "component": "vhpi-header",
+     "name": "vhpi_user.h (IEEE P1076 WG)",
+     "version": "2019",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "include/ghdl/vhpi_user.h"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "vpi-header",
+     "name": "vpi_user.h (IEEE Std 1800-2017 PLI header)",
+     "version": "-",
+     "license": "UNCLEAR",
+     "binaryFiles": [
+      "include/ghdl/vpi_user.h"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "unclear",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "Find the licence of this header at GHDL's source (it comes from the IEEE standard's PLI header)."
+     ],
+     "flags": [
+      "L8"
+     ]
+    },
+    {
+     "component": "ghdl-std-library",
+     "name": "VHDL STD library (standard, textio, env) and its compiled form",
+     "version": "6.0.0",
+     "license": "GPL-2.0-or-later",
+     "binaryFiles": [
+      "lib/ghdl/src/std/**",
+      "lib/ghdl/std/**"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "strong-copyleft",
+     "sources": [
+      {
+       "sourceId": "ghdl-6.0.0",
+       "upstream": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "archives": [
+        {
+         "file": "sources/ghdl-6.0.0.tar.gz",
+         "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+         "size": 7899777,
+         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "unclear",
+     "openItems": [
+      "Whether the GPL reaches the programs students produce with GHDL (simulation executables / netlists) is not answered by these files; GHDL's own statement should be located and recorded."
+     ],
+     "flags": [
+      "L7"
+     ]
+    },
+    {
+     "component": "ieee-2008-library",
+     "name": "IEEE 1076-2008 packages and the Apache-licensed math packages (IEEE P1076 WG)",
+     "version": "2019 files",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "lib/ghdl/src/ieee2008/**",
+      "lib/ghdl/src/ieee/*.vhdl",
+      "lib/ghdl/src/ieee/v87/std_logic_1164*.vhdl",
+      "lib/ghdl/src/ieee/v93/std_logic_1164*.vhdl"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "ieee-1076-3-1995",
+     "name": "IEEE 1076.3-1995 synthesis packages (numeric_bit, numeric_std; VHDL-87 and VHDL-93 sets)",
+     "version": "1995",
+     "license": "LicenseRef-IEEE-1076.3-1995 (custom terms: distribute unchanged, not for profit)",
+     "binaryFiles": [
+      "lib/ghdl/src/ieee/v87/numeric_*.vhdl",
+      "lib/ghdl/src/ieee/v93/numeric_*.vhdl"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "unclear",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "Legal review of 'may not be sold or distributed for profit' against MIX-FPGA's distribution model (free classroom distribution is the intended one)."
+     ],
+     "flags": [
+      "L1"
+     ]
+    },
+    {
+     "component": "vital-libraries",
+     "name": "VITAL packages (IEEE 1076.4: vital95, vital2000)",
+     "version": "-",
+     "license": "UNCLEAR",
+     "binaryFiles": [
+      "lib/ghdl/src/vital95/**",
+      "lib/ghdl/src/vital2000/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "unclear",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "Establish the licence of the VITAL sources as GHDL redistributes them."
+     ],
+     "flags": [
+      "L2"
+     ]
+    },
+    {
+     "component": "upf-library",
+     "name": "UPF package (IEEE 1801 power-aware simulation support)",
+     "version": "-",
+     "license": "UNCLEAR",
+     "binaryFiles": [
+      "lib/ghdl/src/upf/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "unclear",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "Presumed GHDL-authored (GPL-2.0-or-later); not stated in the files."
+     ],
+     "flags": [
+      "L2"
+     ]
+    },
+    {
+     "component": "synopsys-libraries",
+     "name": "Synopsys std_logic_arith / unsigned / signed / misc packages",
+     "version": "1990-1992",
+     "license": "LicenseRef-Synopsys-permissive",
+     "binaryFiles": [
+      "lib/ghdl/src/synopsys/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "ieee-compiled",
+     "name": "Compiled IEEE library (GHDL .cf files)",
+     "version": "6.0.0",
+     "license": "derived from ieee-2008-library and ieee-1076-3-1995 (same terms apply)",
+     "binaryFiles": [
+      "lib/ghdl/ieee/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "unclear",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "Follows the answer to L1."
+     ],
+     "flags": [
+      "L1"
+     ]
+    },
+    {
+     "component": "ghdl-vendor-scripts",
+     "name": "GHDL vendor-library compile scripts and ansi_color.sh",
+     "version": "6.0.0",
+     "license": "GPL-2.0-or-later",
+     "binaryFiles": [
+      "lib/ghdl/vendors/**",
+      "lib/ghdl/ansi_color.sh"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "strong-copyleft",
+     "sources": [
+      {
+       "sourceId": "ghdl-6.0.0",
+       "upstream": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "archives": [
+        {
+         "file": "sources/ghdl-6.0.0.tar.gz",
+         "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+         "size": 7899777,
+         "commit": "e589c698c351369ac5bcfe7abe1f1152ac5d4727"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "yosys-program",
+     "name": "Yosys",
+     "version": "0.63+173 (git 66306a8ca-dirty)",
+     "license": "ISC",
+     "binaryFiles": [
+      "libexec/yosys",
+      "license/**"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "permissive",
+     "sources": [
+      {
+       "sourceId": "oss-yosys",
+       "upstream": "https://github.com/YosysHQ/yosys",
+       "revision": "66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2",
+       "archives": [
+        {
+         "file": "sources/oss-yosys.tar.gz",
+         "sha256": "649a106a04cf19e5688993707694a8e855636d60b5d8a90310c4ec208cf54e5d",
+         "size": 3588239,
+         "commit": "66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2"
+        },
+        {
+         "file": "sources/oss-yosys--abc.tar.gz",
+         "sha256": "3bb0aa3128e6c047d56ba4e00c0d770d7947a612052d96621d3abd53739e54aa",
+         "size": 7217295,
+         "commit": "b4a657e75b16b68c514a7326642ea074f8460939"
+        },
+        {
+         "file": "sources/oss-yosys--libs-cxxopts.tar.gz",
+         "sha256": "b9bda1476317d87d9ed79889aec48de43b10808b682d3f5f8b278542007d58fc",
+         "size": 159461,
+         "commit": "4bf61f08697b110d9e3991864650a405b3dd515d"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "unclear",
+     "openItems": [
+      "The binary's version string ends in '-dirty': it was built from a tree with local changes on top of 66306a8c. The corresponding source of the exact binary may therefore differ from the pinned commit (YosysHQ OSS CAD Suite 2026-03-24 build recipes)."
+     ],
+     "flags": [
+      "L3",
+      "L4"
+     ]
+    },
+    {
+     "component": "yosys-embedded-libs",
+     "name": "Libraries compiled into the yosys executable (ezsat/minisat, json11, fstapi, others)",
+     "version": "per Yosys source tree",
+     "license": "per library (typically MIT, ISC or public-domain style)",
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "pending",
+     "openItems": [
+      "Collect the notices of the third-party libraries under libs/ in the Yosys source at the pinned revision and add them (needs the pinned source archive)."
+     ],
+     "flags": [
+      "L4"
+     ]
+    },
+    {
+     "component": "readline",
+     "name": "GNU Readline",
+     "version": "8.2.001",
+     "license": "GPL-3.0-or-later",
+     "binaryFiles": [
+      "lib/libreadline.8.2.dylib"
+     ],
+     "sourceObligation": "corresponding-source",
+     "sourceClass": "strong-copyleft",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-readline-8.2.tar.gz",
+       "inventoryId": "readline-8.2",
+       "upstream": "https://distfiles.macports.org/readline/readline-8.2.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/readline--readline-8.2.tar.gz",
+         "sha256": "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35",
+         "size": 3043952
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-distfile-readline82-001",
+       "inventoryId": "readline82-001",
+       "upstream": "https://distfiles.macports.org/readline/readline82-001",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/readline--readline82-001",
+         "sha256": "bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7",
+         "size": 1198
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-readline-556ec864a7d9",
+       "inventoryId": "macports-port-readline",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "556ec864a7d91fb89eb261b7ed380098e2c308dc",
+       "archives": [
+        {
+         "file": "sources/macports-port-readline-556ec864a7d9.tar.gz",
+         "sha256": "1b29eceff876048e36fa9459049e92f1e4dde49374523a37264fd5db8c45a11c",
+         "size": 1530,
+         "commit": "556ec864a7d91fb89eb261b7ed380098e2c308dc"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "inherited",
+     "openItems": [],
+     "flags": [
+      "L3",
+      "L9"
+     ]
+    },
+    {
+     "component": "ncurses",
+     "name": "ncurses",
+     "version": "6.4",
+     "license": "X11",
+     "binaryFiles": [
+      "lib/libncurses.6.dylib"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "libffi",
+     "name": "libffi",
+     "version": "3.4.4",
+     "license": "MIT",
+     "binaryFiles": [
+      "lib/libffi.8.dylib"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "tcl",
+     "name": "Tcl (library and script library)",
+     "version": "8.6.13",
+     "license": "TCL (Tcl/Tk licence)",
+     "binaryFiles": [
+      "lib/libtcl8.6.dylib",
+      "lib/tcl8.6/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "zlib-yosys",
+     "name": "zlib (bundled copy)",
+     "version": "1.3",
+     "license": "Zlib",
+     "binaryFiles": [
+      "lib/libz.1.3.dylib"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "openfpgaloader-program",
+     "name": "openFPGALoader",
+     "version": "1.1.1",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "libexec/openFPGALoader",
+      "license/LICENSE.openfpgaloader"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [
+      {
+       "sourceId": "openfpgaloader-451beadf",
+       "upstream": "https://github.com/trabucayre/openFPGALoader",
+       "revision": "451beadfae953df07ae14e1dc29238b8d9ae60bc",
+       "archives": [],
+       "inExistingSourceZip": false
+      }
+     ],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "libusb",
+     "name": "libusb",
+     "version": "1.0.26",
+     "license": "LGPL-2.1-or-later",
+     "binaryFiles": [
+      "lib/libusb-1.0.0.dylib",
+      "license/LICENSE.libusb"
+     ],
+     "sourceObligation": "library-source-and-replaceability",
+     "sourceClass": "weak-copyleft",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-libusb-1.0.26.tar.gz",
+       "inventoryId": "libusb-1.0.26",
+       "upstream": "https://distfiles.macports.org/libusb/libusb-1.0.26.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/libusb--libusb-1.0.26.tar.gz",
+         "sha256": "6e5fd904275b12ba5e9fcd4ffb1366028f410e632401dfb11703123a5cc2a1f2",
+         "size": 383960
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-libusb-6b3c05d3a37d",
+       "inventoryId": "macports-port-libusb",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392",
+       "archives": [
+        {
+         "file": "sources/macports-port-libusb-6b3c05d3a37d.tar.gz",
+         "sha256": "18b371927b2daf2275809f40bae6158a14d9ec97dabc605c1e4d4aceccf91d79",
+         "size": 1527,
+         "commit": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "inherited",
+     "openItems": [],
+     "flags": [
+      "L5",
+      "L9"
+     ]
+    },
+    {
+     "component": "libftdi",
+     "name": "libftdi1",
+     "version": "1.5",
+     "license": "LGPL-2.0-only",
+     "binaryFiles": [
+      "lib/libftdi1.2.5.0.dylib",
+      "license/LICENSE.libftdi"
+     ],
+     "sourceObligation": "library-source-and-replaceability",
+     "sourceClass": "weak-copyleft",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-libftdi1-1.5.tar.bz2",
+       "inventoryId": "libftdi1-1.5",
+       "upstream": "https://distfiles.macports.org/libftdi/libftdi1-1.5.tar.bz2",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/libftdi--libftdi1-1.5.tar.bz2",
+         "sha256": "7c7091e9c86196148bd41177b4590dccb1510bfe6cea5bf7407ff194482eb049",
+         "size": 116297
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-libftdi-3bdf7f45e366",
+       "inventoryId": "macports-port-libftdi",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "3bdf7f45e366506775548eeab8a5a4b259f23bd9",
+       "archives": [
+        {
+         "file": "sources/macports-port-libftdi-3bdf7f45e366.tar.gz",
+         "sha256": "7944a615c7f2f13c9dbdc9bed4fec34dca1aed9df18816df388fa8507bded56f",
+         "size": 1246,
+         "commit": "3bdf7f45e366506775548eeab8a5a4b259f23bd9"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "status": "inherited",
+     "openItems": [],
+     "flags": [
+      "L9"
+     ]
+    },
+    {
+     "component": "hidapi",
+     "name": "HIDAPI",
+     "version": "0.12.0",
+     "license": "BSD-3-Clause",
+     "binaryFiles": [
+      "lib/libhidapi.0.dylib"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "zlib-ofl",
+     "name": "zlib (bundled copy)",
+     "version": "1.3",
+     "license": "Zlib",
+     "binaryFiles": [
+      "lib/libz.1.3.dylib"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "zstd",
+     "name": "Zstandard",
+     "version": "1.5.5",
+     "license": "BSD-3-Clause",
+     "binaryFiles": [
+      "lib/libzstd.1.5.5.dylib"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "inherited",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "ofl-bridge-bitstreams",
+     "name": "openFPGALoader bridge bitstreams (spiOverJtag_*, bpiOverJtag_*)",
+     "version": "1.1.1",
+     "license": "Apache-2.0 (as part of the openFPGALoader release)",
+     "binaryFiles": [
+      "share/openFPGALoader/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "unclear",
+     "sources": [],
+     "status": "unclear",
+     "openItems": [
+      "These binaries are built by the upstream project with vendor tools; whether any carries vendor-IP terms is not documented in the release. Confirm with upstream, or decide to omit them (not done: no payload change was requested)."
+     ],
+     "flags": [
+      "L10"
+     ]
+    },
+    {
+     "component": "lima-program",
+     "name": "Lima (limactl, lima and wrappers, documentation, man pages)",
+     "version": "2.2.1",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "bin/**",
+      "libexec/lima/limactl-url-fedora-rawhide",
+      "share/doc/lima/**",
+      "share/man/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [
+      {
+       "sourceId": "lima-2.2.1",
+       "upstream": "https://github.com/lima-vm/lima/releases/tag/v2.2.1",
+       "revision": null,
+       "archives": [],
+       "inExistingSourceZip": false
+      }
+     ],
+     "status": "verified",
+     "openItems": [],
+     "flags": [
+      "L11"
+     ]
+    },
+    {
+     "component": "lima-plugins",
+     "name": "Lima helper programs (limactl-mcp, lima-driver-krunkit)",
+     "version": "2.2.1",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "libexec/lima/limactl-mcp",
+      "libexec/lima/lima-driver-krunkit"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": [
+      "L11"
+     ]
+    },
+    {
+     "component": "lima-guest-agents",
+     "name": "Lima guest agents (Darwin-aarch64, Linux-aarch64)",
+     "version": "2.2.1",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "share/lima/lima-guestagent.*.gz"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": [
+      "L11"
+     ]
+    },
+    {
+     "component": "lima-templates",
+     "name": "Lima VM templates",
+     "version": "2.2.1",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "share/lima/templates/**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    },
+    {
+     "component": "lima-go-dependencies",
+     "name": "Go standard library and 100 Go modules compiled into Lima's programs",
+     "version": "go1.27.1; module versions in go-licenses.json",
+     "license": "BSD-3-Clause (Go), MIT (45 modules), Apache-2.0 (26), BSD-3-Clause (25), BSD-2-Clause (3), MPL-2.0 (1: github.com/hashicorp/hcl/v2)",
+     "sourceObligation": "none-except-mpl-module",
+     "sourceClass": "permissive",
+     "sources": [
+      {
+       "sourceId": "hashicorp-hcl-v2.24.0",
+       "upstream": "https://proxy.golang.org/github.com/hashicorp/hcl/v2/@v/v2.24.0.zip",
+       "revision": null,
+       "archives": [],
+       "inExistingSourceZip": false
+      }
+     ],
+     "status": "verified",
+     "openItems": [
+      "The opencontainers/go-digest module also ships LICENSE.docs (CC-BY-SA-4.0, covers its documentation only); it is included, not relied on.",
+      "Whether the NOTICE/PATENTS files impose anything beyond keeping them alongside is a legal-review matter alongside the rest."
+     ],
+     "flags": [
+      "L11"
+     ]
+    },
+    {
+     "component": "mixfpga-engine-scripts",
+     "name": "MIX-FPGA engine VM template and provisioning scripts",
+     "version": "phase4",
+     "license": "Apache-2.0",
+     "binaryFiles": [
+      "**"
+     ],
+     "sourceObligation": "none",
+     "sourceClass": "permissive",
+     "sources": [],
+     "status": "verified",
+     "openItems": [],
+     "flags": []
+    }
+   ]
+  },
+  "nexys-a7-support-archive": {
+   "file": "nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz",
+   "sha256": "d8cdf6e2a6c082d05189396b10892b1a6605a267b2f2b884c9911c9140a2359d",
+   "bytes": 657363463,
+   "treeSha256": "f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7",
+   "files": 31699,
+   "components": [
+    {
+     "component": "ghdl",
+     "name": "GHDL",
+     "version": "6.0.0",
+     "license": "GPL-2.0-or-later AND GPL-3.0-or-later WITH GCC-exception-3.1 AND Apache-2.0 WITH LLVM-exception AND Apache-2.0",
+     "licenseAsRecorded": "GPL-2.0-or-later; libgnat GPL-3.0 with GCC Runtime Library Exception; libgcc_s GCC Runtime Library Exception; LLVM (statically linked into bin/ghdl) Apache-2.0 WITH LLVM-exception"
+    },
+    {
+     "component": "apio",
+     "name": "Apio",
+     "version": "1.7.0",
+     "license": "GPL-3.0-or-later AND PSF-2.0 AND Apache-2.0 AND LGPL-2.1-or-later AND MIT AND BSD-3-Clause AND BSD-2-Clause AND MPL-2.0 AND (Artistic-1.0-Perl OR GPL-1.0-or-later) AND Apache-2.0 WITH LLVM-exception",
+     "licenseAsRecorded": "GPL-2.0; Python 3.14.7 PSF-2.0; bundled OpenSSL 3.5.7 Apache-2.0, libusb-1.0 LGPL-2.1-or-later, zstd 1.5.7 BSD-3-Clause; Python packages per *.dist-info"
+    },
+    {
+     "component": "apio-definitions",
+     "name": "Apio definitions package",
+     "version": "2026.09.17",
+     "license": "GPL-3.0-only",
+     "licenseAsRecorded": "GPL-2.0"
+    },
+    {
+     "component": "apio-oss-cad-suite",
+     "name": "Apio oss-cad-suite package (Yosys, openFPGALoader)",
+     "version": "2026.09.15",
+     "license": "LicenseRef-NexysVHDL-aggregate",
+     "licenseAsRecorded": "Mixed; Yosys ISC, openFPGALoader Apache-2.0, libusb LGPL-2.1, libftdi LGPL-2.1/GPL-2.0; per-tool licenses in license/LICENSE.* (59 files), including GPL-licensed tools (e.g. Icarus Verilog, GTKWave) and Python 3.11 (PSF-2.0). Qt 5 frameworks (Frameworks/Qt*.framework, LGPL-3.0) ship without a license file"
+    },
+    {
+     "component": "apio-verible",
+     "name": "Apio verible package",
+     "version": "2026.09.20",
+     "license": "Apache-2.0",
+     "licenseAsRecorded": "Apache-2.0 (Verible upstream)"
+    },
+    {
+     "component": "apio-openxc7",
+     "name": "Apio openXC7 package (nextpnr-xilinx, Project X-Ray tools)",
+     "version": "2026.09.25",
+     "license": "ISC AND CC0-1.0 AND Apache-2.0 AND MIT AND PSF-2.0 AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 AND BSD-3-Clause AND BSD-2-Clause AND 0BSD AND Zlib AND bzip2-1.0.6 AND MPL-2.0",
+     "licenseAsRecorded": "Mixed; nextpnr-xilinx ISC, Project X-Ray tools ISC, prjxray-db CC0-1.0, Python 3.12 (PSF-2.0) and packages under lib/"
+    },
+    {
+     "component": "openxc7-chipdb-xc7a100t",
+     "name": "openXC7 chip database for xc7a100t (Nexys A7-100T, xc7a100tcsg324)",
+     "version": "2026-09-25",
+     "license": "CC0-1.0",
+     "licenseAsRecorded": "Derived from prjxray-db (CC0-1.0) by nextpnr-xilinx (ISC) tooling"
+    }
+   ],
+   "ossCadSuiteToolsWithSourceRequired": [
+    {
+     "tool": "black-iceprog",
+     "licenses": [
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/jpenalbae/black-iceprog",
+       "revision": "8b6667d1cdc3344c5c51ddbe7c2f80a132518491",
+       "source": "oss-black-iceprog"
+      }
+     ]
+    },
+    {
+     "tool": "dfu-util",
+     "licenses": [
+      "GPL-2.0"
+     ],
+     "sources": [
+      {
+       "url": "https://git.code.sf.net/p/dfu-util/dfu-util",
+       "revision": "f9a537c93935d9d536b5ea29b54a226160b2b111",
+       "source": "oss-dfu-util"
+      }
+     ]
+    },
+    {
+     "tool": "ghdl",
+     "licenses": [
+      "GPL-2.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/ghdl/ghdl",
+       "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+       "source": "ghdl-6.0.0"
+      }
+     ]
+    },
+    {
+     "tool": "ghdl-yosys-plugin",
+     "licenses": [
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/ghdl/ghdl-yosys-plugin",
+       "revision": "07a30ed39fb6a078f1bf7e9e88ce9ed712380ec2",
+       "source": "oss-ghdl-yosys-plugin"
+      }
+     ]
+    },
+    {
+     "tool": "graphviz",
+     "licenses": [
+      "EPL-1.0"
+     ],
+     "sources": [
+      {
+       "url": "https://gitlab.com/graphviz/graphviz",
+       "revision": "da4c2ec6f24ca1b6d1752c6b5bc4389e55682147",
+       "source": "oss-graphviz"
+      }
+     ]
+    },
+    {
+     "tool": "gtkwave",
+     "licenses": [
+      "GPL-2.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/gtkwave/gtkwave",
+       "revision": "10cfae614ed8be80b5bb64e8c2194e7dffcd297a",
+       "source": "oss-gtkwave"
+      }
+     ]
+    },
+    {
+     "tool": "icefunprog",
+     "licenses": [
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/pitrz/icefunprog",
+       "revision": "99e6abc7c0da18090730dff6eb264ac3c1cc7fd5",
+       "source": "oss-icefunprog"
+      }
+     ]
+    },
+    {
+     "tool": "iverilog",
+     "licenses": [
+      "GPL-2.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/steveicarus/iverilog",
+       "revision": "6767a079560f4528f4beeae82fb33361eb4bc92a",
+       "source": "oss-iverilog"
+      }
+     ]
+    },
+    {
+     "tool": "libftdi",
+     "licenses": [
+      "LGPL-2.0",
+      "GPL-2.0"
+     ],
+     "sources": [
+      {
+       "url": "git://developer.intra2net.com/libftdi",
+       "revision": "5c2c58e03ea999534e8cb64906c8ae8b15536c30",
+       "source": "oss-libftdi"
+      }
+     ]
+    },
+    {
+     "tool": "libpoly",
+     "licenses": [
+      "LGPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/SRI-CSL/libpoly",
+       "revision": "1383809f2aa5005ef20110fec84b66959518f697",
+       "source": "oss-libpoly"
+      }
+     ]
+    },
+    {
+     "tool": "libusb",
+     "licenses": [
+      "LGPL-2.1"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/libusb/libusb",
+       "revision": "c6a35c56016ea2ab2f19115d2ea1e85e0edae155",
+       "source": "oss-libusb"
+      }
+     ]
+    },
+    {
+     "tool": "openocd",
+     "licenses": [
+      "GPL-2.0"
+     ],
+     "sources": [
+      {
+       "url": "https://repo.or.cz/openocd.git",
+       "revision": "b6ee13720688a9860f3397bb89ea171b0fc5ccce",
+       "source": "oss-openocd"
+      }
+     ]
+    },
+    {
+     "tool": "surfer",
+     "licenses": [
+      "EUPL-1.2"
+     ],
+     "sources": [
+      {
+       "url": "https://gitlab.com/surfer-project/surfer",
+       "revision": "0ab7f4722be9cb0420494609d58d813def7d4319",
+       "source": "oss-surfer-darwin"
+      }
+     ]
+    },
+    {
+     "tool": "tinyfpgab",
+     "licenses": [
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/tinyfpga/TinyFPGA-B-Series",
+       "revision": "e8f915033f7a941647ca5f884e80086a8e68282d",
+       "source": "oss-tinyfpgab"
+      }
+     ]
+    },
+    {
+     "tool": "tinyprog",
+     "licenses": [
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/tinyfpga/TinyFPGA-Bootloader",
+       "revision": "97f6353540bf7c0d27f5612f202b48f41da75299",
+       "source": "oss-tinyprog"
+      }
+     ]
+    },
+    {
+     "tool": "verilator",
+     "licenses": [
+      "LGPL-3.0",
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/verilator/verilator",
+       "revision": "3b328d2bb661284165cc155adf211718aefbdc2a",
+       "source": "oss-verilator"
+      }
+     ]
+    },
+    {
+     "tool": "xdot",
+     "licenses": [
+      "LGPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/jrfonseca/xdot.py",
+       "revision": "6248c81c21a0fe825089311b17f2c302eea614a2",
+       "source": "oss-xdot"
+      }
+     ]
+    },
+    {
+     "tool": "yices",
+     "licenses": [
+      "GPL-3.0"
+     ],
+     "sources": [
+      {
+       "url": "https://github.com/SRI-CSL/yices2",
+       "revision": "016a6243de768046f4fba6f88a8659ce1a18d261",
+       "source": "oss-yices"
+      }
+     ]
+    }
+   ],
+   "nativeLibraries": [
+    {
+     "id": "ocs-macports-atk",
+     "version": "2.38.0",
+     "licenses": [
+      "LGPL-2.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-atk-2.38.0.tar.xz",
+       "upstream": "https://distfiles.macports.org/atk/atk-2.38.0.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/atk--atk-2.38.0.tar.xz",
+         "sha256": "ac4de2a4ef4bd5665052952fe169657e65e895c5057dffb3c2a810f6191a0c36",
+         "size": 303952
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-atk-dbdd9e59fb7d",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "dbdd9e59fb7d01d64d6f0535cf751860db8eab35",
+       "archives": [
+        {
+         "file": "sources/macports-port-atk-dbdd9e59fb7d.tar.gz",
+         "sha256": "7117d2a87415dab46072eefe6afd01833933b24d3bdfa917e93293b9ee12e4e7",
+         "size": 1130,
+         "commit": "dbdd9e59fb7d01d64d6f0535cf751860db8eab35"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "atk-2.38.0_1.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-boost176",
+     "version": "1.76.0",
+     "licenses": [
+      "BSL-1.0"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "boost176-1.76.0_10+no_single.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-brotli",
+     "version": "1.1.0",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "brotli-1.1.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-bzip2",
+     "version": "1.0.8",
+     "licenses": [
+      "bzip2-1.0.6"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "bzip2-1.0.8_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-cairo",
+     "version": "1.17.6",
+     "licenses": [
+      "LGPL-2.1-only",
+      "MPL-1.1"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-cairo-1.17.6.tar.xz",
+       "upstream": "https://distfiles.macports.org/cairo/cairo-1.17.6.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/cairo--cairo-1.17.6.tar.xz",
+         "sha256": "4eebc4c2bad0402bc3f501db184417094657d111fb6c06f076a82ea191fe1faf",
+         "size": 35055900
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-cairo-bb144e56ff42",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "bb144e56ff42da8c74cc12508cb458e744e08903",
+       "archives": [
+        {
+         "file": "sources/macports-port-cairo-bb144e56ff42.tar.gz",
+         "sha256": "5807503f68653afecec4a76dd32a02e181b3eb1d437d4ad0a793b449c4277ef6",
+         "size": 3501,
+         "commit": "bb144e56ff42da8c74cc12508cb458e744e08903"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "cairo-1.17.6_1+quartz.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-expat",
+     "version": "2.5.0",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "expat-2.5.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-fontconfig",
+     "version": "2.15.0",
+     "licenses": [
+      "LicenseRef-fontconfig"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "fontconfig-2.15.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-freetype",
+     "version": "2.13.2",
+     "licenses": [
+      "FTL",
+      "GPL-2.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "freetype-2.13.2_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-fribidi",
+     "version": "1.0.13",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-fribidi-1.0.13.tar.xz",
+       "upstream": "https://distfiles.macports.org/fribidi/fribidi-1.0.13.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/fribidi--fribidi-1.0.13.tar.xz",
+         "sha256": "7fa16c80c81bd622f7b198d31356da139cc318a63fc7761217af4130903f54a2",
+         "size": 1170100
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-fribidi-515d438c57b9",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "515d438c57b94a1b130602c8606f4981f69edf8c",
+       "archives": [
+        {
+         "file": "sources/macports-port-fribidi-515d438c57b9.tar.gz",
+         "sha256": "44efea4b2ceabe35a5cfa325f5faa13578cd989d1edd038c17fcf476ae5eb53e",
+         "size": 1333,
+         "commit": "515d438c57b94a1b130602c8606f4981f69edf8c"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "fribidi-1.0.13_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gdbm",
+     "version": "1.23",
+     "licenses": [
+      "GPL-3.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gdbm-1.23.tar.gz",
+       "upstream": "https://distfiles.macports.org/gdbm/gdbm-1.23.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gdbm--gdbm-1.23.tar.gz",
+         "sha256": "74b1081d21fff13ae4bd7c16e5d6e504a4c26f7cde1dca0d963a484174bbcacd",
+         "size": 1115854
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gdbm-c6951fd11cdb",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "c6951fd11cdb43493d04ac24dba0fd10f8b4daa9",
+       "archives": [
+        {
+         "file": "sources/macports-port-gdbm-c6951fd11cdb.tar.gz",
+         "sha256": "da580be28462b97db251a30170e7e2af26855eb5d5cf943d20bf255e2ccb7c97",
+         "size": 1643,
+         "commit": "c6951fd11cdb43493d04ac24dba0fd10f8b4daa9"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gdbm-1.23_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gdk-pixbuf2",
+     "version": "2.42.10",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gdk-pixbuf-2.42.10.tar.xz",
+       "upstream": "https://distfiles.macports.org/gdk-pixbuf2/gdk-pixbuf-2.42.10.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gdk-pixbuf2--gdk-pixbuf-2.42.10.tar.xz",
+         "sha256": "ee9b6c75d13ba096907a2e3c6b27b61bcd17f5c7ebeab5a5b439d2f2e39fe44b",
+         "size": 6519776
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gdk-pixbuf2-d487547d1205",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "d487547d1205a10498fd68fd8dbaf6d7722fe929",
+       "archives": [
+        {
+         "file": "sources/macports-port-gdk-pixbuf2-d487547d1205.tar.gz",
+         "sha256": "a9948975f7dc6444e3cf3cc00eefc1b20cf11a9867894114f80d8fd232847516",
+         "size": 2300,
+         "commit": "d487547d1205a10498fd68fd8dbaf6d7722fe929"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gdk-pixbuf2-2.42.10_1.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gettext-runtime",
+     "version": "0.21.1",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gettext-0.21.1.tar.gz",
+       "upstream": "https://distfiles.macports.org/gettext/gettext-0.21.1.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gettext--gettext-0.21.1.tar.gz",
+         "sha256": "e8c3650e1d8cee875c4f355642382c1df83058bd5a11ee8555c0cf276d646d45",
+         "size": 25248473
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gettext-30239928d683",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "30239928d68396b097e79aa4acb70094870832af",
+       "archives": [
+        {
+         "file": "sources/macports-port-gettext-30239928d683.tar.gz",
+         "sha256": "d1e6a3cda9e1f3f2e62aa6fa1b5971c54e84c0b378713e24733fecd6a8d39238",
+         "size": 2838,
+         "commit": "30239928d68396b097e79aa4acb70094870832af"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gettext-runtime-0.21.1_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-glib2",
+     "version": "2.78.3",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-glib-2.78.3.tar.xz",
+       "upstream": "https://distfiles.macports.org/glib2/glib-2.78.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/glib2--glib-2.78.3.tar.xz",
+         "sha256": "609801dd373796e515972bf95fc0b2daa44545481ee2f465c4f204d224b2bc21",
+         "size": 5321388
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-glib2-69c4cab16d1b",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "69c4cab16d1b8f1e7ab06d95557bfb3de7185904",
+       "archives": [
+        {
+         "file": "sources/macports-port-glib2-69c4cab16d1b.tar.gz",
+         "sha256": "c66a7b84448ced18e6b6d84c43114a7b86d7767ff6858082bbab68e2390af67e",
+         "size": 12213,
+         "commit": "69c4cab16d1b8f1e7ab06d95557bfb3de7185904"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "glib2-2.78.3_1+quartz.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gmp",
+     "version": "6.3.0",
+     "licenses": [
+      "LGPL-3.0-or-later",
+      "GPL-2.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gmp-6.3.0.tar.bz2",
+       "upstream": "https://distfiles.macports.org/gmp/gmp-6.3.0.tar.bz2",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gmp--gmp-6.3.0.tar.bz2",
+         "sha256": "ac28211a7cfb609bae2e2c8d6058d66c8fe96434f740cf6fe2e47b000d1c20cb",
+         "size": 2643888
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gmp-833eca2a8455",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "833eca2a8455dbabb9c527dc42990cb30330e68a",
+       "archives": [
+        {
+         "file": "sources/macports-port-gmp-833eca2a8455.tar.gz",
+         "sha256": "2223fb00ff33c8bcfbc5fc42779bd9c837be12d54e586523d4dd5ab2af7ebddf",
+         "size": 2661,
+         "commit": "833eca2a8455dbabb9c527dc42990cb30330e68a"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gmp-6.3.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gobject-introspection",
+     "version": "1.78.1",
+     "licenses": [
+      "LGPL-2.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gobject-introspection-1.78.1.tar.xz",
+       "upstream": "https://distfiles.macports.org/gobject-introspection/gobject-introspection-1.78.1.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gobject-introspection--gobject-introspection-1.78.1.tar.xz",
+         "sha256": "bd7babd99af7258e76819e45ba4a6bc399608fe762d83fde3cac033c50841bb4",
+         "size": 1060296
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gobject-introspection-c639ea597d70",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "c639ea597d705c17e0e7c8d0f30d69988a05ab22",
+       "archives": [
+        {
+         "file": "sources/macports-port-gobject-introspection-c639ea597d70.tar.gz",
+         "sha256": "12d988dfaf1d278b9642d4fa8b45f497d7561f29f473ff35e39588eb47240edd",
+         "size": 4370,
+         "commit": "c639ea597d705c17e0e7c8d0f30d69988a05ab22"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gobject-introspection-1.78.1_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-graphite2",
+     "version": "1.3.14",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-graphite2-1.3.14.tgz",
+       "upstream": "https://distfiles.macports.org/graphite2/graphite2-1.3.14.tgz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/graphite2--graphite2-1.3.14.tgz",
+         "sha256": "f99d1c13aa5fa296898a181dff9b82fb25f6cc0933dbaa7a475d8109bd54209d",
+         "size": 6630061
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-graphite2-967d1f217e27",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "967d1f217e27eb1f52a4e6904a030e12953b29a4",
+       "archives": [
+        {
+         "file": "sources/macports-port-graphite2-967d1f217e27.tar.gz",
+         "sha256": "4a9cd2ae0160dd0df07cde31a4eb4fe45bd12c3540dd5392f02be68ccb21c911",
+         "size": 972,
+         "commit": "967d1f217e27eb1f52a4e6904a030e12953b29a4"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "graphite2-1.3.14_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gtk-osx-application-gtk3",
+     "version": "3.0.1",
+     "licenses": [
+      "LGPL-2.1-only"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gtk-mac-integration-3.0.1.tar.xz",
+       "upstream": "https://distfiles.macports.org/gtk-osx-application/gtk-mac-integration-3.0.1.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gtk-osx-application--gtk-mac-integration-3.0.1.tar.xz",
+         "sha256": "f19e35bc4534963127bbe629b9b3ccb9677ef012fc7f8e97fd5e890873ceb22d",
+         "size": 349228
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gtk-osx-application-44838d98745f",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "44838d98745f3e6e0495db29aaba84c2cb43d589",
+       "archives": [
+        {
+         "file": "sources/macports-port-gtk-osx-application-44838d98745f.tar.gz",
+         "sha256": "4631d8ac955453140eaebb30ed6e27c7be004384e085817c2127b932578e153c",
+         "size": 2310,
+         "commit": "44838d98745f3e6e0495db29aaba84c2cb43d589"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gtk-osx-application-gtk3-3.0.1_2.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-gtk3",
+     "version": "3.24.38",
+     "licenses": [
+      "LGPL-2.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-gtk+-3.24.38.tar.xz",
+       "upstream": "https://distfiles.macports.org/gtk3/gtk+-3.24.38.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/gtk3--gtk+-3.24.38.tar.xz",
+         "sha256": "ce11decf018b25bdd8505544a4f87242854ec88be054d9ade5f3a20444dd8ee7",
+         "size": 12398104
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-gtk3-0c8486132d77",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "0c8486132d7745abed29490ffcaaf7172d966e3c",
+       "archives": [
+        {
+         "file": "sources/macports-port-gtk3-0c8486132d77.tar.gz",
+         "sha256": "b423571d4bc8dfbe16a99f019b765e21fe1a9571ef74cbabf57d6893c11d7d40",
+         "size": 5163,
+         "commit": "0c8486132d7745abed29490ffcaaf7172d966e3c"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "gtk3-3.24.38_0+quartz.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-harfbuzz",
+     "version": "8.3.0",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "harfbuzz-8.3.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-hidapi",
+     "version": "0.12.0",
+     "licenses": [
+      "GPL-3.0-only",
+      "BSD-3-Clause",
+      "LicenseRef-HIDAPI"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "hidapi-0.12.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-icu",
+     "version": "74.1",
+     "licenses": [
+      "Unicode-3.0"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "icu-74.1_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-lerc",
+     "version": "4.0.0",
+     "licenses": [
+      "Apache-2.0"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-lerc-4.0.0.tar.gz",
+       "upstream": "https://distfiles.macports.org/lerc/lerc-4.0.0.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/lerc--lerc-4.0.0.tar.gz",
+         "sha256": "91431c2b16d0e3de6cbaea188603359f87caed08259a645fd5a3805784ee30a0",
+         "size": 4710408
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-lerc-943f85650255",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "943f85650255e79d5da4c03864b000e29f6c2653",
+       "archives": [
+        {
+         "file": "sources/macports-port-lerc-943f85650255.tar.gz",
+         "sha256": "17cbf414f9490826a0d27674f0aeba5ed3475ad8d98f16bd8378e15e70874ce7",
+         "size": 1331,
+         "commit": "943f85650255e79d5da4c03864b000e29f6c2653"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "lerc-4.0.0_1.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libdeflate",
+     "version": "1.19",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "libdeflate-1.19_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libepoxy",
+     "version": "1.5.10",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "libepoxy-1.5.10_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libffi",
+     "version": "3.4.4",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "libffi-3.4.4_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libftdi1",
+     "version": "1.5",
+     "licenses": [
+      "LGPL-2.0-only"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-libftdi1-1.5.tar.bz2",
+       "upstream": "https://distfiles.macports.org/libftdi/libftdi1-1.5.tar.bz2",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/libftdi--libftdi1-1.5.tar.bz2",
+         "sha256": "7c7091e9c86196148bd41177b4590dccb1510bfe6cea5bf7407ff194482eb049",
+         "size": 116297
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-libftdi-3bdf7f45e366",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "3bdf7f45e366506775548eeab8a5a4b259f23bd9",
+       "archives": [
+        {
+         "file": "sources/macports-port-libftdi-3bdf7f45e366.tar.gz",
+         "sha256": "7944a615c7f2f13c9dbdc9bed4fec34dca1aed9df18816df388fa8507bded56f",
+         "size": 1246,
+         "commit": "3bdf7f45e366506775548eeab8a5a4b259f23bd9"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "libftdi1-1.5_2.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libiconv",
+     "version": "1.17",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-libiconv-1.17.tar.gz",
+       "upstream": "https://distfiles.macports.org/libiconv/libiconv-1.17.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/libiconv--libiconv-1.17.tar.gz",
+         "sha256": "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313",
+         "size": 5413283
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-libiconv-4aac31a17a1d",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "4aac31a17a1da3aa5a776d48862980724aacb399",
+       "archives": [
+        {
+         "file": "sources/macports-port-libiconv-4aac31a17a1d.tar.gz",
+         "sha256": "cc68e973db0bd1ed1e14bac44ec9ff67a9e7d5f371d4cfec4615d2b21d7dcb08",
+         "size": 21429,
+         "commit": "4aac31a17a1da3aa5a776d48862980724aacb399"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "libiconv-1.17_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libjpeg-turbo",
+     "version": "2.1.5.1",
+     "licenses": [
+      "IJG",
+      "BSD-3-Clause",
+      "Zlib"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "libjpeg-turbo-2.1.5.1_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libpixman",
+     "version": "0.42.2",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "libpixman-0.42.2_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libpng",
+     "version": "1.6.40",
+     "licenses": [
+      "Libpng"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "libpng-1.6.40_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-libusb",
+     "version": "1.0.26",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-libusb-1.0.26.tar.gz",
+       "upstream": "https://distfiles.macports.org/libusb/libusb-1.0.26.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/libusb--libusb-1.0.26.tar.gz",
+         "sha256": "6e5fd904275b12ba5e9fcd4ffb1366028f410e632401dfb11703123a5cc2a1f2",
+         "size": 383960
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-libusb-6b3c05d3a37d",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392",
+       "archives": [
+        {
+         "file": "sources/macports-port-libusb-6b3c05d3a37d.tar.gz",
+         "sha256": "18b371927b2daf2275809f40bae6158a14d9ec97dabc605c1e4d4aceccf91d79",
+         "size": 1527,
+         "commit": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "libusb-1.0.26_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-ncurses",
+     "version": "6.4",
+     "licenses": [
+      "X11"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "ncurses-6.4_1.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-openssl3",
+     "version": "3.2.0",
+     "licenses": [
+      "Apache-2.0"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "openssl3-3.2.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-ossp-uuid",
+     "version": "1.6.2",
+     "licenses": [
+      "LicenseRef-OSSP-uuid-MIT-style"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "ossp-uuid-1.6.2_13+perl5_34.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-pango",
+     "version": "1.50.14",
+     "licenses": [
+      "LGPL-2.0-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-pango-1.50.14.tar.xz",
+       "upstream": "https://distfiles.macports.org/pango/pango-1.50.14.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/pango--pango-1.50.14.tar.xz",
+         "sha256": "1d67f205bfc318c27a29cfdfb6828568df566795df0cb51d2189cde7f2d581e8",
+         "size": 4273776
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-pango-2dc9caa772eb",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "2dc9caa772eb6daffce44edf57f55ae49da8802b",
+       "archives": [
+        {
+         "file": "sources/macports-port-pango-2dc9caa772eb.tar.gz",
+         "sha256": "a987612cb3caa57827a25adf9cc0246c57f97e0710fcafcaf545067b648a7679",
+         "size": 2351,
+         "commit": "2dc9caa772eb6daffce44edf57f55ae49da8802b"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "pango-1.50.14_0+quartz.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-pcre2",
+     "version": "10.42",
+     "licenses": [
+      "BSD-3-Clause WITH PCRE2-exception"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "pcre2-10.42_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-readline",
+     "version": "8.2.001",
+     "licenses": [
+      "GPL-3.0-or-later"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "macports-distfile-readline82-001",
+       "upstream": "https://distfiles.macports.org/readline/readline82-001",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/readline--readline82-001",
+         "sha256": "bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7",
+         "size": 1198
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-distfile-readline-8.2.tar.gz",
+       "upstream": "https://distfiles.macports.org/readline/readline-8.2.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/readline--readline-8.2.tar.gz",
+         "sha256": "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35",
+         "size": 3043952
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-readline-556ec864a7d9",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "556ec864a7d91fb89eb261b7ed380098e2c308dc",
+       "archives": [
+        {
+         "file": "sources/macports-port-readline-556ec864a7d9.tar.gz",
+         "sha256": "1b29eceff876048e36fa9459049e92f1e4dde49374523a37264fd5db8c45a11c",
+         "size": 1530,
+         "commit": "556ec864a7d91fb89eb261b7ed380098e2c308dc"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "readline-8.2.001_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-realpath",
+     "version": "1.0.2",
+     "licenses": [
+      "BSD-2-Clause"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "realpath-1.0.2_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-sqlite3",
+     "version": "3.44.2",
+     "licenses": [
+      "blessing"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "sqlite3-3.44.2_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-tcl",
+     "version": "8.6.13",
+     "licenses": [
+      "TCL"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "tcl-8.6.13_0+corefoundation+threads.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-tiff",
+     "version": "4.6.0",
+     "licenses": [
+      "libtiff"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "tiff-4.6.0_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-tk",
+     "version": "8.6.13",
+     "licenses": [
+      "TCL"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "tk-8.6.13_2+quartz.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-xz",
+     "version": "5.4.5",
+     "licenses": [
+      "LicenseRef-public-domain"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "xz-5.4.5_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-zlib",
+     "version": "1.3",
+     "licenses": [
+      "Zlib"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "zlib-1.3_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-macports-zstd",
+     "version": "1.5.5",
+     "licenses": [
+      "BSD-3-Clause",
+      "GPL-2.0-only"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate .dylib/.so files in apio/packages/oss-cad-suite/lib, loaded through @executable_path/@rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "zstd-1.5.5_0.darwin_21.arm64.tbz2"
+    },
+    {
+     "id": "ocs-qt-5.15.3",
+     "version": "5.15.3",
+     "licenses": [
+      "LGPL-3.0-only",
+      "GPL-2.0-only",
+      "GPL-3.0-only"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate Qt frameworks (Frameworks/*.framework) and plugins (lib/qt5/plugins), replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "qt-5.15.3-qtactiveqt",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtactiveqt-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtactiveqt-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "c82a9269b32682598bf60e5d884b3ea23371d292a79c7f9ceaf141373b270d0b",
+         "size": 268404
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtandroidextras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtandroidextras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtandroidextras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "7406af8574ce5f23ec6f7c3ce27efc98ef1f8f6c6a9577febe0460cf83219192",
+         "size": 276256
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtbase",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtbase-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtbase-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "26394ec9375d52c1592bd7b689b1619c6b8dbe9b6f91fdd5c355589787f3a0b6",
+         "size": 50204364
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtcharts",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtcharts-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtcharts-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "accf85cda64641d42f4cba098741c8b9df38f7de606a38c8663d754bb61623af",
+         "size": 4252036
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtcoap",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtcoap-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtcoap-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5dbe8b54b625837a0bf0252f3bbfa56054c219ff02c16a09257c02b6eaceb3cd",
+         "size": 173992
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtconnectivity",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtconnectivity-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtconnectivity-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "f17fda1dac3248be2800af05ac0e2493920e63b61732050aed199bfd41f265c1",
+         "size": 2815220
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtdatavis3d",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtdatavis3d-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtdatavis3d-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "d7123fb7239d6512240efcd31ad5e288420be858bc8322f86fc70be16e46aad8",
+         "size": 5191636
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtdeclarative",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtdeclarative-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtdeclarative-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "33f15a5caa451bddf8298466442ccf7ca65e4cf90453928ddbb95216c4374062",
+         "size": 21567896
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtdoc",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtdoc-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtdoc-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2ef04bade2ea964a59f7326ffd08d863fdcfeaea94b104ebf2dae33a1e791043",
+         "size": 5746620
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtgamepad",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtgamepad-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtgamepad-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "debdbff30f9bc9d2e65ab3b8dede9a2a0688ecffda394b30d481f32911fd0c3f",
+         "size": 387112
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtgraphicaleffects",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtgraphicaleffects-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtgraphicaleffects-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "e24e855f202bb24b4f8ea9df504e24f451a5af49875a18cf324faf5f1e628f6b",
+         "size": 14040888
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtimageformats",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtimageformats-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtimageformats-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "747619890cf129d1d98a6e3d157e689c6c2a723e724a41d738012a542a54e222",
+         "size": 1811496
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtknx",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtknx-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtknx-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "7964e3b23973e3893a357369f55df1a86275c6ec1cb67b8e49f6e2c756788f8d",
+         "size": 691256
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtlocation",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtlocation-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtlocation-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "a69f28ccfd4ef8e69e0131b178d41d71264be836f2f55bd29731e908a22c6bbd",
+         "size": 6556680
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtlottie",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtlottie-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtlottie-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "dae5a5e650c831a36b342b43863677673ec37fa7dc2f4acc51b4d30ca1cc1490",
+         "size": 82432
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtmacextras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtmacextras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtmacextras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "9b4d040c7b36c0aa8e3c58f7384fc12ceb2bf7fe2ff6a365dc87c3f1528ad887",
+         "size": 69492
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtmqtt",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtmqtt-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtmqtt-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "b086ec5f8be776e1d88ace6e716498fa475975570c500570db62903b814ed05b",
+         "size": 219624
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtmultimedia",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtmultimedia-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtmultimedia-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2ebaa33720b808aa074fd15b9de506c1e89b670b39c7d4b62cb859e70ce606f0",
+         "size": 3828384
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtnetworkauth",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtnetworkauth-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtnetworkauth-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "fb9e6da60251dd04147006ad747f0d046f20677023f978c42cc7776150bee522",
+         "size": 141748
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtopcua",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtopcua-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtopcua-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "4a484a27f17b7c8189d05189e39784c0af8beb32bf59b9a3a7114786cf96cbde",
+         "size": 840188
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtpurchasing",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtpurchasing-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtpurchasing-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "0bfa41370c5fa22410625181bf4443c1534414e329ef48c9ee54c2c4e19ac2f4",
+         "size": 208772
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquick3d",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquick3d-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquick3d-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "236a5645957d28b9980410bf7c3875f8de19d54a8f3916af6d5685fe3a08cead",
+         "size": 55738508
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquickcontrols2",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquickcontrols2-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquickcontrols2-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "3b95e9be58c3d918f4c4a805116459a403ae6c61e33edf71b319672c46af562f",
+         "size": 8286960
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquickcontrols",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquickcontrols-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquickcontrols-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "4034afce2e8afde4c4cb5e3be3ce240d00647fa0d292f4cd1ac4454ce40230f0",
+         "size": 5982868
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquicktimeline",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquicktimeline-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquicktimeline-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "9f2286314aeeccb7a095167e114c6e64593c9c748608149b7363f0034249e2cc",
+         "size": 102668
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtremoteobjects",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtremoteobjects-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtremoteobjects-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5e34ded55199659afc3c7746cedb536ef8bde384aac7b20a0936192e466b123c",
+         "size": 374700
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtscript",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtscript-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtscript-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "f0043815d74f7103fdb4520bf1be2060a4e21c1e0cde7dfa30760750cd40343c",
+         "size": 2663512
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtscxml",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtscxml-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtscxml-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5d03d4b90ef9266c97771b3c254ea01103b169ccb1b329a349beb90da0747c4e",
+         "size": 434432
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtsensors",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtsensors-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtsensors-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "4acbbb07fb1d782e1f6b092563ff227134ebb2746b6b5027aede28e3a117a59f",
+         "size": 2057388
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtserialbus",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtserialbus-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtserialbus-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "f8bfe4a7a7f685a123c76e8f9825e8f58677b4ba47b8c1eefc35db707ff89de5",
+         "size": 356520
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtserialport",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtserialport-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtserialport-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "a12974e758d58508776ea8371610808cb047375d515301aec80c1307d4dbae32",
+         "size": 321572
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtspeech",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtspeech-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtspeech-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "58a7cd3fcb5216f11684c7d87ba7571673297370ebe74cbffc2e211e534b852b",
+         "size": 101852
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtsvg",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtsvg-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtsvg-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "3adc41dfcc67bbe3b8ff553bdac30ee75e270745536a58e54cdb741fa0505d89",
+         "size": 1886104
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qttools",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qttools-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qttools-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "463b2fe71a085e7ab4e39333ae360ab0ec857b966d7a08f752c427e5df55f90d",
+         "size": 8896764
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qttranslations",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qttranslations-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qttranslations-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5d7869f670a135ad0986e266813b9dd5bbae2b09577338f9cdf8904d4af52db0",
+         "size": 1617284
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtvirtualkeyboard",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtvirtualkeyboard-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtvirtualkeyboard-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "7a77f897d8be87c05921caaf17b9e63e6f50e471de3276750d70f6fe22d06382",
+         "size": 10959776
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwayland",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwayland-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwayland-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "686ada6c5525bfa7f39aa37e2a811a381374c2c4137a7d9883a19ff24209240b",
+         "size": 565004
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebchannel",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebchannel-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebchannel-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2fa019ebd2fa6805ca3011540ffa7d294727316191794a1612b00129845302eb",
+         "size": 209116
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebglplugin",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebglplugin-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebglplugin-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "fc6751b408cbb861b292c1da1ff20f38b1be4a55e154a5046d49bcf4308d3820",
+         "size": 74160
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebsockets",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebsockets-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebsockets-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "97c9f6c537da79a2627dc1d1609e01182aaaa79e166c40be77cab27daed853d1",
+         "size": 259184
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebview",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebview-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebview-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "187ab063897255e792f9ef0de23205b1a1a7d439a6bb4702a2e17909a810d31d",
+         "size": 133700
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwinextras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwinextras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwinextras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "272cca5cab8c8dceb1ac1f78d017c66adcd196f5f6a4064b0778fe4c113743f2",
+         "size": 763968
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtx11extras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtx11extras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtx11extras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "a3a9b048da73bd944b407ee29ed9da9e009463329ca700c1452bc226715e3eb8",
+         "size": 143996
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtxmlpatterns",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtxmlpatterns-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtxmlpatterns-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "603398f3f9900b401a271231eebc68079d6c5844e968088832f9ee2819cc7fad",
+         "size": 5211100
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-tqtc-qt5",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/tqtc-qt5-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/tqtc-qt5-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2cd3cb3bea15c8b525ac4b47c60f608fbe20378483fcaa749bc6ce725a70bc8e",
+         "size": 1508388
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "mmicko-macos-resources-v3",
+       "upstream": "https://github.com/mmicko/macos-resources",
+       "revision": "364d180c8b3a1727a78f3db6f7a9d9c8034fee1e",
+       "archives": [
+        {
+         "file": "sources/mmicko-macos-resources-v3.tar.gz",
+         "sha256": "c6179fd7566029e7fadb0fb0223aef53db82b13f2f65cd86219600e598e2f66d",
+         "size": 6507,
+         "commit": "364d180c8b3a1727a78f3db6f7a9d9c8034fee1e"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "Qt5.15.3-arm64.tar.gz"
+    },
+    {
+     "id": "ocs-qt-5.15.3-gpl3-only-modules",
+     "version": "5.15.3",
+     "licenses": [
+      "GPL-3.0-only"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate Qt frameworks (Frameworks/*.framework) and plugins (lib/qt5/plugins), replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "qt-5.15.3-qtactiveqt",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtactiveqt-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtactiveqt-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "c82a9269b32682598bf60e5d884b3ea23371d292a79c7f9ceaf141373b270d0b",
+         "size": 268404
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtandroidextras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtandroidextras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtandroidextras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "7406af8574ce5f23ec6f7c3ce27efc98ef1f8f6c6a9577febe0460cf83219192",
+         "size": 276256
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtbase",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtbase-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtbase-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "26394ec9375d52c1592bd7b689b1619c6b8dbe9b6f91fdd5c355589787f3a0b6",
+         "size": 50204364
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtcharts",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtcharts-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtcharts-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "accf85cda64641d42f4cba098741c8b9df38f7de606a38c8663d754bb61623af",
+         "size": 4252036
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtcoap",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtcoap-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtcoap-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5dbe8b54b625837a0bf0252f3bbfa56054c219ff02c16a09257c02b6eaceb3cd",
+         "size": 173992
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtconnectivity",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtconnectivity-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtconnectivity-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "f17fda1dac3248be2800af05ac0e2493920e63b61732050aed199bfd41f265c1",
+         "size": 2815220
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtdatavis3d",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtdatavis3d-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtdatavis3d-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "d7123fb7239d6512240efcd31ad5e288420be858bc8322f86fc70be16e46aad8",
+         "size": 5191636
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtdeclarative",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtdeclarative-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtdeclarative-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "33f15a5caa451bddf8298466442ccf7ca65e4cf90453928ddbb95216c4374062",
+         "size": 21567896
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtdoc",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtdoc-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtdoc-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2ef04bade2ea964a59f7326ffd08d863fdcfeaea94b104ebf2dae33a1e791043",
+         "size": 5746620
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtgamepad",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtgamepad-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtgamepad-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "debdbff30f9bc9d2e65ab3b8dede9a2a0688ecffda394b30d481f32911fd0c3f",
+         "size": 387112
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtgraphicaleffects",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtgraphicaleffects-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtgraphicaleffects-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "e24e855f202bb24b4f8ea9df504e24f451a5af49875a18cf324faf5f1e628f6b",
+         "size": 14040888
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtimageformats",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtimageformats-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtimageformats-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "747619890cf129d1d98a6e3d157e689c6c2a723e724a41d738012a542a54e222",
+         "size": 1811496
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtknx",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtknx-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtknx-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "7964e3b23973e3893a357369f55df1a86275c6ec1cb67b8e49f6e2c756788f8d",
+         "size": 691256
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtlocation",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtlocation-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtlocation-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "a69f28ccfd4ef8e69e0131b178d41d71264be836f2f55bd29731e908a22c6bbd",
+         "size": 6556680
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtlottie",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtlottie-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtlottie-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "dae5a5e650c831a36b342b43863677673ec37fa7dc2f4acc51b4d30ca1cc1490",
+         "size": 82432
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtmacextras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtmacextras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtmacextras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "9b4d040c7b36c0aa8e3c58f7384fc12ceb2bf7fe2ff6a365dc87c3f1528ad887",
+         "size": 69492
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtmqtt",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtmqtt-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtmqtt-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "b086ec5f8be776e1d88ace6e716498fa475975570c500570db62903b814ed05b",
+         "size": 219624
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtmultimedia",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtmultimedia-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtmultimedia-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2ebaa33720b808aa074fd15b9de506c1e89b670b39c7d4b62cb859e70ce606f0",
+         "size": 3828384
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtnetworkauth",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtnetworkauth-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtnetworkauth-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "fb9e6da60251dd04147006ad747f0d046f20677023f978c42cc7776150bee522",
+         "size": 141748
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtopcua",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtopcua-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtopcua-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "4a484a27f17b7c8189d05189e39784c0af8beb32bf59b9a3a7114786cf96cbde",
+         "size": 840188
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtpurchasing",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtpurchasing-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtpurchasing-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "0bfa41370c5fa22410625181bf4443c1534414e329ef48c9ee54c2c4e19ac2f4",
+         "size": 208772
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquick3d",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquick3d-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquick3d-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "236a5645957d28b9980410bf7c3875f8de19d54a8f3916af6d5685fe3a08cead",
+         "size": 55738508
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquickcontrols2",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquickcontrols2-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquickcontrols2-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "3b95e9be58c3d918f4c4a805116459a403ae6c61e33edf71b319672c46af562f",
+         "size": 8286960
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquickcontrols",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquickcontrols-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquickcontrols-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "4034afce2e8afde4c4cb5e3be3ce240d00647fa0d292f4cd1ac4454ce40230f0",
+         "size": 5982868
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtquicktimeline",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtquicktimeline-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtquicktimeline-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "9f2286314aeeccb7a095167e114c6e64593c9c748608149b7363f0034249e2cc",
+         "size": 102668
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtremoteobjects",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtremoteobjects-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtremoteobjects-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5e34ded55199659afc3c7746cedb536ef8bde384aac7b20a0936192e466b123c",
+         "size": 374700
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtscript",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtscript-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtscript-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "f0043815d74f7103fdb4520bf1be2060a4e21c1e0cde7dfa30760750cd40343c",
+         "size": 2663512
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtscxml",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtscxml-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtscxml-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5d03d4b90ef9266c97771b3c254ea01103b169ccb1b329a349beb90da0747c4e",
+         "size": 434432
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtsensors",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtsensors-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtsensors-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "4acbbb07fb1d782e1f6b092563ff227134ebb2746b6b5027aede28e3a117a59f",
+         "size": 2057388
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtserialbus",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtserialbus-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtserialbus-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "f8bfe4a7a7f685a123c76e8f9825e8f58677b4ba47b8c1eefc35db707ff89de5",
+         "size": 356520
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtserialport",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtserialport-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtserialport-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "a12974e758d58508776ea8371610808cb047375d515301aec80c1307d4dbae32",
+         "size": 321572
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtspeech",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtspeech-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtspeech-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "58a7cd3fcb5216f11684c7d87ba7571673297370ebe74cbffc2e211e534b852b",
+         "size": 101852
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtsvg",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtsvg-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtsvg-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "3adc41dfcc67bbe3b8ff553bdac30ee75e270745536a58e54cdb741fa0505d89",
+         "size": 1886104
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qttools",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qttools-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qttools-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "463b2fe71a085e7ab4e39333ae360ab0ec857b966d7a08f752c427e5df55f90d",
+         "size": 8896764
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qttranslations",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qttranslations-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qttranslations-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "5d7869f670a135ad0986e266813b9dd5bbae2b09577338f9cdf8904d4af52db0",
+         "size": 1617284
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtvirtualkeyboard",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtvirtualkeyboard-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtvirtualkeyboard-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "7a77f897d8be87c05921caaf17b9e63e6f50e471de3276750d70f6fe22d06382",
+         "size": 10959776
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwayland",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwayland-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwayland-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "686ada6c5525bfa7f39aa37e2a811a381374c2c4137a7d9883a19ff24209240b",
+         "size": 565004
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebchannel",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebchannel-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebchannel-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2fa019ebd2fa6805ca3011540ffa7d294727316191794a1612b00129845302eb",
+         "size": 209116
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebglplugin",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebglplugin-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebglplugin-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "fc6751b408cbb861b292c1da1ff20f38b1be4a55e154a5046d49bcf4308d3820",
+         "size": 74160
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebsockets",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebsockets-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebsockets-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "97c9f6c537da79a2627dc1d1609e01182aaaa79e166c40be77cab27daed853d1",
+         "size": 259184
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwebview",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwebview-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwebview-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "187ab063897255e792f9ef0de23205b1a1a7d439a6bb4702a2e17909a810d31d",
+         "size": 133700
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtwinextras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtwinextras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtwinextras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "272cca5cab8c8dceb1ac1f78d017c66adcd196f5f6a4064b0778fe4c113743f2",
+         "size": 763968
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtx11extras",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtx11extras-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtx11extras-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "a3a9b048da73bd944b407ee29ed9da9e009463329ca700c1452bc226715e3eb8",
+         "size": 143996
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-qtxmlpatterns",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/qtxmlpatterns-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/qtxmlpatterns-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "603398f3f9900b401a271231eebc68079d6c5844e968088832f9ee2819cc7fad",
+         "size": 5211100
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "qt-5.15.3-tqtc-qt5",
+       "upstream": "https://download.qt.io/archive/qt/5.15/5.15.3/submodules/tqtc-qt5-everywhere-opensource-src-5.15.3.tar.xz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/tqtc-qt5-everywhere-opensource-src-5.15.3.tar.xz",
+         "sha256": "2cd3cb3bea15c8b525ac4b47c60f608fbe20378483fcaa749bc6ce725a70bc8e",
+         "size": 1508388
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "mmicko-macos-resources-v3",
+       "upstream": "https://github.com/mmicko/macos-resources",
+       "revision": "364d180c8b3a1727a78f3db6f7a9d9c8034fee1e",
+       "archives": [
+        {
+         "file": "sources/mmicko-macos-resources-v3.tar.gz",
+         "sha256": "c6179fd7566029e7fadb0fb0223aef53db82b13f2f65cd86219600e598e2f66d",
+         "size": 6507,
+         "commit": "364d180c8b3a1727a78f3db6f7a9d9c8034fee1e"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "Qt5.15.3-arm64.tar.gz"
+    },
+    {
+     "id": "ocs-yosyshq-pygobject",
+     "version": "3.46.0",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "C",
+     "linking": "Python extension modules (dynamic), loaded only by xdot",
+     "sources": [
+      {
+       "sourceId": "pypi-pygobject-3.46.0",
+       "upstream": "https://files.pythonhosted.org/packages/ac/4a/f24ddf1d20cc4b56affc7921e29928559a06c922eb60077448392792b914/PyGObject-3.46.0.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/PyGObject-3.46.0.tar.gz",
+         "sha256": "481437b05af0a66b7c366ea052710eb3aacbb979d22d30b797f7ec29347ab1e6",
+         "size": 723367
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "yosyshq-oss-cad-suite-build-2026-03-24",
+       "upstream": "https://github.com/YosysHQ/oss-cad-suite-build",
+       "revision": "ac8c7dba2517ce371959cd5d95cd9163a54c350d",
+       "archives": [
+        {
+         "file": "sources/yosyshq-oss-cad-suite-build-2026-03-24.tar.gz",
+         "sha256": "94093aadb7b0deb0f254198e9a2c240e36668d4d4b3bf0b303beb330e4c01529",
+         "size": 244952,
+         "commit": "ac8c7dba2517ce371959cd5d95cd9163a54c350d"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "yosyshq-build"
+    },
+    {
+     "id": "ocs-yosyshq-pycairo",
+     "version": "1.25.1",
+     "licenses": [
+      "LGPL-2.1-only",
+      "MPL-1.1"
+     ],
+     "usageClass": "C",
+     "linking": "Python extension module (dynamic), loaded only by xdot",
+     "sources": [
+      {
+       "sourceId": "pypi-pycairo-1.25.1",
+       "upstream": "https://files.pythonhosted.org/packages/c7/7c/de4d40316ee563e4f15a0f05f28c8458833fbef80c4588b9dd51f39b78ee/pycairo-1.25.1.tar.gz",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/pycairo-1.25.1.tar.gz",
+         "sha256": "7e2be4fbc3b4536f16db7a11982cbf713e75069a4d73d44fe5a49b68423f5c0c",
+         "size": 347088
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "yosyshq-build"
+    },
+    {
+     "id": "ocs-yosyshq-cpython-3.11",
+     "version": "3.11.6",
+     "licenses": [
+      "PSF-2.0"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic",
+     "sources": [],
+     "origin": "yosyshq-build"
+    },
+    {
+     "id": "ocs-yosyshq-gnat-runtime",
+     "version": "GCC/GNAT 14",
+     "licenses": [
+      "GPL-3.0-or-later WITH GCC-exception-3.1"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic",
+     "sources": [],
+     "origin": "yosyshq-build"
+    },
+    {
+     "id": "ocs-yosyshq-tools",
+     "version": "per tool",
+     "licenses": [
+      "LicenseRef-per-tool"
+     ],
+     "usageClass": "A",
+     "linking": "per tool",
+     "sources": [],
+     "origin": "yosyshq-build"
+    },
+    {
+     "id": "apio-libusb",
+     "version": "1.0.30",
+     "licenses": [
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "B",
+     "linking": "dynamic: separate _internal/libusb-1.0.dylib loaded through @rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "libusb-1.0.30",
+       "upstream": "https://github.com/libusb/libusb/releases/download/v1.0.30/libusb-1.0.30.tar.bz2",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/libusb-1.0.30.tar.bz2",
+         "sha256": "fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf",
+         "size": 656112
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "homebrew-core-libusb-formula-c1f707f5",
+       "upstream": "https://raw.githubusercontent.com/Homebrew/homebrew-core/c1f707f52ca844612e99e9174f2a917dc00181ee/Formula/lib/libusb.rb",
+       "revision": null,
+       "archives": [
+        {
+         "file": "sources/homebrew-core-c1f707f5-libusb.rb",
+         "sha256": "7d30d0241b09b4efe210fe50673b9896cbe1c9d8c0ae90ba156a69c2ed84f56e",
+         "size": 2021
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "homebrew-bottle"
+    },
+    {
+     "id": "apio-python-runtime",
+     "version": "Python 3.14.7, OpenSSL 3.5.7, zstd 1.5.7",
+     "licenses": [
+      "PSF-2.0",
+      "Apache-2.0",
+      "BSD-3-Clause"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic",
+     "sources": [],
+     "origin": "python.org-framework"
+    },
+    {
+     "id": "ox-libcxx",
+     "version": "LLVM 16.0.6",
+     "licenses": [
+      "Apache-2.0 WITH LLVM-exception"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-boost",
+     "version": "1.81.0",
+     "licenses": [
+      "BSL-1.0"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-antlr4-runtime",
+     "version": "4.9.3",
+     "licenses": [
+      "BSD-3-Clause"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-apple-libiconv",
+     "version": "99 (Apple libiconv; reports GNU-compatible 1.11)",
+     "licenses": [
+      "BSD-2-Clause",
+      "BSD-3-Clause"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [
+      {
+       "sourceId": "nixpkgs-574d1eac-recipes",
+       "upstream": "https://github.com/NixOS/nixpkgs",
+       "revision": "574d1eac1c200690e27b8eb4e24887f8df7ac27c",
+       "archives": [
+        {
+         "file": "sources/nixpkgs-574d1eac-recipes.tar.gz",
+         "sha256": "5b9118f15a4b867b46338ccf7d0a0dae24d171142e5e7535f3a2d6b0ef30b82b",
+         "size": 8552,
+         "commit": "574d1eac1c200690e27b8eb4e24887f8df7ac27c"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-python-3.12",
+     "version": "3.12.5",
+     "licenses": [
+      "PSF-2.0"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-bzip2",
+     "version": "1.0.8",
+     "licenses": [
+      "bzip2-1.0.6"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-libffi",
+     "version": "3.4.6",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-xz",
+     "version": "5.6.2",
+     "licenses": [
+      "0BSD"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-zlib",
+     "version": "1.3.1",
+     "licenses": [
+      "Zlib"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-zstd",
+     "version": "1.5.6",
+     "licenses": [
+      "BSD-3-Clause",
+      "GPL-2.0-only"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-fasm",
+     "version": "0.0.2.r98.g9a73d70 (openxc7/fasm 2f57ccb1)",
+     "licenses": [
+      "Apache-2.0"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-pyyaml",
+     "version": "6.0.1",
+     "licenses": [
+      "MIT"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-simplejson",
+     "version": "3.19.2",
+     "licenses": [
+      "MIT",
+      "AFL-2.1"
+     ],
+     "usageClass": "A",
+     "linking": "dynamic: separate .dylib in apio/packages/openxc7/lib, loaded through @rpath; replaceable by the recipient",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-eigen-compiled-in",
+     "version": "3.4.0 (+ upstream commit d0e3791b, nixpkgs include-dir.patch)",
+     "licenses": [
+      "MPL-2.0"
+     ],
+     "usageClass": "A",
+     "linking": "compiled in: header-only C++ templates instantiated into the executable",
+     "sources": [
+      {
+       "sourceId": "eigen-3.4.0",
+       "upstream": "https://gitlab.com/libeigen/eigen",
+       "revision": "3147391d946bb4b6c68edd901f2add6ac1f31f8c",
+       "archives": [
+        {
+         "file": "sources/eigen-3.4.0.tar.gz",
+         "sha256": "5bebff3c26ba16edc4232c88e7380f68fcea167e64c53bbb2ab4672b54682210",
+         "size": 2679031,
+         "commit": "3147391d946bb4b6c68edd901f2add6ac1f31f8c"
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "eigen-commit-d0e3791b",
+       "upstream": "https://gitlab.com/libeigen/eigen",
+       "revision": "d0e3791b1a0e2db9edd5f1d1befdb2ac5a40efe0",
+       "archives": [
+        {
+         "file": "sources/eigen-commit-d0e3791b.tar.gz",
+         "sha256": "430159cedbad99ddcf69b0d0f4daa5dbb17ac85243ed36ab68ccad69c07c6c1e",
+         "size": 2699031,
+         "commit": "d0e3791b1a0e2db9edd5f1d1befdb2ac5a40efe0"
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "nixpkgs-574d1eac-recipes",
+       "upstream": "https://github.com/NixOS/nixpkgs",
+       "revision": "574d1eac1c200690e27b8eb4e24887f8df7ac27c",
+       "archives": [
+        {
+         "file": "sources/nixpkgs-574d1eac-recipes.tar.gz",
+         "sha256": "5b9118f15a4b867b46338ccf7d0a0dae24d171142e5e7535f3a2d6b0ef30b82b",
+         "size": 8552,
+         "commit": "574d1eac1c200690e27b8eb4e24887f8df7ac27c"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ox-not-shipped",
+     "version": "readline 8.2p10, gdbm 1.24, ncurses 6.4, openssl 3.0.14, sqlite 3.46.0, expat 2.6.2, libyaml, libxcrypt 4.4.36",
+     "licenses": [
+      "GPL-3.0-or-later",
+      "MIT",
+      "Apache-2.0",
+      "blessing",
+      "LGPL-2.1-or-later"
+     ],
+     "usageClass": "C",
+     "linking": "referenced by shipped CPython extension modules only; the libraries are NOT in the package",
+     "sources": [],
+     "origin": "nixpkgs"
+    },
+    {
+     "id": "ocs-eigen-build-environment",
+     "version": "3.4.0",
+     "licenses": [
+      "MPL-2.0"
+     ],
+     "usageClass": "B",
+     "linking": "header-only; may be compiled into the oss-cad-suite nextpnr builds (no Eigen strings remain in them)",
+     "sources": [
+      {
+       "sourceId": "eigen-3.4.0",
+       "upstream": "https://gitlab.com/libeigen/eigen",
+       "revision": "3147391d946bb4b6c68edd901f2add6ac1f31f8c",
+       "archives": [
+        {
+         "file": "sources/eigen-3.4.0.tar.gz",
+         "sha256": "5bebff3c26ba16edc4232c88e7380f68fcea167e64c53bbb2ab4672b54682210",
+         "size": 2679031,
+         "commit": "3147391d946bb4b6c68edd901f2add6ac1f31f8c"
+        }
+       ],
+       "inExistingSourceZip": true
+      },
+      {
+       "sourceId": "macports-port-eigen3-53dd381abb03",
+       "upstream": "https://github.com/macports/macports-ports",
+       "revision": "53dd381abb03c180dab880977bc4aaa347b39118",
+       "archives": [
+        {
+         "file": "sources/macports-port-eigen3-53dd381abb03.tar.gz",
+         "sha256": "4716c9b1baf7bb282ce8e43e0a011ed8289078b0de57402c51b8a46867dc7cc4",
+         "size": 4763,
+         "commit": "53dd381abb03c180dab880977bc4aaa347b39118"
+        }
+       ],
+       "inExistingSourceZip": true
+      }
+     ],
+     "origin": "eigen3-3.4.0_1.any_any.noarch.tbz2"
+    }
+   ]
+  },
+  "lima-go-dependency-needing-source-pointer": {
+   "module": "github.com/hashicorp/hcl/v2",
+   "version": "v2.24.0",
+   "license": "MPL-2.0",
+   "programs": [
+    "guestagent-darwin",
+    "guestagent-linux",
+    "lima-driver-krunkit",
+    "limactl"
+   ],
+   "goModuleZip": "https://proxy.golang.org/github.com/hashicorp/hcl/v2/@v/v2.24.0.zip",
+   "zipSha256": "53fd4e96ac9c190e192759daf49b63397865214d337ab5f6dbf6e68c1b0f4810",
+   "goSum": "h1:2QJdZ454DSsYGoaE6QheQZjtKZSUs9Nh2izTWiwQxvE=",
+   "inExistingSourceZip": false
+  }
+ }
+}
