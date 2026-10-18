@@ -32,6 +32,8 @@ export class ScriptedUi implements SetupInteraction {
     rosetta: RosettaConsent | undefined = { method: 'apple-prompt' };
     files: { installerPath: string; devicePackagePath: string } | undefined;
     nexysArchive: string | undefined;
+    /** What the student picks for the DE10-Lite support file (production flow); undefined = Cancel. */
+    de10Archive: string | undefined;
     accept = true;
     offers: LicenseOffer[] = [];
     async chooseBoards(b: readonly { id: BoardSupportId; name: string; installed: boolean }[]) {
@@ -42,6 +44,10 @@ export class ScriptedUi implements SetupInteraction {
     async askNexysArchive() {
         this.questions.push('nexys-file');
         return this.nexysArchive;
+    }
+    async askDe10Archive() {
+        this.questions.push('de10-file');
+        return this.de10Archive;
     }
     async confirmInstall(s: InstallSummary) {
         this.summaries.push(s);
@@ -109,10 +115,12 @@ export interface RigOptions {
     readonly pinnedNexys: boolean;
     /** The DE10 tools come from a pinned archive instead of the development folder. */
     readonly de10Archive: boolean;
+    /** The DE10 support file is pinned (name, size, sha256) but NOT beside the extension, and there is no development payload: the student must pick it. */
+    readonly de10Picked: boolean;
 }
 
 export async function rig(t: TestContext, opts: Partial<RigOptions> = {}): Promise<Rig> {
-    const o: RigOptions = { legacyNexys: false, pinnedNexys: true, de10Archive: false, ...opts };
+    const o: RigOptions = { legacyNexys: false, pinnedNexys: true, de10Archive: false, de10Picked: false, ...opts };
     const f = await fixture(t, {}, { realEngine: true, shortRoot: true });
     const downloads = join(f.dir, 'Downloads');
     await mkdir(downloads);
@@ -131,7 +139,7 @@ export async function rig(t: TestContext, opts: Partial<RigOptions> = {}): Promi
     await mkdir(payloadDir);
     const nexysArchive = join(payloadDir, 'nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz');
     await cp(made.archive, nexysArchive);
-    const pins: Record<string, { file: string; sha256: string }> = {};
+    const pins: Record<string, { file: string; sha256: string; bytes?: number }> = {};
     if (o.pinnedNexys) pins['nexys-a7-100t'] = { file: 'nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz', sha256: sha(await import('node:fs/promises').then((x) => x.readFile(nexysArchive))) };
     if (o.de10Archive) {
         const tree = join(f.dir, 'de10-tree');
@@ -142,6 +150,18 @@ export async function rig(t: TestContext, opts: Partial<RigOptions> = {}): Promi
         await writeTarGz(tree, de10);
         pins['de10-lite'] = { file: 'mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz', sha256: sha(await import('node:fs/promises').then((x) => x.readFile(de10))) };
     }
+    let course: string | undefined;
+    if (o.de10Picked) {
+        const tree = join(f.dir, 'de10-tree-picked');
+        for (const u of f.ctx.expected.toolchain.units) await copyTree(f.sources[u.id]!, join(tree, u.path));
+        await writeFile(join(tree, 'manifest.json'), f.ctx.expected.text);
+        const dir = join(f.dir, 'course');
+        await mkdir(dir);
+        course = join(dir, 'mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz');
+        await writeTarGz(tree, course);
+        const bytes = await import('node:fs/promises').then((x) => x.readFile(course!));
+        pins['de10-lite'] = { file: 'mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz', sha256: sha(bytes), bytes: bytes.length };
+    }
     const legacyRoot = join(f.dir, 'old-home', 'Library', 'NexysVHDL');
     if (o.legacyNexys) await installToolchainArchive({ archive: nexysArchive, dataRoot: legacyRoot, target: 'darwin-arm64', requirement: made.requirement });
 
@@ -150,6 +170,7 @@ export async function rig(t: TestContext, opts: Partial<RigOptions> = {}): Promi
     const ui = new ScriptedUi();
     ui.files = { installerPath: join(downloads, spec.installer.name), devicePackagePath: join(downloads, spec.devicePackage.name) };
     ui.nexysArchive = nexysArchive;
+    ui.de10Archive = course;
     const nexysRoot = join(f.ctx.layout.root, 'support', 'nexys-a7');
     const r = { f, m, runner, ui, downloads, free: 1e12, hardware: DE10, crashToolchainOnce: false, layout: f.ctx.layout, nexysRequirement: made.requirement, nexysRoot, legacyRoot, payloadDir, nexysArchive } as Rig;
     const downloader: Downloader = async () => ({ ok: true, reused: false });
@@ -158,7 +179,7 @@ export async function rig(t: TestContext, opts: Partial<RigOptions> = {}): Promi
         r.ctl = new SetupController({
             layout: f.ctx.layout,
             expected: f.ctx.expected,
-            payload: oo.de10Archive ? undefined : f.ctx.payload,
+            payload: oo.de10Archive || oo.de10Picked ? undefined : f.ctx.payload,
             payloadDir,
             payloadPins: pins,
             nexys: { requirement: made.requirement, dataRoot: nexysRoot, legacyRoots: oo.legacyNexys ? [legacyRoot] : [] },

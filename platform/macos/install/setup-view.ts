@@ -84,7 +84,7 @@ const HINT: Partial<Record<`${Exclude<SetupRowId, 'hardware'>}:${ComponentState}
     'vhdl-tools:not-installed': 'Check, Simulate and the schematics need these.',
     'vhdl-tools:repairable': 'Some files are missing or changed. Repair puts them back.',
     'vhdl-tools:incompatible': 'This computer cannot run MIX-FPGA\'s tools.',
-    'fpga-engine:not-installed': 'Needed to build for the DE10-Lite. Setup also asks for Altera\'s free download.',
+    'fpga-engine:not-installed': 'Needed to build for the DE10-Lite. Setup asks for the DE10-Lite support file from your course and for Altera\'s free download.',
     'fpga-engine:repairable': 'Setup was interrupted or something changed. Repair continues where it stopped.',
     'fpga-engine:failed': 'The last attempt did not finish. Repair tries again; Details says why.',
     'fpga-engine:incompatible': 'An existing setup was found that MIX-FPGA cannot use. Details says why.',

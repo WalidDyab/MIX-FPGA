@@ -85,6 +85,10 @@ export class ScriptedUi implements SetupInteraction {
         this.offeredBoards.push([...b]);
         return this.boards;
     }
+    /** Windows has no DE10 file picker yet (its controller never asks); the shared interface requires the method. */
+    async askDe10Archive(): Promise<string | undefined> {
+        return undefined;
+    }
     async askNexysArchive() {
         this.questions.push('nexys-file');
         return this.nexysArchive;

@@ -52,6 +52,8 @@ export const ALTERA_DOWNLOADS = (
 ) as { readonly version: string; readonly installerName: string; readonly packageName: string; readonly system: string; readonly installerExtension: string };
 
 /** The Nexys A7 support file a student without a NexysVHDL installation is asked for, for this computer. */
+/** The DE10-Lite support file the course provides (macOS). */
+export const DE10_SUPPORT_FILE = 'mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz';
 export const NEXYS_SUPPORT_FILE = process.platform === 'win32' ? 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz' : 'nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz';
 
 export interface SetupOptions {
@@ -67,9 +69,9 @@ async function freeBytes(path: string): Promise<number> {
     return Number(s.bavail) * Number(s.bsize);
 }
 
-function readPins(file: string): Record<string, { file: string; sha256: string }> | undefined {
+function readPins(file: string): Record<string, { file: string; sha256: string; bytes?: number }> | undefined {
     try {
-        return (JSON.parse(readFileSync(file, 'utf8')) as { payloads: Record<string, { file: string; sha256: string }> }).payloads;
+        return (JSON.parse(readFileSync(file, 'utf8')) as { payloads: Record<string, { file: string; sha256: string; bytes?: number }> }).payloads;
     } catch {
         return undefined;
     }

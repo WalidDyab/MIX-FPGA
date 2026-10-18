@@ -15,6 +15,7 @@ import { type LicenseOffer, QUARTUS_SPEC, QuartusInstaller, type QuartusFiles, t
 import { type RosettaCommandRunner, type RosettaConsent, type RosettaHost, rosettaDefinition } from './rosetta';
 import { buildSetupView, type HardwareView, type SetupView, studentFailure } from './setup-view';
 import { ArchivePayload } from './archive-payload';
+import { type PayloadPin, PickedArchivePayload, supportFileMessage } from './de10-support-file';
 import { BOARD_SUPPORT, BoardSelectionStore, type BoardSupportId, boardEntry, boardState } from './boards';
 import { adoptNexys, type NexysArchive, nexysDefinition, planNexysAdoption, type NexysAdoptionPlan } from './nexys-support';
 import type { ToolchainRequirement } from '../../../core/toolchain/store';
@@ -29,6 +30,8 @@ export interface SetupInteraction {
     chooseBoards(boards: readonly { readonly id: BoardSupportId; readonly name: string; readonly installed: boolean }[]): Promise<BoardSupportId[] | undefined>;
     /** Nexys A7 support on a computer with nothing to adopt and no packaged source: the student's support file, or undefined. */
     askNexysArchive(): Promise<string | undefined>;
+    /** DE10-Lite support on a computer with no pinned source: the support file the course provides, or undefined if the student cancels. */
+    askDe10Archive(): Promise<string | undefined>;
     /** Before anything starts: what will happen and what it needs. Return false to stop. */
     confirmInstall(summary: InstallSummary): Promise<boolean>;
     askRosettaConsent(): Promise<RosettaConsent | undefined>;
@@ -80,7 +83,7 @@ export interface SetupDeps {
     readonly payload: PayloadSource | undefined;
     /** Folder holding the support archives (see toolchains/mixfpga/payloads-1.0.json); each is checked against its pinned sha256. */
     readonly payloadDir?: string;
-    readonly payloadPins?: Readonly<Record<string, { readonly file: string; readonly sha256: string }>>;
+    readonly payloadPins?: Readonly<Record<string, PayloadPin>>;
     /** Nexys A7 support: the validated toolchain requirement, its MIX-FPGA store, and NexysVHDL stores it may adopt. */
     readonly nexys?: { readonly requirement: ToolchainRequirement; readonly dataRoot: string; readonly legacyRoots: readonly string[] };
     readonly runner: ToolRunner;
@@ -111,7 +114,9 @@ export class SetupController {
     private readonly selection: BoardSelectionStore;
     /** Set for the duration of a run: where the Nexys archive comes from when the student must choose it. */
     private askNexys: (() => Promise<string | undefined>) | undefined;
-    private de10Archive: ArchivePayload | undefined;
+    private de10Archive: ArchivePayload | PickedArchivePayload | undefined;
+    /** Set when the DE10-Lite support file is chosen by the student (not pinned beside the extension) and has not been accepted. */
+    private de10Picked: PickedArchivePayload | undefined;
 
     constructor(private readonly deps: SetupDeps) {
         this.selection = new BoardSelectionStore(join(deps.layout.stateDir, 'board-support.json'));
@@ -265,12 +270,19 @@ export class SetupController {
         this.askNexys = () => ui.askNexysArchive();
         try {
             const pinned = boards.includes('de10-lite') ? await this.pinnedArchive('de10-lite') : undefined;
-            if (pinned) this.de10Archive = new ArchivePayload(pinned.path, pinned.sha256, join(this.deps.layout.root, '.payload'));
+            const work = join(this.deps.layout.root, '.payload');
+            if (pinned) this.de10Archive = new ArchivePayload(pinned.path, pinned.sha256, work);
+            else if (boards.includes('de10-lite') && !this.deps.payload && this.deps.payloadPins?.['de10-lite']) {
+                // Production: the student supplies the support file (like Nexys); only asked if a tool from it is actually needed.
+                this.de10Picked = new PickedArchivePayload(this.deps.payloadPins['de10-lite'], () => ui.askDe10Archive(), work);
+                this.de10Archive = this.de10Picked;
+            }
             return await this.driveSteps(ui, signal, repairOnly, boards, steps);
         } finally {
             this.askNexys = undefined;
             await this.de10Archive?.dispose().catch(() => undefined);
             this.de10Archive = undefined;
+            this.de10Picked = undefined;
         }
     }
 
@@ -296,6 +308,12 @@ export class SetupController {
             if (run.outcome === 'complete') return { outcome: 'complete', message: 'Setup finished.', view: await this.view() };
 
             const failed = run.steps.find((s) => s.outcome === 'failed');
+            const problem = this.de10Picked?.problem;
+            if (failed && problem && failed.code === 'PAYLOAD_INCOMPLETE') {
+                ui.log(`toolchain: DE10-Lite support file ${problem}`);
+                const message = supportFileMessage(problem, this.deps.payloadPins!['de10-lite']!, 'DE10-Lite');
+                return { outcome: problem === 'cancelled' ? 'stopped' : 'failed', message, view: await this.view() };
+            }
             if (failed) return { outcome: 'failed', message: studentFailure(failed.code ?? ''), view: await this.view() };
             const awaiting = run.steps.find((s) => s.outcome === 'awaiting-input');
             if (!awaiting) return { outcome: 'failed', message: studentFailure(''), view: await this.view() };

@@ -2,7 +2,7 @@ import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
-import { ALTERA_DOWNLOADS, NEXYS_SUPPORT_FILE, type BoardSupportId, type InstallSummary, type LicenseOffer, type QuartusFiles, type RosettaCommand, type RosettaConsent, type SetupInteraction } from '../../runtime/setup';
+import { ALTERA_DOWNLOADS, DE10_SUPPORT_FILE, NEXYS_SUPPORT_FILE, type BoardSupportId, type InstallSummary, type LicenseOffer, type QuartusFiles, type RosettaCommand, type RosettaConsent, type SetupInteraction } from '../../runtime/setup';
 import { showLicensePanel } from './license-panel';
 
 /** The Setup questions as VS Code dialogs. Student words only; engineering detail goes to `log`. */
@@ -14,7 +14,7 @@ export class VsCodeSetupInteraction implements SetupInteraction {
 
     async chooseBoards(boards: readonly { readonly id: BoardSupportId; readonly name: string; readonly installed: boolean }[]): Promise<BoardSupportId[] | undefined> {
         type Item = vscode.QuickPickItem & { id: BoardSupportId };
-        const items: Item[] = boards.map((b) => ({ id: b.id, label: b.name, ...(b.installed ? { description: 'installed', picked: true } : {}), detail: b.id === 'de10-lite' ? 'Terasic DE10-Lite (MAX 10). Also asks for Altera\'s free Quartus download.' : 'Nexys A7-100T (Artix-7 FPGA).' }));
+        const items: Item[] = boards.map((b) => ({ id: b.id, label: b.name, ...(b.installed ? { description: 'installed', picked: true } : {}), detail: b.id === 'de10-lite' ? 'Terasic DE10-Lite (MAX 10). Asks for the DE10-Lite support file from your course and for Altera\'s free Quartus download.' : 'Nexys A7-100T (Artix-7 FPGA).' }));
         const picked = await vscode.window.showQuickPick(items, { title: 'Welcome to MIX-FPGA: which FPGA boards will you use?', placeHolder: 'Choose one or both. You can add support for another board later.', canPickMany: true, ignoreFocusOut: true });
         return picked && picked.length > 0 ? picked.map((p) => p.id) : undefined;
     }
@@ -23,6 +23,13 @@ export class VsCodeSetupInteraction implements SetupInteraction {
         const ok = await vscode.window.showInformationMessage('Nexys A7 support file', { modal: true, detail: `Choose the Nexys A7 support file your course provides (${NEXYS_SUPPORT_FILE}). MIX-FPGA checks every file before using it.` }, 'Choose File…');
         if (!ok) return undefined;
         const r = await vscode.window.showOpenDialog({ canSelectMany: false, canSelectFiles: true, canSelectFolders: false, openLabel: 'Use This File', title: 'Choose the Nexys A7 support file', filters: { 'MIX-FPGA support': ['gz'] } });
+        return r?.[0]?.fsPath;
+    }
+
+    async askDe10Archive(): Promise<string | undefined> {
+        const ok = await vscode.window.showInformationMessage('DE10-Lite support file', { modal: true, detail: `Choose the DE10-Lite support file your course provides (${DE10_SUPPORT_FILE}). MIX-FPGA checks it before using it.` }, 'Choose File…');
+        if (!ok) return undefined;
+        const r = await vscode.window.showOpenDialog({ canSelectMany: false, canSelectFiles: true, canSelectFolders: false, openLabel: 'Use This File', title: 'Choose the DE10-Lite support file', filters: { 'MIX-FPGA support': ['gz'] } });
         return r?.[0]?.fsPath;
     }
 
