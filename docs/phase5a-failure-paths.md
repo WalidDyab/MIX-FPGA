@@ -29,7 +29,18 @@ Date: 2026-10-18. The **shipped** setup code (the VSIX from the neutral RC folde
 
 ## Items 6 and 7 (VS Code window checks)
 
-Item 6 was checked in a second clean window whose root is the isolated Nexys-only install: the Setup list shows "Nexys A7-100T Installed" and "DE10-Lite Not installed" with "Install DE10-Lite Support: uses about 12 GB once finished, needs an internet connection…" (observed from a screenshot). The New Project and no-board message texts are still to be recorded.
+- **6, support not installed when New Project asks for the board** (second clean window on the isolated Nexys-only root `~/MF5B`): the Setup list shows "Nexys A7-100T Installed" and "DE10-Lite Not installed" with "Install DE10-Lite Support: uses about 12 GB once finished, needs an internet connection…". New Project for DE10-Lite shows **"DE10-Lite support is not installed."** with the action **Install Support** (as reported by the validator; the source string is `extension/commands/commands.ts`: "`<board>` support is not installed." with detail "MIX-FPGA can install it now; the new project is created afterwards.").
+- **7, no board connected:**
+  - Detect (as reported): **"No Nexys A7 detected"**, **"Connect your board by USB and turn it on."**
+  - Program, Nexys project `board_test`, clean 0.7.0 profile (log time 19:07:04), verbatim from the MIX-FPGA Console: `[Program] Programming Nexys A7-100T...`, `[Program] ERROR`, **"No Digilent Nexys A7-100T was detected. Check the USB cable and that the board is switched on."**, `[Program] FAIL`. Details log: `Program failed (0.0 s)`, `MACOS_NO_BOARD`, `PROGRAM_NO_BOARD`. The extension stayed responsive: later entries show `Board detection: none` and `Environment: Ready (macOS)`; no crash, no state change (the toolchain state files were untouched).
+  - Program before a build (DE10 project `blibkde10`), verbatim: **"Programming is not possible yet"** / **"There is no bitstream yet. Run Build first."**
+  - Program, DE10 project with no board: still to be recorded (see below).
+
+## Recent Projects contamination (investigated)
+
+The two windows were launched with the intended flags: `--user-data-dir ~/MIXFPGA-5A-acceptance/user-data` (pid 6776, started 17:19:21) and `.../user-data-b` (pid 11555, started 23:31:17), both with `--extensions-dir ~/MIXFPGA-5A-acceptance/extensions`, a minimal PATH, and no `MIXFPGA_*` variables (window B only `MIXFPGA_HOME=~/MF5B`, by design). The first launch's log reads "Environment: Setup required", proving the profile started with nothing installed.
+
+The "Recent" list came from **`~/.vscode-shared/sharedStorage/state.vscdb`** (key `history.recentlyOpenedPathsList`), a store that VS Code shares across every instance of the user regardless of `--user-data-dir`. It holds: `~/Documents/blibkde10` and `~/WSClaude/board_test` (both opened in the clean profile during this acceptance), `~/WSClaude/newver6`, two "Lab" folders and a 0.6.0 README under `NexysVHDL-repo/.artifacts/...` (older sessions in the normal profile). The clean profiles' own storage contains no extension, settings or workspace state from the normal profile (extensions list: only `emxplore.nexysvhdl@0.7.0`). MIX-FPGA does not read VS Code's recent list (`recentlyOpened` appears nowhere in the shipped code). Conclusion: a display-only cross-profile VS Code feature, not profile contamination; the clean-machine checks stand and were not re-run. For a literal first-launch screenshot of a student machine, the shared recents file would have to be absent.
 
 ## Final state
 
