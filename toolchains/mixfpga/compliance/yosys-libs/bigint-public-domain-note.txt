@@ -1,0 +1,6 @@
+76------
+77-I, Matt McCutchen, the sole author of the original Big Integer Library, waive my
+78:copyright to it, placing it in the public domain.  The library comes with
+79-absolutely no warranty.
+80-
+81-~~~~

@@ -22,15 +22,16 @@ const { inventoryDirectory, writeTarGz } = require(distTar);
 
 const args = parseArgs(process.argv.slice(2));
 const target = args.target ?? hostTarget();
-const recipe = loadRecipe(target);
-const dir = join(TOOLCHAIN_DIR, target);
+const recipeName = args.recipe ?? target;
+const recipe = loadRecipe(target, recipeName);
+const dir = join(TOOLCHAIN_DIR, recipeName);
 const manifestFile = join(dir, MANIFEST_NAME);
 if (!existsSync(manifestFile)) fail(`no assembled toolchain at ${relative(REPO_ROOT, dir)} (run scripts/toolchain/assemble.mjs)`);
 const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
 if (manifest.target !== target || manifest.bundleVersion !== recipe.bundleVersion) fail(`assembled toolchain is ${manifest.target} ${manifest.bundleVersion}; recipe is ${target} ${recipe.bundleVersion}: assemble again`);
-if (manifest.recipeSha256 !== (await sha256File(join(RECIPE_DIR, `${target}.json`)))) fail('the recipe changed since the toolchain was assembled: assemble again');
+if (manifest.recipeSha256 !== (await sha256File(join(RECIPE_DIR, `${recipeName}.json`)))) fail('the recipe changed since the toolchain was assembled: assemble again');
 
-const outDir = join(REPO_ROOT, '.artifacts', 'dist');
+const outDir = args['out-dir'] ? join(REPO_ROOT, args['out-dir']) : join(REPO_ROOT, '.artifacts', 'dist');
 await mkdir(outDir, { recursive: true });
 const name = `nexysvhdl-toolchain-${recipe.bundleVersion}-${target}.tar.gz`;
 const out = join(outDir, name);
@@ -53,7 +54,7 @@ await writeFile(`${out}.sha256`, `${archiveSha}  ${name}\n`);
 console.log(`  ${name}: ${(size / 2 ** 20).toFixed(1)} MiB, sha256 ${archiveSha}`);
 
 if (args['update-requirement']) {
-    const reqFile = join(RECIPE_DIR, 'requirement.json');
+    const reqFile = join(RECIPE_DIR, args.requirement ?? 'requirement.json');
     const req = existsSync(reqFile) ? JSON.parse(readFileSync(reqFile, 'utf8')) : { schemaVersion: 1, bundleVersion: recipe.bundleVersion, targets: {} };
     if (req.bundleVersion !== recipe.bundleVersion) fail(`requirement.json requires toolchain ${req.bundleVersion}; change it deliberately before packing ${recipe.bundleVersion}`);
     const previous = req.targets[target];
@@ -61,7 +62,7 @@ if (args['update-requirement']) {
         // ADR-007 lifecycle: immutable from release freeze; a pre-release candidate is replaced only by a deliberate, re-validated edit of requirement.json.
         fail(`toolchain ${recipe.bundleVersion} for ${target} was already validated with content ${previous.treeSha256}. After release a payload change needs a new bundleVersion; before the first external release, replace the candidate deliberately (re-validate, then edit requirement.json).`);
     }
-    req.targets[target] = { status: 'validated', treeSha256: inv.treeSha256, files: inv.entries.length, bytes: inv.bytes, archive: name };
+    req.targets[target] = { status: recipe.status === 'candidate' ? 'candidate' : 'validated', treeSha256: inv.treeSha256, files: inv.entries.length, bytes: inv.bytes, archive: name };
     await writeFile(reqFile, `${JSON.stringify(req, null, 2)}\n`);
     console.log(`Updated ${relative(REPO_ROOT, reqFile)} (${target} -> ${inv.treeSha256})`);
 }

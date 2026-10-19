@@ -1,0 +1,4218 @@
+{
+ "schemaVersion": 1,
+ "product": "MIX-FPGA",
+ "toolchainVersion": "1.1",
+ "target": "macos-arm64",
+ "units": [
+  {
+   "id": "ghdl",
+   "kind": "tool",
+   "name": "GHDL",
+   "version": "6.0.0",
+   "path": "ghdl",
+   "executable": "bin/ghdl",
+   "license": "GPL-2.0-or-later (with GCC runtime library exception)",
+   "source": "https://github.com/ghdl/ghdl",
+   "files": [
+    {
+     "path": "bin/ghdl",
+     "sha256": "38a99c1cc18b04dfae128b118c7344910e08b8ba6eeb9c1e67f950a84bca3c3d",
+     "size": 72885072,
+     "exec": true
+    },
+    {
+     "path": "bin/ghwdump",
+     "sha256": "94fc23c588afb4833c9de34f3500d48e9215a91fca5eafae870c3db0c817b7fd",
+     "size": 75288,
+     "exec": true
+    },
+    {
+     "path": "bin/libgcc_s.1.1.dylib",
+     "sha256": "c90c6a9e5d2331b152f578617f6ad6484d22b2d4bcd4e24f151fd4d3a50c2d11",
+     "size": 180576,
+     "exec": true
+    },
+    {
+     "path": "include/ghdl/libghw.h",
+     "sha256": "770c2ae74dc9e85fd1fbb6b650244f56d41e2b97af89ae34500dba0eb61e89c7",
+     "size": 10205,
+     "exec": false
+    },
+    {
+     "path": "include/ghdl/synth.h",
+     "sha256": "c802c8e00d657a344f2b2d177a42685cf1ae256a26468bd35c3b37f959ecfb36",
+     "size": 9205,
+     "exec": false
+    },
+    {
+     "path": "include/ghdl/synth_gates.h",
+     "sha256": "539467039c085da05db87a7e925cf8f73575f220fb101602f50ed72a0b2dead2",
+     "size": 2386,
+     "exec": false
+    },
+    {
+     "path": "include/ghdl/vhpi_user.h",
+     "sha256": "dc80461d8a7634a18169fdebb71f5d0083a2238f5e194cb66709e2c92289d7ad",
+     "size": 36958,
+     "exec": false
+    },
+    {
+     "path": "include/ghdl/vpi_user.h",
+     "sha256": "6ec3e0d8d9fe696fd494b609db9d83d4f61d7d47458b5a19d3bf6de35f3b4d16",
+     "size": 45550,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/ansi_color.sh",
+     "sha256": "2732e5da3bd99b511411eed574f7d5b8b3002323b17263e076c38ef7ca44bd5d",
+     "size": 6767,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/ieee/v08/ieee-obj08.cf",
+     "sha256": "cc8a0be20255cfe2a42799d560a61e70865715c360a73750dc01d131383ecbf1",
+     "size": 5062,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/ieee/v19/ieee-obj19.cf",
+     "sha256": "fb6c971c5af6adf8d3224dc490f5212604cf1b50d4fd52f011db61bbc5d24b7d",
+     "size": 4033,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/LICENSE",
+     "sha256": "8d956265f883fafeed00f852e2b711b5f912a26fb63d643967489d198fd12e48",
+     "size": 11344,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/fixed_float_types.vhdl",
+     "sha256": "649090aaf4dbb7a6bf88a6720a265aaf3be0360f449eb1462777f1c7f48c249e",
+     "size": 2614,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/fixed_generic_pkg-body.vhdl",
+     "sha256": "e994327cb532981b4c510bb674d8c1f937dc3311294a8713b6d5005360b9a880",
+     "size": 216320,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/fixed_generic_pkg.vhdl",
+     "sha256": "76f98d70b4e5e80ee4411f3b669ac44beed112b8ea0d4fb89005a7aedd20ffef",
+     "size": 66781,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/fixed_pkg.vhdl",
+     "sha256": "bbd601960c294aa0675a91b4576f1fcfff2d612fe911ad8cc51ca2c10b1565cd",
+     "size": 2249,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/float_generic_pkg-body.vhdl",
+     "sha256": "093b095a30ca301968d3a3680c995fee5e59cd34b3b93bdd04bfb1e7b00002d4",
+     "size": 230768,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/float_generic_pkg.vhdl",
+     "sha256": "f6bdde6dcd120358d8ce51b2760bdffaebd2e5a0ab5267fe9f7433eec89451d9",
+     "size": 51264,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/float_pkg.vhdl",
+     "sha256": "46e9f26610bd457184960dadb39c7d0e9fd5e15a7662414e5c3e2a79e377e05a",
+     "size": 2542,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/ieee_bit_context.vhdl",
+     "sha256": "c6e28b5ab8ec5ff9bb2b1b6f0c13c29e2607c2efce7fd425347cedc59a575e05",
+     "size": 102,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/ieee_std_context.vhdl",
+     "sha256": "d1b44965df5028bd5ae0638b818b6688f6ad72cf843e3fdc004fb6a94a52abb5",
+     "size": 133,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/math_complex-body.vhdl",
+     "sha256": "4f2f523002822b27a721d93f62d4220d3f0f75bc980fdc62c2642de03926029f",
+     "size": 52648,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/math_complex.vhdl",
+     "sha256": "deddee8078c0c85f276bd5ebe1a49ac303116fc8fd6a7943c84a80eff73b969a",
+     "size": 34106,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/math_real-body.vhdl",
+     "sha256": "ed057e95cd908b547d128d6a29dbfcf243ba64468d6e6cc780090bc9cd79f3b2",
+     "size": 64760,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/math_real.vhdl",
+     "sha256": "33fe4fe3fc21cbe6c36ed4969d96ed25549680bb3d936f106078fe47af2fec7b",
+     "size": 21134,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_bit-body.vhdl",
+     "sha256": "c1e9fb519b25ed13ce26512cbc3eddc30249d5b658eceb494987679f96619dfb",
+     "size": 94452,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_bit.vhdl",
+     "sha256": "e54a257a6da6141ef2fb0b51dccbde127a665e474e4e8e354f28e720b5d440be",
+     "size": 63541,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_bit_unsigned-body.vhdl",
+     "sha256": "bcf17a63b59f1d739c3f2f29642df97457671338eaef8e9acdb946cfbadd0236",
+     "size": 17135,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_bit_unsigned.vhdl",
+     "sha256": "49bb77a8ad3eb9945040a880b5daf5895f5d98b25ae52565622ebbda1b27d8da",
+     "size": 25675,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_std-body.vhdl",
+     "sha256": "e7148f94642f8f3a5b13d4853b38892b875e3890cea995c10eacdebf1274328b",
+     "size": 140309,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_std.vhdl",
+     "sha256": "318b999d6df570f08b284123348ef5bcfe93720b2471df6905bbbb9b02accd4d",
+     "size": 75853,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_std_unsigned-body.vhdl",
+     "sha256": "dccecb858d476cecfb00048f1495a60c130a7561b9096b864be5a000ca597b19",
+     "size": 18190,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/numeric_std_unsigned.vhdl",
+     "sha256": "a39859f391c7d635e26cfec870e601513400796b8cb02f0662094463f4d107e3",
+     "size": 25976,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/std_logic_1164-body.vhdl",
+     "sha256": "6534fe4842c1133199db93725e36a9e973ea8e2ab03890433c013af813d5ce2c",
+     "size": 57019,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/std_logic_1164.vhdl",
+     "sha256": "2a34c7d7b2c8ba21b1e91153741399cf2cd23c8b04028dcf53765efeea76de55",
+     "size": 14971,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/ieee2008/std_logic_textio.vhdl",
+     "sha256": "ed7010d45477c03bf4de54c51c86912d994b0d6d8e751f22ee9baedbea897892",
+     "size": 62,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v08/env-body.vhdl",
+     "sha256": "91100da9501f33b8a6aa9b549882beaeb9f011cd6b88311834d379e6a80df1b2",
+     "size": 2186,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v08/env.vhdl",
+     "sha256": "12f797c33e173e311df9c7c39c26fcf2fabd954891a983fa0b7f9b4c5e753cab",
+     "size": 1010,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v08/standard.vhdl",
+     "sha256": "064fa65d4cde3dc424c1d63f8a6f1234eccb37158bce439ac8f7f1b70241d034",
+     "size": 2696,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v08/textio-body.vhdl",
+     "sha256": "9fe578d1196a828b12cebe763f31caa9221927d0ada2fd86f4e7d35a1d2d78ca",
+     "size": 42092,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v08/textio.vhdl",
+     "sha256": "50ff6d570df2f4b93373bf90d01b367f45d08aa94372af888f9b20110ceeb7d1",
+     "size": 7000,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v19/env-body.vhdl",
+     "sha256": "851a3d291f3b4048d3da33a340054824e65e8a1b5181aded53dfd0052570ab2c",
+     "size": 3237,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v19/env.vhdl",
+     "sha256": "bde9daba1f583471c2983a3d4cda8625eeb379a00065b33c7c98c8266c440894",
+     "size": 1227,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v19/textio-body.vhdl",
+     "sha256": "2481717de894aea290002acb8e698ad3bb2553ce3a062215bfcde1f8392909ca",
+     "size": 42084,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v19/textio.vhdl",
+     "sha256": "50ff6d570df2f4b93373bf90d01b367f45d08aa94372af888f9b20110ceeb7d1",
+     "size": 7000,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v87/standard.vhdl",
+     "sha256": "fc65203c50f43fa42491790327b9155aafd9e26e7c2b74f0e267b3fcd20aadd7",
+     "size": 1543,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v87/textio-body.vhdl",
+     "sha256": "4b8b00d0b9ac01ce4427d0057138399cf5a1b67df7ec0b0de54c86210bb1e9c7",
+     "size": 42798,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v87/textio.vhdl",
+     "sha256": "86fe8a16849f3f05217af26880ca9694e7375748697aa7a9fdb2d9b7b637c92b",
+     "size": 7088,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v93/standard.vhdl",
+     "sha256": "a0ebac6d396f751857848308950fa88a02d47158bb0eead3f1dc49c40c305e8a",
+     "size": 2460,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v93/textio-body.vhdl",
+     "sha256": "293fa44114dbdfc5ed85a2c261cf693f8235d1bf96ffb4ceb0205df0df8dbe43",
+     "size": 42766,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/std/v93/textio.vhdl",
+     "sha256": "9c1d80220101cae3219982c2b73ec5155b31a728a0cff5a8ffb25e383b12b6ad",
+     "size": 7088,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/std_logic_arith.vhdl",
+     "sha256": "0526b2af10bbfe5b04b96e76d1ef2befad5727ebf39ebf556e029c6189a0bd32",
+     "size": 70557,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/std_logic_misc-body.vhdl",
+     "sha256": "86f6b7ce81ab06162fc6ebcb2bec0f661769909726e246be31aa5f6a0a3a6208",
+     "size": 27741,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/std_logic_misc.vhdl",
+     "sha256": "8e219b1d88524b8f4b0ac0702af01ee783ffea500a2e99069aedae9a957fd093",
+     "size": 6037,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/std_logic_signed.vhdl",
+     "sha256": "09c3a98061224a9ed272878a99b47936097c39cc5ed32f8e9bcfe1159ca4d81c",
+     "size": 12622,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/std_logic_textio.vhdl",
+     "sha256": "845e4bfb198bcc009849e8dd94dfd11f27b035949d7ba28dcac52c039d6b56da",
+     "size": 17971,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/std_logic_unsigned.vhdl",
+     "sha256": "7d1e6c664ed5f697d248640144772bf8bbd1db2ec4d040518e6aa8bfd3b2ca5c",
+     "size": 12038,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/v08/std_logic_misc-body.vhdl",
+     "sha256": "1697b7d36cc238666c812eb110de29cf5b0551f5b208091d1c2fe245674102dc",
+     "size": 27997,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/src/synopsys/v08/std_logic_misc.vhdl",
+     "sha256": "f458ef156791d25fa5922931587421af69ab3296a067af9372575faa179f0849",
+     "size": 6077,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/std/v08/std-obj08.cf",
+     "sha256": "5affc0ad62b4347b0c33973b02a487cadfbc1c37f5c08518579bb6fcd593af9e",
+     "size": 598,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/std/v19/std-obj19.cf",
+     "sha256": "c487ecaf38ecf37e29e8512bf5d1df0462cd3fab94a4cb4990067c0a90309d03",
+     "size": 598,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/std/v87/std-obj87.cf",
+     "sha256": "b075d14f8e6f779ae93128dd1f19c4af31a3ba20ca321f1d6f2b98d272ea96c0",
+     "size": 307,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/std/v93/std-obj93.cf",
+     "sha256": "3ed14934db310664c823e44142939a2ccdb839bd584d5f59b8ca839d6b0d2643",
+     "size": 307,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/README.md",
+     "sha256": "0735b3f63fff5dc2598e34e76126574b9ecec6404aa6c23bc1c430ae7c5bda3e",
+     "size": 4069,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-altera.ps1",
+     "sha256": "789ca5b36c6770b84b30da9ce31363e050517f284065ffa98ae5a8a58beae18c",
+     "size": 19784,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-altera.sh",
+     "sha256": "412204a9863767a0816cff35b37444896121447f6c3730f572010d85ed7da5a7",
+     "size": 19986,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-intel.ps1",
+     "sha256": "8e55d751a4258e6fef126563823970e5eaea58d575e94d952259ec86b4ca6459",
+     "size": 19823,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-intel.sh",
+     "sha256": "aa57a466cb49c41504a0a34f906b677aef32c3776f363cbf23cfd732548f02af",
+     "size": 19041,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-lattice.ps1",
+     "sha256": "8d852a23b3e82e613c555e94f648cafcb9e0251ba08bc88d78d5088b3a970edb",
+     "size": 18029,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-lattice.sh",
+     "sha256": "e700d0cb70a5492e5440d66822fd4c47cb4ea59db2d1085daad0ad525e3ac086",
+     "size": 15016,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-uvvm.ps1",
+     "sha256": "1c8fe2f21e3517be046020608fb6ab0736fd491d9c7e6ad07be84920100964ea",
+     "size": 10165,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-uvvm.sh",
+     "sha256": "8eb846a70095c7df91d3d5c0c8d1ff497d6b22eedad2691243e231222fc02da0",
+     "size": 12906,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-xilinx-vivado.ps1",
+     "sha256": "dcf5837167cdf61bb668054640adaf60b45c752acdaa6b22f8ede4c80f3e3c83",
+     "size": 9079,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/compile-xilinx-vivado.sh",
+     "sha256": "0fb399ea209a2cdbd9ac5db77fefc9563331c05a46b32c9d18ff674e3ca56b3a",
+     "size": 11811,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/config.psm1",
+     "sha256": "eb079871b2e9cc44b016becec85be8c50cc5c37136dcb0a627f0d34776e2c072",
+     "size": 3323,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/config.sh",
+     "sha256": "4e010a5d8756e8220e521b1355eaa5a0c7cd27b894245d01cdb29092ce7fd9de",
+     "size": 2859,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/filter.analyze.sh",
+     "sha256": "85c92bf9500193c5b43aaacd613163183fdb739beb974906e22bb0e52017a3c7",
+     "size": 4735,
+     "exec": true
+    },
+    {
+     "path": "lib/ghdl/vendors/shared.psm1",
+     "sha256": "10bbd30396e94752f61e24883d11f20249193f626249571300f55541c92e8801",
+     "size": 14410,
+     "exec": false
+    },
+    {
+     "path": "lib/ghdl/vendors/shared.sh",
+     "sha256": "c348307220ddb8c4d4ef410f94d58ca960d202aca701e120d67ce53b5225915a",
+     "size": 10361,
+     "exec": true
+    },
+    {
+     "path": "lib/libgcc_s.1.1.dylib",
+     "sha256": "c90c6a9e5d2331b152f578617f6ad6484d22b2d4bcd4e24f151fd4d3a50c2d11",
+     "size": 180576,
+     "exec": true
+    },
+    {
+     "path": "lib/libghdl-6_0_0.dylib",
+     "sha256": "d947c36063bcbaab6cdb8aa9f3609b25653d4a743d1ba0c3c540dda8585e642f",
+     "size": 6229120,
+     "exec": true
+    },
+    {
+     "path": "lib/libghdl.a",
+     "sha256": "f789850a422dd659134ae97137f130c08732e0d407804eee3d40af8a08a9d095",
+     "size": 21173552,
+     "exec": true
+    },
+    {
+     "path": "lib/libghdl.link",
+     "sha256": "d53b519dd4150f6e72f767d9a74c207a7b91da3ac64c46e22c34902ef91c40ad",
+     "size": 93,
+     "exec": false
+    },
+    {
+     "path": "lib/libghdlvpi.dylib",
+     "sha256": "c9a9800c29792784eae6ea9709093f7c04120c87771f615a2619f0d34048c019",
+     "size": 23760,
+     "exec": true
+    },
+    {
+     "path": "lib/libghw.dylib",
+     "sha256": "4a40e95153fb08d2f066a82a0042920809cc86a7a2cc58ccbc4fbb492677663e",
+     "size": 74544,
+     "exec": true
+    },
+    {
+     "path": "lib/libgnat-14.dylib",
+     "sha256": "ee460ebc92fbfc9bcd24be4d72ae1961be54d38c87784a12f825d50761ead1e6",
+     "size": 5920256,
+     "exec": true
+    },
+    {
+     "path": "license/GCC-RUNTIME-EXCEPTION-3.1.txt",
+     "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+     "size": 3324,
+     "exec": false
+    },
+    {
+     "path": "license/GHDL-COPYING.md",
+     "sha256": "aef8b4222b79d0dbf6bf17cfff71c90a6a6bb8917a4162abe417b469ed22da2e",
+     "size": 17895,
+     "exec": false
+    },
+    {
+     "path": "license/GPL-2.0.txt",
+     "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+     "size": 17984,
+     "exec": false
+    },
+    {
+     "path": "license/LGPL-2.1.txt",
+     "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+     "size": 26419,
+     "exec": false
+    },
+    {
+     "path": "license/LGPL-3.0.txt",
+     "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+     "size": 7652,
+     "exec": false
+    }
+   ],
+   "links": [],
+   "treeSha256": "940aefe1fad4bc2cd6183f7e8cd3dfded8244844bc22ca1a11d2c03b726ef354",
+   "bytes": 108816747
+  },
+  {
+   "id": "yosys",
+   "kind": "tool",
+   "name": "Yosys",
+   "version": "0.63",
+   "path": "yosys",
+   "executable": "libexec/yosys",
+   "license": "ISC",
+   "source": "https://github.com/YosysHQ/yosys (build 0.63+173 via YosysHQ OSS CAD Suite 2026-09-15)",
+   "files": [
+    {
+     "path": "lib/libffi.8.dylib",
+     "sha256": "826827db1761035112b1a4ec37a13b50d55292e3572f501af4f977c5db95a45d",
+     "size": 124672,
+     "exec": true
+    },
+    {
+     "path": "lib/libncurses.6.dylib",
+     "sha256": "e5ee6966a4f0bfae191ee60f728e10ab95b5075001cbdc66ccf528aed939a26b",
+     "size": 337520,
+     "exec": true
+    },
+    {
+     "path": "lib/libreadline.8.2.dylib",
+     "sha256": "be7552f0f9ce7cda5731faba2018b0e62db6af6a712ebe1ceeb7c400d9ac183a",
+     "size": 299312,
+     "exec": true
+    },
+    {
+     "path": "lib/libtcl8.6.dylib",
+     "sha256": "5c87aaf409f19c019662bdf4bf5f390cc167dca1b263c67eec6d48f35c06e294",
+     "size": 1466896,
+     "exec": true
+    },
+    {
+     "path": "lib/libz.1.3.dylib",
+     "sha256": "d98b15f0ee5f7f6596be580c56a6b44f22df1b42a27ff7141eb8bda7c3f19644",
+     "size": 95360,
+     "exec": true
+    },
+    {
+     "path": "lib/tcl8.6/auto.tcl",
+     "sha256": "2a176e7467c15f12198662db68b9deda0726f4f744166c85060b894ce676d055",
+     "size": 20875,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/clock.tcl",
+     "sha256": "7f27d400b088a0e72adeb48d17059892e95f08a2a03970bd74cdfb35b106618b",
+     "size": 128893,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/ascii.enc",
+     "sha256": "294c97175fd0894093b866e73548ae660aeed0c3cc1e73867eb66e52d34c0dd2",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/big5.enc",
+     "sha256": "465ae2d4880b8006b1476cd60facf676875438244c1d93a7dbe4cde1035e745f",
+     "size": 92873,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cns11643.enc",
+     "sha256": "0a95f67f90b1cdd407a78ea4032af9eb996fc38864c46d74b42b3a7f7eda0c8a",
+     "size": 97050,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1250.enc",
+     "sha256": "1b42df7e7d6b0feb17cb0bc8d97e6ce6899492306dd880c48a39d1a2f0279004",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1251.enc",
+     "sha256": "2d1bed2422e131a140087faf1b12b8a46f7de3b6413bae8bc395c06f0d70b9b0",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1252.enc",
+     "sha256": "14df3ae30e81e7620be6bbb7a9e42083af1ae04d94cf1203565f8a3c0542ace0",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1253.enc",
+     "sha256": "2174d94e1c1d5ad93717b9e8c20569ed95a8af51b2d3ab2bce99f1a887049c0e",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1254.enc",
+     "sha256": "bc4cbe4c99fd65abea45fbdaf28cc1d5c42119280125fbbd5c2c11892ae460b2",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1255.enc",
+     "sha256": "f8bd79ae5a90e5390d77dc31cb3065b0f93cb8813c9e67accec72e2db2027a08",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1256.enc",
+     "sha256": "bbacea81d4f7a3a7f3c036273a4534d31dbf8b6b5cca2bcc4c00cb1593cf03d8",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1257.enc",
+     "sha256": "4151434a714fc82228677c39b07908c4e19952fc058e26e7c3ebab7724ce0c77",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp1258.enc",
+     "sha256": "0cdb59e255ccd7dcf4af847c9b020aeaee78ce7fcf5f214ebcf123328acf9f24",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp437.enc",
+     "sha256": "d707a1f03514806e714f01cbfcb7c9f9973acdc80c2d67bbd4e6f85223a50952",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp737.enc",
+     "sha256": "8bfca34869b3f9a3b2fc71b02cbac41512af6d1f8ab17d2564e65320f88ede10",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp775.enc",
+     "sha256": "44fb04b5c72b584b6283a99b34789690c627b5083c5df6e8b5b7ab2c68903c06",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp850.enc",
+     "sha256": "55aa2d13b789b3125f5c9d0dc5b6e3a90d79426d3b7825dcd604f56d4c6e36a2",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp852.enc",
+     "sha256": "5266b6f18c3144cfadbcb7b1d27f0a7eaa1c641fd3b33905e42e4549fd373770",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp855.enc",
+     "sha256": "e3f071c63ac43af66061506ef2c574c35f7bf48553fb5158ae41d9230c1a10df",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp857.enc",
+     "sha256": "e39985c6a238086b54427475519c9e0285750707db521d1820e639723c01c36f",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp860.enc",
+     "sha256": "6db59139627d29abd36f38ed2e0de2a6b234a7d7e681c7dbaf8b888f1cac49a5",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp861.enc",
+     "sha256": "a43a5b58bfc57bd723b12bbdea9f6e1a921360b36d2d52c420f37299788442d3",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp862.enc",
+     "sha256": "aea716d490c35439621a8f00ca7e4397ef1c70428e206c5036b7af25f1c3d82f",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp863.enc",
+     "sha256": "13b5cb481e0216a8fc28bfa9d0f6b060cdf5c457b3e12435ca826eb2ef52b068",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp864.enc",
+     "sha256": "e87ec076f950fcd58189e362e1505dd55b0c8f4fa7dd1a9331c5c111d2ce569f",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp865.enc",
+     "sha256": "407fc0fe06d2a057e9ba0109ea9356cab38f27756d135ef3b06a85705b616f50",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp866.enc",
+     "sha256": "82633643cd326543915acc5d28a634b5795274cd39974d3955e51d7330ba9338",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp869.enc",
+     "sha256": "27f16e3dd02b2212c4980ea09bdc068cf01584a1b8bb91456c03fcababe0931e",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp874.enc",
+     "sha256": "3e067363fc07662ebe52ba617c2aad364920f2af395b3416297400859acd78bb",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp932.enc",
+     "sha256": "9d33df6e1cfdd2cf2553f5e2758f457d710caff5f8c69968f2665accd6e9a6fd",
+     "size": 48207,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp936.enc",
+     "sha256": "619330192984a80f93ac6f2e4e5eaa463fd3dddc75c1f65f3975f33e0dd7a0bb",
+     "size": 132509,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp949.enc",
+     "sha256": "26bcb620472433962717712d04597a63264c8e444459432565c4c113de0a240b",
+     "size": 130423,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/cp950.enc",
+     "sha256": "1fb9a3d52d432ea2d6cd43927cebf9f58f309a236e1b11d20fe8d5a5fb944e6e",
+     "size": 91831,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/dingbats.enc",
+     "sha256": "3bde9ae7eaf9be799c84b2aa4e80d78be8acbaca1e486f10b9bdd42e3aeddcb2",
+     "size": 1093,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/ebcdic.enc",
+     "sha256": "17a7d45f3b82f2a42e1d36b13db5ced077945a3e82700947cd1f803dd2a60dbf",
+     "size": 1054,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/euc-cn.enc",
+     "sha256": "546392237f47d71cee1daa1aae287d94d93216a1fabd648b50f59ddce7e8ae35",
+     "size": 85574,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/euc-jp.enc",
+     "sha256": "3bfb42c4d36d1763693aefce87f6277a11ad5a756d691deda804d9d0edcb3093",
+     "size": 82537,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/euc-kr.enc",
+     "sha256": "1f1ad4c4079b33b706e948a735a8c3042f40cc68065c48c220d0f56fd048c33b",
+     "size": 93918,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/gb12345.enc",
+     "sha256": "0c0df17bfece897a1da7765c822453b09866573028cecced13e2efee02bcccc4",
+     "size": 86619,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/gb1988.enc",
+     "sha256": "a2717ae09e0cf2d566c245dc5c5889d326661b40db0d5d9a6d95b8e6b0f0e753",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/gb2312-raw.enc",
+     "sha256": "ec11bfd49c715cd89fb9d387a07cf54261e0f4a1ccec1a810e02c7b38ad2f285",
+     "size": 84532,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/gb2312.enc",
+     "sha256": "546392237f47d71cee1daa1aae287d94d93216a1fabd648b50f59ddce7e8ae35",
+     "size": 85574,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso2022-jp.enc",
+     "sha256": "e12928e8b5754d49d0d3e799135de2b480ba84b5dbaa0e350d9846fa67f943ec",
+     "size": 192,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso2022-kr.enc",
+     "sha256": "6ac0f1845a56a1a537b9a6d9bcb724dddf3d3a5e61879ae925931b1c0534fbb7",
+     "size": 115,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso2022.enc",
+     "sha256": "753dda518a7e9f6dc0309721b1faae58c9661f545801da9f04728391f70be2d0",
+     "size": 226,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-1.enc",
+     "sha256": "754ef6bf3a564228ab0b56dde391521dcc1a6c83cfb95d4b761141e71d2e8e87",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-10.enc",
+     "sha256": "79f6470d9bebd30832b3a9ca59cd1fdca28c5be6373bd01d949eee1ba51aa7a8",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-11.enc",
+     "sha256": "ad939139ff7140970bde3d91180f7c4d703d7fcf67a02c71392de1980dc560e4",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-13.enc",
+     "sha256": "33c6072a006ba4e9513d7b7fd3d08b1c745ca1079b6d796c36b2a5ae8e4ae02b",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-14.enc",
+     "sha256": "8d737283289baf8c08ef1dd7e47a6c775dace480419c5e2a92d6c0e85bb5b381",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-15.enc",
+     "sha256": "c7b0377f30e42048492e4710fe5a0a54fa9865395b8a6748f7dac53b901284f9",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-16.enc",
+     "sha256": "c40ca014b88f97ae62ae1a816c5963b1ed432a77d84d89c3a764ba15c8a23708",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-2.enc",
+     "sha256": "0e0732480338a229cc3ad4cdde09021a0a81902dc6edfb5f12203e2aff44668f",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-3.enc",
+     "sha256": "73342c27cf55f625d3db90c5fc8e7340ffdf85a51872dbfb1d0a8cb1e43ec5da",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-4.enc",
+     "sha256": "17745bdd299779e91d41db0cee26cdc7132da3666907a94210b591ced5a55adb",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-5.enc",
+     "sha256": "bc5ed164d15321404bbdcad0d647c322ffab1659462182dbd3945439d9ecbae7",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-6.enc",
+     "sha256": "f502e07ae3f19ccdc31e434049cfc733dd5df85487c0160b0331e40241ad0274",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-7.enc",
+     "sha256": "013b3b2911c66bc1ca54e510814af4954c310da10737f9b2a2474d714be2ab39",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-8.enc",
+     "sha256": "e1d207917aa3483d9110e24a0cc0cd1e0e5843c8bfc901cfee7a6d872dd945a9",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/iso8859-9.enc",
+     "sha256": "1cdcf510c38464e5284edcfaec334e3fc516236c1ca3b9ab91ca878c23866914",
+     "size": 1094,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/jis0201.enc",
+     "sha256": "480f61d0e1a75dee59bf9a66de0bb78faae4e87fd6317f93480412123277d442",
+     "size": 1092,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/jis0208.enc",
+     "sha256": "118ea160ef29e11b46dec57af2c44405934dd8a7c49d2bc8b90c94e8baa6138b",
+     "size": 80453,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/jis0212.enc",
+     "sha256": "24a9d379fda39f2bcc0580ca3e0bd2e99ae279af5e2841c9e7dbe7f931d19cc0",
+     "size": 70974,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/koi8-r.enc",
+     "sha256": "7142b1120b993d6091197574090fe04be3ea64ffc3ad5a167a4b5e0b42c9f062",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/koi8-u.enc",
+     "sha256": "bbb729b906f5fc3b7ee6694b208b206d19a9d4dc571e235b9c94dcdd4a323a2a",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/ksc5601.enc",
+     "sha256": "0f8b530ad0decbf8dd81da8291b8b0f976c643b5a292db84680b31ecfbe5d00a",
+     "size": 92877,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macCentEuro.enc",
+     "sha256": "8f3089f4b2ca47b7ac4cb78375b2bfac01268113a7c67d020f8b5b7f2c25bbda",
+     "size": 1096,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macCroatian.enc",
+     "sha256": "8d0b6a882b742c5cce938241328606c111dda0cb83334ebedcda17605f3641ae",
+     "size": 1096,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macCyrillic.enc",
+     "sha256": "eb135a89519f2e004282ded21b11c3af7ccb2320c9772f2df7d1a4a1b674e491",
+     "size": 1096,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macDingbats.enc",
+     "sha256": "8fbcc63cb289afaae15b438752c1746f413f3b79ba5845c2ef52ba1104f8bda6",
+     "size": 1096,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macGreek.enc",
+     "sha256": "f7bff98228ded981ec9a4d1d0da62247a8d23f158926e3acbec3cce379c998c2",
+     "size": 1093,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macIceland.enc",
+     "sha256": "633f5e3e75bf1590c94ab9cbf3538d0f0a7a319db9016993908452d903d9c4fd",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macJapan.enc",
+     "sha256": "2a6856298ec629a16bdd924711dfe3f3b1e3a882ddf04b7310785d83ec0d566c",
+     "size": 48028,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macRoman.enc",
+     "sha256": "68f22bad30daa81b215925416c1cc83360b3bb87efc342058929731ac678ff37",
+     "size": 1093,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macRomania.enc",
+     "sha256": "71ae80adfb437b7bc88f3c76fd37074449b3526e7aa5776d2b9fd5a43c066fa8",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macThai.enc",
+     "sha256": "cead5eb2b0b44ef4003fbcb2e49ca0503992ba1d6540d11acbbb84fdbbd6e79a",
+     "size": 1092,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macTurkish.enc",
+     "sha256": "f703b7f74cc6f5faa959f51c757c94623677e27013bcae23befba01a392646d9",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/macUkraine.enc",
+     "sha256": "4c94e7fbe183379805056d960ab624d78879e43278262e4d6b98ab78e5fefea8",
+     "size": 1095,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/shiftjis.enc",
+     "sha256": "7502587d52e7810228f2ecb45ac4319ea0f5c008b7ac91053b920010dc6ddf94",
+     "size": 41862,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/symbol.enc",
+     "sha256": "73fd2b5e14309d8c036d334f137b9edf1f7b32dbd45491cf93184818582d0671",
+     "size": 1091,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/encoding/tis-620.enc",
+     "sha256": "5918b5e1def09781efd28751b6883665aaee29f1d244f0891edecda9bf6a4b63",
+     "size": 1092,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/history.tcl",
+     "sha256": "9b6e400eb85440ec64ab66b4ac111546585740c9ca61fd156400d7153cbad9f4",
+     "size": 7900,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/http1.0/http.tcl",
+     "sha256": "acbff9b5ef75790920b95023156fad80b18aff8cafc4a6dc03893f9388e053a2",
+     "size": 9689,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/http1.0/pkgIndex.tcl",
+     "sha256": "420c4b3088c9dacd21bc348011cac61d7cb283b9bee78ae72eed764ab094651c",
+     "size": 735,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/init.tcl",
+     "sha256": "1ac9b41bc830a1dea9dcc92db00c29db5aaf3cbb83766d6119be5ad48f8a5e89",
+     "size": 24806,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/af.msg",
+     "sha256": "2981965bd23a93a09eb5b4a334acb15d00645d645c596a5ecadb88bfa0b6a908",
+     "size": 989,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/af_za.msg",
+     "sha256": "3c2f5f631ed3603ef0d5bcb31c51b2353c5c27839c806a036f3b7007af7f3de8",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ar.msg",
+     "sha256": "bf984ec7cf619e700fe7e00381ff58abe9bd2f4b3dd622eb2edaccc5e6681050",
+     "size": 1964,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ar_in.msg",
+     "sha256": "29a70eac43b1f3aa189d8ae4d92658e07783965bae417fb66ee5f69cfcb564f3",
+     "size": 259,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ar_jo.msg",
+     "sha256": "78116e7e706c7d1e3e7446094709819fb39a50c2a2302f92d6a498e06ed4a31b",
+     "size": 1812,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ar_lb.msg",
+     "sha256": "7c970efeb55c53758143df42cc452a3632f805487ca69db57e37c1f478a7571b",
+     "size": 1812,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ar_sy.msg",
+     "sha256": "aef17b94a0db878e2f0fb49d982057c5b663289e3a8e0e2b195dcec37e8555b1",
+     "size": 1812,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/be.msg",
+     "sha256": "d790e54217a4bf9a7e1dcb4f3399b5861728918e93cd3f00b63f1349bdb71c57",
+     "size": 2105,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/bg.msg",
+     "sha256": "e737d8dc724aa3b9ec07165c13e8628c6a8ac1e80345e10dc77e1fc62a6d86f1",
+     "size": 1819,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/bn.msg",
+     "sha256": "297d4d7cae6e99db3ca6ee793519512bff65013cf261cf90ded4d28d3d4f826f",
+     "size": 2286,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/bn_in.msg",
+     "sha256": "7d3a956663c529d07c8a9610414356de717f3a2a2ce9b331b052367270acea94",
+     "size": 259,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ca.msg",
+     "sha256": "14ff564fab584571e954be20d61c2facb096fe2b3ef369cc5ecb7c25c2d92d5a",
+     "size": 1102,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/cs.msg",
+     "sha256": "49cf452eef0b8970bc56a7b8e040ba088215508228a77032cba0035522412f86",
+     "size": 1300,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/da.msg",
+     "sha256": "ca58ff5baa9681d9162e094e833470077b7555bb09eee8e8dd41881b108008a0",
+     "size": 1156,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/de.msg",
+     "sha256": "cc3672969c1dd223eadd9a226e00cac731d8245532408b75ab9a70e9edd28673",
+     "size": 1222,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/de_at.msg",
+     "sha256": "80513a9969a12a8fb01802d6fc3015712a4efdda64552911a1bb3ea7a098d02c",
+     "size": 812,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/de_be.msg",
+     "sha256": "7573581dec27e90b0c7d34057d9f4ef89727317d55f2c4e0428a47740fb1eb7a",
+     "size": 1223,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/el.msg",
+     "sha256": "9b2f91be34024fbcf645f6ef92460e5f944ca6a16268b79478ab904b2934d357",
+     "size": 2252,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_au.msg",
+     "sha256": "b85c9a373ff0f036151432652dd55c182b0704bd0625ea84bed1727ec0de3dd8",
+     "size": 300,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_be.msg",
+     "sha256": "596ac02204c845aa74451fc527645549f2a3318cb63051fcacb2bf948fd77351",
+     "size": 305,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_bw.msg",
+     "sha256": "340804f73b620686ab698b2202191d69227e736b1652271c99f2cfef03d72296",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_ca.msg",
+     "sha256": "c9fe2223c4949ac0a193f321fc0fd7c344a9e49a54b00f8a4c30404798658631",
+     "size": 288,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_gb.msg",
+     "sha256": "ae38ad5452314b0946c5cb9d3c89cdfc2ad214e146eb683b8d0ce3fe84070fe1",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_hk.msg",
+     "sha256": "c9be2c9ad31d516b508d01e85bcca375aaf807d6d8cd7c658085d5007069fffd",
+     "size": 321,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_ie.msg",
+     "sha256": "e7868c80fd59d18bb15345d29f5292856f639559cffd42ee649c16c7938bf58d",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_in.msg",
+     "sha256": "71e5367fe839afc4338c50d450f111728e097538ecaccc1b17b10238001b0bb1",
+     "size": 310,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_nz.msg",
+     "sha256": "812db204e4cb8266207a4e948fba3dd1efe4d071bbb793f9743a4320a1ceebe3",
+     "size": 300,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_ph.msg",
+     "sha256": "be107f5fae1e303ea766075c52ef2146ef149eda37662776e18e93685b176cdc",
+     "size": 321,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_sg.msg",
+     "sha256": "b8d354519bd4eb1004eb7b25f4e23fd3ee7f533a5f491a46d19fd520ed34c930",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_za.msg",
+     "sha256": "98ce9ca4bb590ba5f922d6a196e5381e19c64e7682cdbef914f2dce6745a7332",
+     "size": 245,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/en_zw.msg",
+     "sha256": "91088bbbf58a704185dec13dbd421296bbd271a1aebbcb3ef85a99cecd848ff8",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/eo.msg",
+     "sha256": "50df3e0e669502ed08dd778d0afedf0f71993be388b0fcaa1065d1c91bd22d83",
+     "size": 1231,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es.msg",
+     "sha256": "fff2f08a5be202c81e469e16d4de1f8a0c1cfe556cda063da071279f29314837",
+     "size": 1180,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_ar.msg",
+     "sha256": "af530acd69676678c95b803a29a44642ed2d2f2d077cf0f47b53ff24bac03b2e",
+     "size": 242,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_bo.msg",
+     "sha256": "24b58de38cd4cb2abd08d1eda6c9454ffde7ed1a33367b457d7702434a0a55ee",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_cl.msg",
+     "sha256": "12ad1546eb391989105d80b41a87686d3b30626d0c42a73705f33b2d711950cc",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_co.msg",
+     "sha256": "1b4979874c3f025317dfcf0b06fc8cee080a28ff3e8efe1de9e899f6d4f4d21e",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_cr.msg",
+     "sha256": "7ac5fc35bc422a5445603e0430236e62cca3558787811de22305f72d439eb4bb",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_do.msg",
+     "sha256": "847c14c297dbe4d8517debaa8ed555f3daedf843d6bad1f411598631a0bd3507",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_ec.msg",
+     "sha256": "2086ee8d7398d5e60e5c3048843b388437bd6f2507d2293ca218936e3bf61e59",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_gt.msg",
+     "sha256": "1bc22af98267d635e3f07615a264a716940a2b1faa5caa3aff54d4c5a4a34370",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_hn.msg",
+     "sha256": "a2d25880c64309552aaced082deed1ee006482a14cab97db524e9983ee84acfc",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_mx.msg",
+     "sha256": "d0faa9d7997d5696bff92384144e0b9dfb2e4c38375817613f81a89c06ec6383",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_ni.msg",
+     "sha256": "4b28b46981bbb78cbd2b22060e2dd018c66fcff1cee52755425ad4900a90d6c3",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_pa.msg",
+     "sha256": "6832dc5ab9f610883784cf702691fcf16850651bc1c6a77a0efa81f43bc509ac",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_pe.msg",
+     "sha256": "cc826c93682ef19d29ab6304657e07802c70cf18b1e5ea99c3480df6d2383983",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_pr.msg",
+     "sha256": "19563225ce7875696c6aa2c156e6438292de436b58f8d7c23253e3132069f9a2",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_py.msg",
+     "sha256": "94ff64201c27ab04f362617dd56b7d85b223bcca0735124196e7669270c591f0",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_sv.msg",
+     "sha256": "e3268c95e9b7d471f5fd2436c17318d5a796220ba39cebebcd39fbb0141a49ce",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_uy.msg",
+     "sha256": "ba557a3c656275a0c870fb8466f2237850f5a7cf2d001919896725bb3d3eaa4b",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/es_ve.msg",
+     "sha256": "64f796c5e3e300448a1f309a0da7d43548cc40511036ff3a3e0c917e32147d62",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/et.msg",
+     "sha256": "ccc2b4738db16fafb48bfc77c9e2f8be17bc19e4140e48b61f3ef1ce7c9f3a8c",
+     "size": 1206,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/eu.msg",
+     "sha256": "7dcc4966a5c13a52b6d1db62be200b9b5a1decbaccfcaf15045dd03a2c3e3faa",
+     "size": 985,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/eu_es.msg",
+     "sha256": "935164a2d2d14815906b438562889b31139519b3a8e8db3d2ac152a77ec591dc",
+     "size": 287,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fa.msg",
+     "sha256": "f9ca4819e8c8b044d7d68c97fc67e0f4ccd6245e30024161dab24d0f7c3a9683",
+     "size": 1664,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fa_in.msg",
+     "sha256": "6360ce0f31ee593e311b275f3c1f1ed427e237f31010a4280ef2c58aa6f2633a",
+     "size": 1957,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fa_ir.msg",
+     "sha256": "cf492cbd73a6c230725225d70566b6e46d5730bd3f63879781de4433965620be",
+     "size": 417,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fi.msg",
+     "sha256": "be0d2dce08e6cd786bc3b07a1fb1adc5b2cf12053c99eacddaacddb8802dfb9c",
+     "size": 1145,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fo.msg",
+     "sha256": "f249dd1698ed1687e13654c04d08b829193027a2fecc24222ec854b59350466a",
+     "size": 986,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fo_fo.msg",
+     "sha256": "7145b57ac5c074bca968580b337c04a71bbd6efb93afaf291c1361fd700dc791",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fr.msg",
+     "sha256": "7a87e418b6d8d14d8c11d63708b38d607d28f7ddbf39606c7d8fba22be7892ca",
+     "size": 1205,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fr_be.msg",
+     "sha256": "980e703dfb1eede7de48c958f6b501ed4251f69cb0fbce0fca85555f5acf134a",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fr_ca.msg",
+     "sha256": "f16e212d5d1f6e83a9fc4e56874e4c7b8f1947ee882610a73199480319efa529",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/fr_ch.msg",
+     "sha256": "ab160bfdeb5c3adf071e01c78312a81ee4223bbf5470ab880972bbf5965291f3",
+     "size": 281,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ga.msg",
+     "sha256": "057c75c1ad70653733dce43ea5bf151500f39314e8b0236ee80f8d5db623627f",
+     "size": 1141,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ga_ie.msg",
+     "sha256": "2072e48c98b480db5677188836485b4605d5a9d99870ac73b5bfe9dcc6db46f4",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/gl.msg",
+     "sha256": "c71a07169cdbe9962616d28f38c32d641da277e53e67f8e3a69eb320c1e2b88c",
+     "size": 950,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/gl_es.msg",
+     "sha256": "bc2b0424cf27bef67f309e2b6dffef4d39c46f15d91c15e83e070c7fd4e20c9c",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/gv.msg",
+     "sha256": "75aa686ff901c9e66e51d36e8e78e5154b57ee9045784568f6a8798ea9689207",
+     "size": 1037,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/gv_gb.msg",
+     "sha256": "823af00f4e44613e929d32770edb214132b6e210e872751624824da5f0b78448",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/he.msg",
+     "sha256": "d27adaf74ebb18d6964882cf931260331b93ae4b283427f9a0db147a83de1d55",
+     "size": 1938,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/hi.msg",
+     "sha256": "fafe65db09bdcb863742fda8705bcd1c31b59e0dd8a3b347ea6dec2596cee0e9",
+     "size": 1738,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/hi_in.msg",
+     "sha256": "29c7ca358fffcaf94753c7cc2f63b58386234b75552fa3272c2e36f253770c3f",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/hr.msg",
+     "sha256": "9e14d8f7f54be953983f198c8d59f38842c5f73419a5e81be6460b3623e7307a",
+     "size": 1121,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/hu.msg",
+     "sha256": "314f4180c05de4a4860f65af6460900fff77f12c08edd728f68ca0065126b9ae",
+     "size": 1327,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/id.msg",
+     "sha256": "1f1b0f5dede0263bd81773a78e98af551f36361accb315b618c8ae70a5fe781e",
+     "size": 914,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/id_id.msg",
+     "sha256": "db81643ba1fd115e9d547943a889a56dfc0c81b63f21b1edc1955c6884c1b2f5",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/is.msg",
+     "sha256": "6767115fff2da05f49a28bad78853fac6fc716186b985474d6d30764e1727c40",
+     "size": 1255,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/it.msg",
+     "sha256": "c7d84001855586a0bab236a6a5878922d9c4a2ea1799bf18544869359750c0df",
+     "size": 1240,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/it_ch.msg",
+     "sha256": "2ee356ffa2491a5a60bdf7d7febfac426824904738615a0c1d07aef6bda3b76f",
+     "size": 244,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ja.msg",
+     "sha256": "1fa391a6b22ddba5fb0431dfe0507f0b0754140b424700f1675f72c279ab0a0a",
+     "size": 1645,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/kl.msg",
+     "sha256": "1b00229df5a979a040339bbc72d448f39968fee5cc24f07241c9f6129a9b53dd",
+     "size": 978,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/kl_gl.msg",
+     "sha256": "f99da45138a8aebfd92747fc28992f0c315c6c4ad97710eaf9427263bffa139c",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ko.msg",
+     "sha256": "f6e2b0d116d2c9ac90dda430b6892371d87a4ecfb6955318978ed6f6e9d546a6",
+     "size": 1566,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ko_kr.msg",
+     "sha256": "31a4b74f51c584354907251c55fe5ce894d2c9618156a1dc6f5a979bc350db17",
+     "size": 346,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/kok.msg",
+     "sha256": "d236d5b27184b1e813e686d901418117f22d67024e6944018fc4b633df9ff744",
+     "size": 1958,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/kok_in.msg",
+     "sha256": "bee07f14c7f4fc93b62ac318f89d2ed0dd6ff30d2bf21c2874654ff0292a6c4b",
+     "size": 254,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/kw.msg",
+     "sha256": "f49f4e1c7142bf7a82fc2b9fc075171ae45903fe69131478c15219d72bbaad33",
+     "size": 966,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/kw_gb.msg",
+     "sha256": "7a8a539c8b990aeffea06188b98dc437fd2a6e89ff66483ef334994e73fd0ec9",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/lt.msg",
+     "sha256": "510d8eed3040b50afaf6a3c85bc98847f1b4d5d8a685c5ec06acc2491b890101",
+     "size": 1255,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/lv.msg",
+     "sha256": "fd95b38a3bebd59468bdc2890bac59df31c352e17f2e77c82471e1ca89469802",
+     "size": 1219,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/mk.msg",
+     "sha256": "f384dd88523147cef42aa871d323fc4cbee338ff67cc5c95aec7940c0e531ae3",
+     "size": 2105,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/mr.msg",
+     "sha256": "eb2e2b7a41854af68cef5881cf1fbf4d38e70d2fab2c3f3ce5901aa5cc56fc15",
+     "size": 1807,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/mr_in.msg",
+     "sha256": "f75a29bb323db4354b0c759cb1c8c5a4ffc376dffd74274ca60a36994816a75c",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ms.msg",
+     "sha256": "831f611ee851a64bf1ba5f9a5441ec1d50722fa9f15b4227707fe1927f754de4",
+     "size": 910,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ms_my.msg",
+     "sha256": "d05948d75c06669addb9708bc5fb48e6b651d4e62ef1b327ef8a3f605fd5271c",
+     "size": 259,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/mt.msg",
+     "sha256": "d115718818e3e3367847ce35bb5ff0361d08993d9749d438c918f8eb87ad8814",
+     "size": 690,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/nb.msg",
+     "sha256": "bc401889dd934c49d10d99b471441be2b536b1722739c7b0ab7de7629680f602",
+     "size": 1157,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/nl.msg",
+     "sha256": "49128b36b88e380188059c4b593c317382f32e29d1adc18d58d14d142459a2bb",
+     "size": 1079,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/nl_be.msg",
+     "sha256": "9cd54ec24cbdbec5e4fe543dda8ca95390678d432d33201fa1c32b61f8fe225a",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/nn.msg",
+     "sha256": "5ee93a8c245722deb64b68eff50c081f24da5de43d999c006a10c484e1d3b4ed",
+     "size": 1148,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/pl.msg",
+     "sha256": "c39595ddc0095eb4ae9e66db02ee175b31ac3da1f649eb88fa61b911f838f753",
+     "size": 1211,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/pt.msg",
+     "sha256": "9f2bffa3b4d8783b2cfb2ced9cc4319acf06988f61829a1e5291d55b19854e88",
+     "size": 1127,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/pt_br.msg",
+     "sha256": "e383b20484ee90c00054d52dd5af473b2ac9dc50c14d459a579ef5f44271d256",
+     "size": 279,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ro.msg",
+     "sha256": "d2e14be188350d343927d5380eb5672039fe9a37e9a9957921b40e4619b36027",
+     "size": 1172,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ru.msg",
+     "sha256": "c2a3a0be5bc5a46a6a63c4de34e317b402bad40c22fb2936e1a4f53c1e2f625f",
+     "size": 2039,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ru_ua.msg",
+     "sha256": "ae5d3df23f019455f3edfc3262aac2b00098881f09b9a934c0d26c0ab896700c",
+     "size": 242,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sh.msg",
+     "sha256": "00f119701c9f3eba273701a6a731adafd7b8902f6bccf34e61308984456e193a",
+     "size": 1160,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sk.msg",
+     "sha256": "043dece6ea7c83956b3300b95f8a0e92badaa8fc29d6c510706649d1d810679a",
+     "size": 1203,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sl.msg",
+     "sha256": "bd488c9d791abedf698b66b768e2bf24251ffeaf06f53fb3746cab457710ff77",
+     "size": 1164,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sq.msg",
+     "sha256": "cb27007e138315b064576c17931280cfe6e6929efc3dafd7171713d204cfc3bf",
+     "size": 1267,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sr.msg",
+     "sha256": "313e8cdbbc0288aed922b9927a7331d0faa2e451d4174b1f5b76c5c9faec8f9b",
+     "size": 2035,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sv.msg",
+     "sha256": "4f32e1518be3270f4db80136fac0031c385dd3ce133faa534f141cf459c6113a",
+     "size": 1167,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/sw.msg",
+     "sha256": "6b5ab8ae265db436b15d32263a8870ec55c7c0c07415b3f9baac37f73bc704e5",
+     "size": 991,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ta.msg",
+     "sha256": "30a142a48e57f194ecc3aa9243930f3e6e1b4e8b331a8cdd2705ec9c280dccbb",
+     "size": 1835,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/ta_in.msg",
+     "sha256": "aa57d5fb5cc3f59ec6a3f99d7a5184403809aa3a3bc02ed0842507d4218b683d",
+     "size": 251,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/te.msg",
+     "sha256": "42c34d02a6079c4d0d683750b3809f345637bc6d814652c3fb0b344b66b70c79",
+     "size": 2102,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/te_in.msg",
+     "sha256": "88bdaf4b25b684b0320a2e11d3fe77dddd25e3b17141bd7ed1d63698c480e4ba",
+     "size": 411,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/th.msg",
+     "sha256": "f9641a6ebe3845ce5d36ced473749f5909c90c52e405f074a6da817ef6f39867",
+     "size": 2305,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/tr.msg",
+     "sha256": "df7c4ba67457cb47eef0f5ca8e028ff466acdd877a487697dc48ecac7347ac47",
+     "size": 1133,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/uk.msg",
+     "sha256": "cf2e78ef3322f0121e958098ef5f92da008344657a73439eac658cb6bf3d72bd",
+     "size": 2113,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/vi.msg",
+     "sha256": "9c69094c0bd52d5ae8448431574eae8ee4be31ec2e8602366df6c6bf4bc89a58",
+     "size": 1421,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/zh.msg",
+     "sha256": "ef81b41ec69f67a394ece2b3983b67b3d0c8813624c2bfa1d8a8c15b21608ac9",
+     "size": 3330,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/zh_cn.msg",
+     "sha256": "85f91cf6e316774aa5d0c1eca85c88e591fd537165bb79929c5e6a1ca99e56c8",
+     "size": 312,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/zh_hk.msg",
+     "sha256": "d123e0b4c2614f680808b58cca0c140ba187494b2c8bcf8c604c7eb739c70882",
+     "size": 752,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/zh_sg.msg",
+     "sha256": "2683517766af9da0d87b7a862de9adea82d9a1454fc773a9e3c1a6d92aba947a",
+     "size": 339,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/msgs/zh_tw.msg",
+     "sha256": "d582406c51a3db1eadf6507c50a1f85740fda7da8e27fc1438feb6242900cb12",
+     "size": 346,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/opt0.4/optparse.tcl",
+     "sha256": "895caa15a5fbf9f499bfea6ad65b23f0bd4880426a71c65d95a49a443c9402cd",
+     "size": 32705,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/opt0.4/pkgIndex.tcl",
+     "sha256": "fe8d1229176043ee197f3db750bd6cadf265d7b3d127c87cdc2f0e10e2c6a549",
+     "size": 608,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/package.tcl",
+     "sha256": "c13dcf4d1659a987671290592258b436d26dcfda06125761ef1f040c68698b67",
+     "size": 23244,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/parray.tcl",
+     "sha256": "ebe5a2b4cbbcd7fd3f7a6f76d68d7856301db01b350c040942a7b806a46e0014",
+     "size": 816,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/safe.tcl",
+     "sha256": "c58b6ff351471bab27550198353e105d389ddd22cf39fd18c62335d4c929541d",
+     "size": 40934,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/tclAppInit.c",
+     "sha256": "5006ea395c2ca96e74353e9486d6be3e2a85a7925969a4fe41662f092ef94caa",
+     "size": 4871,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/tclIndex",
+     "sha256": "962c60eb7e050061462ff72cec9741a7f18307af4aaa68d7665174f904842d13",
+     "size": 5539,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/tm.tcl",
+     "sha256": "e88cc073643187c0a3bea35bac7ad698c317abe1387a80163cd1d98533f9eefa",
+     "size": 11824,
+     "exec": false
+    },
+    {
+     "path": "lib/tcl8.6/word.tcl",
+     "sha256": "b0592b0e1fd6c3c0e704168d4af97e9d5cab89b5cf5176e19ed5bd5f5eb2a175",
+     "size": 4876,
+     "exec": false
+    },
+    {
+     "path": "libexec/yosys",
+     "sha256": "beb67bee34580810390f41553a9f012902526d455e6eaa4788d7552b91d34502",
+     "size": 21661360,
+     "exec": true
+    },
+    {
+     "path": "license/LICENSE.yosys",
+     "sha256": "7baf6aad3445eb7a7dad420b47a778562917513f4166e28717c194d91a6fc417",
+     "size": 1290,
+     "exec": false
+    }
+   ],
+   "links": [],
+   "treeSha256": "d02397e9081cd0a74cd5be95305dcaa20870a21619918817a63e600079c2e47b",
+   "bytes": 25928924
+  },
+  {
+   "id": "openfpgaloader",
+   "kind": "tool",
+   "name": "openFPGALoader",
+   "version": "1.1.1",
+   "path": "openfpgaloader",
+   "executable": "libexec/openFPGALoader",
+   "license": "Apache-2.0 (libusb and libftdi are LGPL; hidapi, zlib, zstd notices still to be added before redistribution)",
+   "source": "https://github.com/trabucayre/openFPGALoader (build via YosysHQ OSS CAD Suite 2026-09-15, source revision 451beadf)",
+   "files": [
+    {
+     "path": "lib/libftdi1.2.5.0.dylib",
+     "sha256": "fd8cc846cb2b020cb0a04204ace7111c5fba3d3a6953b3913b013a7a8f0c13f3",
+     "size": 79824,
+     "exec": true
+    },
+    {
+     "path": "lib/libhidapi.0.dylib",
+     "sha256": "ce63ca7a3fb58d6ca6fb53ea296904a958a2686d359ff12ed5b6c0e7ee5cbc49",
+     "size": 62832,
+     "exec": true
+    },
+    {
+     "path": "lib/libusb-1.0.0.dylib",
+     "sha256": "5c17d619e03c6db07ec356fa1a601d80abee353f21567045c82029de8360a50f",
+     "size": 165104,
+     "exec": true
+    },
+    {
+     "path": "lib/libz.1.3.dylib",
+     "sha256": "d98b15f0ee5f7f6596be580c56a6b44f22df1b42a27ff7141eb8bda7c3f19644",
+     "size": 95360,
+     "exec": true
+    },
+    {
+     "path": "lib/libzstd.1.5.5.dylib",
+     "sha256": "388b05433363fa24f11d528d474cbce3000b4d3e7b048fe1f963d5a99733a63b",
+     "size": 695248,
+     "exec": true
+    },
+    {
+     "path": "libexec/openFPGALoader",
+     "sha256": "99dcde0efb78de808ce596fc82c8361127f7c793618aa46d6b386dd79586fdc3",
+     "size": 3357856,
+     "exec": true
+    },
+    {
+     "path": "license/LICENSE.libftdi",
+     "sha256": "ab8a5c824f39b0804ee285fb0ba35b83dae0f0949b4f38ee2c1e00584eebe546",
+     "size": 1575,
+     "exec": false
+    },
+    {
+     "path": "license/LICENSE.libusb",
+     "sha256": "20dd41f245ac7dffa21ffe4044d504f72a6bb0a7c3b3c883f8fdaa9ef041427b",
+     "size": 26904,
+     "exec": false
+    },
+    {
+     "path": "license/LICENSE.openfpgaloader",
+     "sha256": "a6729c938f51cdd916c52ebf7dbedc018dbae6e62519887eff8ea269bb18c689",
+     "size": 11845,
+     "exec": false
+    }
+   ],
+   "links": [],
+   "treeSha256": "ceb8cc454d769449a4d1768c34bd357d1b0b10362641108252fb7aa95d696e2f",
+   "bytes": 4496548
+  },
+  {
+   "id": "lima",
+   "kind": "tool",
+   "name": "Lima",
+   "version": "2.2.1",
+   "path": "lima",
+   "executable": "bin/limactl",
+   "license": "Apache-2.0",
+   "source": "https://github.com/lima-vm/lima/releases/tag/v2.2.1",
+   "files": [
+    {
+     "path": "bin/apptainer.lima",
+     "sha256": "317231aa6c7c606032091c895a5ebe6c9cd3c21bdce39c80ca916a63b41529d1",
+     "size": 762,
+     "exec": true
+    },
+    {
+     "path": "bin/docker.lima",
+     "sha256": "b27aa268cf41a6f9348f99da9376612a9d53ae31c0bceaef151b0b735569a367",
+     "size": 898,
+     "exec": true
+    },
+    {
+     "path": "bin/kubectl.lima",
+     "sha256": "1c8da7b909449d8e14c737cc8d3e799018ce10a83c75ca2499f63d266c5c8199",
+     "size": 1608,
+     "exec": true
+    },
+    {
+     "path": "bin/lima",
+     "sha256": "88aeac60dbcb69ec675c0ce9af24d5f66255f4899fa73320402db57925500832",
+     "size": 1607,
+     "exec": true
+    },
+    {
+     "path": "bin/limactl",
+     "sha256": "6d32fb0f880c0ea750434f2ac855a3f2129126752a301ce4d88adbd2fa599e1e",
+     "size": 32685200,
+     "exec": true
+    },
+    {
+     "path": "bin/nerdctl.lima",
+     "sha256": "3034baf0798ca7a9ed0cc98328658ba00785aff4a1f33055f02f8081a32ee70b",
+     "size": 323,
+     "exec": true
+    },
+    {
+     "path": "bin/podman.lima",
+     "sha256": "be4d6158749e51bb6325de2f0c81ce29fea1e89a3c8668272e092512f74ed213",
+     "size": 801,
+     "exec": true
+    },
+    {
+     "path": "libexec/lima/lima-driver-krunkit",
+     "sha256": "a28030461823e6bb370fdfe028559ad7fd8d868bda2f0c3319c77cfc0d0b60c9",
+     "size": 28257378,
+     "exec": true
+    },
+    {
+     "path": "libexec/lima/limactl-mcp",
+     "sha256": "a87b71b47e105d42dd7a721bfbcc17bfb662dcd5598c4b40ce2c1ece95efccec",
+     "size": 7470914,
+     "exec": true
+    },
+    {
+     "path": "libexec/lima/limactl-url-fedora-rawhide",
+     "sha256": "aaf3ba78520fffb520613d569a9fe9f1842c300b0d1f8d7ed559856e4f5cd220",
+     "size": 2024,
+     "exec": true
+    },
+    {
+     "path": "share/doc/lima/ADOPTERS.md",
+     "sha256": "b39b423cde5fb57ebcb45ff8461c7408275f6f6efb9a3fb7bdb889f50bbee5fa",
+     "size": 508,
+     "exec": false
+    },
+    {
+     "path": "share/doc/lima/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "share/doc/lima/MAINTAINERS.md",
+     "sha256": "74fe542c14c6c39492586a9c823131dfdb04cb8acb2e790762ec62e4ac1c280c",
+     "size": 58,
+     "exec": false
+    },
+    {
+     "path": "share/doc/lima/README.md",
+     "sha256": "e96cd776e93872b74e493f308743db6ac1558507ebed5afa9b436f93f685274b",
+     "size": 4243,
+     "exec": false
+    },
+    {
+     "path": "share/doc/lima/ROADMAP.md",
+     "sha256": "11be97b9d348f88d2ece3b6394cafb9f51aebb5049b60066174cf9c6624cab7c",
+     "size": 55,
+     "exec": false
+    },
+    {
+     "path": "share/doc/lima/SECURITY.md",
+     "sha256": "a636a2220abfc84f70694ef1ff676a5566ee0e6108f04c29cba9f8233b45f8e5",
+     "size": 66,
+     "exec": false
+    },
+    {
+     "path": "share/doc/lima/VERSION",
+     "sha256": "51a76904570dfd01d966325f09cddf7ecc5f7608a65d6f4bf11d135bbb88ba0d",
+     "size": 7,
+     "exec": false
+    },
+    {
+     "path": "share/lima/lima-guestagent.Darwin-aarch64.gz",
+     "sha256": "ac4d218d8d0509fb223ee8f162ef8f752e74e4904e891bae8bbd86038225a79b",
+     "size": 5521715,
+     "exec": false
+    },
+    {
+     "path": "share/lima/lima-guestagent.Linux-aarch64.gz",
+     "sha256": "ed41b146a0aa9fb5e75d4b42d7af40c9ffb2cafadf4d8685762599e1960a72d7",
+     "size": 7421099,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/README.md",
+     "sha256": "371bc5c825d55951807fb609f0256a841d2cf4c5c49c7195e1a6434f8cbd9418",
+     "size": 8622,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_default/mounts.yaml",
+     "sha256": "96e29b599c7a2277eb1b1f5e34e1a9527f03c649916bae3038e66049635ce647",
+     "size": 171,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/almalinux-10.yaml",
+     "sha256": "d21bcc9be53505729fc2ab477e415c9914eb8dcb7a6c0014c32f9c192948f644",
+     "size": 1599,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/almalinux-8.yaml",
+     "sha256": "8a10916067a10df728eb8fab38080136e758867f6b84c0bb717992dfd72edbe0",
+     "size": 1922,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/almalinux-9.yaml",
+     "sha256": "8bb968adbd45a51965971e0125ea19c6f07404525db02c324922d461066df5b0",
+     "size": 1571,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/almalinux-kitten-10.yaml",
+     "sha256": "67b8ad4381d670ef677441a3d3160cd411e1770130b66426d9b6dfeaee87493c",
+     "size": 2062,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/alpine-3.21.yaml",
+     "sha256": "7ff078869f4e3d972d19d1cbdd3437e6f9c6be585f7a21e396c1e3bd84b7ac23",
+     "size": 592,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/alpine-3.22.yaml",
+     "sha256": "50de1b89aa3a6c91a588407547b76819271cb03a7591953f9debcaee8153d0ce",
+     "size": 592,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/alpine-3.23.yaml",
+     "sha256": "2ee39eac2b8e2ca17733968cbe8940c834c3288e6bc0075a517072e1bd8c0e63",
+     "size": 592,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/alpine-iso.yaml",
+     "sha256": "ed168816ab7b7390df97b316e2e4599458c103cd8130a5227619d5902b86d57d",
+     "size": 646,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/archlinux.yaml",
+     "sha256": "d5a188eb132731606dbad3cc1827dd2a36bf9c33ed71491f0089b7e16d5668f3",
+     "size": 825,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/centos-stream-10.yaml",
+     "sha256": "48ec015db12f3537d8e6e9201254ec0094596a74e45ad46f1c5169b0c455ecb1",
+     "size": 1809,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/centos-stream-9.yaml",
+     "sha256": "a65fa0da05cb991bc1133743d24d0faa9201bc425ee8bf9b727bcff2c10c7a36",
+     "size": 1792,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/debian-11.yaml",
+     "sha256": "2b126eda475b4a553f4f19a0300908d63abf7601f3e2eb247bf0351fcc9a3f43",
+     "size": 1671,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/debian-12.yaml",
+     "sha256": "1b8c60de28408f2f8bc306684e1a2b1670654b606e7acb5c71a62c825cf3524e",
+     "size": 3015,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/debian-13.yaml",
+     "sha256": "7f39ca32e4867f4ef64e7b8fe5214590ad384d3f2640e36e106686d5b29dd996",
+     "size": 4513,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/fedora-41.yaml",
+     "sha256": "f5ae388da0f372d6617e4a1eda9be2a08d638801e0ac3da5a6bdb4ebe77ab348",
+     "size": 938,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/fedora-42.yaml",
+     "sha256": "17c5b4a85f67c982163a1962203484bc8787116db290f7fe34c14b4e3837f052",
+     "size": 889,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/fedora-43.yaml",
+     "sha256": "598858ec53ddeb4227956f20fffe2bc5a5d14a382983ee4b76173c272efc6505",
+     "size": 1111,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/fedora-44.yaml",
+     "sha256": "20e5585a589803d4be686a682bf67c484a9c1b5178c394a96a7443f64000ab1b",
+     "size": 892,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/fedora.yaml",
+     "sha256": "20e5585a589803d4be686a682bf67c484a9c1b5178c394a96a7443f64000ab1b",
+     "size": 892,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/freebsd-15.yaml",
+     "sha256": "baeabbee290c3d4ff9e30f6f651159404480f46252036a006739209153e40a2f",
+     "size": 710,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/freebsd.yaml",
+     "sha256": "baeabbee290c3d4ff9e30f6f651159404480f46252036a006739209153e40a2f",
+     "size": 710,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/macos-15.yaml",
+     "sha256": "902a4675924f35eb4ee9c4fb5165de93c154c98a2113aa305c520bc2838428ae",
+     "size": 509,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/macos-26.yaml",
+     "sha256": "b5f330f87e1636ef33c2bd9ab3e91bb6b887477ac3bee31a56646fc9dcb5402a",
+     "size": 509,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/macos-27.yaml",
+     "sha256": "4ebe1fdc7c59ec7fee56b559655d207c9431fa6d47acb9ea05ebbec23306e42c",
+     "size": 485,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/macos.yaml",
+     "sha256": "4ebe1fdc7c59ec7fee56b559655d207c9431fa6d47acb9ea05ebbec23306e42c",
+     "size": 485,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/opensuse-leap-15.yaml",
+     "sha256": "598c299022cd3d45fde3259e7a4d5ea3595cb21380b87218f397930a763b09db",
+     "size": 580,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/opensuse-leap-16.yaml",
+     "sha256": "7792005012f9d85b4e1b0ca9c8ca332041ee34273e5d0906e95dfcdf09f6ac99",
+     "size": 470,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/opensuse-leap.yaml",
+     "sha256": "7792005012f9d85b4e1b0ca9c8ca332041ee34273e5d0906e95dfcdf09f6ac99",
+     "size": 470,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/oraclelinux-10.yaml",
+     "sha256": "8bcc04100ebae6e63ff0735f4c3717678a777043779246108bc494663a508776",
+     "size": 613,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/oraclelinux-8.yaml",
+     "sha256": "0aac1503ccb588d7cdc9ffdffb5e8d6cabee356e43732ec9697f5ae30986ca28",
+     "size": 1017,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/oraclelinux-9.yaml",
+     "sha256": "6134ef5b6ca5bfda4b01b6088a732a57d36101ebe7ecb86db7a2287d0f88f4a5",
+     "size": 609,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/rocky-10.yaml",
+     "sha256": "0abc23e59d0fafb239239c2cbd3b5c8723f8a8896517dc21760e45a8aa5869d9",
+     "size": 1551,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/rocky-8.yaml",
+     "sha256": "97e22263db95da9ea02c6da943db2126af5876ff0f75c0b655fc8dba94d36764",
+     "size": 1159,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/rocky-9.yaml",
+     "sha256": "5e094249ce479df8bf0115ba71e14cfc5c56d3d07aa01cfd53eccdba766739ba",
+     "size": 1511,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-20.04.yaml",
+     "sha256": "08973a1184129c05865e9d227b73c05f0af7961e565dd41a0fb8cf1a4fcb2164",
+     "size": 1922,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-22.04.yaml",
+     "sha256": "8f9224b4b9e0e1fe891e886368c0ec392d81e77b617b0e897b71a85e6650d76f",
+     "size": 2997,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-24.04.yaml",
+     "sha256": "f523ea95c37d54ae51f4704337cd8d5ad56f5448da2765806ce049588d676ad4",
+     "size": 3403,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-24.10.yaml",
+     "sha256": "c520c8ecd33996a257f5e586d0bc84816a27f9fc004ce5f18548dca44eff1f7d",
+     "size": 2497,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-25.04.yaml",
+     "sha256": "20c004c346e9de7294747916b62786e236b30a5ac22769b928cbdb4f3e0a1c11",
+     "size": 2421,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-25.10.yaml",
+     "sha256": "fdd85fb08b33fc6ebcb3d7c5a60a7bccfb911b46cef1654243aa5b436d847914",
+     "size": 2445,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-26.04.yaml",
+     "sha256": "9470033b52b5f7bcc4ca3dc0daddd853e5e6362becef65b63fad5b4256d1e4c9",
+     "size": 3855,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu-lts.yaml",
+     "sha256": "9470033b52b5f7bcc4ca3dc0daddd853e5e6362becef65b63fad5b4256d1e4c9",
+     "size": 3855,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/_images/ubuntu.yaml",
+     "sha256": "9470033b52b5f7bcc4ca3dc0daddd853e5e6362becef65b63fad5b4256d1e4c9",
+     "size": 3855,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/almalinux-10.yaml",
+     "sha256": "6d960b4284dd2633ec509e3b8ec66ac610d9617b1c7febda4c395f0501f49dc2",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/almalinux-8.yaml",
+     "sha256": "f231496dfe1cd12ee3c5ea1832fd37f1a1185bda028d51b310c61d47c8970809",
+     "size": 91,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/almalinux-9.yaml",
+     "sha256": "6126b2957d549f5560c7c9defab1130401b5c348122bf1d6fa7c9b93a3e3f35c",
+     "size": 91,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/almalinux.yaml",
+     "sha256": "6d960b4284dd2633ec509e3b8ec66ac610d9617b1c7febda4c395f0501f49dc2",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/alpine-3.21.yaml",
+     "sha256": "815d8456421d7b7b298a5dd732a21e0934ec8315d03bfe4cf32a5930f1325530",
+     "size": 437,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/alpine-3.22.yaml",
+     "sha256": "5c1a5d6a47e368fadacc9d1cbfdfa606ad89342302c89835426a8bcc97f8236c",
+     "size": 437,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/alpine-3.23.yaml",
+     "sha256": "a0e5edbbd40398db17b537c90e82a6dd06cac248b785cebfaa73fa15fcb3d258",
+     "size": 437,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/alpine-iso.yaml",
+     "sha256": "b6b7b5fd328e11d66deeead98c2532093f7901e5f551326f0e29227c9a2473ba",
+     "size": 436,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/alpine.yaml",
+     "sha256": "a0e5edbbd40398db17b537c90e82a6dd06cac248b785cebfaa73fa15fcb3d258",
+     "size": 437,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/apptainer-rootful.yaml",
+     "sha256": "3039025efb6101f4967b8702fa29321ae17815e8a3de31a4e79b7264ca0cae0f",
+     "size": 1212,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/apptainer.yaml",
+     "sha256": "586227f754b848513abea48a03da3aa3358c7a0fa09b547f0eb11f386da765ee",
+     "size": 1191,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/archlinux.yaml",
+     "sha256": "dc37d10fbddba63feb1cab22306981105c8804914f3a45081a6a0cf94877897e",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/buildkit.yaml",
+     "sha256": "944061c5bae23e75369981e386fb9f71d28cfead8d3272aa7d6087a6076c7865",
+     "size": 695,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/centos-stream-10.yaml",
+     "sha256": "0562476a532ef74fb5d398018fa0a1138dced12dcdc9b408f17ea28878afc037",
+     "size": 96,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/centos-stream-9.yaml",
+     "sha256": "b982332554617169ada0c00e7b025adf0951cc8a971dc8a35ad22e948efa1c56",
+     "size": 95,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/centos-stream.yaml",
+     "sha256": "b982332554617169ada0c00e7b025adf0951cc8a971dc8a35ad22e948efa1c56",
+     "size": 95,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/debian-11.yaml",
+     "sha256": "c13a7e8dacefbb18fddfa700cb111f1a723ee44239a63bdda6570cbf82feb9d1",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/debian-12.yaml",
+     "sha256": "353b31ff0eb91caddbc1c0e1c5ab349000978a95519e7b3ff92eb5c0a8f99c87",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/debian-13.yaml",
+     "sha256": "62483b54fec217bae92ccf5e6939d0f079e127f3837b7cb45e84e0c3eb8b8d3e",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/debian.yaml",
+     "sha256": "62483b54fec217bae92ccf5e6939d0f079e127f3837b7cb45e84e0c3eb8b8d3e",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/default.yaml",
+     "sha256": "9b36702315b0716108a64631faf62a664d94f8f4a57acf3174f80022b308f5a3",
+     "size": 34256,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/docker-rootful.yaml",
+     "sha256": "30bd059d93bf3d3e3becb14c2e2e66aa22b3ed669f63cfa14c65d91b0b1804e8",
+     "size": 3380,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/docker.yaml",
+     "sha256": "4577486ed36c6b5ac58e2cb6262a1e83e8a654fdaa702a0ac73763f132e103f5",
+     "size": 3804,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/almalinux-kitten-10.yaml",
+     "sha256": "dfd17c245143afcb04453c833f8fa37fda9e0607e8a64a9a465c2f54df3393b8",
+     "size": 99,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/almalinux-kitten.yaml",
+     "sha256": "dfd17c245143afcb04453c833f8fa37fda9e0607e8a64a9a465c2f54df3393b8",
+     "size": 99,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/alsa.yaml",
+     "sha256": "3d8f2b7567be9bb2c5658033a98cb6f0ff496bec270dafc27ecc8fa5b8721e97",
+     "size": 1071,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/debian-sid.yaml",
+     "sha256": "d460cf0799c390e98140e25393e7a75f02cf909a5c8c1871e157844a5e0decd5",
+     "size": 711,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/fedora-rawhide.yaml",
+     "sha256": "e188937906f382a21fce08ff14d0df0734ebac188e44bf1ad6b3884bf3ac34d2",
+     "size": 100,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/freebsd-16.yaml",
+     "sha256": "b039863f185b0ef2f77dba371829a0ba4d799efc00be7f1c66a7838f2fc6e4dc",
+     "size": 439,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/freebsd-current.yaml",
+     "sha256": "b039863f185b0ef2f77dba371829a0ba4d799efc00be7f1c66a7838f2fc6e4dc",
+     "size": 439,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/gentoo.yaml",
+     "sha256": "d04237a3af3ca93498f19f1dffad1b48a4677772e78c6fd683243990219bab7d",
+     "size": 339,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/opensuse-tumbleweed.yaml",
+     "sha256": "dd2eb0adf5222fe837738ae1c2f8380cedeb4cc6eeabee9dc2fecaf48ab43ac1",
+     "size": 404,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/rke2.yaml",
+     "sha256": "4726d53971f993c3b4009f245afc735cfa79dcdf490e269c561854d3929fc55d",
+     "size": 2179,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/u7s.yaml",
+     "sha256": "6c95026344c83191e905c4b1ecec8b9b8af44a0d2f7af533ee5aa562173aee79",
+     "size": 3837,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/ubuntu-26.10.yaml",
+     "sha256": "db8b63f5f4117a2bab89ed3a0b36652f1ab4476c9be7e79ece47ed50412e8a69",
+     "size": 1401,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/ubuntu-next.yaml",
+     "sha256": "db8b63f5f4117a2bab89ed3a0b36652f1ab4476c9be7e79ece47ed50412e8a69",
+     "size": 1401,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/vnc.yaml",
+     "sha256": "08f26461b82906b7a163904acdb09953ad27118f649d7a3e27492c0c9a253645",
+     "size": 1486,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/experimental/wsl2.yaml",
+     "sha256": "e01a2828332dd204d04d7853968e80255a39e1f9df00e6532b26229ba871de4d",
+     "size": 704,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/faasd.yaml",
+     "sha256": "bbb9c8e61fb9c7b18038c2d9871c6d1819db8ac6fa33df312c957fd56aa13217",
+     "size": 1630,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/fedora-41.yaml",
+     "sha256": "711c8f8bce83ce4e824c8618f62c97f8b8077d591cf2bf72cab54dcc961e311b",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/fedora-42.yaml",
+     "sha256": "5b931416da67ee214eb2e6627b247c500a0174478416bd74a903177e0ca2048e",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/fedora-43.yaml",
+     "sha256": "9bf3bffd32fb4c0e5309df6533b6cdaccf54516748652a3546e1a019412b5152",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/fedora-44.yaml",
+     "sha256": "8f3232ec23d3186e7cefee02dcc48a357f1992b69845e4335f0e560742f834b9",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/fedora.yaml",
+     "sha256": "8f3232ec23d3186e7cefee02dcc48a357f1992b69845e4335f0e560742f834b9",
+     "size": 89,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/freebsd-15.yaml",
+     "sha256": "705322efa6624a4849fea9b7c1eddc53220170c103177f05544b4605eacbe77f",
+     "size": 90,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/freebsd.yaml",
+     "sha256": "705322efa6624a4849fea9b7c1eddc53220170c103177f05544b4605eacbe77f",
+     "size": 90,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/homebrew-linux.yaml",
+     "sha256": "86c382f1fb2f28454c67d6190ad6dcc3b3e2b194ee83a98ea744d4361b6e80f6",
+     "size": 1023,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/homebrew-macos.yaml",
+     "sha256": "985a8a99f0d87fc9fd420322d65f7b55df87c2c2d64d83f44202dfc85d06309d",
+     "size": 1314,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/k0s.yaml",
+     "sha256": "682e2f6f1404d34969afb5d962c85951e9db21c7728d93afb75e393166d37817",
+     "size": 1947,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/k3s.yaml",
+     "sha256": "506220f1e21c7dfbc80bfb1b63d273dcc707fe5adada2412d0146cb903b7cbd1",
+     "size": 2789,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/k8s.yaml",
+     "sha256": "e8e5fad851e54db51553b3a16d9f2bc52fcdd033d1c4dafa0b6d1fbf17e60183",
+     "size": 10066,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/linuxbrew.yaml",
+     "sha256": "86c382f1fb2f28454c67d6190ad6dcc3b3e2b194ee83a98ea744d4361b6e80f6",
+     "size": 1023,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/macos-15.yaml",
+     "sha256": "b0ba9183b52c32515fbab9d372dbafa603f413358ced4bfffa84c0aa3ab41f88",
+     "size": 327,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/macos-26.yaml",
+     "sha256": "bbe8ed38edcbd96fc50de54b28d735b4476acd01d41c6dc422d1eaf222f6ce29",
+     "size": 327,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/macos-27.yaml",
+     "sha256": "03bfe24a484b1e8672fdcdd4083dce7a718a2506887359f4c3334bfae456983a",
+     "size": 327,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/macos.yaml",
+     "sha256": "03bfe24a484b1e8672fdcdd4083dce7a718a2506887359f4c3334bfae456983a",
+     "size": 327,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/opensuse-leap-15.yaml",
+     "sha256": "ab5daf58ea54a5f9cb3b3f1738ba2e268a16f2ed1ff72490c05cae85d42617a6",
+     "size": 96,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/opensuse-leap-16.yaml",
+     "sha256": "e7057daa2f400fb0c87a39d8a590dd641961d9b7315f4672a1ae048b349f1021",
+     "size": 96,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/opensuse-leap.yaml",
+     "sha256": "e7057daa2f400fb0c87a39d8a590dd641961d9b7315f4672a1ae048b349f1021",
+     "size": 96,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/opensuse.yaml",
+     "sha256": "e7057daa2f400fb0c87a39d8a590dd641961d9b7315f4672a1ae048b349f1021",
+     "size": 96,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/oraclelinux-10.yaml",
+     "sha256": "6113d9b481846a5ea3b5dbdb7dab8949ab76dd0c0a2465fba156220e19a708fb",
+     "size": 94,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/oraclelinux-8.yaml",
+     "sha256": "12ffe1b1463107031d8b3e1fd983e31269dbffaa395cd489bd0bdc26c6610f92",
+     "size": 93,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/oraclelinux-9.yaml",
+     "sha256": "907758c19aa8c71e711aa574f1b14abe1182f0e08c5c023214f697fdd23563f4",
+     "size": 93,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/oraclelinux.yaml",
+     "sha256": "6113d9b481846a5ea3b5dbdb7dab8949ab76dd0c0a2465fba156220e19a708fb",
+     "size": 94,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/podman-rootful.yaml",
+     "sha256": "577601b2b36cbe349813995c4127d35393c925140a8e70ab1f1ddb5189f1a537",
+     "size": 2149,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/podman.yaml",
+     "sha256": "c1eda96ec59e1144e6ed6fa893e9f1a703280a1ea2d71a80ad5e280e89c313bc",
+     "size": 1712,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/rocky-10.yaml",
+     "sha256": "8b329bb268d71b7b6290617c40f3646d505adad1cd03a42185dd486e41f25882",
+     "size": 88,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/rocky-8.yaml",
+     "sha256": "ec9be57ac7895490589d8d4d571f122947e92e1f40a0faa17a2d405630d69183",
+     "size": 87,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/rocky-9.yaml",
+     "sha256": "46f68996054fc6d39604ead72f89dc42aee37fd749af877d7771d77e1ecb76a7",
+     "size": 87,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/rocky.yaml",
+     "sha256": "8b329bb268d71b7b6290617c40f3646d505adad1cd03a42185dd486e41f25882",
+     "size": 88,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-20.04.yaml",
+     "sha256": "3e75e01bebf917004785ee68401098bd74c993b63bb48dc9f76f261e6fa6ec00",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-22.04.yaml",
+     "sha256": "fd2ce55fdb0462cd7ca67e6a1a60fc9f80d7dde700cca529ed44b6297a758b02",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-24.04.yaml",
+     "sha256": "84ec4177f7f8ddd4ebb12ee23e50f556ec70ce71f753cb0c6c790cd5d05c7b72",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-24.10.yaml",
+     "sha256": "d2b8923fb448a846e63dc6270917d48f53e3fe1944e2bc2ad015e2af09e75a6c",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-25.04.yaml",
+     "sha256": "56e3eb602b5590d047bb32cafa30bb3fd9aba077eaab58b333ad130293d3080b",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-25.10.yaml",
+     "sha256": "78adc1ba19ce9036e77a4c29136ce92a9d20dc71479502f2bd94774b6315c0ab",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-26.04.yaml",
+     "sha256": "b01daf4e906f1ba71fca9a5f3b0c3f2b9a820ac71787409ef8eb0cc578b56036",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu-lts.yaml",
+     "sha256": "b01daf4e906f1ba71fca9a5f3b0c3f2b9a820ac71787409ef8eb0cc578b56036",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/ubuntu.yaml",
+     "sha256": "b01daf4e906f1ba71fca9a5f3b0c3f2b9a820ac71787409ef8eb0cc578b56036",
+     "size": 92,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/windows-11.yaml",
+     "sha256": "dca7eb7bb007cbcdbc797966154f9a030e0f8a6c3dea64bac9c33dc1774badc9",
+     "size": 1770,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/windows-2025.yaml",
+     "sha256": "d62bf545d16c3f0bd6d09a8f71337148277feda87867febc06ba951fd376e9c6",
+     "size": 1108,
+     "exec": false
+    },
+    {
+     "path": "share/lima/templates/windows.yaml",
+     "sha256": "dca7eb7bb007cbcdbc797966154f9a030e0f8a6c3dea64bac9c33dc1774badc9",
+     "size": 1770,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/lima.1",
+     "sha256": "0cc36304307e231f05d00294c4e9ad19c056afe38315127a650973c3a99e90ce",
+     "size": 387,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-autostart-disable.1",
+     "sha256": "264ed26a4341681403dea956500178f7b49ea0ee178a68756e4a7c16dab317e4",
+     "size": 822,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-autostart-enable.1",
+     "sha256": "6aefea5e2f15ab5879056ac0b7fc1aed313ae89d202bbee8c40940a333da820e",
+     "size": 1033,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-autostart.1",
+     "sha256": "190afa27a55ecf02cb7a6385184085de57665a075e96a95995e588c95fb28359",
+     "size": 854,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-clone.1",
+     "sha256": "7a8a2afc557fd070d9e0524c4c41cede6f268cd8142adbba15137bc657628c54",
+     "size": 2532,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-completion-bash.1",
+     "sha256": "82f9703c1cc097f92f8d3ebcb8eabf5650f349ac4c3a2dc2bec3615af1986dee",
+     "size": 1419,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-completion-fish.1",
+     "sha256": "7a2abac98b72af5b7b55236e35ac0541cd7bb5cade71d273459f101726244f55",
+     "size": 1190,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-completion-powershell.1",
+     "sha256": "188d8aba93a16a2585d37ad61cd3f577746f42946c01fd8e02aeeef14d8d9166",
+     "size": 1144,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-completion-zsh.1",
+     "sha256": "bc8b5540d3915027af39f860af2369ac1bce11bee34d59d12301d8b6ee9f3842",
+     "size": 1466,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-completion.1",
+     "sha256": "f41376fe8132e8955beb63fc6e7ead7a7e16ec7145a8404eb901d3f93f162148",
+     "size": 1048,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-copy.1",
+     "sha256": "ffd343c160cfeb0dc569e70e2209a51a3ebb3177f4425ad002d24038c380020f",
+     "size": 1845,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-create.1",
+     "sha256": "f7264364d8acd5af14f8878a6b1d163ce7ef893062aa38b8082f31d12ba2cc04",
+     "size": 4133,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-delete.1",
+     "sha256": "1d9d3cb9b1f632a28f16f1feecb40312c4ec0ff281fb5d1f0d7ac01d494cefd4",
+     "size": 833,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk-create.1",
+     "sha256": "0d4c9a469ae77614d108858cf09a40832556a0dc57513c0a03c1309eea7e2aa3",
+     "size": 947,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk-delete.1",
+     "sha256": "c7b809fe30191a9539d5ee2ae4f599d36f72d989ac205b6681dd17aedb6b5eb3",
+     "size": 965,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk-import.1",
+     "sha256": "39451fc8ca5f02d02cacf250b7f1408f698e81633277cfc37b0c44c38d1fc6f1",
+     "size": 852,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk-list.1",
+     "sha256": "c9daef07b47f59c6213d2f35b4bea9fc67e674345860c76bbea50a8f320c0fca",
+     "size": 857,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk-resize.1",
+     "sha256": "0d3719a51517f8a0e3c9d097dc992ba54f10201544f77d0f7d108352a281e511",
+     "size": 869,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk-unlock.1",
+     "sha256": "5dab343b4e447231f1e50aa0b168c875eb07dd79e0668a3639367bea47e5c17d",
+     "size": 1024,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-disk.1",
+     "sha256": "adb6671c3fb7aa548765294ac97f7cb31cc7db65ec3df534855f8dce6959c564",
+     "size": 1149,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-edit.1",
+     "sha256": "86886b90c43c03b2125205c42916639c96e04ff982d1fb25e50066ab02b8dd8a",
+     "size": 2212,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-factory-reset.1",
+     "sha256": "1857617946d562e9dc291c5d1f05203d16bb2343b837c5554df35c5603f753f5",
+     "size": 786,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-info.1",
+     "sha256": "e6d3b91d1612bf0e2177fd88da6ab1b55d2c8e352d3e6cb1dd65a6eda6903763",
+     "size": 789,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-list.1",
+     "sha256": "c5227ef56980bdbcb220ecf50e105ea416488b12286a0176b17bb3a110ad35ea",
+     "size": 2238,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-mcp.1",
+     "sha256": "c230deb1ca322798c2c63316b4889caa6add076528f04e7ac92fce9233c132e2",
+     "size": 678,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-network-create.1",
+     "sha256": "e9abca5ddbd2c30ef3bb93b6bc15b278934373b7c65653e089f226cd2a8f1bbe",
+     "size": 1162,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-network-delete.1",
+     "sha256": "9f67a17129c1de733c633cc0cde60bc0571f86cbea08f0370b44fbabbbb320fd",
+     "size": 1034,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-network-list.1",
+     "sha256": "8aada40e3f28c9cf71223aa2e12090a4c662ff31840bbe3cac25baa026029a71",
+     "size": 910,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-network.1",
+     "sha256": "9f700325010f0bab016845d1db8dc9af91bb55eb18c9c4242adae9cc4872531e",
+     "size": 1195,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-protect.1",
+     "sha256": "8e6f180d61012f808be625faebec7c9f5bdfdfc615b226d89812218058333ff1",
+     "size": 932,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-prune.1",
+     "sha256": "39091432169752e4ee056009a27902c913ba80c06ebd9b84e0f22c1356546294",
+     "size": 827,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-rename.1",
+     "sha256": "8ca10d71452e989226cdc12dd684c7f13c6210753e6e1d3ad53b3f236dd4722b",
+     "size": 2477,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-restart.1",
+     "sha256": "4079bbc7f3fd94f5656b682756a1e54ed206ee532f841b36d4b26f35e6dbe432",
+     "size": 2289,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-screenshot.1",
+     "sha256": "ed69926412daea766c86a59889d0c1402d0f49cccbccd0cfd2f71a6b872f2880",
+     "size": 900,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-shell.1",
+     "sha256": "34e51648590754a7b6187f5b7d11915b70bb9c5bef79983a9b5fcc8d5fa29653",
+     "size": 1876,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-show-ssh.1",
+     "sha256": "857ae24142948b567e4c4cb868538c7de0156071e1a81fed90ad8d08f8cdab05",
+     "size": 2036,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-snapshot-apply.1",
+     "sha256": "093117d98a224854d9fdb125b32ffde15b824017ef9996959fa9f8f871d2c8c1",
+     "size": 911,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-snapshot-create.1",
+     "sha256": "ee20824c9540327cd7c6dd27cfc0d72a1e56bed496ab4a1a2add82c66260a989",
+     "size": 923,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-snapshot-delete.1",
+     "sha256": "32d7d88dde0b62b1f56641425572c9e43329a79613c2fd979338da04198cb409",
+     "size": 906,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-snapshot-list.1",
+     "sha256": "ecaa4a66bef3c18f7af3f3b9a868963c045b7089faf643a4e388897e766ba580",
+     "size": 983,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-snapshot.1",
+     "sha256": "0ed3d23129e09943f9270eaa89d8253a4705bc994715530c643a2600b9869b2d",
+     "size": 1191,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-start.1",
+     "sha256": "47a5d4973aa4f8eb114327230875d1c1091c4b484d3b97b096ad3579828eeea6",
+     "size": 3934,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-stop.1",
+     "sha256": "bab561b52a4c6ab728f5eb5d321141e6fa69b01cc939a5a8f9b8a07a43c8c4fd",
+     "size": 787,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-sudoers.1",
+     "sha256": "2b13257f3ec2d9f5d4da8388fbc14791b8e1882db37e35c7bc0a2d10ae3c6572",
+     "size": 1389,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-template-copy.1",
+     "sha256": "0950549bb5fd188921ed9214d4fa9655799fe32fe517939434329af80f8e8c5c",
+     "size": 1444,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-template-url.1",
+     "sha256": "1433a1cc183903dfbb8a24e20c3ea9bb1372f7720a4966b9edf96b02b18c6650",
+     "size": 839,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-template-validate.1",
+     "sha256": "76386a58c0c14f48885a36b826ef044bb85f4db8199b6a5b04cc45fd28d2cd81",
+     "size": 835,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-template-yq.1",
+     "sha256": "48531125b3266c4de88984c2c7bcd4d48622e8888fdfe70166fbc2b29f43fbd1",
+     "size": 1150,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-template.1",
+     "sha256": "a94682b3f54c6515570e2dfb58bb3610f542eb09138c6ef767a73708a6e85458",
+     "size": 903,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-tunnel.1",
+     "sha256": "3c6152fe50a04ad58bd5693f08fa483b9cb32305cf294e1b70592b4954ab1cad",
+     "size": 962,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-unprotect.1",
+     "sha256": "1aa5ac0fd0fd84dab62aa122d0b02c548dc75e4f27c2b0ee9fdb2359c3204019",
+     "size": 766,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-validate.1",
+     "sha256": "cc1f1167bcd6395725e157a2cb5d7cf7ba34f09b1919c237ea4cb35bd4da171a",
+     "size": 808,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl-watch.1",
+     "sha256": "8ce0f0251854a41a3826da3d379114a62e6bf2e75bb25a7a8ca0bf2557f4519a",
+     "size": 1639,
+     "exec": false
+    },
+    {
+     "path": "share/man/man1/limactl.1",
+     "sha256": "0d86f267fedb1d620a072cd2b708fb2e0e2ccb66067647dd5910604b064eadd8",
+     "size": 1668,
+     "exec": false
+    }
+   ],
+   "links": [
+    {
+     "path": "share/doc/lima/templates",
+     "target": "../../lima/templates"
+    }
+   ],
+   "treeSha256": "1e31ca89a2807eaa910e39a19ac1e03ddfde40b00e74fc96f35d59faf774a530",
+   "bytes": 81620424
+  },
+  {
+   "id": "engine",
+   "kind": "support",
+   "name": "FPGA engine scripts",
+   "path": "engine",
+   "license": "Apache-2.0",
+   "source": "this repository",
+   "files": [
+    {
+     "path": "mix-fpga-de10.yaml",
+     "sha256": "505d3df908255b153de59e89c51037a3427f46c743263382057581cfc14cb0f6",
+     "size": 1301,
+     "exec": false
+    },
+    {
+     "path": "provision-guest.sh",
+     "sha256": "dbcdc5f1e03b42139070e66e564439d3dd3e7a323b770e9e30c9c7c004517fcd",
+     "size": 1305,
+     "exec": true
+    },
+    {
+     "path": "provision-quartus-env.sh",
+     "sha256": "818e6695ebcf79acdc9dfa57c198681066d721be974a9be735a6a7c668a877f4",
+     "size": 2426,
+     "exec": false
+    }
+   ],
+   "links": [],
+   "treeSha256": "25a880d8819542130a8bb1782e51e3ca309ac8eb965e6ebf1186d91553c22356",
+   "bytes": 5032
+  },
+  {
+   "id": "licenses",
+   "kind": "support",
+   "name": "Licence texts",
+   "path": "LICENSES",
+   "files": [
+    {
+     "path": "gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt",
+     "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+     "size": 3324,
+     "exec": false
+    },
+    {
+     "path": "gcc-runtime/GPL-3.0.txt",
+     "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+     "size": 35149,
+     "exec": false
+    },
+    {
+     "path": "ghdl/GHDL-COPYING.md",
+     "sha256": "aef8b4222b79d0dbf6bf17cfff71c90a6a6bb8917a4162abe417b469ed22da2e",
+     "size": 17895,
+     "exec": false
+    },
+    {
+     "path": "ghdl/GPL-2.0.txt",
+     "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+     "size": 17984,
+     "exec": false
+    },
+    {
+     "path": "ghdl/LGPL-2.1.txt",
+     "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+     "size": 26419,
+     "exec": false
+    },
+    {
+     "path": "hidapi/LICENSE-bsd.txt",
+     "sha256": "30eb1bef29b46f8ba7ab8b416035dbd93cb034a45481dd97815b944284582cd2",
+     "size": 1534,
+     "exec": false
+    },
+    {
+     "path": "ieee-p1076/Apache-2.0.txt",
+     "sha256": "8d956265f883fafeed00f852e2b711b5f912a26fb63d643967489d198fd12e48",
+     "size": 11344,
+     "exec": false
+    },
+    {
+     "path": "libffi/LICENSE",
+     "sha256": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388",
+     "size": 1132,
+     "exec": false
+    },
+    {
+     "path": "libftdi/COPYING.LIB",
+     "sha256": "b7993225104d90ddd8024fd838faf300bea5e83d91203eab98e29512acebd69c",
+     "size": 25383,
+     "exec": false
+    },
+    {
+     "path": "libftdi/LICENSE",
+     "sha256": "524f46428bf72bb8c6acfeca4909551fd2e0bdbb5305406d38382f4056095c56",
+     "size": 1101,
+     "exec": false
+    },
+    {
+     "path": "libftdi/LICENSE.libftdi",
+     "sha256": "ab8a5c824f39b0804ee285fb0ba35b83dae0f0949b4f38ee2c1e00584eebe546",
+     "size": 1575,
+     "exec": false
+    },
+    {
+     "path": "libusb/COPYING",
+     "sha256": "5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a",
+     "size": 26436,
+     "exec": false
+    },
+    {
+     "path": "libusb/LICENSE.libusb",
+     "sha256": "20dd41f245ac7dffa21ffe4044d504f72a6bb0a7c3b3c883f8fdaa9ef041427b",
+     "size": 26904,
+     "exec": false
+    },
+    {
+     "path": "lima-go/_stdlib@go1.27.1/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/_stdlib@go1.27.1/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/al.essio.dev/pkg/shellescape@v1.6.0/LICENSE",
+     "sha256": "01a4609ac3c7ac0a26d65a967c26c0deb146aa01bdcc8531048a70be52695556",
+     "size": 1082,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/AlecAivazis/survey/v2@v2.3.7/LICENSE",
+     "sha256": "b97e345ab838c46facf556eff4af93b4068650f8ac9247180e0395e5091baf02",
+     "size": 1069,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/Code-Hex/go-infinity-channel@v1.0.0/LICENSE",
+     "sha256": "cb18c5062be49bda7634630146d8326f07a5a2e4097d03530e673a97aa10d443",
+     "size": 1064,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/Code-Hex/vz/v3@v3.7.1/LICENSE",
+     "sha256": "ad30a39e4b81cb71829ef7dca835f3cbd33b8e3612993db449cbdf7a210661f8",
+     "size": 1064,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/VividCortex/ewma@v1.2.0/LICENSE",
+     "sha256": "9a6c3aa72d265f8f5fd6068d3de786741acb89edccf1c4011bc6a8b2ca64668c",
+     "size": 1072,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/a8m/envsubst@v1.4.3/LICENSE",
+     "sha256": "b561916a9f2d29a24a73c7028b089154f4454f4213de8e8877483eee0e95fce7",
+     "size": 1078,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/agext/levenshtein@v1.2.1/LICENSE",
+     "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+     "size": 11357,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/agext/levenshtein@v1.2.1/NOTICE",
+     "sha256": "5f8cebc9aab3ce69ade921efb14caec472c34f22566e015df9512111dcacae06",
+     "size": 157,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/alecthomas/participle/v2@v2.1.4/COPYING",
+     "sha256": "5eaec17df0ef8b8b858942927bd3f17a04c86667fef7320a46714838441a0ef9",
+     "size": 1060,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/apparentlymart/go-cidr@v1.1.1/LICENSE",
+     "sha256": "dafe489a510aa85d75a833b263f8ef15be8a4b6da659eaa0d8cc17830181d030",
+     "size": 1057,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/apparentlymart/go-textseg/v15@v15.0.0/LICENSE",
+     "sha256": "59e80949c14925f65181757d837ed93dea3783f62b031f642281d9e5b1936917",
+     "size": 4657,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/bahlo/generic-list-go@v0.2.0/LICENSE",
+     "sha256": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+     "size": 1479,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/balajiv113/fd@v0.0.0-20230330094840-143eec500f3e/LICENSE.MIT",
+     "sha256": "28a396b109652626ebd11ee09794002898657d4b788b52103b4e7341363bb57b",
+     "size": 1056,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/bmatcuk/doublestar/v4@v4.7.1/LICENSE",
+     "sha256": "2391eb152e1f700051c1618a7aaa7ad86186585190ca9a30e7579c9b9d459332",
+     "size": 1078,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/buger/jsonparser@v1.1.2/LICENSE",
+     "sha256": "632b59709152e1b5bfd3e2794848bcd2f4c70e3e175646726dbf53439ea1dbe1",
+     "size": 1070,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/cheggaaa/pb/v3@v3.1.7/LICENSE",
+     "sha256": "398c0ea1c3ac6ae548f77b1f5c9217b2fe717de3ea19a57e025fb2f686b91025",
+     "size": 1480,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/cilium/ebpf@v0.22.0/LICENSE",
+     "sha256": "0fdf0f61940491a322e3f8b8cef27f7063f57a6ecc888589468e54e71ab3d70f",
+     "size": 1142,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/containerd/continuity@v0.5.0/LICENSE",
+     "sha256": "4bbe3b885e8cd1907ab4cf9a41e862e74e24b5422297a4f2fe524e6a30ada2b4",
+     "size": 10765,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/containerd/log@v0.1.0/LICENSE",
+     "sha256": "4bbe3b885e8cd1907ab4cf9a41e862e74e24b5422297a4f2fe524e6a30ada2b4",
+     "size": 10765,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/containers/gvisor-tap-vsock@v0.8.9/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/coreos/go-semver@v0.3.1/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/coreos/go-semver@v0.3.1/NOTICE",
+     "sha256": "572b159624f1898b40e9f09c9e4cfb65a595044960982aa95126bc28f7d1e6c0",
+     "size": 126,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/cpuguy83/go-md2man/v2@v2.0.7/LICENSE.md",
+     "sha256": "a55959c4e3e8917bfa857359bb641115336276a6cc97408fd8197e079fb18470",
+     "size": 1077,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/digitalocean/go-libvirt@v0.0.0-20220804181439-8648fbde413e/LICENSE.md",
+     "sha256": "ec640150e03774d1b5264fb268f3829dc36745551109131ebf6dd0a59d5ec3eb",
+     "size": 10495,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/digitalocean/go-qemu@v0.0.0-20221209210016-f035778c97f7/LICENSE.md",
+     "sha256": "ec640150e03774d1b5264fb268f3829dc36745551109131ebf6dd0a59d5ec3eb",
+     "size": 10495,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/dimchansky/utfbom@v1.1.1/LICENSE",
+     "sha256": "76d031db3924c26849d42a8c676b4faf2e2e294c2de4238e54964c9510e762a5",
+     "size": 11379,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/diskfs/go-diskfs@v1.9.3/LICENSE",
+     "sha256": "22fcc7885cdba5aeac7c0e983fe2d7f3323629aae1ad0b99bab5ebc52a2f3485",
+     "size": 1069,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/djherbis/times@v1.6.0/LICENSE",
+     "sha256": "079087ce194827595700a925b01d911f465565d96c5ed2716bcc50ce76855fd5",
+     "size": 1076,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/docker/go-units@v0.5.0/LICENSE",
+     "sha256": "ba3065d2f4b11bb42a0f7b708b021d1c28fa45d097b3eab3e7db9ab4745040d1",
+     "size": 10760,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/elliotchance/orderedmap@v1.8.0/LICENSE",
+     "sha256": "45245e9969777b5d9e6e09588087e985b8209117ecbf0e4d04080cfc36762e99",
+     "size": 1070,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/fatih/color@v1.19.0/LICENSE.md",
+     "sha256": "de95ed802d2f90e3c72cb3c9a927cca5f2aec234a3ef1250232db0f8178b2d93",
+     "size": 1079,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/fsnotify/fsnotify@v1.8.0/LICENSE",
+     "sha256": "2dfbe6d2b5eb18b55148f3805d88648a09e0d17e38428123259afb08c8996e37",
+     "size": 1531,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/go-ini/ini@v1.67.0/LICENSE",
+     "sha256": "f6918bd93ffe07f4b2c61b8287c32cb3122e08aed0be50f1c7d0eddc87877a8f",
+     "size": 10253,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/goccy/go-json@v0.10.6/LICENSE",
+     "sha256": "a707cd425201945d57500566c47c74dc9fb8cd02ef91b9a761abddeb2401e6a7",
+     "size": 1072,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/goccy/go-yaml@v1.19.2/LICENSE",
+     "sha256": "43fe703ea9ebe27f0a6e5d2a1f6dd094fbe324251c743498f3ec19986d7349cd",
+     "size": 1072,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/google/btree@v1.1.3/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/google/go-cmp@v0.7.0/LICENSE",
+     "sha256": "17b5d209ba8f9684257ecfcff87df6ceda6194143a8fbd074f29727cff6f0c40",
+     "size": 1479,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/google/gopacket@v1.1.19/LICENSE",
+     "sha256": "8025b28cd71e0a486b173d4a29a05478c003d197a907f99b61a05e181e90b92d",
+     "size": 1555,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/google/jsonschema-go@v0.4.3/LICENSE",
+     "sha256": "2d56c53449691d85d9aea245eb8dac12713e9075d70d5557b82ae1e94805b357",
+     "size": 1087,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/google/yamlfmt@v0.21.0/LICENSE",
+     "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+     "size": 11357,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/hashicorp/hcl/v2@v2.24.0/LICENSE",
+     "sha256": "28ca54ff46a27183631aa262673d13e3c829d909059f5c861da835fe1783fbec",
+     "size": 16012,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/inetaf/tcpproxy@v0.0.0-20250222171855-c4b9df066048/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/insomniacslk/dhcp@v0.0.0-20240710054256-ddd8a41251c9/LICENSE",
+     "sha256": "d034f64d0e3a12eec92e6d98ee6a0b1ee36f2a751aa96e9485fdd3a1280a6af1",
+     "size": 1515,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/invopop/jsonschema@v0.14.0/COPYING",
+     "sha256": "ed76298aa9c218e9010aa186c1107ceb6c7618db50ae0222b9a1b4196101a411",
+     "size": 1055,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/jinzhu/copier@v0.4.0/License",
+     "sha256": "04a07632499685c7614e52e822b0ac0ec0767b4e9b2a3e8ae7cb52ed0d4df3c7",
+     "size": 1073,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/kballard/go-shellquote@v0.0.0-20180428030007-95032a82bc51/LICENSE",
+     "sha256": "3c0dbd7f2068b713b6784788ffde16a5b91baa86a61a1357e43beb97475a90b3",
+     "size": 1057,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/kr/fs@v0.1.0/LICENSE",
+     "sha256": "dd26a7abddd02e2d0aba97805b31f248ef7835d9e10da289b22e3b8ab78b324d",
+     "size": 1479,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/lima-vm/go-qcow2reader@v0.7.1/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/lima-vm/sshocker@v0.3.11/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/magiconair/properties@v1.8.10/LICENSE.md",
+     "sha256": "0b3944fe6ccfdffd9b4de92a401c127d3d71d3bb91d6f793a05ba1a9ed751805",
+     "size": 1308,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mattn/go-colorable@v0.1.14/LICENSE",
+     "sha256": "88a2379b3ca34bf5c57127aff9dcb802bbb60ece0805cdbda65b3bd115f971d9",
+     "size": 1085,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mattn/go-isatty@v0.0.22/LICENSE",
+     "sha256": "08eab1118c80885fa1fa6a6dd7303f65a379fcb3733e063d20d1bbc2c76e6fa1",
+     "size": 1099,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mattn/go-runewidth@v0.0.16/LICENSE",
+     "sha256": "88a2379b3ca34bf5c57127aff9dcb802bbb60ece0805cdbda65b3bd115f971d9",
+     "size": 1085,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mattn/go-shellwords@v1.0.14/LICENSE",
+     "sha256": "dce57e2906b8ebfc7a0978105aac3082ddceb8a1f673bec71b9c8dc5df51c5d7",
+     "size": 1085,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mdlayher/netlink@v1.11.2/LICENSE.md",
+     "sha256": "756eb71e459f59a9d187b8f6d09181157f8a5fb2b1d30ca359e1d7f35f91cb9d",
+     "size": 1075,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mdlayher/socket@v0.6.0/LICENSE.md",
+     "sha256": "7ac20f598f63dfd35c7c6c3844073af0bebfa436cfe58b91af9ac17cd727ea42",
+     "size": 1070,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mdlayher/vsock@v1.3.0/LICENSE.md",
+     "sha256": "5d24a7ca6850e288a5b7c596a0d5f03d71c862393c7b808286f57b27b79cac23",
+     "size": 1075,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mgutz/ansi@v0.0.0-20170206155736-9520e82c474b/LICENSE",
+     "sha256": "66e8a6491399ee36b111ba6df0af68ee82b375fb6fbfd54c8382c9dc3fbd9c9a",
+     "size": 1085,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/miekg/dns@v1.1.72/COPYRIGHT",
+     "sha256": "66550c0ad5ca7ec1e08683e5f872cc45c741f311eee3b8ee484206ecbf9c740d",
+     "size": 512,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/miekg/dns@v1.1.72/LICENSE",
+     "sha256": "f200ff9bad73385db2ed81e23ee2c1fe069eb5776e17fae4ee85ad0a9e1361a5",
+     "size": 1568,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mikefarah/yq/v4@v4.53.3/LICENSE",
+     "sha256": "697db34dabb21562fe84487a2ccd031fbd45382b89c2cbdec8ef31682c486040",
+     "size": 1077,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mitchellh/go-wordwrap@v1.0.1/LICENSE.md",
+     "sha256": "3c377fad2e5ae1d7081c7c2f16da867a87cca1d1f5f1aa7ed0b8a16bb553142a",
+     "size": 1085,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/mitchellh/mapstructure@v1.5.0/LICENSE",
+     "sha256": "22adc4abdece712a737573672f082fd61ac2b21df878efb87ffcff4354a07f26",
+     "size": 1085,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/modelcontextprotocol/go-sdk@v1.6.1/LICENSE",
+     "sha256": "af679003d933f045393a6a029f43da113f9ae364eac651d9ae268392985580f5",
+     "size": 12223,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/nxadm/tail@v1.4.11/LICENSE",
+     "sha256": "3c2f66483e5dcecbd1633d49d215c77dde71b5608f8df5351ed8e20c891b5ad1",
+     "size": 1141,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/opencontainers/go-digest@v1.0.0/LICENSE",
+     "sha256": "aceb55133c41c50c2e170c5918e301fe74f592d0f28724bf2f7a7bfdcff1fc5f",
+     "size": 10801,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/opencontainers/go-digest@v1.0.0/LICENSE.docs",
+     "sha256": "a1d1adec3ba691ef6e377a78bbe9e9e2501f2f4a1723d08857da1ac6564e4fed",
+     "size": 20004,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/pb33f/ordered-map/v2@v2.3.1/LICENSE",
+     "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+     "size": 11357,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/pbnjay/memory@v0.0.0-20210728143218-7b4eea64cf58/LICENSE",
+     "sha256": "f0e4a9d181cbbbc742355f1723a4273fff79d999fd4d65caa2dc92fbcc5937be",
+     "size": 1510,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/pelletier/go-toml/v2@v2.3.1/LICENSE",
+     "sha256": "26844e4b53c5adec04e557fd7dfef281cc0205a7d355626b1c68b778b99e9e7b",
+     "size": 1101,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/pierrec/lz4/v4@v4.1.26/LICENSE",
+     "sha256": "6a358d2540ca14048f02d366f23787c0a480157e58f058113f0e27168dd4e447",
+     "size": 1477,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/pkg/sftp@v1.13.11/LICENSE",
+     "sha256": "f5b5087b8e596d015cfea7db26527fe67a196c18ca37415c288dd2534ff74c37",
+     "size": 1289,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/rivo/uniseg@v0.4.7/LICENSE.txt",
+     "sha256": "a59885f5f0f3b3c07cf9444db5fe399b6f0791eac82055f7b85cc65500551039",
+     "size": 1072,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/rjeczalik/notify@v0.9.3/LICENSE",
+     "sha256": "42efbe213a0bfa04fcfb1efb683efc3e19cd31a8725e296c277cf5dc48a6bd11",
+     "size": 1090,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/russross/blackfriday/v2@v2.1.0/LICENSE.txt",
+     "sha256": "75e1ca97a84a9da6051dee0114333388216f2c4a5a028296b882ff3d57274735",
+     "size": 1416,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/sabhiram/go-gitignore@v0.0.0-20210923224102-525f6e181f06/LICENSE",
+     "sha256": "55bff76239ca79b99d2e6b986d67c17e125cf7afa2d4d22eda54c02b791460a1",
+     "size": 1081,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/santhosh-tekuri/jsonschema/v6@v6.0.2/LICENSE",
+     "sha256": "c8858a5a76440bbca484e134cf7df46385d090dd18b2c58e650f939258802e5b",
+     "size": 10141,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/segmentio/asm@v1.1.3/LICENSE",
+     "sha256": "e2a78de21d6d8ded2dff0f3189cd32e011630d785da127ebfbc8949012c0947b",
+     "size": 1064,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/segmentio/encoding@v0.5.4/LICENSE",
+     "sha256": "d6d71a1f7dc6539e371120cc7af6e3257e55ca79634d473211f217b8965b0f16",
+     "size": 1073,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/sethvargo/go-password@v0.3.1/LICENSE",
+     "sha256": "9d9cea3094720689e1963118ec0e760d1a393dbda1caa7f5c7684add4528f78d",
+     "size": 1071,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/sirupsen/logrus@v1.9.4/LICENSE",
+     "sha256": "51a0c9ec7f8b7634181b8d4c03e5b5d204ac21d6e72f46c313973424664b2e6b",
+     "size": 1082,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/spf13/cobra@v1.10.2/LICENSE.txt",
+     "sha256": "5e3400b93bbb099e83e52bab885e7441750673c21f97988ca3f1240639b63283",
+     "size": 10140,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/spf13/pflag@v1.0.10/LICENSE",
+     "sha256": "b8514c577c1c4b46cee454d5a882b15fa411e72c5bd7f801f241591789fce61a",
+     "size": 1531,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/u-root/uio@v0.0.0-20240224005618-d2acac8f3701/LICENSE",
+     "sha256": "babfb29ac285c50579ef027c197805f288be53a2fdea58adbf8f69a5e296d3ef",
+     "size": 1519,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/yosida95/uritemplate/v3@v3.0.2/LICENSE",
+     "sha256": "0761aadfb1921103752869ee942d4a71bdd54494697684d4b13dc17ad9781191",
+     "size": 1546,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/yuin/gopher-lua@v1.1.2/LICENSE",
+     "sha256": "260ffdb7a4ba43069407382e611dab0797bcdabad46deb3d25b36af7f8204f66",
+     "size": 1081,
+     "exec": false
+    },
+    {
+     "path": "lima-go/github.com/zclconf/go-cty@v1.18.1/LICENSE",
+     "sha256": "ddbb0c0aacf1a262c6724fa82cc24af9d5f5d9a99bf3d0d9a5efe36b5a638e07",
+     "size": 1106,
+     "exec": false
+    },
+    {
+     "path": "lima-go/go.yaml.in/yaml/v3@v3.0.4/LICENSE",
+     "sha256": "d18f6323b71b0b768bb5e9616e36da390fbd39369a81807cca352de4e4e6aa0b",
+     "size": 2151,
+     "exec": false
+    },
+    {
+     "path": "lima-go/go.yaml.in/yaml/v3@v3.0.4/NOTICE",
+     "sha256": "f6c2dd3a67b576eafb89b80200b8b1627230bf3821a0c14cb99a22ac19107d00",
+     "size": 560,
+     "exec": false
+    },
+    {
+     "path": "lima-go/go.yaml.in/yaml/v4@v4.0.0-rc.4/LICENSE",
+     "sha256": "4a4e095045f46875715234a884741acd2b61b88959d6f47a243ae03ef95c4e76",
+     "size": 11365,
+     "exec": false
+    },
+    {
+     "path": "lima-go/go.yaml.in/yaml/v4@v4.0.0-rc.4/NOTICE",
+     "sha256": "257bb2d062ee0b9226e3b5f9c3c5d6aa3d38a450df27a9e060f061d4d4a4eb6f",
+     "size": 702,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/crypto@v0.56.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/crypto@v0.56.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/mod@v0.38.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/mod@v0.38.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/net@v0.58.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/net@v0.58.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/oauth2@v0.36.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/sync@v0.22.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/sync@v0.22.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/sys@v0.47.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/sys@v0.47.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/term@v0.45.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/term@v0.45.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/text@v0.41.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/text@v0.41.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/time@v0.9.0/LICENSE",
+     "sha256": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+     "size": 1453,
+     "exec": false
+    },
+    {
+     "path": "lima-go/golang.org/x/time@v0.9.0/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/google.golang.org/genproto/googleapis/rpc@v0.0.0-20260526163538-3dc84a4a5aaa/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/google.golang.org/grpc@v1.83.2/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima-go/google.golang.org/grpc@v1.83.2/NOTICE.txt",
+     "sha256": "693ff28ec216d5112ac1bbfe64ef539005867d1c7bd427b57d579683293b947f",
+     "size": 554,
+     "exec": false
+    },
+    {
+     "path": "lima-go/google.golang.org/protobuf@v1.36.11/LICENSE",
+     "sha256": "4835612df0098ca95f8e7d9e3bffcb02358d435dbb38057c844c99d7f725eb20",
+     "size": 1479,
+     "exec": false
+    },
+    {
+     "path": "lima-go/google.golang.org/protobuf@v1.36.11/PATENTS",
+     "sha256": "96f408bfae65bf137fc2525d3ecb030271c50c1e90799f87abf8846d8dd505cc",
+     "size": 1303,
+     "exec": false
+    },
+    {
+     "path": "lima-go/gopkg.in/op/go-logging.v1@v1.0.0-20160211212156-b2cb9fa56473/LICENSE",
+     "sha256": "47a35d1a91cc3b8e8d236eb0424ebd5f42875cbdd908924f1514ce54c1def50e",
+     "size": 1479,
+     "exec": false
+    },
+    {
+     "path": "lima-go/gopkg.in/tomb.v1@v1.0.0-20141024135613-dd632973f1e7/LICENSE",
+     "sha256": "8407b13e462f755c06db3db3a034dc1fdc9157af19c6ea8986e7d5aecf4126b3",
+     "size": 1608,
+     "exec": false
+    },
+    {
+     "path": "lima-go/gvisor.dev/gvisor@v0.0.0-20240916094835-a174eb65023f/LICENSE",
+     "sha256": "5af94223052169198cfa2195455b7d87209d9aa0fff4705822f328b4b272facb",
+     "size": 12519,
+     "exec": false
+    },
+    {
+     "path": "lima/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "lima/NOTICE",
+     "sha256": "a7e0caed1395c49dfa6ce7dc8aa6362e4daa8369917f56fbe80084c1ae8c765c",
+     "size": 963,
+     "exec": false
+    },
+    {
+     "path": "llvm/LLVM-LICENSE.txt",
+     "sha256": "8d85c1057d742e597985c7d4e6320b015a9139385cff4cbae06ffc0ebe89afee",
+     "size": 15141,
+     "exec": false
+    },
+    {
+     "path": "mix-fpga/LICENSE",
+     "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+     "size": 11358,
+     "exec": false
+    },
+    {
+     "path": "ncurses/COPYING",
+     "sha256": "63de87399e9fc8860236082b6b0520e068e9eb1fad0ebd30202aa30bb6f690ac",
+     "size": 1447,
+     "exec": false
+    },
+    {
+     "path": "openfpgaloader/LICENSE.openfpgaloader",
+     "sha256": "a6729c938f51cdd916c52ebf7dbedc018dbae6e62519887eff8ea269bb18c689",
+     "size": 11845,
+     "exec": false
+    },
+    {
+     "path": "readline/COPYING",
+     "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+     "size": 35147,
+     "exec": false
+    },
+    {
+     "path": "synopsys/std_logic_arith-header.txt",
+     "sha256": "e9dbfdc4602dd7f9f7048f6bf4b0f0a9758785bb5e0691b56c237827b2d9b3fb",
+     "size": 742,
+     "exec": false
+    },
+    {
+     "path": "tcl/license.terms",
+     "sha256": "c0a69a2bfd757361ec7e6143973b103c90409316b49e9c88db26ad6388e79f16",
+     "size": 2255,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/abc-copyright.txt",
+     "sha256": "819151b8f059a48f806c75732ef62b1f873b49b6a04fb128aed28bf87d3dcd6c",
+     "size": 1129,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/bigint-public-domain-note.txt",
+     "sha256": "8d78b0cd6773db3754d6782bf658ccd2fafa87b655706db45cf573cf7fad8411",
+     "size": 209,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/cxxopts-LICENSE.txt",
+     "sha256": "aa324fbe633a96546bebca975fbbab65caa175894bd00cfa13d7335e7363400c",
+     "size": 1055,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/ezsat-license-header.txt",
+     "sha256": "2159f33266279afeba033711c5043d3e6bdbbde9d9609e4f303560fbc82b1cf7",
+     "size": 882,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/fstapi-license-header.txt",
+     "sha256": "3fdcf06977114381c868b40fd94c98bc6efb1c125c96d12d6aa70cfe38a7f05b",
+     "size": 1161,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/json11-license-header.txt",
+     "sha256": "58b531e2b9868431df48a7cf47415dfbed4b903235b829491b2ea2eb86342174",
+     "size": 1115,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/minisat-LICENSE.txt",
+     "sha256": "c75f5063560674728fcfa7b9b291d26a3a8b9436a0d9940eadc81aab7779d62b",
+     "size": 1142,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/sha1-public-domain-note.txt",
+     "sha256": "038ff10238b8a42faf1a404a780eae7b311d5c9ddbfa09981bb5a8bedb5fd343",
+     "size": 248,
+     "exec": false
+    },
+    {
+     "path": "yosys-libs/subcircuit-license-header.txt",
+     "sha256": "2296e2e17158a12a8470b9d89490ab6225971c4c4fbba0a451c2a4f9806e83d6",
+     "size": 943,
+     "exec": false
+    },
+    {
+     "path": "yosys/LICENSE.yosys",
+     "sha256": "7baf6aad3445eb7a7dad420b47a778562917513f4166e28717c194d91a6fc417",
+     "size": 1290,
+     "exec": false
+    },
+    {
+     "path": "zlib/LICENSE",
+     "sha256": "845efc77857d485d91fb3e0b884aaa929368c717ae8186b66fe1ed2495753243",
+     "size": 1002,
+     "exec": false
+    },
+    {
+     "path": "zstd/LICENSE",
+     "sha256": "7055266497633c9025b777c78eb7235af13922117480ed5c674677adc381c9d8",
+     "size": 1549,
+     "exec": false
+    }
+   ],
+   "links": [],
+   "treeSha256": "158f1733b5f02cd8ff33b0836ae1e401c55618f96735a588f5d63eae8e08edba",
+   "bytes": 714987
+  },
+  {
+   "id": "notices",
+   "kind": "support",
+   "name": "Third-party notices",
+   "path": "THIRD_PARTY_NOTICES.txt",
+   "files": [
+    {
+     "path": "",
+     "sha256": "73937da8f90bed39449b9b96ca3b3d962a6091c0f0f8d69b2a511bd632e22782",
+     "size": 32881,
+     "exec": false
+    }
+   ],
+   "links": [],
+   "treeSha256": "05212ae874d71fdf5a203a239aa727fdac141fc752f4e8792bd7bf6ca32deff5",
+   "bytes": 32881
+  }
+ ]
+}

@@ -10,7 +10,7 @@
 // Build time only: needs the system `tar` (bsdtar on Windows 10+ and macOS).
 import { spawnSync } from 'node:child_process';
 import { createWriteStream, existsSync } from 'node:fs';
-import { cp, mkdir, rename, rm, stat, utimes, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, rename, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -22,6 +22,7 @@ import {
     fail,
     hostTarget,
     inventory,
+    licenseDirs,
     listFiles,
     loadRecipe,
     MANIFEST_NAME,
@@ -36,10 +37,11 @@ import { renderNotices } from './notices.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const target = args.target ?? hostTarget();
+const recipeName = args.recipe ?? target;
 const archiveDir = args.archives ?? ARCHIVE_DIR;
-const recipe = loadRecipe(target);
-const out = join(TOOLCHAIN_DIR, target);
-const staging = join(TOOLCHAIN_DIR, `.staging-${target}`);
+const recipe = loadRecipe(target, recipeName);
+const out = join(TOOLCHAIN_DIR, recipeName);
+const staging = join(TOOLCHAIN_DIR, `.staging-${recipeName}`);
 const GENERATED_MTIME = new Date('2026-09-26T00:00:00Z');
 const PLACEHOLDER_FILE = 'NEXYSVHDL-PLACEHOLDER.txt';
 
@@ -55,6 +57,42 @@ function placeholderText(c) {
         ...(a ? [`Upstream package (not included): ${a.file}`, `  ${a.url}`, `  sha256 ${a.sha256}`] : []),
         '',
     ].join('\r\n');
+}
+
+/** Files under `dir` matching a glob whose only wildcard is `*` inside the last path segment (POSIX paths relative to `dir`). */
+async function expandPaths(dir, pattern) {
+    if (!pattern.includes('*')) return existsSync(join(dir, ...pattern.split('/'))) ? [pattern] : [];
+    const parts = pattern.split('/');
+    const last = parts.pop();
+    const base = join(dir, ...parts);
+    if (!existsSync(base)) return [];
+    const re = new RegExp(`^${last.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    return (await readdir(base)).filter((n) => re.test(n)).map((n) => [...parts, n].join('/'));
+}
+
+/** Compliance-driven omissions and regenerations (Toolchain 1.1); returns what changed, for the manifest and the notices. */
+async function applyPostProcess(c, destDir, destOf) {
+    const mods = [];
+    for (const pp of c.postProcess ?? []) {
+        const before = new Set(await listFiles(destDir));
+        if (pp.kind === 'remove') {
+            for (const pattern of pp.paths) for (const rel of await expandPaths(destDir, pattern)) await rm(join(destDir, ...rel.split('/')), { recursive: true, force: true });
+        } else if (pp.kind === 'ghdl-prune') {
+            const lib = join(destDir, ...pp.lib.split('/'));
+            const flags = pp.indexFrom
+                ? ['--index-from', join(destOf(pp.indexFrom.split(':')[0]), ...pp.indexFrom.split(':')[1].split('/'))]
+                : ['--ghdl', join(destDir, ...pp.ghdl.split('/'))];
+            const r = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'toolchain', 'ghdl-prune.mjs'), '--lib', lib, ...flags], { stdio: ['ignore', 'inherit', 'inherit'] });
+            if (r.status !== 0) fail(`${c.id}: ghdl-prune failed`);
+            for (const f of await listFiles(lib)) if (f.endsWith('.cf')) await utimes(join(lib, ...f.split('/')), GENERATED_MTIME, GENERATED_MTIME);
+        }
+        const after = new Set(await listFiles(destDir));
+        const removed = [...before].filter((f) => !after.has(f)).sort();
+        const added = [...after].filter((f) => !before.has(f)).sort();
+        mods.push({ kind: pp.kind, reason: pp.reason, removedFiles: removed.length, removed, ...(added.length ? { added } : {}), ...(pp.kind === 'ghdl-prune' ? { regenerated: ['ieee/v08/ieee-obj08.cf', 'ieee/v19/ieee-obj19.cf'].map((f) => `${pp.lib}/${f}`) } : {}) });
+        console.log(`    ${pp.kind}: ${removed.length} files removed${added.length ? `, ${added.length} added` : ''}`);
+    }
+    return mods;
 }
 
 function tarExecutable() {
@@ -98,6 +136,7 @@ async function main() {
     await mkdir(staging, { recursive: true });
 
     const components = [];
+    const modifications = [];
     for (const c of recipe.components) {
         if (c.placeholder) {
             const dest = join(staging, ...c.dest.split('/'));
@@ -115,6 +154,8 @@ async function main() {
             const actual = await sha256File(join(dest, name));
             if (actual !== expected) fail(`${c.id}: ${name} sha256 ${actual}, expected ${expected}`);
         }
+        const mods = await applyPostProcess(c, dest, (id) => join(staging, ...recipe.components.find((x) => x.id === id).dest.split('/')));
+        for (const m of mods) modifications.push({ component: c.id, path: c.dest, ...m });
     }
 
     // Apio state that lives with the immutable packages: the package index Apio
@@ -184,8 +225,8 @@ async function main() {
         platform: recipe.platform,
         arch: recipe.arch,
         displayPlatform: recipe.displayPlatform,
-        recipe: `toolchains/bundle/${target}.json`,
-        recipeSha256: await sha256File(join(RECIPE_DIR, `${target}.json`)),
+        recipe: `toolchains/bundle/${recipeName}.json`,
+        recipeSha256: await sha256File(join(RECIPE_DIR, `${recipeName}.json`)),
         versions: recipe.versions,
         executables,
         apio: {
@@ -202,19 +243,23 @@ async function main() {
         components,
         // Only in recipes reviewed for redistribution (see notices.mjs); absent, the manifest is unchanged.
         ...(recipe.compliance ? { compliance: recipe.compliance } : {}),
+        // Only when the recipe omits or regenerates upstream files (Toolchain 1.1); absent, the manifest is unchanged.
+        ...(modifications.length ? { modifications } : {}),
     };
     await writeFile(join(staging, MANIFEST_NAME), `${JSON.stringify(manifest, null, 2)}\n`);
     await writeFile(join(staging, NOTICES_NAME), renderNotices(manifest));
     // Full license texts for components whose archives ship none: the shared
     // texts, plus licenses-<target>/ for texts only this platform's archives need
     // (kept apart so another platform's released toolchain content never changes).
-    const licenseSrc = join(RECIPE_DIR, 'licenses');
+    const [sharedDir, ...otherDirs] = licenseDirs(recipe, target);
+    const licenseSrc = join(RECIPE_DIR, sharedDir);
     if (existsSync(licenseSrc)) await cp(licenseSrc, join(staging, 'licenses'), { recursive: true });
-    const targetLicenseSrc = join(RECIPE_DIR, `licenses-${target}`);
-    if (existsSync(targetLicenseSrc)) {
+    for (const d of otherDirs) {
+        const targetLicenseSrc = join(RECIPE_DIR, d);
+        if (!existsSync(targetLicenseSrc)) continue;
         for (const f of await listFiles(targetLicenseSrc)) {
             const to = join(staging, 'licenses', ...f.split('/'));
-            if (existsSync(to)) fail(`licenses-${target}/${f} would replace a shared license text`);
+            if (existsSync(to)) fail(`${d}/${f} would replace a shared license text`);
             await mkdir(join(to, '..'), { recursive: true });
             await cp(join(targetLicenseSrc, ...f.split('/')), to);
         }
@@ -224,12 +269,20 @@ async function main() {
     const generated = [...recipe.components.filter((c) => c.placeholder).map((c) => `${c.dest}/${PLACEHOLDER_FILE}`), MANIFEST_NAME, NOTICES_NAME, `${recipe.apio.packagesDir}/installed_packages.json`, `${recipe.apio.remoteConfigDir}/${remoteConfigFile}`, ...(recipe.shims ?? []).map((s) => s.file)];
     if (existsSync(join(staging, 'licenses'))) generated.push(...(await listFiles(join(staging, 'licenses'))).map((f) => `licenses/${f}`));
     for (const rel of generated) await utimes(join(staging, ...rel.split('/')), GENERATED_MTIME, GENERATED_MTIME);
+    // Directories get their creation time otherwise, which would make every packed archive different (recipes opt in).
+    if (recipe.normalizeDirectoryTimes) {
+        const walk = async (d) => {
+            for (const e of await readdir(d, { withFileTypes: true })) if (e.isDirectory()) await walk(join(d, e.name));
+            await utimes(d, GENERATED_MTIME, GENERATED_MTIME);
+        };
+        await walk(staging);
+    }
 
     await rm(out, { recursive: true, force: true });
     await rename(staging, out);
     const total = await inventory(out);
     console.log(`Done: ${relative(REPO_ROOT, out)} — ${total.files} files, ${(total.bytes / 2 ** 20).toFixed(1)} MiB, tree ${total.treeSha256}`);
-    await writeFile(join(TOOLCHAIN_DIR, `${target}.inventory.json`), `${JSON.stringify({ target, files: total.files, bytes: total.bytes, treeSha256: total.treeSha256 }, null, 2)}\n`);
+    await writeFile(join(TOOLCHAIN_DIR, `${recipeName}.inventory.json`), `${JSON.stringify({ target, files: total.files, bytes: total.bytes, treeSha256: total.treeSha256 }, null, 2)}\n`);
 }
 
 // Never leave a half-built toolchain in place of a good one.

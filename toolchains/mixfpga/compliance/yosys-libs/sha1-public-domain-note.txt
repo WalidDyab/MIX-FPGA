@@ -1,0 +1,9 @@
+6-    ============
+7-
+8:    100% Public Domain.
+9-
+10-    Original C Code
+11-        -- Steve Reid <steve@edmweb.com>
+12-    Small changes to fit into bglibs
+13-        -- Bruce Guenter <bruce@untroubled.org>
+14-    Translation to simpler C++ Code

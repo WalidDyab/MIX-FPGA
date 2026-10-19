@@ -53,14 +53,21 @@ export interface LegalFlag {
     readonly severity: 'blocking-release' | 'needs-decision' | 'minor';
     readonly title: string;
     readonly detail: string;
+    /** Absent means open. */
+    readonly status?: 'open' | 'resolved';
+    /** How a resolved flag was closed. */
+    readonly resolution?: string;
 }
 
 export interface NoticeInventory {
     readonly schemaVersion: 1;
     readonly toolchainVersion: string;
     readonly target: string;
-    readonly status: 'DRAFT' | 'FINAL';
+    /** CANDIDATE: complete, but counsel review of the remaining open flags is pending. */
+    readonly status: 'DRAFT' | 'CANDIDATE' | 'FINAL';
     readonly statusReason: string;
+    /** Deliberate changes made to upstream content (omissions, regenerated files), printed in the notices. */
+    readonly modifications?: readonly string[];
     readonly components: readonly NoticeComponent[];
     readonly notRedistributed: readonly { readonly id: string; readonly name: string; readonly owner: string; readonly treatment: string }[];
     readonly legalFlags: readonly LegalFlag[];
@@ -114,5 +121,5 @@ export function checkCoverage(inventory: NoticeInventory, units: readonly Toolch
 
 /** The notices are a draft while anything is pending or unclear, or a flag is open. */
 export function isDraft(inventory: NoticeInventory): boolean {
-    return inventory.status === 'DRAFT' || inventory.components.some((c) => c.status === 'pending' || c.status === 'unclear');
+    return inventory.status === 'DRAFT' || (inventory.status !== 'CANDIDATE' && inventory.components.some((c) => c.status === 'pending' || c.status === 'unclear'));
 }

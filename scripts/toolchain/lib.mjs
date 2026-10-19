@@ -36,9 +36,14 @@ export function parseArgs(argv) {
     return args;
 }
 
-export function loadRecipe(target) {
+/**
+ * `name` selects a recipe file other than `<target>.json` (Toolchain 1.1 candidates are `darwin-arm64-1.1`); the target
+ * inside the recipe must still match.
+ */
+export function loadRecipe(target, name = target) {
     if (!SUPPORTED_TARGETS.includes(target)) fail(`unsupported target "${target}" (supported: ${SUPPORTED_TARGETS.join(', ')})`);
-    const file = join(RECIPE_DIR, `${target}.json`);
+    if (!/^[A-Za-z0-9._-]+$/.test(name)) fail(`unsafe recipe name "${name}"`);
+    const file = join(RECIPE_DIR, `${name}.json`);
     if (!existsSync(file)) fail(`no recipe ${relative(REPO_ROOT, file)}`);
     const recipe = JSON.parse(readFileSync(file, 'utf8'));
     const problems = validateRecipe(recipe, target);
@@ -52,7 +57,7 @@ export function validateRecipe(r, target) {
     if (r.schemaVersion !== 1) p.push('schemaVersion must be 1');
     if (r.target !== target) p.push(`target "${r.target}" does not match file name`);
     if (`${r.platform}-${r.arch}` !== target) p.push('platform/arch do not match target');
-    if (r.status !== 'validated') p.push(`status is "${r.status}": only a validated recipe can be assembled`);
+    if (r.status !== 'validated' && r.status !== 'candidate') p.push(`status is "${r.status}": only a validated or candidate recipe can be assembled`);
     if (!r.bundleVersion) p.push('missing bundleVersion');
     for (const [tool, rel] of Object.entries(r.executables ?? {})) if (!safeRelative(rel)) p.push(`executable ${tool}: unsafe path ${rel}`);
     if (!r.executables?.ghdl || !r.executables?.apio) p.push('executables.ghdl and executables.apio are required');
@@ -78,15 +83,28 @@ export function validateRecipe(r, target) {
         if (!/^[0-9a-f]{64}$/.test(a.sha256 ?? '')) p.push(`${c.id}: archive.sha256 missing or malformed`);
         if (!Number.isInteger(a.size) || a.size <= 0) p.push(`${c.id}: archive.size missing`);
         if (!a.file || a.file.includes('/') || a.file.includes('\\')) p.push(`${c.id}: archive.file must be a plain file name`);
+        for (const pp of c.postProcess ?? []) {
+            if (!POST_PROCESS_KINDS.includes(pp.kind)) p.push(`${c.id}: unknown postProcess kind "${pp.kind}"`);
+            else if (!pp.reason) p.push(`${c.id}: postProcess ${pp.kind} needs a reason`);
+            else if (pp.kind === 'remove' && !(Array.isArray(pp.paths) && pp.paths.length && pp.paths.every(safeRelative))) p.push(`${c.id}: postProcess remove needs safe relative paths`);
+            else if (pp.kind === 'ghdl-prune' && !(safeRelative(pp.lib) && (safeRelative(pp.ghdl ?? '') || /^[a-z0-9-]+:/.test(pp.indexFrom ?? '')))) p.push(`${c.id}: postProcess ghdl-prune needs lib and ghdl or indexFrom`);
+        }
         for (const f of c.licenseFiles ?? []) {
             if (!f.startsWith('licenses/')) continue;
             const name = f.slice('licenses/'.length);
-            if (!existsSync(join(RECIPE_DIR, 'licenses', name)) && !existsSync(join(RECIPE_DIR, `licenses-${target}`, name))) p.push(`${c.id}: license text ${f} not found in toolchains/bundle/licenses or licenses-${target}`);
+            if (!licenseDirs(r, target).some((d) => existsSync(join(RECIPE_DIR, d, name)))) p.push(`${c.id}: license text ${f} not found in toolchains/bundle/licenses or licenses-${target}`);
         }
     }
     if (!(r.components ?? []).length) p.push('no components');
     return p;
 }
+
+/** Folders (under toolchains/bundle) whose files are copied into the toolchain's `licenses/`. Default: shared texts, then this target's. */
+export function licenseDirs(recipe, target) {
+    return recipe.licenseDirs ?? ['licenses', `licenses-${target}`];
+}
+
+export const POST_PROCESS_KINDS = ['remove', 'ghdl-prune'];
 
 export function safeRelative(rel) {
     return typeof rel === 'string' && rel.length > 0 && !rel.startsWith('/') && !/^[A-Za-z]:/.test(rel) && !rel.includes('\\') && !rel.split('/').includes('..');

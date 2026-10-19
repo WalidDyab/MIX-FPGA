@@ -1,0 +1,1237 @@
+{
+  "schemaVersion": 1,
+  "product": "MIX-FPGA",
+  "toolchainVersion": "1.1",
+  "target": "macos-arm64",
+  "status": "CANDIDATE",
+  "statusReason": "Toolchain 1.1 candidate. Complete, but not final: counsel review is pending for L3 (Yosys distributed with GPLv3 readline), L4 (provenance of the \"-dirty\" Yosys binary), L8 (two headers without a licence statement) and L9 (integrity check versus the right to replace LGPL/GPL components), and for confirmation that shipping the corresponding-source package with the binaries satisfies the licences. Nothing here is a legal opinion.",
+  "howToRead": {
+    "status": {
+      "verified": "Checked directly against the files of this payload during checkpoint E (hashes, file headers, load commands, embedded strings).",
+      "inherited": "Taken from the NexysVHDL Toolchain 1.0 compliance review (toolchains/compliance). The payload files were proven byte-identical (sha256) to that toolchain's files, so the review applies to them.",
+      "pending": "Known to be required, not collected yet.",
+      "unclear": "A legal or provenance question we cannot answer from the files; reported, not guessed."
+    },
+    "licenseTexts.from": "payload:<unit>/<path> = verbatim copy of a file inside the payload; repo:<path> = verbatim copy of a text curated by the NexysVHDL compliance review (toolchains/compliance, hashes in its SOURCES.md); extract:<unit>/<path>#<first>-<last> = those lines of a payload file, verbatim (the licence is the file's own header)."
+  },
+  "provenance": {
+    "ghdl": "All 121 files are byte-identical to files of NexysVHDL Toolchain 1.0 (darwin-arm64) under ghdl/ (the LLVM build) and apio/packages/oss-cad-suite/lib (shared library sources).",
+    "yosys": "All 229 files are byte-identical to files of apio/packages/oss-cad-suite (libexec/yosys, lib/, license/) of the same toolchain.",
+    "openfpgaloader": "All 120 files are byte-identical to files of apio/packages/oss-cad-suite (libexec/openFPGALoader, lib/, share/openFPGALoader, license/) of the same toolchain.",
+    "lima": "Official release lima-2.2.1-Darwin-arm64.tar.gz (sha256 9e9eacce88f37e185c346bad73aa6136f738d8cdf8c3bb23cd42b071824bc66e, checked against the official SHA256SUMS in Phase 1). Not part of the NexysVHDL toolchain: no prior compliance review exists for it.",
+    "evidenceDate": "2026-10-14"
+  },
+  "components": [
+    {
+      "id": "ghdl-program",
+      "unit": "ghdl",
+      "name": "GHDL (ghdl, ghwdump)",
+      "version": "6.0.0 (6.0.0.r0.ge589c698c)",
+      "kind": "program",
+      "role": "VHDL check, simulation, VHDL-to-netlist synthesis",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "bin/ghdl",
+        "bin/ghwdump",
+        "license/**"
+      ],
+      "usage": "Run by MIX-FPGA (Check, Simulate, Design/RTL Schematic).",
+      "linking": "Executable. Statically contains the LLVM code generator and the GNAT Ada runtime (see ghdl-llvm-static and gnat-gcc-runtime). Dynamically links only the macOS system libz and libc++.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ghdl/GHDL-COPYING.md",
+          "from": "payload:ghdl/license/GHDL-COPYING.md"
+        },
+        {
+          "dest": "ghdl/GPL-2.0.txt",
+          "from": "payload:ghdl/license/GPL-2.0.txt"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0",
+          "url": "https://github.com/ghdl/ghdl",
+          "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+          "archive": "ghdl-6.0.0.tar.gz",
+          "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+          "note": "The revision matches the version string of the shipped binary (…ge589c698c). Archive as pinned by the NexysVHDL source lock."
+        }
+      ],
+      "status": "inherited",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ghdl-llvm-static",
+      "unit": "ghdl",
+      "name": "LLVM (statically linked into ghdl)",
+      "version": "22.1.0 (Homebrew build)",
+      "kind": "embedded",
+      "embeddedIn": [
+        "ghdl-program"
+      ],
+      "license": "Apache-2.0 WITH LLVM-exception",
+      "usage": "Part of the ghdl executable.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": false,
+        "source": "none",
+        "note": "The LLVM exception allows redistribution of compiled forms without attribution; the text is shipped anyway."
+      },
+      "licenseTexts": [
+        {
+          "dest": "llvm/LLVM-LICENSE.txt",
+          "from": "repo:toolchains/bundle/licenses-darwin-arm64/LLVM-LICENSE.txt",
+          "note": "llvmorg-22.1.0 license, as curated for NexysVHDL Toolchain 1.0"
+        }
+      ],
+      "evidence": "The ghdl executable contains the string 'Homebrew LLVM version 22.1.0' (checked 2026-10-14).",
+      "sources": [],
+      "status": "verified",
+      "flags": []
+    },
+    {
+      "id": "gnat-gcc-runtime",
+      "unit": "ghdl",
+      "name": "GNAT / GCC runtime libraries",
+      "version": "libgnat-14, libgcc_s 1.1",
+      "kind": "library",
+      "role": "Ada and GCC runtime for libghdl; the GNAT runtime is also linked into the ghdl executable",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "claims": [
+        "bin/libgcc_s.1.1.dylib",
+        "lib/libgcc_s.1.1.dylib",
+        "lib/libgnat-14.dylib"
+      ],
+      "usage": "Shipped; not loaded by the ghdl executable MIX-FPGA runs (it links the runtime statically). Loaded only by libghdl/libghdlvpi, which MIX-FPGA does not use.",
+      "linking": "Dynamic libraries beside the program (replaceable files).",
+      "obligation": {
+        "class": "runtime-exception",
+        "licenseText": true,
+        "notice": true,
+        "source": "none-required-by-exception",
+        "note": "Section 1 of the GCC Runtime Library Exception permits propagating the Target Code under terms of our choice when combined with Independent Modules; the runtime's own source is not required by the exception text."
+      },
+      "licenseTexts": [
+        {
+          "dest": "gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt",
+          "from": "payload:ghdl/license/GCC-RUNTIME-EXCEPTION-3.1.txt"
+        },
+        {
+          "dest": "gcc-runtime/GPL-3.0.txt",
+          "from": "repo:toolchains/bundle/licenses/GPL-3.0.txt",
+          "note": "GPL-3.0 text as curated for NexysVHDL Toolchain 1.0"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": [],
+      "evidence": "Build origin: GHDL v6.0.0 .github/workflows/Build-MacOS.yml builds the llvm-jit macOS-15 variant with GNAT FSF build 14.2.0-1 (alire-project/GNAT-FSF-builds) and Homebrew LLVM, matching \"GNAT 14.2.0\" and \"Homebrew LLVM version 22.1.0\" in the binary; the recipe is in the GHDL source archive."
+    },
+    {
+      "id": "ghdl-libs",
+      "unit": "ghdl",
+      "name": "libghdl, libghdlvpi, libghdl.a",
+      "version": "6.0.0",
+      "kind": "library",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "lib/libghdl-6_0_0.dylib",
+        "lib/libghdl.a",
+        "lib/libghdl.link",
+        "lib/libghdlvpi.dylib"
+      ],
+      "usage": "Shipped; not used by MIX-FPGA (it runs the ghdl executable).",
+      "linking": "Dynamic / static library files.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0",
+          "note": "same source as ghdl-program"
+        }
+      ],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "libghw",
+      "unit": "ghdl",
+      "name": "libghw (GHDL waveform library) and its header",
+      "version": "6.0.0",
+      "kind": "library",
+      "license": "LGPL-2.1-or-later",
+      "claims": [
+        "lib/libghw.dylib",
+        "include/ghdl/libghw.h"
+      ],
+      "evidence": "libghw.h states LGPL 2.1 or later (checked 2026-10-14).",
+      "usage": "Shipped; not used by MIX-FPGA.",
+      "obligation": {
+        "class": "weak-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "library-source-and-replaceability"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ghdl/LGPL-2.1.txt",
+          "from": "payload:ghdl/license/LGPL-2.1.txt"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0",
+          "note": "same source as ghdl-program"
+        }
+      ],
+      "status": "verified",
+      "flags": [
+        "L9"
+      ]
+    },
+    {
+      "id": "ghdl-gpl-headers",
+      "unit": "ghdl",
+      "name": "GHDL synthesis headers",
+      "version": "6.0.0",
+      "kind": "documentation",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "include/ghdl/synth.h",
+        "include/ghdl/synth_gates.h"
+      ],
+      "evidence": "synth.h carries a GPL (2 or later) header; synth_gates.h is generated by GHDL's Makefile and carries no header (presumed GHDL, not stated).",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0"
+        }
+      ],
+      "status": "unclear",
+      "openItems": [
+        "synth_gates.h has no licence header."
+      ],
+      "flags": [
+        "L8"
+      ]
+    },
+    {
+      "id": "vhpi-header",
+      "unit": "ghdl",
+      "name": "vhpi_user.h (IEEE P1076 WG)",
+      "version": "2019",
+      "kind": "documentation",
+      "license": "Apache-2.0",
+      "claims": [
+        "include/ghdl/vhpi_user.h"
+      ],
+      "evidence": "Header: 'Copyright 2019 IEEE P1076 WG Authors … Apache License, Version 2.0' (checked 2026-10-14).",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ieee-p1076/Apache-2.0.txt",
+          "from": "payload:ghdl/lib/ghdl/src/ieee2008/LICENSE",
+          "note": "Apache-2.0 text distributed by the IEEE P1076 WG with its libraries"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "flags": []
+    },
+    {
+      "id": "vpi-header",
+      "unit": "ghdl",
+      "name": "vpi_user.h (IEEE Std 1800-2017 PLI header)",
+      "version": "-",
+      "kind": "documentation",
+      "license": "UNCLEAR",
+      "claims": [
+        "include/ghdl/vpi_user.h"
+      ],
+      "evidence": "Describes itself as the IEEE 1800-2017 PLI header; no copyright or licence statement was found in the file.",
+      "obligation": {
+        "class": "unclear",
+        "licenseText": false,
+        "notice": false,
+        "source": "none"
+      },
+      "licenseTexts": [],
+      "sources": [],
+      "status": "unclear",
+      "openItems": [
+        "Find the licence of this header at GHDL's source (it comes from the IEEE standard's PLI header)."
+      ],
+      "flags": [
+        "L8"
+      ]
+    },
+    {
+      "id": "ghdl-std-library",
+      "unit": "ghdl",
+      "name": "VHDL STD library (standard, textio, env) and its compiled form",
+      "version": "6.0.0",
+      "kind": "data",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "lib/ghdl/src/std/**",
+        "lib/ghdl/std/**"
+      ],
+      "evidence": "textio and env sources carry GHDL's GPL (2 or later) header; standard.vhdl carries no header. The .cf files are GHDL's compiled form of these sources. GHDL's documentation for v6.0.0 (doc/licenses.rst) states that std.textio and the runtime library GRT are GPLv2 and that an executable produced by GHDL may not be distributed without the VHDL sources; MIX-FPGA runs simulations in memory and distributes no student executables. The notices tell students.",
+      "usage": "Read by ghdl on every Check/Simulate.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0"
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ieee-2008-library",
+      "unit": "ghdl",
+      "name": "IEEE 1076-2008 packages and the Apache-licensed math packages (IEEE P1076 WG)",
+      "version": "2019 files",
+      "kind": "data",
+      "license": "Apache-2.0",
+      "claims": [
+        "lib/ghdl/src/ieee2008/**"
+      ],
+      "evidence": "Every file carries 'Copyright 2019 IEEE P1076 WG Authors … Apache License, Version 2.0'; the Apache text is shipped as src/ieee2008/LICENSE (checked 2026-10-14). The 1.1 payload keeps only the 2008 packages (the 1995 sets that GHDL builds for VHDL-87/93 are removed).",
+      "usage": "Read by ghdl on every Check/Simulate (std_logic_1164, numeric_std 2008, math_real, …).",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ieee-p1076/Apache-2.0.txt",
+          "from": "payload:ghdl/lib/ghdl/src/ieee2008/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "flags": []
+    },
+    {
+      "id": "synopsys-libraries",
+      "unit": "ghdl",
+      "name": "Synopsys std_logic_arith / unsigned / signed / misc packages",
+      "version": "1990-1992",
+      "kind": "data",
+      "license": "LicenseRef-Synopsys-permissive",
+      "claims": [
+        "lib/ghdl/src/synopsys/**"
+      ],
+      "evidence": "Header: 'Copyright (c) 1990, 1991, 1992 by Synopsys, Inc. … may be used and distributed without restriction provided that this copyright statement is not removed from the file and that any derivative work contains this copyright notice.' (checked 2026-10-14)",
+      "usage": "Used by designs that use std_logic_arith / std_logic_unsigned.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none",
+        "note": "Keep the copyright statement in the files (they are shipped unchanged)."
+      },
+      "licenseTexts": [
+        {
+          "dest": "synopsys/std_logic_arith-header.txt",
+          "from": "extract:ghdl/lib/ghdl/src/synopsys/std_logic_arith.vhdl#1-12"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "flags": []
+    },
+    {
+      "id": "ieee-compiled",
+      "unit": "ghdl",
+      "name": "Compiled IEEE 2008 and 2019 library indexes (GHDL .cf files)",
+      "version": "6.0.0",
+      "kind": "data",
+      "license": "derived from ieee-2008-library and synopsys-libraries (same terms apply)",
+      "claims": [
+        "lib/ghdl/ieee/**"
+      ],
+      "evidence": "Regenerated by GHDL itself from the remaining sources with the upstream rules of libraries/Makefile.inc (scripts/toolchain/ghdl-prune.mjs --check reproduces them); they contain no 1995, VITAL or UPF unit.",
+      "obligation": {
+        "class": "unclear",
+        "licenseText": false,
+        "notice": false,
+        "source": "none"
+      },
+      "licenseTexts": [],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ghdl-vendor-scripts",
+      "unit": "ghdl",
+      "name": "GHDL vendor-library compile scripts and ansi_color.sh",
+      "version": "6.0.0",
+      "kind": "scripts",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "lib/ghdl/vendors/**",
+        "lib/ghdl/ansi_color.sh"
+      ],
+      "evidence": "Headers: 'Copyright (C) 2015-2026 Patrick Lehmann … GNU General Public License, either version 2 of the License, or (at your option) any later version' (checked 2026-10-14). vendors/README.md and config files carry no header.",
+      "usage": "Shipped; not used by MIX-FPGA.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0"
+        }
+      ],
+      "status": "verified",
+      "flags": []
+    },
+    {
+      "id": "yosys-program",
+      "unit": "yosys",
+      "name": "Yosys",
+      "version": "0.63+173 (git 66306a8ca-dirty)",
+      "kind": "program",
+      "role": "RTL Schematic (read GHDL netlist, proc, write JSON)",
+      "license": "ISC",
+      "claims": [
+        "libexec/yosys",
+        "license/**"
+      ],
+      "usage": "Run by MIX-FPGA (RTL Schematic).",
+      "linking": "Executable, dynamically linked to readline, libffi, zlib and Tcl shipped beside it; statically contains several third-party libraries (see yosys-embedded-libs).",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source",
+        "note": "Permissive itself, but the program is distributed linked with GPL-3.0-or-later readline (see L3), so the complete corresponding source of the combined program is provided."
+      },
+      "licenseTexts": [
+        {
+          "dest": "yosys/LICENSE.yosys",
+          "from": "payload:yosys/license/LICENSE.yosys"
+        }
+      ],
+      "sources": [
+        {
+          "id": "oss-yosys",
+          "url": "https://github.com/YosysHQ/yosys",
+          "revision": "66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2",
+          "archive": "oss-yosys.tar.gz",
+          "sha256": "649a106a04cf19e5688993707694a8e855636d60b5d8a90310c4ec208cf54e5d",
+          "note": "As pinned by the NexysVHDL source lock; includes the abc and cxxopts submodules."
+        }
+      ],
+      "status": "unclear",
+      "openItems": [
+        "The version string ends in \"-dirty\". The build recipe in the source package (YosysHQ/oss-cad-suite-build ac8c7dba, default/scripts/yosys.sh) builds Yosys at origin/main on macOS and runs `sed -i` on the tracked Makefile (compiler substitution), which explains the suffix without source changes. This is an explanation, not a reproduced build; counsel and the project owner decide whether it is accepted (L4)."
+      ],
+      "flags": [
+        "L3",
+        "L4"
+      ]
+    },
+    {
+      "id": "yosys-embedded-libs",
+      "unit": "yosys",
+      "name": "Libraries compiled into the yosys executable",
+      "version": "per Yosys source tree",
+      "kind": "embedded",
+      "embeddedIn": [
+        "yosys-program"
+      ],
+      "license": "ISC (ezSAT, subcircuit); MIT (MiniSat, json11, fstapi, cxxopts); public domain (sha1, BigInteger); Berkeley (ABC)",
+      "evidence": "Identified from the Yosys source tree at 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 (libs/ and the abc submodule b4a657e75b16b68c514a7326642ea074f8460939); the licence texts and headers are shipped.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source (part of the Yosys source archives)"
+      },
+      "licenseTexts": [
+        {
+          "dest": "yosys-libs/minisat-LICENSE.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/minisat-LICENSE.txt"
+        },
+        {
+          "dest": "yosys-libs/cxxopts-LICENSE.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/cxxopts-LICENSE.txt"
+        },
+        {
+          "dest": "yosys-libs/abc-copyright.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/abc-copyright.txt"
+        },
+        {
+          "dest": "yosys-libs/json11-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/json11-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/fstapi-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/fstapi-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/ezsat-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/ezsat-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/subcircuit-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/subcircuit-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/sha1-public-domain-note.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/sha1-public-domain-note.txt"
+        },
+        {
+          "dest": "yosys-libs/bigint-public-domain-note.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/bigint-public-domain-note.txt"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "readline",
+      "unit": "yosys",
+      "name": "GNU Readline",
+      "version": "8.2.001",
+      "kind": "library",
+      "license": "GPL-3.0-or-later",
+      "claims": [
+        "lib/libreadline.8.2.dylib"
+      ],
+      "usage": "Loaded by yosys at start-up.",
+      "linking": "Dynamic library beside the program (@executable_path/../lib).",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source",
+        "note": "GPLv3 applies to the combined yosys program as distributed; Yosys's ISC licence is GPL-compatible."
+      },
+      "licenseTexts": [
+        {
+          "dest": "readline/COPYING",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-readline/COPYING",
+          "note": "GPL-3.0 text from readline-8.2.tar.gz"
+        }
+      ],
+      "sources": [
+        {
+          "id": "readline-8.2",
+          "url": "https://distfiles.macports.org/readline/readline-8.2.tar.gz",
+          "sha256": "3feb7171f16a84ee82ca18a36d7b9be109a52c04f492a053331d7d1095007c35"
+        },
+        {
+          "id": "readline82-001",
+          "url": "https://distfiles.macports.org/readline/readline82-001",
+          "sha256": "bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7"
+        },
+        {
+          "id": "macports-port-readline",
+          "url": "https://github.com/macports/macports-ports",
+          "revision": "556ec864a7d91fb89eb261b7ed380098e2c308dc",
+          "note": "devel/readline Portfile"
+        }
+      ],
+      "status": "inherited",
+      "flags": [
+        "L3",
+        "L9"
+      ]
+    },
+    {
+      "id": "ncurses",
+      "unit": "yosys",
+      "name": "ncurses",
+      "version": "6.4",
+      "kind": "library",
+      "license": "X11",
+      "claims": [
+        "lib/libncurses.6.dylib"
+      ],
+      "usage": "Loaded by readline.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ncurses/COPYING",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-ncurses/COPYING"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "libffi",
+      "unit": "yosys",
+      "name": "libffi",
+      "version": "3.4.4",
+      "kind": "library",
+      "license": "MIT",
+      "claims": [
+        "lib/libffi.8.dylib"
+      ],
+      "usage": "Loaded by yosys at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "libffi/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-libffi/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "tcl",
+      "unit": "yosys",
+      "name": "Tcl (library and script library)",
+      "version": "8.6.13",
+      "kind": "library",
+      "license": "TCL (Tcl/Tk licence)",
+      "claims": [
+        "lib/libtcl8.6.dylib",
+        "lib/tcl8.6/**"
+      ],
+      "usage": "Loaded by yosys at start-up; the Tcl scripts and encodings are read at run time.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "tcl/license.terms",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-tcl/license.terms"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "zlib-yosys",
+      "unit": "yosys",
+      "name": "zlib (bundled copy)",
+      "version": "1.3",
+      "kind": "library",
+      "license": "Zlib",
+      "claims": [
+        "lib/libz.1.3.dylib"
+      ],
+      "usage": "Loaded by yosys at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "zlib/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-zlib/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "openfpgaloader-program",
+      "unit": "openfpgaloader",
+      "name": "openFPGALoader",
+      "version": "1.1.1",
+      "kind": "program",
+      "role": "Native USB-Blaster programming (SRAM, SVF)",
+      "license": "Apache-2.0",
+      "claims": [
+        "libexec/openFPGALoader",
+        "license/LICENSE.openfpgaloader"
+      ],
+      "usage": "Run by MIX-FPGA (Detect, Program).",
+      "linking": "Executable, dynamically linked to libusb, libftdi1, hidapi and zlib shipped beside it.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "openfpgaloader/LICENSE.openfpgaloader",
+          "from": "payload:openfpgaloader/license/LICENSE.openfpgaloader"
+        }
+      ],
+      "sources": [
+        {
+          "id": "openfpgaloader-451beadf",
+          "url": "https://github.com/trabucayre/openFPGALoader",
+          "revision": "451beadfae953df07ae14e1dc29238b8d9ae60bc",
+          "note": "Revision recorded by the NexysVHDL review; no source is required by Apache-2.0, provided as a courtesy for the dependent LGPL libraries."
+        }
+      ],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "libusb",
+      "unit": "openfpgaloader",
+      "name": "libusb",
+      "version": "1.0.26",
+      "kind": "library",
+      "license": "LGPL-2.1-or-later",
+      "claims": [
+        "lib/libusb-1.0.0.dylib",
+        "license/LICENSE.libusb"
+      ],
+      "usage": "Loaded by openFPGALoader at start-up.",
+      "linking": "Dynamic library beside the program.",
+      "obligation": {
+        "class": "weak-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "library-source-and-replaceability"
+      },
+      "licenseTexts": [
+        {
+          "dest": "libusb/COPYING",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-libusb/COPYING",
+          "note": "libusb-1.0.26 COPYING (the version actually shipped)"
+        },
+        {
+          "dest": "libusb/LICENSE.libusb",
+          "from": "payload:openfpgaloader/license/LICENSE.libusb",
+          "note": "Text shipped in the payload; it records a 1.0.24 revision, not 1.0.26 (L5)"
+        }
+      ],
+      "sources": [
+        {
+          "id": "libusb-1.0.26",
+          "url": "https://distfiles.macports.org/libusb/libusb-1.0.26.tar.gz",
+          "sha256": "6e5fd904275b12ba5e9fcd4ffb1366028f410e632401dfb11703123a5cc2a1f2"
+        },
+        {
+          "id": "macports-port-libusb",
+          "url": "https://github.com/macports/macports-ports",
+          "revision": "6b3c05d3a37dfb0a11067bb6980fbf5aacc96392",
+          "note": "devel/libusb Portfile"
+        }
+      ],
+      "status": "inherited",
+      "flags": [
+        "L9"
+      ]
+    },
+    {
+      "id": "libftdi",
+      "unit": "openfpgaloader",
+      "name": "libftdi1",
+      "version": "1.5",
+      "kind": "library",
+      "license": "LGPL-2.0-only",
+      "claims": [
+        "lib/libftdi1.2.5.0.dylib",
+        "license/LICENSE.libftdi"
+      ],
+      "usage": "Loaded by openFPGALoader at start-up.",
+      "obligation": {
+        "class": "weak-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "library-source-and-replaceability"
+      },
+      "licenseTexts": [
+        {
+          "dest": "libftdi/COPYING.LIB",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-libftdi1/COPYING.LIB"
+        },
+        {
+          "dest": "libftdi/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-libftdi1/LICENSE"
+        },
+        {
+          "dest": "libftdi/LICENSE.libftdi",
+          "from": "payload:openfpgaloader/license/LICENSE.libftdi"
+        }
+      ],
+      "sources": [
+        {
+          "id": "libftdi1-1.5",
+          "url": "https://distfiles.macports.org/libftdi/libftdi1-1.5.tar.bz2",
+          "sha256": "7c7091e9c86196148bd41177b4590dccb1510bfe6cea5bf7407ff194482eb049"
+        },
+        {
+          "id": "macports-port-libftdi",
+          "url": "https://github.com/macports/macports-ports",
+          "revision": "3bdf7f45e366506775548eeab8a5a4b259f23bd9",
+          "note": "devel/libftdi Portfile"
+        }
+      ],
+      "status": "inherited",
+      "flags": [
+        "L9"
+      ]
+    },
+    {
+      "id": "hidapi",
+      "unit": "openfpgaloader",
+      "name": "HIDAPI",
+      "version": "0.12.0",
+      "kind": "library",
+      "license": "BSD-3-Clause",
+      "election": "HIDAPI is offered under GPL-3.0-only OR BSD-3-Clause OR the original HIDAPI licence; MIX-FPGA redistributes it under the BSD-3-Clause option.",
+      "claims": [
+        "lib/libhidapi.0.dylib"
+      ],
+      "usage": "Loaded by openFPGALoader at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "hidapi/LICENSE-bsd.txt",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-hidapi/LICENSE-bsd.txt"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "zlib-ofl",
+      "unit": "openfpgaloader",
+      "name": "zlib (bundled copy)",
+      "version": "1.3",
+      "kind": "library",
+      "license": "Zlib",
+      "claims": [
+        "lib/libz.1.3.dylib"
+      ],
+      "usage": "Loaded by openFPGALoader at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "zlib/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-zlib/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "zstd",
+      "unit": "openfpgaloader",
+      "name": "Zstandard",
+      "version": "1.5.5",
+      "kind": "library",
+      "license": "BSD-3-Clause",
+      "election": "zstd is offered under BSD-3-Clause OR GPL-2.0-only; MIX-FPGA redistributes it under the BSD-3-Clause option.",
+      "claims": [
+        "lib/libzstd.1.5.5.dylib"
+      ],
+      "usage": "Shipped; no bundled program loads it at start-up (referenced by nothing at load time).",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "zstd/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/darwin-arm64/ocs-macports-zstd/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "flags": []
+    },
+    {
+      "id": "lima-program",
+      "unit": "lima",
+      "name": "Lima (limactl, lima and wrappers, documentation, man pages)",
+      "version": "2.2.1",
+      "kind": "program",
+      "role": "Hidden Linux VM host for the Quartus implementation engine",
+      "license": "Apache-2.0",
+      "claims": [
+        "bin/**",
+        "libexec/lima/limactl-url-fedora-rawhide",
+        "share/doc/lima/**",
+        "share/man/**"
+      ],
+      "usage": "Run by MIX-FPGA (starting the FPGA engine). Uses Apple's Virtualization framework (part of macOS, not redistributed).",
+      "linking": "Go executable (statically linked Go modules); dynamically links macOS system frameworks only.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "lima/LICENSE",
+          "from": "payload:lima/share/doc/lima/LICENSE"
+        },
+        {
+          "dest": "lima/NOTICE",
+          "from": "repo:toolchains/mixfpga/compliance/upstream-notices/Lima-2.2.1-NOTICE.txt",
+          "note": "Lima v2.2.1 NOTICE (Apache-2.0 section 4(d)); not part of the official tarball"
+        }
+      ],
+      "sources": [
+        {
+          "id": "lima-2.2.1",
+          "url": "https://github.com/lima-vm/lima/releases/tag/v2.2.1",
+          "note": "Release tarball checked in Phase 1 (sha256 in provenance)."
+        }
+      ],
+      "status": "verified",
+      "flags": [
+        "L11"
+      ]
+    },
+    {
+      "id": "lima-plugins",
+      "unit": "lima",
+      "name": "Lima helper programs (limactl-mcp, lima-driver-krunkit)",
+      "version": "2.2.1",
+      "kind": "program",
+      "license": "Apache-2.0",
+      "claims": [
+        "libexec/lima/limactl-mcp",
+        "libexec/lima/lima-driver-krunkit"
+      ],
+      "usage": "Shipped; MIX-FPGA uses the vz driver and never runs these. The krunkit driver needs the separate krunkit program, which MIX-FPGA neither installs nor redistributes.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [],
+      "sources": [],
+      "status": "verified",
+      "flags": [
+        "L11"
+      ]
+    },
+    {
+      "id": "lima-guest-agents",
+      "unit": "lima",
+      "name": "Lima guest agents (Darwin-aarch64, Linux-aarch64)",
+      "version": "2.2.1",
+      "kind": "program",
+      "license": "Apache-2.0",
+      "claims": [
+        "share/lima/lima-guestagent.*.gz"
+      ],
+      "usage": "The Linux-aarch64 agent is copied into the Linux VM when the engine starts; the Darwin one is not used.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [],
+      "sources": [],
+      "status": "verified",
+      "flags": [
+        "L11"
+      ]
+    },
+    {
+      "id": "lima-templates",
+      "unit": "lima",
+      "name": "Lima VM templates",
+      "version": "2.2.1",
+      "kind": "data",
+      "license": "Apache-2.0",
+      "claims": [
+        "share/lima/templates/**"
+      ],
+      "usage": "Shipped; MIX-FPGA uses its own template (engine/mix-fpga-de10.yaml). The templates only name operating-system images that would be downloaded by Lima; none is bundled.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [],
+      "sources": [],
+      "status": "verified",
+      "flags": []
+    },
+    {
+      "id": "lima-go-dependencies",
+      "unit": "lima",
+      "name": "Go standard library and 100 Go modules compiled into Lima's programs",
+      "version": "go1.27.1; module versions in go-licenses.json",
+      "kind": "embedded",
+      "embeddedIn": [
+        "lima-program",
+        "lima-plugins",
+        "lima-guest-agents"
+      ],
+      "license": "BSD-3-Clause (Go), MIT (45 modules), Apache-2.0 (26), BSD-3-Clause (25), BSD-2-Clause (3), MPL-2.0 (1: github.com/hashicorp/hcl/v2)",
+      "evidence": "Module list and Go h1 hashes come from the Go build information embedded in limactl, limactl-mcp, lima-driver-krunkit and both guest agents. Each module version was downloaded from the Go module proxy and its recomputed h1 hash equals the embedded hash (100 of 100), so the licence files are those of the exact embedded versions. Every module publishes a licence file in its root; none had to be inferred. The Go standard library licence is from tag go1.27.1.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none-except-mpl-module",
+        "note": "Notice and licence text accompany the binaries (LICENSES/lima-go). Apache-2.0 NOTICE files are included. One module (github.com/hashicorp/hcl/v2, MPL-2.0) is file-level copyleft: MPL-2.0 section 3.2 requires telling recipients how to obtain its Source Code Form; its pinned archive URL and hash are recorded."
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "hashicorp-hcl-v2.24.0",
+          "url": "https://proxy.golang.org/github.com/hashicorp/hcl/v2/@v/v2.24.0.zip",
+          "sha256": "53fd4e96ac9c190e192759daf49b63397865214d337ab5f6dbf6e68c1b0f4810",
+          "note": "Source Code Form of the only MPL-2.0 module; unmodified upstream module archive from the Go module proxy (go.sum h1 verified)."
+        }
+      ],
+      "status": "verified",
+      "openItems": [
+        "github.com/hashicorp/hcl/v2 v2.24.0 is MPL-2.0 and unmodified: its Source Code Form is the Go module archive in the corresponding-source package (sha256 53fd4e96ac9c190e192759daf49b63397865214d337ab5f6dbf6e68c1b0f4810)."
+      ],
+      "flags": [
+        "L11"
+      ],
+      "licenseCollection": "go-licenses.json"
+    },
+    {
+      "id": "mixfpga-engine-scripts",
+      "unit": "engine",
+      "name": "MIX-FPGA engine VM template and provisioning scripts",
+      "version": "phase4",
+      "kind": "scripts",
+      "license": "Apache-2.0",
+      "claims": [
+        "**"
+      ],
+      "usage": "Run by the installer to create and repair the Linux engine.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "mix-fpga/LICENSE",
+          "from": "repo:LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "flags": []
+    }
+  ],
+  "notRedistributed": [
+    {
+      "id": "altera-quartus",
+      "name": "Altera Quartus Prime Lite Edition 25.1std.0 Build 1129 and the MAX 10 device package (max10-25.1std.0.1129.qdz)",
+      "owner": "Altera",
+      "treatment": "Supplied by the student from Altera's official download; MIX-FPGA copies the student's files, requires the student's explicit acceptance of Altera's licence before passing --accept_eula, and installs them only on that student's own Mac. Never part of any MIX-FPGA download. Not a MIX-FPGA-owned component."
+    },
+    {
+      "id": "apple-rosetta",
+      "name": "Rosetta 2",
+      "owner": "Apple",
+      "treatment": "Part of macOS or installed by the student with Apple's own installer after the student accepts Apple's licence. MIX-FPGA neither bundles nor redistributes it and never accepts Apple's licence for the student."
+    },
+    {
+      "id": "apple-system",
+      "name": "macOS system libraries and frameworks (libSystem, libc++, libz, Foundation, AppKit, CoreFoundation, IOKit, Security, Virtualization, …)",
+      "owner": "Apple",
+      "treatment": "Present on every Mac; referenced by the shipped programs, not shipped."
+    },
+    {
+      "id": "ubuntu-image",
+      "name": "Ubuntu 24.04 LTS server cloud image and the Ubuntu packages the engine installs (amd64 runtime libraries)",
+      "owner": "Canonical and the Ubuntu/Debian projects (many licences)",
+      "treatment": "Downloaded to the student's Mac during setup from Canonical's servers (image pinned by digest) and by apt inside the engine. Not part of any MIX-FPGA download. Canonical's trademark and distribution terms apply to the image; retention policy of the cached image is decided later."
+    },
+    {
+      "id": "krunkit",
+      "name": "krunkit",
+      "owner": "containers/krunkit project",
+      "treatment": "Optional Lima driver dependency; not installed, not used."
+    },
+    {
+      "id": "nexysvhdl-toolchain",
+      "name": "NexysVHDL Toolchain 1.0",
+      "owner": "NexysVHDL / EMXplore",
+      "treatment": "The ghdl, yosys and openFPGALoader bytes in this payload are byte-identical copies of that toolchain's files. MIX-FPGA never reads, modifies or depends on the installed NexysVHDL toolchain at run time."
+    }
+  ],
+  "legalFlags": [
+    {
+      "id": "L1",
+      "severity": "needs-decision",
+      "title": "IEEE 1076.3-1995 packages: 'may not be sold or distributed for profit'",
+      "detail": "GHDL ships the VHDL-87/93 numeric_bit and numeric_std sources (and their compiled form) under IEEE's 1995 terms: distributable unchanged, not for profit. Every student using numeric_std with --std=87/93 relies on them. MIX-FPGA ships them unmodified. Whether free classroom distribution, and any future paid or bundled distribution, is compatible is a legal question. This was not recorded by the earlier NexysVHDL review.",
+      "status": "resolved",
+      "resolution": "Removed in Toolchain 1.1: the VHDL-87/93 IEEE libraries (with the IEEE 1076.3-1995 numeric_bit/numeric_std packages) are no longer shipped. MIX-FPGA runs only --std=08."
+    },
+    {
+      "id": "L2",
+      "severity": "needs-decision",
+      "title": "VITAL and UPF packages have no licence statement in their files",
+      "detail": "vital95, vital2000 (IEEE 1076.4 origin) and upf carry no copyright/licence header. Their licence is not established by the payload.",
+      "status": "resolved",
+      "resolution": "Removed in Toolchain 1.1: VITAL-95, VITAL-2000 and UPF are no longer shipped; the 2008/2019 library indexes were regenerated without them."
+    },
+    {
+      "id": "L3",
+      "severity": "needs-decision",
+      "title": "Yosys is distributed linked with GPL-3.0-or-later readline",
+      "detail": "The yosys executable loads libreadline.8.2.dylib (GPL-3.0-or-later, shipped beside it). MIX-FPGA treats the pair as a GPLv3 combination (Yosys is ISC, which is GPL-compatible), ships the GPLv3 text and provides the complete corresponding source of both (Yosys with abc and cxxopts, readline 8.2 with patch 001 and the MacPorts recipe, the build scripts) in the source package. Counsel must confirm the combined-work position."
+    },
+    {
+      "id": "L4",
+      "severity": "needs-decision",
+      "title": "Yosys source of the exact binary, and notices of libraries compiled into it",
+      "detail": "See yosys-program: the \"-dirty\" suffix is explained by the build recipe; the libraries compiled into the binary are now identified and their texts shipped. Counsel and the project owner decide whether the explanation is accepted without a reproduced build."
+    },
+    {
+      "id": "L5",
+      "severity": "minor",
+      "title": "libusb text shipped in the payload is a 1.0.24 revision, the library is 1.0.26",
+      "detail": "license/LICENSE.libusb in the payload records the 1.0.24 revision; the shipped library is the MacPorts 1.0.26 build. The 1.0.26 COPYING is added next to it. Both are LGPL-2.1.",
+      "status": "resolved",
+      "resolution": "LICENSES/libusb/COPYING (LGPL-2.1) is shipped next to the 1.0.24-revision LICENSE.libusb; the 1.0.26 source is in the source package."
+    },
+    {
+      "id": "L6",
+      "severity": "minor",
+      "title": "GHDL build recipe and GCC/GNAT runtime origin not fully recorded",
+      "detail": "GHDL's corresponding source is pinned to its revision, but how this LLVM build was produced (build scripts) and the exact GCC/GNAT runtime build are only partly recorded. No source is required for the runtime by the GCC exception.",
+      "status": "resolved",
+      "resolution": "The GHDL build recipe (.github/workflows/Build-MacOS.yml, Pipeline.yml) is in the GHDL source archive: llvm-jit, macOS 15, GNAT FSF 14.2.0-1, Homebrew LLVM."
+    },
+    {
+      "id": "L7",
+      "severity": "minor",
+      "title": "Does GHDL's GPL reach students' simulation output?",
+      "detail": "The GHDL std library sources are GPL-2.0-or-later with no exception statement in the files. GHDL's own position on generated simulations should be located and recorded.",
+      "status": "resolved",
+      "resolution": "GHDL v6.0.0 doc/licenses.rst: GRT and std.textio are GPLv2; executables produced by GHDL need the VHDL sources. MIX-FPGA runs in memory and distributes no student executables; the notices tell students."
+    },
+    {
+      "id": "L8",
+      "severity": "minor",
+      "title": "Headers without a licence statement (vpi_user.h, synth_gates.h)",
+      "detail": "See the components vpi-header and ghdl-gpl-headers."
+    },
+    {
+      "id": "L9",
+      "severity": "needs-decision",
+      "title": "Integrity enforcement versus the right to replace LGPL/GPL libraries",
+      "detail": "libusb, libftdi1 and libghw (LGPL) and readline (GPLv3) are separate replaceable files. The installed toolchain is read-only by default and the integrity check reports a replaced file as \"changed\" (Setup page, Verify); Repair restores the original only when the student chooses Repair, nothing is restored automatically and the tools keep running with replaced files (tested in Phase 5B). The notices explain how to replace a library. Counsel must confirm this satisfies the LGPL/GPL replacement rights."
+    },
+    {
+      "id": "L10",
+      "severity": "needs-decision",
+      "title": "openFPGALoader bridge bitstreams: provenance",
+      "detail": "111 prebuilt FPGA bitstreams built with vendor tools; no per-file provenance or vendor-IP statement in the release. Unused by MIX-FPGA's flows.",
+      "status": "resolved",
+      "resolution": "Removed in Toolchain 1.1: the 111 openFPGALoader bridge bitstreams are no longer shipped."
+    },
+    {
+      "id": "L11",
+      "severity": "minor",
+      "title": "Lima third-party licences: collected; one MPL-2.0 module needs a source pointer",
+      "detail": "Licence texts for the Go standard library and all 100 Go modules were collected from the exact versions embedded in the Lima binaries (all 100 archive hashes match the hashes embedded in the binaries). github.com/hashicorp/hcl/v2 is MPL-2.0: the release notices must say how to obtain its source (the pinned archive is recorded). Remaining items are legal-review matters (NOTICE and PATENTS files).",
+      "status": "resolved",
+      "resolution": "Lima NOTICE is shipped under LICENSES/lima/; the MPL-2.0 hcl module source is in the corresponding-source package."
+    }
+  ],
+  "sourceOffer": {
+    "status": "No written offer: the complete corresponding-source package MIX-FPGA-DE10-Lite-Support-1.1-Sources accompanies the binaries at the same place and time, and the notices say where it is. Counsel to confirm that this satisfies the licences involved.",
+    "mustProvideForRelease": [
+      "GHDL 6.0.0 source at e589c698c351369ac5bcfe7abe1f1152ac5d4727 (ghdl-6.0.0.tar.gz) with its libraries, scripts and CI build recipe.",
+      "Yosys source at 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 with its abc and cxxopts submodules, and the YosysHQ build recipe (oss-cad-suite-build ac8c7dba).",
+      "GNU Readline 8.2 plus patch 001 and the MacPorts port recipe (556ec864a7d9).",
+      "libusb 1.0.26 and libftdi1 1.5 with their MacPorts port recipes, so the LGPL libraries can be rebuilt and replaced.",
+      "The Go module archive of github.com/hashicorp/hcl/v2 v2.24.0 (MPL-2.0) compiled into Lima."
+    ],
+    "notRequired": [
+      "openFPGALoader (Apache-2.0), Lima (Apache-2.0), zlib, zstd (BSD option), hidapi (BSD option), libffi, Tcl, ncurses, LLVM (exception), the GCC runtime (exception)."
+    ]
+  },
+  "modifications": [
+    "Removed the VHDL-87 and VHDL-93 IEEE libraries (lib/ghdl/ieee/v87, lib/ghdl/ieee/v93 and lib/ghdl/src/ieee): they contain the IEEE 1076.3-1995 numeric_bit and numeric_std sources, which may be distributed only unchanged and not sold or distributed for profit.",
+    "Removed the VITAL-95 and VITAL-2000 packages (lib/ghdl/src/vital95, lib/ghdl/src/vital2000) and the UPF package (lib/ghdl/src/upf), whose licence is not established.",
+    "Regenerated the GHDL 2008 and 2019 IEEE library indexes (lib/ghdl/ieee/v08/ieee-obj08.cf, lib/ghdl/ieee/v19/ieee-obj19.cf) with GHDL itself, using the upstream rules of libraries/Makefile.inc without the removed packages (scripts/toolchain/ghdl-prune.mjs); the analysis timestamps of the upstream release are kept.",
+    "Removed the 111 openFPGALoader bridge bitstreams (share/openFPGALoader/spiOverJtag_*, bpiOverJtag_*): no provenance; MIX-FPGA programs SRAM only and never uses them.",
+    "Added the licence texts of the libraries compiled into the yosys executable, and Lima's own NOTICE file, which the official Lima tarball does not contain.",
+    "MIX-FPGA always runs GHDL with --std=08. A design that uses the removed packages gets a normal \"unit not found\" error."
+  ]
+}
