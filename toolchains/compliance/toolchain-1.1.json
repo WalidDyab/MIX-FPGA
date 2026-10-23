@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "toolchainVersion": "1.1",
   "status": "CANDIDATE",
-  "statusReason": "CANDIDATE: counsel review pending (L3 Yosys with GPLv3 readline, L9 replacement rights, confirmation that shipping the source package with the binaries satisfies the licences)",
+  "statusReason": "CANDIDATE: counsel review pending (L3 Yosys with GPLv3 readline, L9 replacement rights, the L4 residual that the Yosys rebuild is functionally but not byte-identical, and confirmation that shipping the source package with the binaries satisfies the licences)",
   "derivedFrom": "toolchains/compliance/toolchain-1.0.json (darwin-arm64 target; the Windows target is not part of the 1.1 macOS candidate)",
   "statement": "NexysVHDL Toolchain 1.0 is an aggregation of separate third-party programs and data, each under its own license. It is NOT licensed under NexysVHDL's Apache License 2.0; that license covers only NexysVHDL's own code and the NexysVHDL-authored files of the toolchain (manifest, pinned Apio configuration, shims, placeholders, notices).",
   "licenseClasses": {
@@ -112,9 +112,9 @@
       "displayPlatform": "macOS Apple silicon",
       "bundleVersion": "1.1",
       "payload": {
-        "treeSha256": "b88196e2e772ba0b4a51051eca1bd0e8a09a12fe82ecc38339e7d497fab53740",
-        "files": 31544,
-        "bytes": 2744264052,
+        "treeSha256": "8b0beda82258a199ab6b9628a1018a754ac9ea33d629773061901d60ceaea07d",
+        "files": 31541,
+        "bytes": 2744208064,
         "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz"
       },
       "programmer": {
@@ -195,6 +195,18 @@
               "regenerated": [
                 "lib/ghdl/ieee/v08/ieee-obj08.cf",
                 "lib/ghdl/ieee/v19/ieee-obj19.cf"
+              ]
+            },
+            {
+              "component": "ghdl",
+              "path": "ghdl",
+              "kind": "remove",
+              "reason": "Phase 5C decision L8: the GHDL plugin-development headers vpi_user.h and synth_gates.h carry no licence statement; no program, library, script or MIX-FPGA flow uses them (they are only needed to compile a GHDL plugin), and synth.h, which includes synth_gates.h, goes with them so the header set is not left broken",
+              "removedFiles": 3,
+              "removed": [
+                "include/ghdl/synth.h",
+                "include/ghdl/synth_gates.h",
+                "include/ghdl/vpi_user.h"
               ]
             }
           ],
@@ -4527,6 +4539,18 @@
           "regenerated": [
             "lib/ghdl/ieee/v08/ieee-obj08.cf",
             "lib/ghdl/ieee/v19/ieee-obj19.cf"
+          ]
+        },
+        {
+          "component": "ghdl",
+          "path": "ghdl",
+          "kind": "remove",
+          "reason": "Phase 5C decision L8: the GHDL plugin-development headers vpi_user.h and synth_gates.h carry no licence statement; no program, library, script or MIX-FPGA flow uses them (they are only needed to compile a GHDL plugin), and synth.h, which includes synth_gates.h, goes with them so the header set is not left broken",
+          "removedFiles": 3,
+          "removed": [
+            "include/ghdl/synth.h",
+            "include/ghdl/synth_gates.h",
+            "include/ghdl/vpi_user.h"
           ]
         },
         {

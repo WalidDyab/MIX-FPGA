@@ -4,9 +4,9 @@
   "targets": {
     "darwin-arm64": {
       "status": "candidate",
-      "treeSha256": "b88196e2e772ba0b4a51051eca1bd0e8a09a12fe82ecc38339e7d497fab53740",
-      "files": 31544,
-      "bytes": 2744264052,
+      "treeSha256": "8b0beda82258a199ab6b9628a1018a754ac9ea33d629773061901d60ceaea07d",
+      "files": 31541,
+      "bytes": 2744208064,
       "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz"
     }
   }

@@ -39,27 +39,9 @@
      "exec": false
     },
     {
-     "path": "include/ghdl/synth.h",
-     "sha256": "c802c8e00d657a344f2b2d177a42685cf1ae256a26468bd35c3b37f959ecfb36",
-     "size": 9205,
-     "exec": false
-    },
-    {
-     "path": "include/ghdl/synth_gates.h",
-     "sha256": "539467039c085da05db87a7e925cf8f73575f220fb101602f50ed72a0b2dead2",
-     "size": 2386,
-     "exec": false
-    },
-    {
      "path": "include/ghdl/vhpi_user.h",
      "sha256": "dc80461d8a7634a18169fdebb71f5d0083a2238f5e194cb66709e2c92289d7ad",
      "size": 36958,
-     "exec": false
-    },
-    {
-     "path": "include/ghdl/vpi_user.h",
-     "sha256": "6ec3e0d8d9fe696fd494b609db9d83d4f61d7d47458b5a19d3bf6de35f3b4d16",
-     "size": 45550,
      "exec": false
     },
     {
@@ -562,8 +544,8 @@
     }
    ],
    "links": [],
-   "treeSha256": "940aefe1fad4bc2cd6183f7e8cd3dfded8244844bc22ca1a11d2c03b726ef354",
-   "bytes": 108816747
+   "treeSha256": "6a57613898db9a880e5fd032a4c77eda07544a8df171144c3d888d6d57a927ff",
+   "bytes": 108759606
   },
   {
    "id": "yosys",
@@ -4205,14 +4187,14 @@
    "files": [
     {
      "path": "",
-     "sha256": "73937da8f90bed39449b9b96ca3b3d962a6091c0f0f8d69b2a511bd632e22782",
-     "size": 32881,
+     "sha256": "a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518",
+     "size": 32676,
      "exec": false
     }
    ],
    "links": [],
-   "treeSha256": "05212ae874d71fdf5a203a239aa727fdac141fc752f4e8792bd7bf6ca32deff5",
-   "bytes": 32881
+   "treeSha256": "26f0086484398cb1b91d4824a945ef216b166e98a849c1227108bd79690b7f7e",
+   "bytes": 32676
   }
  ]
 }

@@ -1,6 +1,44 @@
 # Phase 5C: Toolchain 1.1 compliance rebuild and revalidation (macOS candidates)
 
-Date: 2026-10-19. Branch `phase5c/toolchain-1.1` from `bb29353` (Phase 5B). **Candidates only**: nothing is signed, notarized, published or adopted; Toolchain 1.0, its records and the validated `~/Library/MIX-FPGA` installation are unchanged (section 7). Legal conclusions remain an engineering assessment; counsel items are listed in section 9.
+Date: 2026-10-19. Branch `phase5c/toolchain-1.1` from `bb29353` (Phase 5B). **Candidates only (see the addendum below for the final frozen hashes)**: nothing is signed, notarized, published or adopted; Toolchain 1.0, its records and the validated `~/Library/MIX-FPGA` installation are unchanged (section 7). Legal conclusions remain an engineering assessment; counsel items are listed in section 9.
+
+## 0. Addendum 2026-10-23: technically frozen candidate (supersedes the hashes in section 1)
+
+After the first report the owner asked for: physical Program validation, the L8 headers, an attempt to reproduce the Yosys build (L4), and a reproducible rebuild. Outcome:
+
+**L8 closed by removal.** `vpi_user.h` and `synth_gates.h` (no licence statement) are GHDL plugin-development headers: no executable, library, script or MIX-FPGA flow references them (`strings`/`grep` over the toolchain and the product, none). `synth.h` includes `synth_gates.h`, so it was removed with them rather than left broken; `libghw.h` (LGPL, with its library) and `vhpi_user.h` (Apache-2.0) stay. Nexys recipe gained a `remove` step, the DE10 assembler does the same, the inventory resolves L8.
+
+**L4 closed on evidence, with a residual** (full record: [phase5c-l4-yosys-rebuild.md](phase5c-l4-yosys-rebuild.md), also inside both source packages): the recipe's compiler-name `sed` on the tracked `Makefile` reproduces the `-dirty` suffix on the pinned commit; a native rebuild from commit `66306a8c` (abc `b4a657e7`, cxxopts `4bf61f08`, readline 8.2 + patch 001 from the pinned sources, bison 3.8.2 and flex 2.6.4 as build tools) prints the same `0.63+173` and has an **identical help text for all 11,515 lines** (normalized SHA-256 `7b1aff67…c66`, same logfile hash `f5dede9581`) as the shipped binary. Residual: not bit-identical (cross clang 18.1.8 versus native clang 21; the original cross-compile image is not available here).
+
+**Final frozen candidate hashes**
+
+| Candidate | Bytes | SHA-256 |
+|---|---|---|
+| Nexys A7 support 1.1 | 652,947,482 | `6fc1f3ad3f0343fc04b2e270f669824db30f84bf71b91bd38640482f20433f0f` |
+| DE10-Lite support 1.1 | 88,871,550 | `25317169b9bab2a636cf5cf420238eab43ad2c955dd82acddcf566244b3f6aa2` |
+| Nexys source package | 490,733,519 | `5ccdc8f3f9389945fc9500a0dd24e871aa9d36d568567b140e229db5d867c2e1` |
+| DE10 source package | 24,365,760 | `8c76974eb5cf91c2ad79743bcf59739fdb7ede7933fd756412078494563824fa` |
+| Candidate extension (overlay build, not reproducible) | 555,665 | `53e6eae3ba0ea5fea799b7ca2b2e76aa05d44b9d99216e8e1ccd0304eedab3b6` |
+
+Nexys tree `8b0beda82258a199ab6b9628a1018a754ac9ea33d629773061901d60ceaea07d`, 31,541 files, 2,744,208,064 installed bytes (1.0: 31,699 files). DE10 manifest `toolchain-1.1-macos-arm64.json` sha256 `25846c5ba6b741967d040a9772e24f13e49feb3ba26cdcc74c96002927c8ae04`, 683 files, 221,558,197 bytes (ghdl 88 files `6a576138…`, yosys `d02397e9…` and lima `1e31ca89…` and engine `25a880d8…` unchanged from 1.0, openfpgaloader `ceb8cc45…`, licenses `158f1733…`, notices `26f00864…`). Recipe `toolchains/bundle/darwin-arm64-1.1.json` sha256 `877c37675c876d2d382a230aa3c0a560bdd690f790b3311b59df82d5930052f5`, inventory `macos-arm64-1.1.inventory.json` `ae0271e884a72d0fc29cf9d90247df0097a36de07f4b3de1f8f364252b60d0d3`, compliance manifest `toolchain-1.1.json` `5f539d1072c27e86d952da9a66ae9243caf387357594141d5634668f5f82bf32`.
+
+Reproducibility of the final build: Nexys assembled and packed twice (identical tree and archive), DE10 payload twice, both source packages twice (identical hashes each time). The 1.0 build scripts still reproduce the 1.0 records.
+
+**Physical validation (isolated root, candidate extension, real VS Code, real boards)**
+
+| Check | Result |
+|---|---|
+| Nexys A7: Check, Simulate (660 ns), RTL schematic, Build (13.8 s, 57 LUTs, 27 FFs) | PASS on the final candidate |
+| DE10-Lite: install with Quartus 25.1 (isolated root, Altera licence accepted there only, with your permission), Check, Simulate (1320 ns), RTL, Build cold 35.5 s / warm 26.8 s | PASS; engine stayed stopped for Check/Simulate/RTL |
+| **DE10-Lite physical Program (SRAM)**: Detect (one DE10-Lite, USB-Blaster serial `91d28408`), Program ("FPGA programmed", volatile, 3.9 s, `.svf` hash identical to the build record), Detect again (one board) | **PASS; you confirmed LEDR0 blinks with SW0 up and KEY0 holds the counter at zero** |
+| Bridge bitstreams are not needed for SRAM programming | The installed 1.1 `openfpgaloader` folder has **no `share` directory at all**; the DE10 Program above and a direct run of the exact command MIX-FPGA issues (`openFPGALoader --board de10lite --write-sram --force-terminal-mode top.svf`) both succeed (exit 0, "write to ram", "end of SVF file"). MIX-FPGA's programmer refuses every flash flag (`FLASH_FLAGS` in `platform/macos/programmer.ts`), and the bridge (`spiOverJtag`) belongs to the SPI-flash path only (`strings` of the binary: "Skip loading bridge for spiOverjtag"). |
+| **Nexys A7 physical Program** | **NOT PERFORMED.** Only a DE10 USB-Blaster was on USB when the test ran and you chose to skip the Nexys test. The Nexys uses the same `--write-sram` command class, but the physical result remains open and must be part of the repeat of the Phase 5A acceptance. |
+
+Full macOS suite on the frozen state: 1142 tests, 255 suites, **1131 pass, 0 fail, 11 skipped**. Reference `~/Library/MIX-FPGA` (32,566 files): no file modified since the earlier identical snapshot (none newer than 2026-10-19 08:00, same count), its VM not started in this round; the 1.0 archives, `requirement.json`, `toolchain-1.0-macos-arm64.json` and `payloads-1.0.json` hashes are unchanged. The product still requires Toolchain 1.0; the CANDIDATE notices are in place in both archives; nothing is published.
+
+**Open for counsel (technically frozen otherwise):** L3 (Yosys with GPLv3 readline), L9 (replacement rights versus the integrity check), the L4 residual (functionally identical, not byte-identical rebuild), and confirmation that shipping each source package beside its archive satisfies the licences. Everything else in section 9 below that is not listed here has been closed.
+
+---
 
 ## 1. What was built
 

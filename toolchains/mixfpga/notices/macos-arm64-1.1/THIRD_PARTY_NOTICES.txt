@@ -1,6 +1,6 @@
 ==============================================================================
 CANDIDATE - COUNSEL REVIEW PENDING (not final)
-Toolchain 1.1 candidate. Complete, but not final: counsel review is pending for L3 (Yosys distributed with GPLv3 readline), L4 (provenance of the "-dirty" Yosys binary), L8 (two headers without a licence statement) and L9 (integrity check versus the right to replace LGPL/GPL components), and for confirmation that shipping the corresponding-source package with the binaries satisfies the licences. Nothing here is a legal opinion.
+Toolchain 1.1 candidate. Complete, but not final: counsel review is pending for L3 (Yosys distributed with GPLv3 readline) and L9 (integrity check versus the right to replace LGPL/GPL components), for confirmation that shipping the corresponding-source package with the binaries satisfies the licences, and for the L4 residual (the Yosys rebuild from the pinned source is functionally identical, not byte-identical). Nothing here is a legal opinion.
 ==============================================================================
 
 MIX-FPGA Toolchain 1.1 for macOS (Apple silicon): third-party notices
@@ -20,6 +20,7 @@ MIX-FPGA patches and rebuilds no third-party program. The only changes to the of
   - Removed the VITAL-95 and VITAL-2000 packages (lib/ghdl/src/vital95, lib/ghdl/src/vital2000) and the UPF package (lib/ghdl/src/upf), whose licence is not established.
   - Regenerated the GHDL 2008 and 2019 IEEE library indexes (lib/ghdl/ieee/v08/ieee-obj08.cf, lib/ghdl/ieee/v19/ieee-obj19.cf) with GHDL itself, using the upstream rules of libraries/Makefile.inc without the removed packages (scripts/toolchain/ghdl-prune.mjs); the analysis timestamps of the upstream release are kept.
   - Removed the 111 openFPGALoader bridge bitstreams (share/openFPGALoader/spiOverJtag_*, bpiOverJtag_*): no provenance; MIX-FPGA programs SRAM only and never uses them.
+  - Removed the GHDL plugin-development headers include/ghdl/vpi_user.h, synth_gates.h and synth.h: vpi_user.h and synth_gates.h carry no licence statement, nothing uses them at run time (they are only needed to compile a GHDL plugin), and synth.h includes synth_gates.h.
   - Added the licence texts of the libraries compiled into the yosys executable, and Lima's own NOTICE file, which the official Lima tarball does not contain.
   - MIX-FPGA always runs GHDL with --std=08. A design that uses the removed packages gets a normal "unit not found" error.
 
@@ -69,27 +70,12 @@ libghw (GHDL waveform library) and its header 6.0.0
     - ghdl-6.0.0
   status:     verified   open questions: L9
 
-GHDL synthesis headers 6.0.0
-  licence:    GPL-2.0-or-later
-  files:      include/ghdl/synth.h, include/ghdl/synth_gates.h
-  source:     corresponding-source
-    - ghdl-6.0.0
-  status:     unclear   open questions: L8
-  OPEN:       synth_gates.h has no licence header.
-
 vhpi_user.h (IEEE P1076 WG) 2019
   licence:    Apache-2.0
   files:      include/ghdl/vhpi_user.h
   texts:      LICENSES/ieee-p1076/Apache-2.0.txt
   source:     none
   status:     verified
-
-vpi_user.h (IEEE Std 1800-2017 PLI header) -
-  licence:    UNCLEAR
-  files:      include/ghdl/vpi_user.h
-  source:     none
-  status:     unclear   open questions: L8
-  OPEN:       Find the licence of this header at GHDL's source (it comes from the IEEE standard's PLI header).
 
 VHDL STD library (standard, textio, env) and its compiled form 6.0.0
   licence:    GPL-2.0-or-later
@@ -138,8 +124,7 @@ Yosys 0.63+173 (git 66306a8ca-dirty)
   texts:      LICENSES/yosys/LICENSE.yosys
   source:     corresponding-source - Permissive itself, but the program is distributed linked with GPL-3.0-or-later readline (see L3), so the complete corresponding source of the combined program is provided.
     - oss-yosys  https://github.com/YosysHQ/yosys  @66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2  sha256 649a106a04cf19e5688993707694a8e855636d60b5d8a90310c4ec208cf54e5d
-  status:     unclear   open questions: L3 L4
-  OPEN:       The version string ends in "-dirty". The build recipe in the source package (YosysHQ/oss-cad-suite-build ac8c7dba, default/scripts/yosys.sh) builds Yosys at origin/main on macOS and runs `sed -i` on the tracked Makefile (compiler substitution), which explains the suffix without source changes. This is an explanation, not a reproduced build; counsel and the project owner decide whether it is accepted (L4).
+  status:     verified   open questions: L3
 
 Libraries compiled into the yosys executable per Yosys source tree
   licence:    ISC (ezSAT, subcircuit); MIT (MiniSat, json11, fstapi, cxxopts); public domain (sha1, BigInteger); Berkeley (ABC)
@@ -385,8 +370,8 @@ L2 [resolved] VITAL and UPF packages have no licence statement in their files
 L3 [needs-decision] Yosys is distributed linked with GPL-3.0-or-later readline
     The yosys executable loads libreadline.8.2.dylib (GPL-3.0-or-later, shipped beside it). MIX-FPGA treats the pair as a GPLv3 combination (Yosys is ISC, which is GPL-compatible), ships the GPLv3 text and provides the complete corresponding source of both (Yosys with abc and cxxopts, readline 8.2 with patch 001 and the MacPorts recipe, the build scripts) in the source package. Counsel must confirm the combined-work position.
 
-L4 [needs-decision] Yosys source of the exact binary, and notices of libraries compiled into it
-    See yosys-program: the "-dirty" suffix is explained by the build recipe; the libraries compiled into the binary are now identified and their texts shipped. Counsel and the project owner decide whether the explanation is accepted without a reproduced build.
+L4 [resolved] Yosys source of the exact binary, and notices of libraries compiled into it
+    RESOLUTION: Explained and strengthened in Phase 5C (docs/phase5c-l4-yosys-rebuild.md): the "-dirty" suffix is exactly the recipe's compiler-name sed on the tracked Makefile (reproduced on the pinned commit); a rebuild from commit 66306a8c with the pinned abc/cxxopts submodules and readline 8.2+patch 001 has an identical help text for every command (11,515 lines, same normalized SHA-256), so no source change is hidden. Residual: the two binaries are not bit-identical (cross-compiler clang 18.1.8 versus native clang 21); counsel to confirm that this is sufficient.
 
 L5 [resolved] libusb text shipped in the payload is a 1.0.24 revision, the library is 1.0.26
     RESOLUTION: LICENSES/libusb/COPYING (LGPL-2.1) is shipped next to the 1.0.24-revision LICENSE.libusb; the 1.0.26 source is in the source package.
@@ -397,8 +382,8 @@ L6 [resolved] GHDL build recipe and GCC/GNAT runtime origin not fully recorded
 L7 [resolved] Does GHDL's GPL reach students' simulation output?
     RESOLUTION: GHDL v6.0.0 doc/licenses.rst: GRT and std.textio are GPLv2; executables produced by GHDL need the VHDL sources. MIX-FPGA runs in memory and distributes no student executables; the notices tell students.
 
-L8 [minor] Headers without a licence statement (vpi_user.h, synth_gates.h)
-    See the components vpi-header and ghdl-gpl-headers.
+L8 [resolved] Headers without a licence statement (vpi_user.h, synth_gates.h)
+    RESOLUTION: Removed in Toolchain 1.1: the plugin-development headers vpi_user.h, synth_gates.h and (because it includes synth_gates.h) synth.h are no longer shipped; no program, library, script or MIX-FPGA flow uses them.
 
 L9 [needs-decision] Integrity enforcement versus the right to replace LGPL/GPL libraries
     libusb, libftdi1 and libghw (LGPL) and readline (GPLv3) are separate replaceable files. The installed toolchain is read-only by default and the integrity check reports a replaced file as "changed" (Setup page, Verify); Repair restores the original only when the student chooses Repair, nothing is restored automatically and the tools keep running with replaced files (tested in Phase 5B). The notices explain how to replace a library. Counsel must confirm this satisfies the LGPL/GPL replacement rights.

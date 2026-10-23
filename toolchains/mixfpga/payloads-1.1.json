@@ -4,14 +4,14 @@
   "payloads": {
     "nexys-a7-100t": {
       "file": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz",
-      "bytes": 652953225,
-      "sha256": "7c93dd2b4b2c9506eacf754b4c8589a54c3f846ea1a2fb91d5f92b6b16063670",
+      "bytes": 652947482,
+      "sha256": "6fc1f3ad3f0343fc04b2e270f669824db30f84bf71b91bd38640482f20433f0f",
       "content": "MIX-FPGA Nexys A7 support (Toolchain 1.1)"
     },
     "de10-lite": {
       "file": "mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz",
-      "bytes": 88881825,
-      "sha256": "a0bd6e04543f1e926864b9e1b6b7223b2e255e2cd2b5e96aff12cac21a3118df",
+      "bytes": 88871550,
+      "sha256": "25317169b9bab2a636cf5cf420238eab43ad2c955dd82acddcf566244b3f6aa2",
       "content": "MIX-FPGA Toolchain 1.1 (macos-arm64), byte-reproducible"
     }
   }

@@ -5,7 +5,7 @@
 //
 // 1. copies the validated 1.0 tool folders (toolchains/experimental, git-ignored) to .artifacts/tools-1.1 and applies the Phase 5B
 //    compliance changes: the GHDL library prune (scripts/toolchain/ghdl-prune.mjs) and the removal of the openFPGALoader bridge
-//    bitstreams; Toolchain 1.0 and the sealed ~/Library/MIX-FPGA installation are only read, never modified;
+//    bitstreams and the three GHDL plugin-development headers (L8); Toolchain 1.0 and the sealed ~/Library/MIX-FPGA installation are only read, never modified;
 // 2. builds the 1.1 notices from toolchains/mixfpga/compliance/macos-arm64-1.1.inventory.json and records the 1.1 manifest;
 // 3. assembles the unit root .artifacts/toolchain-1.1/macos-arm64 and packs .artifacts/candidates-1.1/payloads (+ the pins
 //    toolchains/mixfpga/payloads-1.1.json).
@@ -42,6 +42,8 @@ const share = join(tools, DEV.openfpgaloader, 'share', 'openFPGALoader');
 let removedBitstreams = 0;
 for (const f of readdirSync(share)) if (/^(spi|bpi)OverJtag_/.test(f)) { rmSync(join(share, f)); removedBitstreams++; }
 console.log(`removed ${removedBitstreams} openFPGALoader bridge bitstreams`);
+for (const h of ['vpi_user.h', 'synth_gates.h', 'synth.h']) rmSync(join(tools, DEV.ghdl, 'include', 'ghdl', h));
+console.log('removed the GHDL plugin-development headers vpi_user.h, synth_gates.h, synth.h');
 
 // 2. notices and manifest
 run('scripts/mixfpga/build-notices.mjs', ['--bundle', '1.1', '--tools', tools]);

@@ -136,6 +136,7 @@ await build({
         'mix-fpga-build/ghdl-prune.mjs': join(REPO_ROOT, 'scripts', 'toolchain', 'ghdl-prune.mjs'),
         'mix-fpga-build/toolchain-manifest.json': nexysManifestFile,
         'mix-fpga-build/compliance-toolchain-1.0.json': join(REPO_ROOT, 'toolchains', 'compliance', 'toolchain-1.0.json'),
+        'mix-fpga-build/yosys-rebuild-evidence.md': join(REPO_ROOT, 'docs', 'phase5c-l4-yosys-rebuild.md'),
     },
     mapping: (rows) => ({
         schemaVersion: 1,
@@ -164,6 +165,7 @@ await build({
         'mix-fpga-build/ghdl-prune.mjs': join(REPO_ROOT, 'scripts', 'toolchain', 'ghdl-prune.mjs'),
         'mix-fpga-build/assemble-1.1.mjs': join(REPO_ROOT, 'scripts', 'mixfpga', 'assemble-1.1.mjs'),
         'mix-fpga-build/go-licenses.json': join(REPO_ROOT, 'toolchains', 'mixfpga', 'compliance', 'go-licenses.json'),
+        'mix-fpga-build/yosys-rebuild-evidence.md': join(REPO_ROOT, 'docs', 'phase5c-l4-yosys-rebuild.md'),
     },
     mapping: (rows) => ({
         schemaVersion: 1,

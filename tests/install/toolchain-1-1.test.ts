@@ -56,7 +56,7 @@ describe('Nexys A7 recipe for Toolchain 1.1', () => {
         const pruned = r11.components.filter((c: any) => c.postProcess).map((c: any) => c.id);
         assert.deepEqual(pruned, ['ghdl', 'apio-oss-cad-suite']);
         const kinds = r11.components.flatMap((c: any) => (c.postProcess ?? []).map((p: any) => p.kind));
-        assert.deepEqual(kinds.sort(), ['ghdl-prune', 'ghdl-prune', 'remove']);
+        assert.deepEqual(kinds.sort(), ['ghdl-prune', 'ghdl-prune', 'remove', 'remove']);
         for (const p of r11.components.flatMap((c: any) => c.postProcess ?? [])) assert.ok(p.reason && p.reason.length > 20);
     });
 
@@ -101,9 +101,9 @@ describe('DE10-Lite inventory and notices of Toolchain 1.1', () => {
         const ids = inv.components.map((c) => c.id);
         for (const gone of ['ieee-1076-3-1995', 'vital-libraries', 'upf-library', 'ofl-bridge-bitstreams']) assert.ok(!ids.includes(gone), gone);
         const open = inv.legalFlags.filter((f) => f.status !== 'resolved').map((f) => f.id).sort();
-        assert.deepEqual(open, ['L3', 'L4', 'L8', 'L9'], 'only the items that need counsel stay open');
+        assert.deepEqual(open, ['L3', 'L9'], 'only the items that need counsel stay open');
         const resolved = inv.legalFlags.filter((f) => f.status === 'resolved').map((f) => f.id);
-        for (const id of ['L1', 'L2', 'L5', 'L6', 'L7', 'L10', 'L11']) assert.ok(resolved.includes(id), id);
+        for (const id of ['L1', 'L2', 'L4', 'L5', 'L6', 'L7', 'L8', 'L10', 'L11']) assert.ok(resolved.includes(id), id);
         for (const f of inv.legalFlags.filter((x) => x.status === 'resolved')) assert.ok(f.resolution && f.resolution.length > 20, f.id);
         for (const c of inv.components) for (const f of c.flags) assert.ok(inv.legalFlags.some((x) => x.id === f), `${c.id} cites ${f}`);
         assert.ok(inv.modifications && inv.modifications.length >= 5);
@@ -139,7 +139,7 @@ describe('DE10-Lite inventory and notices of Toolchain 1.1', () => {
         }
         const g10 = m10.units.find((u: any) => u.id === 'ghdl').files.map((f: any) => f.path) as string[];
         const g11 = m11.units.find((u: any) => u.id === 'ghdl').files.map((f: any) => f.path) as string[];
-        assert.ok(g10.some((p) => p.includes('v93/numeric_std.vhdl')) && !g11.some((p) => /ieee\/v(87|93)\/|vital|\/upf\//.test(p)), 'the 1995, VITAL and UPF files are gone');
+        assert.ok(g10.some((p) => p.includes('v93/numeric_std.vhdl')) && !g11.some((p) => /ieee\/v(87|93)\/|vital|\/upf\/|include\/ghdl\/(vpi_user|synth_gates|synth)\.h/.test(p)), 'the 1995, VITAL, UPF and plugin-development header files are gone');
         const o11 = m11.units.find((u: any) => u.id === 'openfpgaloader').files.map((f: any) => f.path) as string[];
         assert.ok(!o11.some((p) => /OverJtag/.test(p)), 'no bridge bitstreams');
         // everything GHDL ships that is left is unchanged, except the two regenerated indexes
@@ -166,8 +166,8 @@ describe('Toolchain 1.1 candidate payloads and pruned GHDL', () => {
     it('the Nexys candidate has no 1995, VITAL, UPF or bridge-bitstream content, and its manifest lists every change', { skip: !built && 'no assembled candidate here' }, async () => {
         const manifest = await json(join(CANDIDATE_TREE, 'toolchain-manifest.json'));
         assert.equal(manifest.bundleVersion, '1.1');
-        assert.ok(manifest.modifications.length === 3);
-        for (const gone of ['ghdl/lib/ghdl/ieee/v87', 'ghdl/lib/ghdl/ieee/v93', 'ghdl/lib/ghdl/src/ieee', 'ghdl/lib/ghdl/src/vital95', 'ghdl/lib/ghdl/src/vital2000', 'ghdl/lib/ghdl/src/upf', 'apio/packages/oss-cad-suite/lib/ghdl/ieee/v87', 'apio/packages/oss-cad-suite/lib/ghdl/ieee/v93', 'apio/packages/oss-cad-suite/lib/ghdl/src/vital2000']) assert.ok(!existsSync(join(CANDIDATE_TREE, gone)), gone);
+        assert.ok(manifest.modifications.length === 4);
+        for (const gone of ['ghdl/include/ghdl/vpi_user.h', 'ghdl/include/ghdl/synth_gates.h', 'ghdl/include/ghdl/synth.h', 'ghdl/lib/ghdl/ieee/v87', 'ghdl/lib/ghdl/ieee/v93', 'ghdl/lib/ghdl/src/ieee', 'ghdl/lib/ghdl/src/vital95', 'ghdl/lib/ghdl/src/vital2000', 'ghdl/lib/ghdl/src/upf', 'apio/packages/oss-cad-suite/lib/ghdl/ieee/v87', 'apio/packages/oss-cad-suite/lib/ghdl/ieee/v93', 'apio/packages/oss-cad-suite/lib/ghdl/src/vital2000']) assert.ok(!existsSync(join(CANDIDATE_TREE, gone)), gone);
         assert.equal((await readdir(join(CANDIDATE_TREE, 'apio/packages/oss-cad-suite/share/openFPGALoader')).catch(() => [])).length, 0);
         for (const cf of ['ghdl/lib/ghdl/ieee/v08/ieee-obj08.cf', 'ghdl/lib/ghdl/ieee/v19/ieee-obj19.cf', 'apio/packages/oss-cad-suite/lib/ghdl/ieee/v08/ieee-obj08.cf', 'apio/packages/oss-cad-suite/lib/ghdl/ieee/v19/ieee-obj19.cf']) {
             assert.doesNotMatch(await readFile(join(CANDIDATE_TREE, cf), 'latin1'), /vital|upf|v87|v93/i, cf);
