@@ -1,11 +1,11 @@
 # SHA-256 of every evidence file referenced by the counsel review package
-# Regenerated 2026-10-23T07:56Z on branch phase5d/legal-clearance (Phase 5D engineering closure: Icarus pinned-source check, modified-toolchain change; base 1494e14). Paths are relative to the repository root.
+# Regenerated 2026-10-23T19:21Z on branch phase5e/macos-release-candidate (Phase 5E: final payloads; section C lists the FINAL Toolchain 1.1 archives, whose hashes differ from the Phase 5C candidates only because the notices changed). Paths are relative to the repository root.
 
 ## A. Files of this folder (this list excluded)
-03ff76863d9de57fddb27d7349ab802e5e2ed2adc934b2a62cfb7c01ff711f63  docs/phase5d-counsel-review/L3-yosys-readline.md
-f4b9925aeccd7d652b2b041f1582d28962dd18e97ae85b9a100f59a89804a487  docs/phase5d-counsel-review/L4-yosys-provenance.md
-d0d48e57ff5dd06ebeb947fadb934ae3a9d9ad5110527d0c4f0a06298902e6ea  docs/phase5d-counsel-review/L9-replacement-rights.md
-01b9d39dcef545e2dd0d524154d843df42c89f747a6b38dd70f70d589c4a263e  docs/phase5d-counsel-review/README.md
+0c53d5da13d3c423289460416c82c43f10eb2e7b16493322b226cd332fcff788  docs/phase5d-counsel-review/L3-yosys-readline.md
+4b13cc940dceba5710acd89b94268a0bc7762ace26a46af0d19eda0935181ec9  docs/phase5d-counsel-review/L4-yosys-provenance.md
+ff7657c233505509b7af3fbe4ae75cbe632bd001196f61a7d5d3ce0baee0d9c9  docs/phase5d-counsel-review/L9-replacement-rights.md
+eaf9d9d7047317f2f5545f8a581d063975e9aceda205e399ed65348f1c9c216d  docs/phase5d-counsel-review/README.md
 a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518  docs/phase5d-counsel-review/evidence/de10-archive-THIRD_PARTY_NOTICES.txt
 cee2fd063588e8659bff49a2e93360a9c7a95ca7d965bf78ba1d7acdb99228eb  docs/phase5d-counsel-review/evidence/nexys-archive-THIRD_PARTY_NOTICES.md
 94f771ed7383f43d1275d4c26e0f757aed1c212cc19b5e3888da3c04dfd95414  docs/phase5d-counsel-review/evidence/yosys-help-all-rebuilt.txt
@@ -28,19 +28,19 @@ b7993225104d90ddd8024fd838faf300bea5e83d91203eab98e29512acebd69c  docs/phase5d-c
 7c78b151f589e3b2bc7057b89e6afd55a93330c9597b7531ddd9e62e6efec0fd  docs/phase5c-l4-yosys-rebuild.md
 2ec456278ebe7a4068a584db2ac9a9cb77985235477d4bbaef9f20406b5e27ce  docs/phase5c-toolchain-1.1-report.md
 47b54f975d8407398542e3aae000162d36c6372203ef17d74db624e5715c8d16  docs/toolchain-1.0-redistribution.md
-a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518  toolchains/mixfpga/notices/macos-arm64-1.1/THIRD_PARTY_NOTICES.txt
-25846c5ba6b741967d040a9772e24f13e49feb3ba26cdcc74c96002927c8ae04  toolchains/mixfpga/compliance/macos-arm64-1.1.inventory.json
-0a09419c44d277acd5d39f513dadd079ee594f063a27fccf480616c225e2bb80  toolchains/mixfpga/payloads-1.1.json
-5f539d1072c27e86d952da9a66ae9243caf387357594141d5634668f5f82bf32  toolchains/mixfpga/toolchain-1.1-macos-arm64.json
-877c37675c876d2d382a230aa3c0a560bdd690f790b3311b59df82d5930052f5  toolchains/bundle/darwin-arm64-1.1.json
-5061bab044da4a088056691e290a20adc4ee9559d83ca21134d95fc606b0fdba  toolchains/bundle/requirement-1.1.json
-ae0271e884a72d0fc29cf9d90247df0097a36de07f4b3de1f8f364252b60d0d3  toolchains/compliance/toolchain-1.1.json
+08a6d91a36fa074250a0bb586132d5aa457a82d53512140c94a99ea86e8904c0  toolchains/mixfpga/notices/macos-arm64-1.1/THIRD_PARTY_NOTICES.txt
+f09df7a1545e8598ce26c905e500c12f27a0ef53291ca5c5f2f03cb055f98624  toolchains/mixfpga/compliance/macos-arm64-1.1.inventory.json
+10e394e44538fc0f7d75a5c9f0482f085eac1cf4b9c3ad81537a4aa7bcb7fc1e  toolchains/mixfpga/payloads-1.1.json
+b1ef245c071f0a8cac4ae39e4169df5bc900329d21fc5d37f5550e437dd3ec78  toolchains/mixfpga/toolchain-1.1-macos-arm64.json
+447bc687fc23e5ee05b017e4a914fdaa3e4fa46def1062f50330f53a73d2222a  toolchains/bundle/darwin-arm64-1.1.json
+82051c1c2f43e1c51506cc4b0ceb63635814938e340c4dfd64a7626b06970407  toolchains/bundle/requirement-1.1.json
+f8898345ff7729d66e4bf9cf76f1951da460116aa14cf8836dac9e34e095ae0e  toolchains/compliance/toolchain-1.1.json
 aaa7f0ec2187ec5b7128dfb1027f9aa161c3b9abac75102914b9c16e65aa60c4  scripts/toolchain/ghdl-prune.mjs
 3f46702d94741653304ea61acd9312f1ec8124c1fa76f0a92d2654fb5843fa69  platform/macos/programmer.ts
 86c82132e2b4063a387c3e526ca6ae17ab8de0420cc36baa3b22311d6270d915  platform/macos/install/setup-view.ts
 9fa86dbea5aa921956086d54550913fe8a097139c8b3314493ca2c554136dac9  platform/macos/install/setup-controller.ts
-67bf2a8f8a468df0860cf22fa260e6f38bec28faad2fcaf509b86a1863e7867c  platform/macos/install/toolchain-installer.ts
-5ee8f4cf8c02586025c82c567f1e9d5e9909894f05245b1ff5aadb9ecf4bb9cf  extension/commands/commands.ts
+a2629683be97abb0d6474737f9a2a328ec01b760d36dcd979b9d1ab26e718ffc  platform/macos/install/toolchain-installer.ts
+b227c4399afbfccebd374da62fbe3386adf165d64c53a838c33940c0f683ef03  extension/commands/commands.ts
 
 
 00c47c4b70eef18b104bdbf65e331ca66c7bc12a5740056103dd4ad9dff2b484  core/install/model.ts
@@ -48,17 +48,17 @@ d8a68a6ab9c1987738c7cd0dc63aa5e43ce76466a36906cb144b9d84273aef47  core/install/e
 5080ff03452ec8f11ed2b5e613ce0a90dadb699028479857491f9e432d333987  core/toolchain/store.ts
 f359b28046262483e94e87a50ae0403ac249995915e520b942dd164c2e174e97  platform/macos/install/boards.ts
 d31519b61227364fd12c15bab3e576caec7e750554227eeaf8085abd1463a8cd  platform/macos/install/nexys-support.ts
-c07359de5c586d4a8fe6b7ea51532b1e7300b7c95bd69121b9b2a90b0aaa7318  platform/macos/install/toolchain-components.ts
+a95dd68d35444c69107583e6d26026d2b7e904dac8baa1d871d94dc5f56fc124  platform/macos/install/toolchain-components.ts
 0c840cce2b1bb53691be11e8c73f607261a0f75e29b8dde5f3cdd22bfff38353  platform/macos/de10/runtime.ts
 4a7b1d7ad47545f84dc0d02564334a96448c7efe2fc78f3588959b2ed4e652d6  tests/install/modified-toolchain.test.ts
-ee10f27b924bf0db4f12561b042a29df282f1eb743546007b28ef4f090405857  tests/install/toolchain-installer.test.ts
+830eae3f27d23f42f59bf89edd97e0880d51b83f9eeb5f2338ba9da11c806a53  tests/install/toolchain-installer.test.ts
 7d2b23019ddd97051c10ea90f8abd61e536a9f52fa517ef9715c9f49465a042f  tests/install/setup.test.ts
 
-## C. Build artifacts referenced (git-ignored; the candidate hashes are unchanged since 58a59f4)
-6fc1f3ad3f0343fc04b2e270f669824db30f84bf71b91bd38640482f20433f0f  .artifacts/candidates-1.1/nexys/nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz
-25317169b9bab2a636cf5cf420238eab43ad2c955dd82acddcf566244b3f6aa2  .artifacts/candidates-1.1/payloads/mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz
-5ccdc8f3f9389945fc9500a0dd24e871aa9d36d568567b140e229db5d867c2e1  .artifacts/candidates-1.1/sources/MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip
-8c76974eb5cf91c2ad79743bcf59739fdb7ede7933fd756412078494563824fa  .artifacts/candidates-1.1/sources/MIX-FPGA-DE10-Lite-Support-1.1-Sources.zip
+## C. Build artifacts referenced (git-ignored; FINAL Toolchain 1.1, Phase 5E)
+f84cedece009be5a04ad44a9c2ff1110fccc1c6725f483a20bb0e139c84f3a73  .artifacts/final-1.1/nexys-a/nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz
+19df1593f9266653a4fddbc18cebb4b019e78682271034e0893be264c2d38326  .artifacts/final-1.1/payloads-a/mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz
+cf6b36b988065c2441cd5fbb9a86352a88778c44ef20933dc7fa4bb7f043efda  .artifacts/final-1.1/sources-a/MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip
+e85dbbff25f489dd212661671d842673c7f74455c0df9aae0fa3cc1adbd5715a  .artifacts/final-1.1/sources-a/MIX-FPGA-DE10-Lite-Support-1.1-Sources.zip
 beb67bee34580810390f41553a9f012902526d455e6eaa4788d7552b91d34502  .artifacts/toolchain-1.1/macos-arm64/yosys/libexec/yosys
 be7552f0f9ce7cda5731faba2018b0e62db6af6a712ebe1ceeb7c400d9ac183a  .artifacts/toolchain-1.1/macos-arm64/yosys/lib/libreadline.8.2.dylib
 beb67bee34580810390f41553a9f012902526d455e6eaa4788d7552b91d34502  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/libexec/yosys
@@ -75,7 +75,7 @@ dcf19c05333ae5c25f9f584ad1a0260688fc38e9b741a6d00e8f2432a2b13d37  toolchain/darw
 be7552f0f9ce7cda5731faba2018b0e62db6af6a712ebe1ceeb7c400d9ac183a  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/libreadline.8.2.dylib
 a9770d8ed3b39be3af1dea995d8139d21678dbb90789c01181ad751f8956b7b6  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/license/LICENSE.iverilog
 f57c33d9a35b1fdc9979ac23d9c4d199f3e7da1b181726acbd9a33071313cd0a  toolchain/darwin-arm64-1.1/apio/packages/openxc7/lib/python3.12/lib-dynload/readline.cpython-312-darwin.so
-cee2fd063588e8659bff49a2e93360a9c7a95ca7d965bf78ba1d7acdb99228eb  toolchain/darwin-arm64-1.1/THIRD_PARTY_NOTICES.md
+030a789247cb4e956641355aee4b20d313ab45d040e2bab615ceb843d63755af  toolchain/darwin-arm64-1.1/THIRD_PARTY_NOTICES.md
 
 ## D. Source archives named in L3 and L4 (inside MIX-FPGA-DE10-Lite-Support-1.1-Sources.zip, from its manifest.json)
 3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719  sources/ghdl-6.0.0.tar.gz
@@ -101,3 +101,10 @@ e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995  flex-2.6.4.tar
 
 ## E. Icarus Verilog pinned source (L3 section 3.1), inside MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip
 c37c4f4ad72d7c209cbfe9c399c982260c4313d28735875c72643f8ba406679d  sources/oss-iverilog.tar.gz
+
+## F. Phase 5E records
+d38e54260b891852d68decda23638232eb82372630e31c44f55c1ecffd07eb7b  docs/phase5e-compliance-conclusions.md
+be479e93b2d1841e9101b839bac5a5dd255d6dec64921de184f2b77aec22fee4  toolchains/compliance/sources-1.1-extra.json
+82051c1c2f43e1c51506cc4b0ceb63635814938e340c4dfd64a7626b06970407  toolchains/bundle/requirement.json
+a9a8a52bedd9de2c127758e08da0b670fc25cca4ce273db64247bfd7ea4c206e  toolchains/bundle/requirement-1.0.json
+a9e63b0dd848f0ae01f30b99eda9b5eb40e4c0409ef3eb19d0d2af0c429002b7  sources/cpython-3.11.6-8b6ee5ba.tar.gz (inside MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip)

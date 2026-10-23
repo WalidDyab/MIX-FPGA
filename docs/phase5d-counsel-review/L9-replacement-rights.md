@@ -1,5 +1,7 @@
 # L9: replacement and modification rights versus MIX-FPGA's integrity check
 
+> **Phase 5E update (technical review, not legal advice; no attorney has approved anything):** the questions in this file are recorded as technically resolved in [../phase5e-compliance-conclusions.md](../phase5e-compliance-conclusions.md). The text below is kept as the record of how the question was put and what was known at the time.
+
 Engineering description of what the software does, so counsel can judge it. Not a legal conclusion. The behaviour was tested on a copy of the installed toolchain (Phase 5B), re-checked through the code (Phase 5D review) and **changed in Phase 5D (engineering closure)**: sections 2.2, 2.3, 2.5 and 2.6 describe the behaviour after that change, and section 2a records what it replaced. Hashes of the referenced files are in [EVIDENCE-SHA256.txt](EVIDENCE-SHA256.txt).
 
 ## 1. Where the covered components are

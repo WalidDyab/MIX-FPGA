@@ -1,5 +1,7 @@
 # Counsel review package: MIX-FPGA 0.7.0 macOS support archives (Toolchain 1.1 candidate)
 
+> **Phase 5E update (technical review, not legal advice; no attorney has approved anything):** the questions in this file are recorded as technically resolved in [../phase5e-compliance-conclusions.md](../phase5e-compliance-conclusions.md). The text below is kept as the record of how the question was put and what was known at the time.
+
 **Status: candidate for review. Nothing here is legal advice and we claim no legal clearance.** The product still requires Toolchain 1.0; Toolchain 1.1 and its notices are marked CANDIDATE; nothing is published. This folder covers only the four questions still open after the engineering work (L1, L2, L5-L8, L10 and L11 were closed by removing the content or by evidence; see the Phase 5C report if you want the history, you do not need it).
 
 ## What is to be distributed (macOS, Apple silicon, free classroom use)

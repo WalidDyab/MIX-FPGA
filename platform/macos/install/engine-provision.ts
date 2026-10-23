@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { ComponentDefinition, SetupStepResult } from '../../../core/install/model';
 import type { ToolInvocation, ToolRunResult, ToolRunner } from '../../../core/process/tool-runner';
@@ -189,7 +189,11 @@ export class EngineProvisioner {
         const { layout } = this.deps;
         const dir = join(layout.shareDir, 'provision');
         await mkdir(dir, { recursive: true });
-        for (const f of GUEST_SCRIPTS) await copyFile(join(layout.unit('engine'), f), join(dir, f));
+        // The installed scripts are read-only (sealed toolchain): copies from an earlier run must be removed first.
+        for (const f of GUEST_SCRIPTS) {
+            await rm(join(dir, f), { force: true });
+            await copyFile(join(layout.unit('engine'), f), join(dir, f));
+        }
         const guest = (script: string, timeoutMs: number) => this.engine.guest(script, { ...(signal ? { signal } : {}), timeoutMs });
 
         say('Preparing the FPGA engine…');

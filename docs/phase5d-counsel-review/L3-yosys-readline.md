@@ -1,5 +1,7 @@
 # L3: Yosys distributed with GNU Readline
 
+> **Phase 5E update (technical review, not legal advice; no attorney has approved anything):** the questions in this file are recorded as technically resolved in [../phase5e-compliance-conclusions.md](../phase5e-compliance-conclusions.md). The text below is kept as the record of how the question was put and what was known at the time.
+
 Engineering facts for counsel. Nothing here is a legal conclusion. Paths are relative to the repository root; hashes are in [EVIDENCE-SHA256.txt](EVIDENCE-SHA256.txt).
 
 ## 1. What is distributed

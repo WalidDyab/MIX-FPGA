@@ -1,5 +1,7 @@
 # L4 residual: provenance of the shipped Yosys binary
 
+> **Phase 5E update (technical review, not legal advice; no attorney has approved anything):** the questions in this file are recorded as technically resolved in [../phase5e-compliance-conclusions.md](../phase5e-compliance-conclusions.md). The text below is kept as the record of how the question was put and what was known at the time.
+
 Engineering evidence, not a legal conclusion. Long form: [docs/phase5c-l4-yosys-rebuild.md](../phase5c-l4-yosys-rebuild.md) (also inside both source packages as `mix-fpga-build/yosys-rebuild-evidence.md`). Hashes of every file named here: [EVIDENCE-SHA256.txt](EVIDENCE-SHA256.txt).
 
 ## 1. The question

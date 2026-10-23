@@ -1,4 +1,4 @@
-import { copyFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Diagnostic } from '../../../core/results/diagnostic';
 import type { ToolRunResult, ToolRunner } from '../../../core/process/tool-runner';
@@ -82,7 +82,10 @@ export class LimaEngine implements EngineProvider {
     async remediate(signal?: AbortSignal): Promise<boolean> {
         const dir = join(this.paths.shareDir, 'provision');
         await mkdir(dir, { recursive: true });
-        await copyFile(this.paths.provisionScript, join(dir, 'provision-quartus-env.sh'));
+        // The installed script is read-only (sealed toolchain): a copy from an earlier run must be removed first.
+        const target = join(dir, 'provision-quartus-env.sh');
+        await rm(target, { force: true });
+        await copyFile(this.paths.provisionScript, target);
         const r = await this.guest(`sudo -n bash ${this.paths.guestShareDir}/provision/provision-quartus-env.sh`, { ...(signal ? { signal } : {}), timeoutMs: 120_000 });
         return r.outcome === 'exited' && r.exitCode === 0;
     }
