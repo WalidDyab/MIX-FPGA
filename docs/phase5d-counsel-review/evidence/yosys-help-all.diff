@@ -1,0 +1,10 @@
+7c7
+<  Yosys 0.63+173 (git sha1 66306a8ca-dirty, aarch64-apple-darwin23.5-clang++ 18.1.8 -fPIC -O3)
+---
+>  Yosys 0.63+173 (git sha1 66306a8ca, clang++ 21.0.0 -fPIC -O3)
+11513,11514c11513,11514
+< End of script. Logfile hash: f5dede9581, time: 0.01s, user: 0.01s, system: 0.00s, MEM: 13.22 MB peak
+< Yosys 0.63+173 (git sha1 66306a8ca-dirty, aarch64-apple-darwin23.5-clang++ 18.1.8 -fPIC -O3)
+---
+> End of script. Logfile hash: f5dede9581, time: 0.00s, user: 0.01s, system: 0.00s, MEM: 12.97 MB peak
+> Yosys 0.63+173 (git sha1 66306a8ca, clang++ 21.0.0 -fPIC -O3)

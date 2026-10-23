@@ -1,0 +1,20 @@
+--- a/Makefile (pinned commit 66306a8c)	2026-03-23 20:19:26
++++ b/Makefile (after the recipe sed)	2026-10-23 05:49:35
+@@ -247,7 +247,7 @@
+ LTOFLAGS := $(GCC_LTO)
+ 
+ ifeq ($(CONFIG),clang)
+-CXX = clang++
++CXX = aarch64-apple-darwin23.5-clang++
+ CXXFLAGS += -std=$(CXXSTD) $(OPT_LEVEL)
+ ifeq ($(ENABLE_LTO),1)
+ LINKFLAGS += -fuse-ld=lld
+@@ -288,7 +288,7 @@
+ 
+ else ifeq ($(CONFIG),wasi)
+ ifeq ($(WASI_SDK),)
+-CXX = clang++
++CXX = aarch64-apple-darwin23.5-clang++
+ AR = llvm-ar
+ RANLIB = llvm-ranlib
+ WASIFLAGS := -target wasm32-wasi $(WASIFLAGS)
