@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "note": "Corresponding-source archives that are not in the Toolchain 1.0 source store (Phase 5E). Each is pinned by SHA-256; assemble-1.1.mjs refuses a file that does not match.",
+  "sources": [
+    {
+      "id": "cpython-3.11.6",
+      "kind": "git",
+      "url": "https://github.com/python/cpython",
+      "revision": "8b6ee5ba3bd08368ba3c763cea28ce1464a88e62",
+      "fetchedFrom": "https://github.com/python/cpython/archive/8b6ee5ba3bd08368ba3c763cea28ce1464a88e62.tar.gz",
+      "file": "sources/cpython-3.11.6-8b6ee5ba.tar.gz",
+      "localFile": "cpython-8b6ee5ba.tar.gz",
+      "sha256": "a9e63b0dd848f0ae01f30b99eda9b5eb40e4c0409ef3eb19d0d2af0c429002b7",
+      "size": 26862774,
+      "license": "PSF-2.0",
+      "describes": "Python 3.11.6 (Include/patchlevel.h PY_VERSION 3.11.6), the interpreter and the readline extension module of the oss-cad-suite package; YosysHQ applies python3.11.6-darwin.diff (in the build recipe archive) before building."
+    }
+  ]
+}

@@ -55,7 +55,15 @@ async function verifyStore(ids) {
     }
 }
 
-const nexysCompliance = read(join(REPO_ROOT, 'toolchains', 'compliance', 'toolchain-1.0.json')).targets['darwin-arm64'];
+const nexysCompliance = read(join(REPO_ROOT, 'toolchains', 'compliance', 'toolchain-1.1.json')).targets['darwin-arm64'];
+const extraDoc = read(join(REPO_ROOT, 'toolchains', 'compliance', 'sources-1.1-extra.json')).sources;
+const extraSources = [];
+for (const x of extraDoc) {
+    const f = join(WORK, 'extra', x.localFile);
+    if (!existsSync(f)) die(`missing ${relative(REPO_ROOT, f)} (fetch ${x.fetchedFrom})`);
+    if (statSync(f).size !== x.size || (await sha256File(f)) !== x.sha256) die(`${x.id}: ${x.localFile} does not match sources-1.1-extra.json`);
+    extraSources.push({ from: f, file: x.file, row: { id: x.id, upstream: x.url, revision: x.revision, file: x.file, sha256: x.sha256, size: x.size, license: x.license, note: x.describes } });
+}
 const nexysManifestFile = join(REPO_ROOT, 'toolchain', 'darwin-arm64-1.1', 'toolchain-manifest.json');
 const nexysTree = join(REPO_ROOT, 'toolchain', 'darwin-arm64-1.1');
 const de10Inventory = read(join(REPO_ROOT, 'toolchains', 'mixfpga', 'compliance', 'macos-arm64-1.1.inventory.json'));
@@ -123,12 +131,34 @@ async function build(spec) {
 const recipe = read(join(REPO_ROOT, 'toolchains', 'bundle', 'darwin-arm64-1.1.json'));
 const nexysManifest = read(nexysManifestFile);
 const requirement = read(join(REPO_ROOT, 'toolchains', 'bundle', 'requirement-1.1.json')).targets['darwin-arm64'];
-const common = (t) => `Corresponding source of ${t.archive.file}\n\nThis package accompanies the binary archive named above, at the same place and time. It holds the exact upstream sources of every component whose licence requires source (GNU GPL, GNU LGPL, MPL, EPL, EUPL), the licence texts and notices of the archive, the MIX-FPGA build recipe, a mapping from every binary to its source (\`binary-to-source.json\`) and a SHA-256 manifest of every file (\`manifest.json\`). To check a file: \`shasum -a 256 <file>\` and compare with \`manifest.json\`.\n\nMIX-FPGA is the project of Walid Dyab (an EMXplore project); its own code is Apache-2.0 (\`mix-fpga/LICENSE\`), which does not apply to the third-party components.\n\nReplacing components: see "Your right to modify and replace components" in \`THIRD_PARTY_NOTICES\`. Legal conclusions in the notices are an engineering assessment; counsel review is pending for the items the notices list as open.\n`;
+const common = (t) => `Corresponding source of ${t.archive.file}\n\nThis package accompanies the binary archive named above, at the same place and time. It holds the exact upstream sources of every component whose licence requires source (GNU GPL, GNU LGPL, MPL, EPL, EUPL), the licence texts and notices of the archive, the MIX-FPGA build recipe, a mapping from every binary to its source (\`binary-to-source.json\`) and a SHA-256 manifest of every file (\`manifest.json\`). To check a file: \`shasum -a 256 <file>\` and compare with \`manifest.json\`.\n\nMIX-FPGA is the project of Walid Dyab (an EMXplore project); its own code is Apache-2.0 (\`mix-fpga/LICENSE\`), which does not apply to the third-party components.\n\nReplacing components: see "Your right to modify and replace components" in \`THIRD_PARTY_NOTICES\`. The licence conclusions in the notices are the project's technical review, not a legal opinion. There is no written offer: this package is the source offer, distributed at the same place and time as the binary archive.\n`;
 
+// Which source archives each Readline-linked / copyleft program of the Nexys archive was built from (file hashes are of the shipped files).
+async function copyleftMap() {
+    const oc = 'apio/packages/oss-cad-suite';
+    const row = async (file, licence, sourceIds, note) => {
+        const f = join(nexysTree, ...file.split('/'));
+        return { file, sha256: existsSync(f) ? await sha256File(f) : undefined, licence, sources: sourceIds.map((id) => ({ id, files: (archives[id] ?? extraSources.filter((x) => x.row.id === id).map((x) => ({ file: x.file }))).map((a) => a.file) })), ...(note ? { note } : {}) };
+    };
+    const yosys = ['oss-yosys', 'macports-distfile-readline-8.2.tar.gz', 'macports-distfile-readline82-001', 'macports-port-readline-556ec864a7d9', 'yosyshq-oss-cad-suite-build-2026-03-24'];
+    const rl = 'Loads libreadline.8.2.dylib (GPL-3.0-or-later); distributed with it under GPL version 3.';
+    return [
+        await row(`${oc}/libexec/yosys`, 'ISC (+ GPLv3 as combined with Readline)', yosys, rl),
+        await row(`${oc}/libexec/yosys-abc`, 'Berkeley (ABC) (+ GPLv3 as combined with Readline)', yosys, `${rl} ABC source is the oss-yosys--abc.tar.gz submodule archive.`),
+        await row(`${oc}/libexec/yosys-filterlib`, 'ISC (+ GPLv3 as combined with Readline)', yosys, rl),
+        await row(`${oc}/lib/libreadline.8.2.dylib`, 'GPL-3.0-or-later', ['macports-distfile-readline-8.2.tar.gz', 'macports-distfile-readline82-001', 'macports-port-readline-556ec864a7d9'], 'GNU Readline 8.2 with patch 001, built by the MacPorts recipe.'),
+        ...(await Promise.all(['libexec/vvp', 'libexec/vhdlpp', 'lib/ivl/system.vpi', 'lib/ivl/v2009.vpi', 'lib/ivl/vhdl_sys.vpi', 'lib/ivl/vhdl_textio.vpi', 'lib/ivl/vpi_debug.vpi'].map((x) => row(`${oc}/${x}`, 'GPL-2.0-or-later (distributed with Readline under GPL version 3)', ['oss-iverilog', 'yosyshq-oss-cad-suite-build-2026-03-24'], 'Icarus Verilog 14.0 at revision 6767a079560f4528f4beeae82fb33361eb4bc92a; the recipe applies a local revert of 964878382d3fa77285b73d4657be5bbf95a9aacd (Makefile.in only), which explains the version string s20251012-140-g5c6cdec6a.')))),
+        await row(`${oc}/lib/python3.11/lib-dynload/readline.cpython-311-darwin.so`, 'PSF-2.0 (distributed with Readline under GPL version 3)', ['cpython-3.11.6', 'yosyshq-oss-cad-suite-build-2026-03-24'], 'CPython 3.11.6 with the recipe patch python3.11.6-darwin.diff; loads libreadline.8.2.dylib.'),
+        await row(`${oc}/lib/libpython3.11.dylib`, 'PSF-2.0', ['cpython-3.11.6', 'yosyshq-oss-cad-suite-build-2026-03-24'], 'CPython 3.11.6 with the recipe patch python3.11.6-darwin.diff.'),
+    ];
+}
+
+const copyleftPrograms = await copyleftMap();
 await build({
     name: 'MIX-FPGA-Nexys-A7-Support-1.1-Sources',
     archive: { file: 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz', sha256: pins['nexys-a7-100t'].sha256, bytes: pins['nexys-a7-100t'].bytes, treeSha256: requirement.treeSha256 },
     sourceIds: nexysIds,
+    extraSources,
     licenses: join(nexysTree, 'licenses'),
     notices: join(nexysTree, 'THIRD_PARTY_NOTICES.md'),
     buildFiles: {
@@ -136,13 +166,17 @@ await build({
         'mix-fpga-build/ghdl-prune.mjs': join(REPO_ROOT, 'scripts', 'toolchain', 'ghdl-prune.mjs'),
         'mix-fpga-build/toolchain-manifest.json': nexysManifestFile,
         'mix-fpga-build/compliance-toolchain-1.0.json': join(REPO_ROOT, 'toolchains', 'compliance', 'toolchain-1.0.json'),
+        'mix-fpga-build/compliance-toolchain-1.1.json': join(REPO_ROOT, 'toolchains', 'compliance', 'toolchain-1.1.json'),
+        'mix-fpga-build/renotice.mjs': join(REPO_ROOT, 'scripts', 'toolchain', 'renotice.mjs'),
+        'mix-fpga-build/icarus-and-python-provenance.md': join(REPO_ROOT, 'docs', 'phase5e-compliance-conclusions.md'),
         'mix-fpga-build/yosys-rebuild-evidence.md': join(REPO_ROOT, 'docs', 'phase5c-l4-yosys-rebuild.md'),
     },
     mapping: (rows) => ({
         schemaVersion: 1,
         archive: { file: 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz', sha256: pins['nexys-a7-100t'].sha256, treeSha256: requirement.treeSha256, files: requirement.files },
-        note: 'Components, tools and libraries are those of the reviewed Toolchain 1.0 (toolchains/compliance/toolchain-1.0.json, darwin-arm64); the 1.1 archive differs only by the modifications below.',
+        note: 'Components, tools and libraries are those of the reviewed Toolchain 1.0 (toolchains/compliance/toolchain-1.0.json, darwin-arm64) as recorded in toolchains/compliance/toolchain-1.1.json; the 1.1 archive differs only by the modifications below and the final notices.',
         modifications: nexysManifest.modifications,
+        copyleftPrograms,
         components: nexysCompliance.components.map((c) => ({ id: c.id, name: c.name, version: c.version, path: c.path, license: c.license, binaryArchive: c.binaryArchive, upstreamSource: c.upstreamSource })),
         ossCadSuiteTools: nexysCompliance.ossCadSuiteTools.map((t) => ({ tool: t.name, licenses: t.licenses, sourceRequired: t.sourceRequired, sources: t.sources })),
         nativeLibraries: nexysCompliance.nativeLibraryInventory.map((e) => ({ id: e.id, version: e.version, files: e.files, licenses: e.licenses, usageClass: e.usage?.class, linking: e.linking, sources: (e.sources ?? []).map((id) => ({ id, files: archives[id]?.map((a) => a.file) ?? [] })) })),

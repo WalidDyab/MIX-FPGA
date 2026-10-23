@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "toolchainVersion": "1.1",
-  "status": "CANDIDATE",
-  "statusReason": "CANDIDATE: counsel review pending (L3 Yosys with GPLv3 readline, L9 replacement rights, the L4 residual that the Yosys rebuild is functionally but not byte-identical, and confirmation that shipping the source package with the binaries satisfies the licences)",
-  "derivedFrom": "toolchains/compliance/toolchain-1.0.json (darwin-arm64 target; the Windows target is not part of the 1.1 macOS candidate)",
+  "status": "FINAL",
+  "statusReason": "Toolchain 1.1 final redistribution inventory (Phase 5E). The technical review is complete (L3, L4, L9, source delivery); this is not a legal opinion.",
+  "derivedFrom": "toolchains/compliance/toolchain-1.0.json (darwin-arm64 target; the Windows target is not part of the 1.1 macOS release)",
   "statement": "NexysVHDL Toolchain 1.0 is an aggregation of separate third-party programs and data, each under its own license. It is NOT licensed under NexysVHDL's Apache License 2.0; that license covers only NexysVHDL's own code and the NexysVHDL-authored files of the toolchain (manifest, pinned Apio configuration, shims, placeholders, notices).",
   "licenseClasses": {
     "GPL-2.0": {
@@ -112,9 +112,9 @@
       "displayPlatform": "macOS Apple silicon",
       "bundleVersion": "1.1",
       "payload": {
-        "treeSha256": "8b0beda82258a199ab6b9628a1018a754ac9ea33d629773061901d60ceaea07d",
+        "treeSha256": "0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28",
         "files": 31541,
-        "bytes": 2744208064,
+        "bytes": 2744215896,
         "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz"
       },
       "programmer": {
@@ -1127,7 +1127,7 @@
         {
           "name": "iverilog",
           "licenses": [
-            "GPL-2.0"
+            "GPL-2.0-or-later"
           ],
           "licenseFile": "apio/packages/oss-cad-suite/license/LICENSE.iverilog",
           "sources": [
@@ -1137,7 +1137,8 @@
               "source": "oss-iverilog"
             }
           ],
-          "sourceRequired": true
+          "sourceRequired": true,
+          "licenseNote": "Phase 5D/5E: the file headers of the pinned source (oss-iverilog.tar.gz, revision 6767a079) grant \"either version 2 of the License, or (at your option) any later version\"; vvp, vhdlpp and the .vpi modules load GNU Readline (GPLv3) and are distributed with it under GPL version 3."
         },
         {
           "name": "libftdi",
@@ -1377,10 +1378,11 @@
             {
               "url": "https://github.com/python/cpython",
               "revision": "8b6ee5ba3bd08368ba3c763cea28ce1464a88e62",
-              "source": null
+              "source": "cpython-3.11.6"
             }
           ],
-          "sourceRequired": false
+          "sourceRequired": true,
+          "licenseNote": "Python 3.11.6 is PSF-2.0 (GPL-compatible); its readline extension module loads GNU Readline and is distributed with it under GPL version 3; the CPython source is in the source package."
         },
         {
           "name": "sby",
@@ -1561,7 +1563,8 @@
               "source": "oss-yosys"
             }
           ],
-          "sourceRequired": false
+          "sourceRequired": true,
+          "licenseNote": "Loads GNU Readline 8.2 (GPL-3.0-or-later); distributed with it under GPL version 3 (the source is in the source package)."
         },
         {
           "name": "yosys-slang-plugin",
@@ -4776,6 +4779,7 @@
         }
       ],
       "licenseCorrections": [
+        "Icarus Verilog (oss-iverilog, revision 6767a079): GPL-2.0-or-later (Toolchain 1.0 recorded GPL-2.0; the file headers of the pinned source grant any later version).",
         "Apio 1.7.0: GPL-3.0-or-later (Toolchain 1.0 notices said GPL-2.0; the bundled LICENSE is the GPLv3 text).",
         "Apio definitions 2026.09.17: GPL-3.0-only (Toolchain 1.0 notices said GPL-2.0).",
         "Graphviz in the oss-cad-suite is EPL-1.0: the EPL-2.0 text of Toolchain 1.0 is dropped; the EPL-1.0 text is the package's own license/LICENSE.graphviz.",
@@ -4882,7 +4886,7 @@
       "url": "https://github.com/steveicarus/iverilog",
       "revision": "6767a079560f4528f4beeae82fb33361eb4bc92a",
       "describes": "Icarus Verilog (oss-cad-suite, both platforms)",
-      "license": "GPL-2.0"
+      "license": "GPL-2.0-or-later"
     },
     {
       "id": "oss-libftdi",
@@ -6648,6 +6652,14 @@
         "darwin-arm64"
       ],
       "note": "Yosys at the revision oss-cad-suite license/LICENSE.yosys records (both platforms). Permissive itself; shipped because the yosys executable is distributed linked with GNU readline (GPL-3.0-or-later) and, on Windows, termcap (GPL-2.0-or-later): the corresponding source of that combined program includes Yosys."
+    },
+    {
+      "id": "cpython-3.11.6",
+      "kind": "git",
+      "url": "https://github.com/python/cpython",
+      "revision": "8b6ee5ba3bd08368ba3c763cea28ce1464a88e62",
+      "describes": "Python 3.11.6 (Include/patchlevel.h PY_VERSION 3.11.6), the interpreter and the readline extension module of the oss-cad-suite package; YosysHQ applies python3.11.6-darwin.diff (in the build recipe archive) before building.",
+      "license": "PSF-2.0"
     }
   ],
   "unresolved": [

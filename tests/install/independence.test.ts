@@ -16,8 +16,9 @@ import { promisify } from 'node:util';
 import { ONLY_MACOS } from '../platform';
 
 const run = promisify(execFile);
-const MANIFEST = join(REPO, 'toolchains', 'mixfpga', 'toolchain-1.0-macos-arm64.json');
-const EXPERIMENTAL = join(REPO, 'toolchains', 'experimental');
+const MANIFEST = join(REPO, 'toolchains', 'mixfpga', 'toolchain-1.1-macos-arm64.json');
+// The tools the 1.1 manifest records: the validated 1.0 tools after the compliance changes (built by scripts/mixfpga/assemble-1.1.mjs).
+const EXPERIMENTAL = join(REPO, '.artifacts', 'tools-1.1');
 const code = async (f: string) => (await readFile(join(REPO, f), 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 describe('installer independence', () => {
@@ -45,10 +46,10 @@ describe('installer independence', () => {
     });
 });
 
-describe('Toolchain 1.0 manifest and catalog', () => {
+describe('Toolchain 1.1 manifest and catalog', () => {
     it('the committed manifest is well formed and lists the four validated tools', async () => {
         const { toolchain } = await loadExpectedToolchain(MANIFEST);
-        assert.equal(toolchain.toolchainVersion, '1.0');
+        assert.equal(toolchain.toolchainVersion, '1.1');
         assert.deepEqual(toolchain.units.filter((u) => u.kind === 'tool').map((u) => `${u.id} ${u.version}`), ['ghdl 6.0.0', 'yosys 0.63', 'openfpgaloader 1.1.1', 'lima 2.2.1']);
         for (const u of toolchain.units.filter((x) => x.kind === 'tool')) assert.ok(u.files.some((f) => f.path === u.executable && f.exec), `${u.id} executable`);
     });
@@ -61,7 +62,7 @@ describe('Toolchain 1.0 manifest and catalog', () => {
             assert.ok(treeIsIdentical(d), `${id} differs from the recorded manifest: re-run scripts/mixfpga/record-toolchain.mjs (${JSON.stringify(d)})`);
         };
         await check('engine', join(REPO, 'platform', 'macos', 'lima'));
-        const notices = join(REPO, 'toolchains', 'mixfpga', 'notices', 'macos-arm64');
+        const notices = join(REPO, 'toolchains', 'mixfpga', 'notices', 'macos-arm64-1.1');
         await check('licenses', join(notices, 'LICENSES'));
         await check('notices', join(notices, 'THIRD_PARTY_NOTICES.txt'));
     });
@@ -85,7 +86,7 @@ describe('Toolchain 1.0 manifest and catalog', () => {
     });
 });
 
-describe('real validated tools (skipped when toolchains/experimental is absent)', () => {
+describe('real validated tools (skipped when the assembled 1.1 tools are absent)', () => {
     it('install into an isolated root, then run from the installed location only', { skip: ONLY_MACOS }, async (t) => {
         if (!(await stat(EXPERIMENTAL).then(() => true, () => false))) return t.skip('no development payload on this machine');
         const dir = await mkdtemp(join(tmpdir(), 'mixfpga real '));
@@ -95,7 +96,7 @@ describe('real validated tools (skipped when toolchains/experimental is absent)'
         });
         const expected = await loadExpectedToolchain(MANIFEST);
         const layout = resolveRuntimeLayout({ env: { MIXFPGA_HOME: join(dir, 'MIX-FPGA') } });
-        const payload = devPayload({ toolsRoot: EXPERIMENTAL, engineDir: join(REPO, 'platform', 'macos', 'lima'), noticesDir: join(REPO, 'toolchains', 'mixfpga', 'notices', 'macos-arm64') });
+        const payload = devPayload({ toolsRoot: EXPERIMENTAL, engineDir: join(REPO, 'platform', 'macos', 'lima'), noticesDir: join(REPO, 'toolchains', 'mixfpga', 'notices', 'macos-arm64-1.1') });
         const ctx = { layout, expected, payload, freeBytes: async () => 1e12 };
         const engine = new SetupEngine(toolchainDefinitions(ctx, 'full'), new InstallStateStore(layout.installStateFile, layout.lockFile));
         const r = await engine.run();

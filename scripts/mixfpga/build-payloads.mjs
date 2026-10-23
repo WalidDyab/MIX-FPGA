@@ -51,7 +51,7 @@ entries.push({ name: 'manifest.json', type: 'file', mode: 0o644, data: Buffer.fr
 for (const d of dirs) entries.push({ name: d, type: 'directory', mode: 0o755 });
 await mkdir(out, { recursive: true });
 const de10 = join(out, `mixfpga-de10-lite-support-${bundle}-macos-arm64.tar.gz`);
-await writeTarEntriesGz(entries, de10, { mtime: Date.UTC(2026, 9, 1) / 1000, comment: is10 ? 'MIX-FPGA DE10-Lite support 1.0 (macOS arm64): internal Phase 4 validation payload' : `MIX-FPGA DE10-Lite support ${bundle} (macOS arm64): candidate, counsel review pending` });
+await writeTarEntriesGz(entries, de10, { mtime: Date.UTC(2026, 9, 1) / 1000, comment: is10 ? 'MIX-FPGA DE10-Lite support 1.0 (macOS arm64): internal Phase 4 validation payload' : `MIX-FPGA DE10-Lite support ${bundle} (macOS arm64)` });
 
 // 2. Nexys A7 support: the validated archive itself (hard link, no copy).
 const nexysOut = join(out, `nexysvhdl-toolchain-${bundle}-darwin-arm64.tar.gz`);
@@ -61,7 +61,7 @@ await link(nexys, nexysOut).catch(async () => { throw new Error(`cannot link ${n
 const describe = async (p, extra) => ({ file: p.split('/').pop(), bytes: (await stat(p)).size, sha256: await shaFile(p), ...extra });
 const index = {
   schemaVersion: 1,
-  note: is10 ? 'Internal Phase 4 validation payloads. Not for public distribution while L1, L3 and L9 are unresolved.' : `Toolchain ${bundle} candidate payloads (Phase 5C). Not for public distribution until counsel review of L3, L4, L8 and L9 is closed.`,
+  note: is10 ? 'Internal Phase 4 validation payloads. Not for public distribution while L1, L3 and L9 are unresolved.' : `Toolchain ${bundle} release-candidate payloads (Phase 5E): unsigned, not yet published; the final clean-student acceptance is pending.`,
   payloads: [
     await describe(nexysOut, { id: 'nexys-a7-100t', target: 'darwin-arm64', content: is10 ? 'NexysVHDL Toolchain 1.0 (unchanged)' : `MIX-FPGA Nexys A7 support, Toolchain ${bundle}` }),
     await describe(de10, { id: 'de10-lite', target: 'macos-arm64', content: `MIX-FPGA Toolchain ${bundle}: GHDL, Yosys, openFPGALoader, Lima, engine scripts, notices`, units: manifest.units.length }),

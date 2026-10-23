@@ -58,7 +58,7 @@ export interface CommandDeps {
     readonly extensionVersion: string;
     /** Completes every pending NexysVHDL write (project file and state.json) before the window leaves the project. */
     readonly flush: () => Promise<void>;
-    /** Apple-silicon Macs with the Toolchain 1.0 manifest: the Setup page and its Install / Repair / Verify actions. */
+    /** Apple-silicon Macs with the Toolchain 1.1 manifest: the Setup page and its Install / Repair / Verify actions. */
     readonly setup?: SetupService;
 }
 

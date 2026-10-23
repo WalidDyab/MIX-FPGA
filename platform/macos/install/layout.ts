@@ -2,7 +2,7 @@ import { homedir } from 'node:os';
 import { join, sep } from 'node:path';
 
 /** The toolchain MIX-FPGA installs on macOS Apple silicon, and the folder name of its target. */
-export const TOOLCHAIN_VERSION = '1.0';
+export const TOOLCHAIN_VERSION = '1.1';
 export const TOOLCHAIN_TARGET = 'macos-arm64';
 export const LIMA_INSTANCE = 'mix-fpga-de10';
 

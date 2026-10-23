@@ -11,8 +11,8 @@ describe('macOS runtime layout', () => {
         assert.equal(l.limaHome, '/Users/s/Library/MIX-FPGA/lima');
         assert.equal(l.instanceDir, '/Users/s/Library/MIX-FPGA/lima/mix-fpga-de10');
         assert.equal(l.shareDir, '/Users/s/Library/MIX-FPGA/staging');
-        assert.equal(l.toolchainDir, '/Users/s/Library/MIX-FPGA/toolchains/1.0/macos-arm64');
-        assert.equal(l.unit('ghdl'), '/Users/s/Library/MIX-FPGA/toolchains/1.0/macos-arm64/ghdl');
+        assert.equal(l.toolchainDir, '/Users/s/Library/MIX-FPGA/toolchains/1.1/macos-arm64');
+        assert.equal(l.unit('ghdl'), '/Users/s/Library/MIX-FPGA/toolchains/1.1/macos-arm64/ghdl');
         assert.ok(l.toolchainMarker.startsWith(l.stateDir), 'the completion marker is outside the immutable toolchain folder');
     });
 

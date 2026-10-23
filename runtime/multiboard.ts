@@ -79,7 +79,7 @@ export function createBoardFlows(opts: BoardFlowOptions): BoardFlows {
         de10 = new De10Runtime({
             repoRoot: opts.repoRoot ?? packageRoot(__dirname),
             boards: ctx.boards,
-            installed: { layout: resolveRuntimeLayout(), manifestFile: join(opts.repoRoot ?? packageRoot(__dirname), 'toolchains', 'mixfpga', 'toolchain-1.0-macos-arm64.json') },
+            installed: { layout: resolveRuntimeLayout(), manifestFile: join(opts.repoRoot ?? packageRoot(__dirname), 'toolchains', 'mixfpga', 'toolchain-1.1-macos-arm64.json') },
             ...(opts.onToolOutput ? { onToolOutput: opts.onToolOutput } : {}),
         });
     }

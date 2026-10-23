@@ -60,5 +60,6 @@ copy(join(notices, 'LICENSES'), 'LICENSES');
 copy(join(notices, 'THIRD_PARTY_NOTICES.txt'), 'THIRD_PARTY_NOTICES.txt');
 const payloadArgs = ['--bundle', '1.1'];
 if (opt('--nexys')) payloadArgs.push('--nexys', resolve(opt('--nexys')));
+if (opt('--out')) payloadArgs.push('--out', resolve(opt('--out')));
 run('scripts/mixfpga/build-payloads.mjs', payloadArgs);
 void writable;

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "bundleVersion": "1.0",
+  "targets": {
+    "darwin-arm64": {
+      "status": "validated",
+      "treeSha256": "f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7",
+      "files": 31699,
+      "bytes": 2758218326,
+      "archive": "nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz"
+    },
+    "win32-x64": {
+      "status": "validated",
+      "treeSha256": "57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b",
+      "files": 21208,
+      "bytes": 3141371862,
+      "archive": "nexysvhdl-toolchain-1.0-win32-x64.tar.gz"
+    }
+  }
+}

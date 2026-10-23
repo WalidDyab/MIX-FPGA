@@ -164,8 +164,20 @@ describe('VSIX content control (.vscodeignore)', () => {
 });
 
 describe('toolchain requirement and recipes', () => {
-    it('requires toolchain 1.0: Windows and macOS validated, each with its own content hash and archive', async () => {
+    it('this macOS release requires toolchain 1.1 (validated); the 1.0 requirement is kept in requirement-1.0.json', async () => {
         const req = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'requirement.json'), 'utf8'));
+        assert.deepEqual(validateRequirement(req), []);
+        assert.equal(req.bundleVersion, '1.1');
+        assert.deepEqual(Object.keys(req.targets), ['darwin-arm64'], 'the macOS release; the Windows 1.0 record is requirement-1.0.json');
+        assert.equal(req.targets['darwin-arm64'].status, 'validated');
+        assert.equal(req.targets['darwin-arm64'].archive, 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz');
+        assert.match(req.targets['darwin-arm64'].treeSha256, /^[0-9a-f]{64}$/);
+        const old = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'requirement-1.0.json'), 'utf8'));
+        assert.notEqual(req.targets['darwin-arm64'].treeSha256, old.targets['darwin-arm64'].treeSha256);
+    });
+
+    it('records toolchain 1.0 (requirement-1.0.json): Windows and macOS validated, each with its own content hash and archive', async () => {
+        const req = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'requirement-1.0.json'), 'utf8'));
         assert.deepEqual(validateRequirement(req), []);
         assert.equal(req.bundleVersion, '1.0');
         assert.equal(req.targets['win32-x64'].status, 'validated');

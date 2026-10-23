@@ -56,8 +56,8 @@ export const ALTERA_DOWNLOADS = (
 
 /** The Nexys A7 support file a student without a NexysVHDL installation is asked for, for this computer. */
 /** The DE10-Lite support file the course provides (macOS). */
-export const DE10_SUPPORT_FILE = 'mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz';
-export const NEXYS_SUPPORT_FILE = process.platform === 'win32' ? 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz' : 'nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz';
+export const DE10_SUPPORT_FILE = 'mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz';
+export const NEXYS_SUPPORT_FILE = process.platform === 'win32' ? 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz' : 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz';
 
 export interface SetupOptions {
     readonly extensionPath: string;
@@ -82,7 +82,7 @@ function readPins(file: string): Record<string, { file: string; sha256: string; 
 
 /**
  * The Setup controller for this computer, or undefined where it does not apply (anything but an Apple-silicon Mac or 64-bit
- * Windows) or when this build does not carry the Toolchain 1.0 manifest. Creating it starts nothing.
+ * Windows) or when this build does not carry the Toolchain 1.1 manifest. Creating it starts nothing.
  */
 export async function createSetupController(opts: SetupOptions): Promise<SetupController | undefined> {
     if (process.platform === 'darwin' && process.arch === 'arm64' && opts.runRosettaCommand) return createMacController({ ...opts, runRosettaCommand: opts.runRosettaCommand });
@@ -92,10 +92,10 @@ export async function createSetupController(opts: SetupOptions): Promise<SetupCo
 
 async function createMacController(opts: SetupOptions & { runRosettaCommand: RosettaCommandRunner }): Promise<SetupController | undefined> {
     try {
-        const expected = await loadExpectedToolchain(join(opts.extensionPath, 'toolchains', 'mixfpga', 'toolchain-1.0-macos-arm64.json'));
+        const expected = await loadExpectedToolchain(join(opts.extensionPath, 'toolchains', 'mixfpga', 'toolchain-1.1-macos-arm64.json'));
         const { requirement } = loadRequirement(opts.extensionPath);
         const nexysRoot = macosUserDataRoot(process.env);
-        const pins = readPins(join(opts.extensionPath, 'toolchains', 'mixfpga', 'payloads-1.0.json'));
+        const pins = readPins(join(opts.extensionPath, 'toolchains', 'mixfpga', 'payloads-1.1.json'));
         // Installer development only (a release carries its own payload folder).
         const payloadDir = devPayloadDirFromEnv(process.env);
         return new MacSetupController({

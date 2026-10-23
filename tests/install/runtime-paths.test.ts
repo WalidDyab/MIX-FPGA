@@ -13,8 +13,8 @@ const boards = BoardRegistry.fromDefinitions([]);
 describe('normal runtime resolves tools from the installed MIX-FPGA Toolchain only', () => {
     const tools = (p: { ghdl: string; yosys: string; limactl: string; programmer: string; programmerDataDir: string; provisionScript: string; toolchainRoot: string }) => [p.ghdl, p.yosys, p.limactl, p.programmer, p.programmerDataDir, p.provisionScript, p.toolchainRoot];
 
-    it('the DE10 runtime and backend default to ~/Library/MIX-FPGA/toolchains/1.0/macos-arm64', () => {
-        const root = join('/Users/s', 'Library', 'MIX-FPGA', 'toolchains', '1.0', 'macos-arm64');
+    it('the DE10 runtime and backend default to ~/Library/MIX-FPGA/toolchains/1.1/macos-arm64', () => {
+        const root = join('/Users/s', 'Library', 'MIX-FPGA', 'toolchains', '1.1', 'macos-arm64');
         for (const paths of [new De10Runtime({ repoRoot: '/some/repo', boards, home: '/Users/s' }).paths, new De10LiteBackend({ repoRoot: '/some/repo', home: '/Users/s' }).paths]) {
             for (const p of tools(paths)) assert.ok(p.startsWith(root), p);
             assert.equal(paths.ghdl, join(root, 'ghdl', 'bin', 'ghdl'));

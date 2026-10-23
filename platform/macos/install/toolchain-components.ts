@@ -6,14 +6,14 @@ import { toolUnits, type ToolchainUnit } from './expected';
 const TOOL_LABEL: Record<string, string> = { ghdl: 'GHDL', yosys: 'Yosys', openfpgaloader: 'openFPGALoader', lima: 'Lima' };
 
 /**
- * The managed part of the macOS setup: the four tools of MIX-FPGA Toolchain 1.0 and the toolchain as a whole.
+ * The managed part of the macOS setup: the four tools of MIX-FPGA Toolchain 1.1 and the toolchain as a whole.
  * Each tool is inspected on its own; the `toolchain` step installs or repairs whichever are not ready.
  * `depth` is `quick` whenever MIX-FPGA opens and `full` for Verify.
  */
 export function toolchainDefinitions(ctx: ToolchainContext, depth: CheckDepth = 'quick'): ComponentDefinition[] {
     const tools = toolUnits(ctx.expected.toolchain);
     const toolIds = tools.map((t) => t.id);
-    const incompatibleHost: Inspection = { state: 'incompatible', ownership: 'managed', code: 'UNSUPPORTED_HOST', detail: 'MIX-FPGA Toolchain 1.0 needs a Mac with Apple silicon' };
+    const incompatibleHost: Inspection = { state: 'incompatible', ownership: 'managed', code: 'UNSUPPORTED_HOST', detail: 'MIX-FPGA Toolchain 1.1 needs a Mac with Apple silicon' };
 
     const member = (u: ToolchainUnit): ComponentDefinition => ({
         id: u.id,

@@ -26,7 +26,7 @@ export async function run_(): Promise<void> {
     const exec = (cmd: string, ...args: unknown[]) => vscode.commands.executeCommand(cmd, ...args) as Promise<any>;
     const repo = ext.extensionPath;
     const mixfpgaRoot = process.env['MIXFPGA_HOME'] || join(process.env['HOME'] ?? '', 'Library', 'MIX-FPGA');
-    const limactl = join(mixfpgaRoot, 'toolchains', '1.0', 'macos-arm64', 'lima', 'bin', 'limactl');
+    const limactl = join(mixfpgaRoot, 'toolchains', '1.1', 'macos-arm64', 'lima', 'bin', 'limactl');
     const isMac = process.platform === 'darwin';
     const limaHome = join(mixfpgaRoot, 'lima');
     // The Linux engine exists only on macOS; on Windows there is nothing to ask (and it must never be needed).

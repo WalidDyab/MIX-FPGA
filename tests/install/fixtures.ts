@@ -55,7 +55,7 @@ export async function expectedFor(sources: Record<string, string>): Promise<Load
     await add({ id: 'engine', kind: 'support', name: 'Engine scripts', path: 'engine' }, sources['engine']!);
     await add({ id: 'licenses', kind: 'support', name: 'Licences', path: 'LICENSES' }, sources['licenses']!);
     await add({ id: 'notices', kind: 'support', name: 'Notices', path: 'THIRD_PARTY_NOTICES.txt' }, sources['notices']!);
-    const toolchain: ExpectedToolchain = { schemaVersion: 1, product: 'MIX-FPGA', toolchainVersion: '1.0', target: 'macos-arm64', units };
+    const toolchain: ExpectedToolchain = { schemaVersion: 1, product: 'MIX-FPGA', toolchainVersion: '1.1', target: 'macos-arm64', units };
     const text = `${JSON.stringify(toolchain, null, 1)}\n`;
     return { toolchain, text, sha256: createHash('sha256').update(text).digest('hex') };
 }

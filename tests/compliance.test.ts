@@ -126,7 +126,7 @@ describe('Toolchain 1.0 compliance manifest (toolchain-1.0.json)', () => {
     it('is generated from the current recipes, requirement and curation', async () => {
         const c = await curation();
         const m = await json<{ toolchainVersion: string; sources: Source[]; unresolved: Unresolved[]; targets: Record<string, { components: Array<{ id: string; license: string; status: string; binaryArchive?: { sha256: string }; redistributed: boolean }>; payload: { treeSha256: string }; ossCadSuiteTools: Array<{ name: string; licenses: string[]; sourceRequired: boolean; sources: Array<{ source: string | null }> }> }> }>('toolchains', 'compliance', 'toolchain-1.0.json');
-        const req = await json<{ targets: Record<string, { treeSha256: string }> }>('toolchains', 'bundle', 'requirement.json');
+        const req = await json<{ targets: Record<string, { treeSha256: string }> }>('toolchains', 'bundle', 'requirement-1.0.json');
         assert.equal(m.toolchainVersion, '1.0');
         assert.deepEqual(m.sources, c.sources, 'manifest sources are the curated pins (run npm run compliance:manifest)');
         assert.deepEqual(m.unresolved.map((u) => u.id), c.unresolved.map((u) => u.id));
@@ -399,7 +399,7 @@ describe('macOS bundled native libraries (Mac compliance review)', () => {
     const elected = (e: LibraryEntry) => (e.licenseElected ? [e.licenseElected] : e.licenses).filter((l) => !/GCC-exception|LLVM-exception/.test(l));
 
     it('the Mac and Windows Toolchain 1.0 payloads are unchanged by the compliance work', async () => {
-        const req = await json<{ targets: Record<string, { treeSha256: string; files: number }> }>('toolchains', 'bundle', 'requirement.json');
+        const req = await json<{ targets: Record<string, { treeSha256: string; files: number }> }>('toolchains', 'bundle', 'requirement-1.0.json');
         assert.equal(req.targets['darwin-arm64']!.treeSha256, MAC_TREE);
         assert.equal(req.targets['darwin-arm64']!.files, 31699);
         assert.equal(req.targets['win32-x64']!.treeSha256, WIN_TREE);
@@ -604,7 +604,7 @@ describe('macOS bundled native libraries (Mac compliance review)', () => {
         const { buildManifest } = (await import(pathToFileURL(join(REPO, 'scripts', 'compliance', 'manifest.mjs')).href)) as { buildManifest(a: unknown): { manifest: { targets: Record<string, { ossCadSuiteTools: unknown; nativeLibraries: unknown }> }; problems: string[] } };
         const previous = await json<{ targets: Record<string, { ossCadSuiteTools: unknown; nativeLibraries: unknown }> }>('toolchains', 'compliance', 'toolchain-1.0.json');
         const recipes = { 'win32-x64': await recipe('win32-x64'), 'darwin-arm64': await recipe('darwin-arm64') };
-        const requirement = await json('toolchains', 'bundle', 'requirement.json');
+        const requirement = await json('toolchains', 'bundle', 'requirement-1.0.json');
         const { manifest, problems } = buildManifest({ recipes, requirement, curation: await curation(), inventories: {}, previous });
         assert.deepEqual(problems, []);
         for (const t of TARGETS) {
@@ -633,7 +633,7 @@ describe('Windows bundled runtime libraries (Windows compliance review)', () => 
         assert.deepEqual(win.map((r) => r.id).sort(), ['win32-apio-microsoft-runtime', 'win32-openxc7-msys2-runtime', 'win32-oss-cad-suite-fedora-mingw-libraries']);
         for (const r of win) assert.ok(r.resolution.length > 300, r.id);
         for (const id of ['apio', 'apio-oss-cad-suite', 'apio-openxc7']) assert.equal(c.components['win32-x64']![id]!.status, 'ready', id);
-        const req = await json<{ targets: Record<string, { treeSha256: string }> }>('toolchains', 'bundle', 'requirement.json');
+        const req = await json<{ targets: Record<string, { treeSha256: string }> }>('toolchains', 'bundle', 'requirement-1.0.json');
         assert.equal(req.targets['win32-x64']!.treeSha256, '57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b');
         assert.equal(req.targets['darwin-arm64']!.treeSha256, 'f04022180f9bb746dc5dc467bc7d1d379512f302159763f8c4a8c0ed50b2aac7');
     });

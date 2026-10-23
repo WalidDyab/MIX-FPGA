@@ -31,7 +31,7 @@ export class SimulatedCrash extends Error {
 
 export interface ToolchainContext<L extends ToolchainLayout = RuntimeLayout> {
     readonly layout: L;
-    /** The toolchain version and target this host installs, and whether it can run here. Default: macOS Apple silicon, Toolchain 1.0. */
+    /** The toolchain version and target this host installs, and whether it can run here. Default: macOS Apple silicon, Toolchain 1.1. */
     readonly target?: { readonly version: string; readonly target: string; readonly supported: (host?: HostFacts) => boolean; readonly unsupportedMessage: string };
     readonly expected: LoadedExpected;
     readonly payload: PayloadSource;
@@ -139,7 +139,7 @@ const fail = (code: string, message: string): SetupStepResult => ({ ok: false, c
 const gb = (n: number): string => `${(n / 1e9).toFixed(1)} GB`;
 
 /**
- * Installs or repairs MIX-FPGA Toolchain 1.0 for macOS under `<root>/toolchains/1.0/macos-arm64`.
+ * Installs or repairs MIX-FPGA Toolchain 1.1 for macOS under `<root>/toolchains/1.1/macos-arm64`.
  *
  *  - Everything is first copied into `toolchains/.staging/<id>/` and verified byte for byte against the manifest.
  *  - A whole install appears with one rename; a repair swaps single units. A half-finished staging area is never used.
@@ -152,7 +152,7 @@ export async function installToolchain<L extends ToolchainLayout = RuntimeLayout
     const hooks = ctx.hooks ?? {};
     const cancelled = (): boolean => request.signal?.aborted === true;
     if (isInsideForeignProduct(layout.root)) return fail('FOREIGN_PRODUCT_PATH', 'MIX-FPGA will not install inside another product\'s folder.');
-    const want = ctx.target ?? { version: TOOLCHAIN_VERSION, target: TOOLCHAIN_TARGET, supported: hostSupported, unsupportedMessage: 'MIX-FPGA Toolchain 1.0 needs a Mac with Apple silicon.' };
+    const want = ctx.target ?? { version: TOOLCHAIN_VERSION, target: TOOLCHAIN_TARGET, supported: hostSupported, unsupportedMessage: 'MIX-FPGA Toolchain 1.1 needs a Mac with Apple silicon.' };
     if (!want.supported(ctx.host)) return fail('UNSUPPORTED_HOST', want.unsupportedMessage);
     if (expected.toolchain.toolchainVersion !== want.version || expected.toolchain.target !== want.target) {
         return fail('MANIFEST_MISMATCH', `The toolchain manifest is for ${expected.toolchain.toolchainVersion} ${expected.toolchain.target}, not ${want.version} ${want.target}.`);

@@ -79,6 +79,15 @@ if (inv.modifications?.length) {
   for (const m of inv.modifications) L.push(`  - ${m}`);
   L.push('');
 }
+if (inv.replacementNotice?.length) {
+  L.push('YOUR RIGHT TO MODIFY AND REPLACE COMPONENTS', '');
+  for (const p of inv.replacementNotice) L.push(p);
+  L.push('');
+}
+if (inv.licenceNotes?.length) {
+  L.push('LICENCE NOTES', '');
+  for (const n of inv.licenceNotes) { L.push(n.title); for (const t of n.text) L.push(`  ${t}`); L.push(''); }
+}
 L.push('1. COMPONENTS WE REDISTRIBUTE', '');
 const units = ['ghdl', 'yosys', 'openfpgaloader', 'lima', 'engine'];
 const unitName = { ghdl: 'ghdl/', yosys: 'yosys/', openfpgaloader: 'openfpgaloader/', lima: 'lima/', engine: 'engine/' };
@@ -94,7 +103,8 @@ for (const u of units) {
     if (c.licenseTexts.length) L.push(`  texts:      ${c.licenseTexts.map((t) => `LICENSES/${t.dest}`).join(', ')}`);
     L.push(`  source:     ${c.obligation.source}${c.obligation.note ? ` - ${c.obligation.note}` : ''}`);
     for (const s of c.sources) L.push(`    - ${s.id}${s.url ? `  ${s.url}` : ''}${s.revision ? `  @${s.revision}` : ''}${s.sha256 ? `  sha256 ${s.sha256}` : ''}`);
-    L.push(`  status:     ${c.status}${c.flags.length ? `   open questions: ${c.flags.join(' ')}` : ''}`);
+    const openFlags = c.flags.filter((id) => inv.legalFlags.find((f) => f.id === id)?.status !== 'resolved');
+    L.push(`  status:     ${c.status}${openFlags.length ? `   open questions: ${openFlags.join(' ')}` : ''}`);
     for (const o of c.openItems ?? []) L.push(`  OPEN:       ${o}`);
     L.push('');
   }
@@ -106,7 +116,7 @@ for (const n of inv.notRedistributed) L.push(`${n.name}`, `  owner: ${n.owner}`,
 L.push('4. SOURCE CODE', '', `Status: ${inv.sourceOffer.status}`, '', bundle === '1.0' ? 'For a release, MIX-FPGA must provide (alongside the download or by written offer):' : 'The corresponding-source package contains, for this toolchain:');
 for (const s of inv.sourceOffer.mustProvideForRelease) L.push(`  - ${s}`);
 L.push('', `No source is required for: ${inv.sourceOffer.notRequired.join(' ')}`, '');
-L.push('5. OPEN QUESTIONS', '');
+L.push(inv.legalFlags.some((f) => f.status !== 'resolved') ? '5. OPEN QUESTIONS' : '5. COMPLIANCE DECISIONS (all resolved)', '');
 for (const f of inv.legalFlags) {
   if (f.status === 'resolved') L.push(`${f.id} [resolved] ${f.title}`, `    RESOLUTION: ${f.resolution}`, '');
   else L.push(`${f.id} [${f.severity}] ${f.title}`, `    ${f.detail}`, '');

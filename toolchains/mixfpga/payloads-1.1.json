@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "note": "Toolchain 1.1 candidate payloads (Phase 5C). Not for public distribution until counsel review of L3, L4, L8 and L9 is closed.",
+  "note": "Toolchain 1.1 release-candidate payloads (Phase 5E): unsigned, not yet published; the final clean-student acceptance is pending.",
   "payloads": {
     "nexys-a7-100t": {
       "file": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz",
-      "bytes": 652947482,
-      "sha256": "6fc1f3ad3f0343fc04b2e270f669824db30f84bf71b91bd38640482f20433f0f",
+      "bytes": 652960581,
+      "sha256": "f84cedece009be5a04ad44a9c2ff1110fccc1c6725f483a20bb0e139c84f3a73",
       "content": "MIX-FPGA Nexys A7 support (Toolchain 1.1)"
     },
     "de10-lite": {
       "file": "mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz",
-      "bytes": 88871550,
-      "sha256": "25317169b9bab2a636cf5cf420238eab43ad2c955dd82acddcf566244b3f6aa2",
+      "bytes": 88873068,
+      "sha256": "19df1593f9266653a4fddbc18cebb4b019e78682271034e0893be264c2d38326",
       "content": "MIX-FPGA Toolchain 1.1 (macos-arm64), byte-reproducible"
     }
   }

@@ -134,7 +134,7 @@ async function main() {
     const args = parseArgs(process.argv.slice(2));
     const curation = readJson(join(COMPLIANCE_DIR, 'curation.json'));
     const recipes = Object.fromEntries(SUPPORTED_TARGETS.map((t) => [t, readJson(join(RECIPE_DIR, `${t}.json`))]));
-    const requirement = readJson(join(RECIPE_DIR, 'requirement.json'));
+    const requirement = readJson(join(RECIPE_DIR, 'requirement-1.0.json'));
     const inventories = Object.fromEntries(SUPPORTED_TARGETS.map((t) => [t, existsSync(join(EVIDENCE_DIR, INVENTORY[t])) ? readJson(join(EVIDENCE_DIR, INVENTORY[t])) : undefined]));
     const out = join(COMPLIANCE_DIR, `toolchain-${curation.toolchainVersion}.json`);
     const previous = existsSync(out) ? readJson(out) : undefined;

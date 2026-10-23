@@ -123,7 +123,7 @@ describe('toolchain installer', () => {
     it('a different manifest version on disk makes the toolchain repairable', async (t) => {
         const f = await fixture(t);
         await installToolchain(f.ctx, noProgress);
-        await modify(f.ctx.layout.toolchainDir, () => writeFile(f.ctx.layout.manifestFile, f.ctx.expected.text.replace('"1.0"', '"0.9"')));
+        await modify(f.ctx.layout.toolchainDir, () => writeFile(f.ctx.layout.manifestFile, f.ctx.expected.text.replace('"1.1"', '"0.9"')));
         const s = (await engineFor(f.ctx).inspectAll()).find((x) => x.id === 'toolchain')!;
         assert.deepEqual([s.state, s.code], ['repairable', 'MANIFEST_MISMATCH']);
     });

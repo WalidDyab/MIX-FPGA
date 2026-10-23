@@ -14,8 +14,8 @@ const inv = JSON.parse(await readFile(join(dir, 'macos-arm64.inventory.json'), '
 const get = (id) => inv.components.find((c) => c.id === id) ?? (() => { throw new Error(`no component ${id}`); })();
 
 inv.toolchainVersion = '1.1';
-inv.status = 'CANDIDATE';
-inv.statusReason = 'Toolchain 1.1 candidate. Complete, but not final: counsel review is pending for L3 (Yosys distributed with GPLv3 readline) and L9 (integrity check versus the right to replace LGPL/GPL components), for confirmation that shipping the corresponding-source package with the binaries satisfies the licences, and for the L4 residual (the Yosys rebuild from the pinned source is functionally identical, not byte-identical). Nothing here is a legal opinion.';
+inv.status = 'FINAL';
+inv.statusReason = 'Toolchain 1.1 final redistribution notices (Phase 5E). The technical review is complete; this is not a legal opinion.';
 inv.modifications = [
     'Removed the VHDL-87 and VHDL-93 IEEE libraries (lib/ghdl/ieee/v87, lib/ghdl/ieee/v93 and lib/ghdl/src/ieee): they contain the IEEE 1076.3-1995 numeric_bit and numeric_std sources, which may be distributed only unchanged and not sold or distributed for profit.',
     'Removed the VITAL-95 and VITAL-2000 packages (lib/ghdl/src/vital95, lib/ghdl/src/vital2000) and the UPF package (lib/ghdl/src/upf), whose licence is not established.',
@@ -108,13 +108,12 @@ resolve_('L7', 'GHDL v6.0.0 doc/licenses.rst: GRT and std.textio are GPLv2; exec
 resolve_('L8', 'Removed in Toolchain 1.1: the plugin-development headers vpi_user.h, synth_gates.h and (because it includes synth_gates.h) synth.h are no longer shipped; no program, library, script or MIX-FPGA flow uses them.');
 resolve_('L10', 'Removed in Toolchain 1.1: the 111 openFPGALoader bridge bitstreams are no longer shipped.');
 resolve_('L11', 'Lima NOTICE is shipped under LICENSES/lima/; the MPL-2.0 hcl module source is in the corresponding-source package.');
-resolve_('L4', 'Explained and strengthened in Phase 5C (docs/phase5c-l4-yosys-rebuild.md): the "-dirty" suffix is exactly the recipe\'s compiler-name sed on the tracked Makefile (reproduced on the pinned commit); a rebuild from commit 66306a8c with the pinned abc/cxxopts submodules and readline 8.2+patch 001 has an identical help text for every command (11,515 lines, same normalized SHA-256), so no source change is hidden. Residual: the two binaries are not bit-identical (cross-compiler clang 18.1.8 versus native clang 21); counsel to confirm that this is sufficient.');
-const open = (id, detail) => { const f = inv.legalFlags.find((x) => x.id === id); f.detail = detail; };
-open('L3', 'The yosys executable loads libreadline.8.2.dylib (GPL-3.0-or-later, shipped beside it). MIX-FPGA treats the pair as a GPLv3 combination (Yosys is ISC, which is GPL-compatible), ships the GPLv3 text and provides the complete corresponding source of both (Yosys with abc and cxxopts, readline 8.2 with patch 001 and the MacPorts recipe, the build scripts) in the source package. Counsel must confirm the combined-work position.');
-open('L9', 'libusb, libftdi1 and libghw (LGPL) and readline (GPLv3) are separate replaceable files. The installed toolchain is read-only by default and the integrity check reports a replaced file as "changed" (Setup page, Verify); Repair restores the original only when the student chooses Repair, nothing is restored automatically and the tools keep running with replaced files (tested in Phase 5B). The notices explain how to replace a library. Counsel must confirm this satisfies the LGPL/GPL replacement rights.');
+resolve_('L4', 'Technical review conclusion (Phase 5E): the exact source revision (Yosys 66306a8c with abc and cxxopts, Readline 8.2 with patch 001), the build recipe and the provenance of the "-dirty" suffix are recorded (docs/phase5c-l4-yosys-rebuild.md, inside the source package): the suffix is the recipe\'s compiler-name sed on the tracked Makefile, and a rebuild from the pinned sources has an identical help text for every command. A bit-identical rebuild is not required to provide the Corresponding Source.');
+resolve_('L3', 'Technical review conclusion (Phase 5E): the yosys executable loads libreadline.8.2.dylib (GPL-3.0-or-later, shipped beside it). MIX-FPGA distributes the pair under the GNU General Public License version 3 (Yosys is ISC, which is GPL-compatible), ships the GPLv3 text and provides the complete corresponding source of both (Yosys with abc and cxxopts, readline 8.2 with patch 001 and the MacPorts recipe, the build scripts) in the source package. Readline is a separate, replaceable file. This archive contains no Icarus Verilog or Python.');
+resolve_('L9', 'Technical review conclusion (Phase 5E): libusb, libftdi1, libghw (LGPL) and readline (GPLv3) are separate replaceable files. A toolchain whose files the user changed stays usable and is reported as modified and no longer the verified MIX-FPGA configuration; nothing is restored automatically; Repair is explicit and restores the supported release copy; the tools keep running with replaced files (product change 35df5a5, tested).');
 
 inv.sourceOffer = {
-    status: 'No written offer: the complete corresponding-source package MIX-FPGA-DE10-Lite-Support-1.1-Sources accompanies the binaries at the same place and time, and the notices say where it is. Counsel to confirm that this satisfies the licences involved.',
+    status: 'No written offer: the complete corresponding-source package MIX-FPGA-DE10-Lite-Support-1.1-Sources accompanies the binaries at the same place and time, and the notices say where it is. The source package is offered at the same place and time as the binary archive, so access to the source is equivalent to access to the binary.',
     mustProvideForRelease: [
         'GHDL 6.0.0 source at e589c698c351369ac5bcfe7abe1f1152ac5d4727 (ghdl-6.0.0.tar.gz) with its libraries, scripts and CI build recipe.',
         'Yosys source at 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 with its abc and cxxopts submodules, and the YosysHQ build recipe (oss-cad-suite-build ac8c7dba).',
@@ -124,6 +123,22 @@ inv.sourceOffer = {
     ],
     notRequired: inv.sourceOffer.notRequired,
 };
+
+inv.licenceNotes = [
+    { title: 'Yosys and GNU Readline', text: ['yosys (ISC licence) loads GNU Readline 8.2 (yosys/lib/libreadline.8.2.dylib, GPL-3.0-or-later) at run time. MIX-FPGA distributes the two together under the terms of the GNU General Public License version 3 (LICENSES/readline/COPYING; Yosys\'s own licence is LICENSES/yosys/LICENSE.yosys). Readline stays a separate file that you can replace. Yosys 0.63+173 (commit 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 with its abc and cxxopts submodules), Readline 8.2 with patch 001, the MacPorts recipe and the YosysHQ build recipe are in the source package. The libraries compiled into Yosys keep their own licences (ISC, MIT, public domain, Berkeley); their texts are in LICENSES/yosys-libs/.'] },
+    { title: 'Lima and the Go modules compiled into it', text: ['Lima 2.2.1 is Apache-2.0; its own NOTICE file, which the official tarball does not contain, is LICENSES/lima/NOTICE. The Go modules compiled into the Lima programs are listed in appendix A with their licences (LICENSES/lima-go/). One of them, github.com/hashicorp/hcl/v2 v2.24.0, is MPL-2.0 and is used unmodified: its Source Code Form is the Go module archive in the corresponding-source package (sha256 53fd4e96ac9c190e192759daf49b63397865214d337ab5f6dbf6e68c1b0f4810) and its licence text is in LICENSES/lima-go/.'] },
+    { title: 'GHDL', text: ['GHDL 6.0.0 is GPL-2.0-or-later; its GRT runtime and std.textio are GPLv2, so a program that GHDL generates needs the VHDL sources it was made from. MIX-FPGA runs GHDL in memory and distributes no student executables. libgnat and libgcc_s are under the GCC Runtime Library Exception; LLVM 22.1.0 (statically linked) is Apache-2.0 with the LLVM exception; the IEEE 2008 packages are Apache-2.0.'] },
+    { title: 'openFPGALoader, libusb and libftdi1', text: ['openFPGALoader 1.1.1 is Apache-2.0. libusb 1.0.26 (LGPL-2.1-or-later) and libftdi1 1.5 (LGPL-2.0) are separate dynamic libraries beside it, loaded at run time; HIDAPI, zlib and Zstandard keep their own permissive licences. The sources of libusb and libftdi1, with their MacPorts recipes, are in the source package so that the libraries can be rebuilt and replaced.'] },
+];
+inv.replacementNotice = [
+    'The GPL and LGPL components (GNU Readline, libusb, libftdi1, libghw) are separate files, loaded at run time. You may replace them with your own builds made from the corresponding source, which is in the source package, for your own use, and reverse-engineer them for debugging. The installed folder is read-only by default: make a file writable, replace it, and on Apple silicon re-sign it (codesign -f -s - <file>). The tools keep working with replaced files.',
+    'If you change a file of the installed toolchain, MIX-FPGA reports the toolchain as modified and unverified: "This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version."',
+    '  - MIX-FPGA does not silently overwrite or delete your changes; it only reads the files to report their state (Setup, Verify).',
+    '  - You may continue using the modified toolchain: creating projects, checking, simulating, building and programming all keep working.',
+    '  - Repair is optional and explicit: it asks first, and then restores the supported MIX-FPGA release copy of the files that differ.',
+    '  - A missing or unusable part is reported as needing repair, not as modified.',
+    'The integrity check is a support aid, not a technical restriction. A configuration with changed files is not the verified one and is not supported.',
+];
 
 await writeFile(join(dir, 'macos-arm64-1.1.inventory.json'), `${JSON.stringify(inv, null, 2)}\n`);
 console.log(`macos-arm64-1.1.inventory.json: ${inv.components.length} components, ${inv.legalFlags.filter((f) => f.status !== 'resolved').length} open flags (${inv.legalFlags.filter((f) => f.status !== 'resolved').map((f) => f.id).join(', ')})`);

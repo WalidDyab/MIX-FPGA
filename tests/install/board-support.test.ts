@@ -90,7 +90,7 @@ describe('fresh installation: choose Nexys, DE10 or both', () => {
         assert.deepEqual(r.ui.summaries[0]!.items, ['the Nexys A7 tools', 'VHDL tools and the programmer', 'Rosetta (from Apple)', 'the FPGA engine', 'Quartus Prime Lite and MAX 10 support (from Altera)']);
         // One copy of each support: the Nexys bundle once, the DE10 toolchain once.
         assert.deepEqual(await readdir(join(r.nexysRoot, 'toolchains', 'darwin-arm64')), ['1.0']);
-        assert.deepEqual((await readdir(join(r.layout.toolchainsDir, '1.0'))).filter((n) => !n.startsWith('.')), ['macos-arm64']);
+        assert.deepEqual((await readdir(join(r.layout.toolchainsDir, '1.1'))).filter((n) => !n.startsWith('.')), ['macos-arm64']);
         assert.equal(r.m.count('create'), 1);
         assert.equal(await nexysFlowRoot(r), nexysDir(r));
     });

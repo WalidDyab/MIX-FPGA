@@ -71,6 +71,10 @@ export interface NoticeInventory {
     readonly components: readonly NoticeComponent[];
     readonly notRedistributed: readonly { readonly id: string; readonly name: string; readonly owner: string; readonly treatment: string }[];
     readonly legalFlags: readonly LegalFlag[];
+    /** Notes on licence combinations, printed in the notices. */
+    readonly licenceNotes?: readonly { readonly title: string; readonly text: readonly string[] }[];
+    /** The right to modify and replace components, and what MIX-FPGA does when it finds a modified toolchain. */
+    readonly replacementNotice?: readonly string[];
     readonly sourceOffer: { readonly status: string; readonly mustProvideForRelease: readonly string[]; readonly notRequired: readonly string[] };
 }
 

@@ -14,7 +14,7 @@ Install VS Code from <https://code.visualstudio.com/> (the *Apple silicon* or *U
 
 In VS Code open the Extensions view (⇧⌘X), click **…** → **Install from VSIX…**, and choose the `nexysvhdl-<version>-darwin-arm64.vsix` file from your course (the file name keeps its earlier name so that NexysVHDL installations update to MIX-FPGA).
 
-**Already using NexysVHDL?** Installing MIX-FPGA updates it. Your projects open as before, nothing in them is rewritten, and your Nexys A7 tools keep working without a new download. **Show Environment** shows *Nexys A7-100T — Installed*; you can add the DE10-Lite whenever you like.
+**Already using NexysVHDL?** Installing MIX-FPGA updates it. Your projects open as before and nothing in them is rewritten. MIX-FPGA 0.7.0 uses **toolchain 1.1**, so the Nexys A7 support is installed once from the Nexys A7 support file of your course (section 3); the Nexys A7 tools of NexysVHDL 0.6.0 are not modified. After that **Show Environment** shows *Nexys A7-100T — Installed*; you can add the DE10-Lite whenever you like.
 
 ## 3. Board support
 
@@ -22,12 +22,18 @@ Click the **MIX-FPGA** icon and run **Show Environment**, then **Install FPGA To
 
 | Board | What happens | Disk space |
 |---|---|---|
-| **Nexys A7-100T** | choose the Nexys A7 support file from your course (`nexysvhdl-toolchain-1.0-darwin-arm64.tar.gz`); every file is checked | about 2.8 GB |
-| **DE10-Lite** | choose the DE10-Lite support file from your course (`mixfpga-de10-lite-support-1.0-macos-arm64.tar.gz`); it is supplied with the release materials, not inside the extension, and MIX-FPGA checks it before using it. MIX-FPGA then installs its tools and prepares its FPGA engine (internet needed once). If Apple's **Rosetta** is missing, Apple's own installer opens and asks you to agree to Apple's licence. Then MIX-FPGA asks for two free files from Altera — `QuartusLiteSetup-25.1std.0.1129-linux.run` and `max10-25.1std.0.1129.qdz` (Quartus Prime Lite 25.1, Linux) — shows Altera's licence from the installer itself, and installs Quartus only after you tick *I have reviewed and accept the Altera Quartus Prime Software License Agreement.* | about 12 GB once finished (the engine's disk can grow to at most 60 GB; it is not reserved) |
+| **Nexys A7-100T** | choose the Nexys A7 support file from your course (`nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz`); every file is checked | about 2.8 GB |
+| **DE10-Lite** | choose the DE10-Lite support file from your course (`mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz`); it is supplied with the release materials, not inside the extension, and MIX-FPGA checks it before using it. MIX-FPGA then installs its tools and prepares its FPGA engine (internet needed once). If Apple's **Rosetta** is missing, Apple's own installer opens and asks you to agree to Apple's licence. Then MIX-FPGA asks for two free files from Altera — `QuartusLiteSetup-25.1std.0.1129-linux.run` and `max10-25.1std.0.1129.qdz` (Quartus Prime Lite 25.1, Linux) — shows Altera's licence from the installer itself, and installs Quartus only after you tick *I have reviewed and accept the Altera Quartus Prime Software License Agreement.* | about 12 GB once finished (the engine's disk can grow to at most 60 GB; it is not reserved) |
 
-Later, **Install … Support** next to a board adds it; **Verify Environment** checks everything; **Repair** continues an interrupted setup or puts back anything that changed.
+Later, **Install … Support** next to a board adds it; **Verify Environment** checks everything; **Repair** continues an interrupted setup or puts back anything missing or damaged.
 
-When you create a project for a board whose support is not installed, MIX-FPGA offers to install it first.
+**Source code.** Each support file comes with its own source package (`MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip` and `MIX-FPGA-DE10-Lite-Support-1.1-Sources.zip`). Keep each source package together with its support file if you pass it on. You do not need the source packages to install or use MIX-FPGA.
+
+**If you change a tool.** The open-source libraries in the toolchain can be replaced with your own builds (see *Your right to modify and replace components* in the notices). MIX-FPGA then shows the board as *Installed (modified)* and says: "This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version." Nothing is restored unless you choose **Repair**, and you can keep working with the modified toolchain. A missing or damaged part is shown as *Needs repair*.
+
+An older toolchain 1.0 folder from a pre-release (`~/Library/MIX-FPGA/toolchains/1.0`) is not used or removed by MIX-FPGA 0.7.0; you can delete it yourself to free the space.
+
+When you create a project for a board whose support is not installed, MIX-FPGA offers to install it first. A modified toolchain does not stop you from creating a project.
 
 ## 4. Programming the board
 
