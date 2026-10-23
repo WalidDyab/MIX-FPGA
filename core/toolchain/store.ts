@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, rename, rm, rmdir, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { type Diagnostic, errorDiag } from '../results/diagnostic';
+import { type Diagnostic, errorDiag, warningDiag } from '../results/diagnostic';
 import { BUNDLE_MANIFEST, type BundleManifest } from './bundle';
 import { type ExtractProgress, extractTarGz, inventoryDirectory } from './tar';
 
@@ -244,6 +244,6 @@ export async function verifyInstalledToolchain(
         files: inv.entries.length,
         diagnostics: ok
             ? []
-            : [errorDiag('toolchain', 'TOOLCHAIN_MODIFIED', `The installed toolchain in ${state.paths.versionDir} has been modified (content hash ${inv.treeSha256.slice(0, 12)}…). Remove that folder and install the toolchain again.`)],
+            : [warningDiag('toolchain', 'TOOLCHAIN_MODIFIED', `This toolchain has been modified and is no longer the verified MIX-FPGA configuration (installed in ${state.paths.versionDir}, content hash ${inv.treeSha256.slice(0, 12)}…). You can continue using it, or choose Repair to restore the supported version.`)],
     };
 }

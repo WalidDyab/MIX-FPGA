@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chmod, readdir, stat, writeFile } from 'node:fs/promises';
+import { chmod, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import type { ComponentState, ComponentStatus } from '../../core';
@@ -167,8 +167,10 @@ describe('Setup flows on an isolated root', () => {
         await chmod(tool, 0o755);
         await writeFile(tool, '#!/bin/sh\necho tampered\n');
         const { view } = await r.ctl.status();
-        assert.equal(word(view, 'vhdl-tools'), 'Needs repair');
-        assert.deepEqual(view.actions.map((a) => `${a.id}:${a.board ?? ''}`), ['install:nexys-a7-100t', 'repair:de10-lite']);
+        // Changed but present: usable, reported as modified, and Repair is offered (not run).
+        assert.equal(word(view, 'vhdl-tools'), 'Modified');
+        assert.deepEqual(view.actions.map((a) => `${a.id}:${a.board ?? ''}`), ['install:nexys-a7-100t', 'repair:de10-lite', 'verify:']);
+        assert.equal(await readFile(tool, 'utf8'), '#!/bin/sh\necho tampered\n', 'looking at it changed nothing');
         r.ui.questions.length = 0;
         const out = await r.ctl.repair(r.ui);
         assert.equal(out.outcome, 'complete', out.message);

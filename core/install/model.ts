@@ -18,6 +18,12 @@ export type ComponentState =
     | 'installing'
     /** Present, verified and usable. */
     | 'ready'
+    /**
+     * Present and usable, but one or more files differ from the supported release because the user changed them
+     * (nothing is missing, nothing is unreadable). It is not the verified MIX-FPGA configuration and is never
+     * restored automatically; the user may keep using it or choose Repair.
+     */
+    | 'modified'
     /** Present but damaged, partial or interrupted: running the installer again fixes it without starting over. */
     | 'repairable'
     /** Present but not something MIX-FPGA can use or fix (wrong version, unknown binaries, wrong architecture). */
@@ -64,6 +70,8 @@ export type SetupStepResult =
 
 export interface InstallRequest {
     readonly mode: InstallMode;
+    /** The student chose Repair: files they changed (present and usable) may be replaced by the supported copy. Never set by Install or at start-up. */
+    readonly repairModified?: boolean;
     /** Whatever the student provided for this step (consent, chosen files); undefined for `userInput: 'none'`. */
     readonly input?: unknown;
     readonly signal?: AbortSignal;
@@ -95,6 +103,8 @@ export function aggregate(parts: readonly ComponentStatus[], ownership: Ownershi
     if (parts.length === 0) return { state: 'not-installed', ownership };
     const has = (s: ComponentState) => parts.some((p) => p.state === s);
     if (parts.every((p) => p.state === 'ready')) return { state: 'ready', ownership };
+    // A modified part does not make the whole unusable: modified but usable is not "not installed" and not "damaged".
+    if (parts.every((p) => p.state === 'ready' || p.state === 'modified')) return { state: 'modified', ownership, detail: 'files were changed after installation', code: 'MODIFIED' };
     if (has('incompatible')) return { state: 'incompatible', ownership, detail: 'a part is not usable by MIX-FPGA', code: 'PART_INCOMPATIBLE' };
     if (parts.every((p) => p.state === 'not-installed')) return { state: 'not-installed', ownership };
     return { state: 'repairable', ownership, detail: 'some parts are missing or damaged', code: 'PARTIAL' };

@@ -76,13 +76,18 @@ describe('toolchain installer', () => {
         // A flipped byte in a data file (same size): the quick check cannot see it, the full check can.
         await modify(L.unit('ghdl'), () => writeFile(join(L.unit('ghdl'), 'lib', 'deep', 'data.txt'), 'data for ghdm'));
         assert.equal((await states(f.ctx, 'quick'))['ghdl'], 'ready');
-        assert.equal((await states(f.ctx, 'full'))['ghdl'], 'repairable');
-        // A damaged executable is seen even by the quick check.
+        assert.equal((await states(f.ctx, 'full'))['ghdl'], 'modified');
+        // A changed executable is seen even by the quick check: present and usable, so "modified", not "needs repair".
         await modify(L.unit('ghdl'), () => writeFile(join(L.unit('ghdl'), 'bin', 'ghdl'), `#!/bin/sh\necho evil 1.0\n`));
         const quick = await states(f.ctx, 'quick');
-        assert.deepEqual([quick['ghdl'], quick['toolchain']], ['repairable', 'repairable']);
+        assert.deepEqual([quick['ghdl'], quick['toolchain']], ['modified', 'modified']);
+        // Nothing restores it on its own: an ordinary run leaves the user's file alone.
         f.copied.length = 0;
-        const run = await engineFor(f.ctx, 'full').run();
+        assert.equal((await engineFor(f.ctx, 'full').run()).outcome, 'complete');
+        assert.deepEqual(f.copied, []);
+        assert.equal((await states(f.ctx, 'full'))['ghdl'], 'modified');
+        // Only an explicit Repair puts the supported copy back.
+        const run = await engineFor(f.ctx, 'full').run({ repairModified: true });
         assert.equal(run.outcome, 'complete');
         assert.deepEqual(f.copied, ['ghdl']);
         assert.deepEqual(await states(f.ctx, 'full'), READY);
@@ -103,9 +108,13 @@ describe('toolchain installer', () => {
             await writeFile(L.manifestFile, '{"changed":true}');
         });
         const broken = await states(f.ctx, 'quick');
-        assert.deepEqual(broken, { ghdl: 'ready', yosys: 'not-installed', openfpgaloader: 'repairable', lima: 'repairable', toolchain: 'repairable' });
+        // A stray file in a tool is a user change (modified); a missing tool, a lost executable bit and a changed manifest are not.
+        assert.deepEqual(broken, { ghdl: 'ready', yosys: 'not-installed', openfpgaloader: 'modified', lima: 'repairable', toolchain: 'repairable' });
         f.copied.length = 0;
         assert.equal((await engineFor(f.ctx).run()).outcome, 'complete');
+        assert.deepEqual([...f.copied].sort(), ['lima', 'yosys'], 'a plain run restores what is missing or broken, not what the user changed');
+        assert.equal((await states(f.ctx, 'full'))['openfpgaloader'], 'modified');
+        assert.equal((await engineFor(f.ctx).run({ repairModified: true })).outcome, 'complete');
         assert.deepEqual([...f.copied].sort(), ['lima', 'openfpgaloader', 'yosys']);
         assert.deepEqual(await states(f.ctx, 'full'), READY);
         assert.equal(await readFile(L.manifestFile, 'utf8'), f.ctx.expected.text);
@@ -150,10 +159,10 @@ describe('toolchain installer', () => {
             await modify(f.ctx.layout.unit('lima'), () => writeFile(join(f.ctx.layout.unit('lima'), 'lib', 'deep', 'data.txt'), 'nope'));
             const before = treeDigest(await inventoryTree(f.ctx.layout.unit('ghdl')));
             const crashing: ToolchainContext = { ...f.ctx, hooks: { beforeActivate: () => { throw new SimulatedCrash('killed'); } } };
-            await assert.rejects(installToolchain(crashing, noProgress), SimulatedCrash);
+            await assert.rejects(installToolchain(crashing, { ...noProgress, repairModified: true }), SimulatedCrash);
             assert.equal(treeDigest(await inventoryTree(f.ctx.layout.unit('ghdl'))), before);
             assert.equal(await exists(join(f.ctx.layout.unit('lima'), 'bin', 'lima')), true, 'the old copy is still in place');
-            assert.equal((await engineFor(f.ctx).run()).outcome, 'complete');
+            assert.equal((await engineFor(f.ctx).run({ repairModified: true })).outcome, 'complete');
             assert.deepEqual(await states(f.ctx, 'full'), READY);
         });
 

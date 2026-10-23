@@ -42,7 +42,7 @@ import type { DesignView } from '../views/design-view';
 import type { HierarchyPayload } from '../views/hierarchy-view';
 import type { SetupService } from '../setup/setup-service';
 import { VsCodeSetupInteraction } from '../setup/setup-ui';
-import { type BoardSupportId, isBoardSupportId, type SetupResult } from '../../runtime/setup';
+import { type BoardSupportId, isBoardSupportId, MODIFIED_HINT, type SetupResult } from '../../runtime/setup';
 
 export interface CommandDeps {
     readonly service: NexysVhdlService;
@@ -171,6 +171,10 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             boardId = pick.id;
             // A board whose support is not installed yet: offer to install it, then continue with the project.
             const controller = await setup?.controller();
+            if (controller && (await controller.isBoardReady(boardId)) && (await controller.isBoardModified(boardId))) {
+                // Usable: never blocks the new project. Say what it is and offer the explicit Repair, nothing automatic.
+                void vscode.window.showInformationMessage(`${pick.label}: ${MODIFIED_HINT}`, 'Repair').then((c) => (c === 'Repair' ? runSetup('repair', isBoardSupportId(boardId) ? [boardId] : undefined) : undefined));
+            }
             if (controller && !(await controller.isBoardReady(boardId))) {
                 const choice = await vscode.window.showWarningMessage(`${pick.label} support is not installed.`, { modal: true, detail: 'MIX-FPGA can install it now; the new project is created afterwards.' }, 'Install Support');
                 if (choice !== 'Install Support') return undefined;
@@ -980,7 +984,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         else nexysConsole.fail('Environment', 'FAIL — see the lines above');
         nexysConsole.endAction();
         await service.refreshEnvironment();
-        if (v.ok) void vscode.window.showInformationMessage('MIX-FPGA: the environment is ready.');
+        if (v.ok && v.modified) void vscode.window.showWarningMessage(`MIX-FPGA: ${MODIFIED_HINT}`, 'Repair').then((c) => (c === 'Repair' ? vscode.commands.executeCommand('nexysvhdl.setup.repair') : undefined));
+        else if (v.ok) void vscode.window.showInformationMessage('MIX-FPGA: the environment is ready.');
         else void vscode.window.showWarningMessage('MIX-FPGA: some parts of the environment need attention.', 'Repair', 'Show Console').then((c) => (c === 'Repair' ? vscode.commands.executeCommand('nexysvhdl.setup.repair') : c && nexysConsole.show()));
         return v;
     });
@@ -989,8 +994,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     const showSetupPage = async (controller: NonNullable<Awaited<ReturnType<NonNullable<typeof setup>['controller']>>>): Promise<void> => {
         const { view } = await controller.status();
         type Item = vscode.QuickPickItem & { action?: () => unknown };
-        const ICON = { ready: '$(pass)', 'not-installed': '$(warning)', working: '$(sync)', 'needs-repair': '$(warning)', problem: '$(error)', 'not-connected': '$(circle-outline)', 'not-checked': '$(circle-outline)' } as const;
-        const BOARD_ICON = { installed: '$(pass)', 'not-installed': '$(circle-outline)', installing: '$(sync)', incomplete: '$(warning)', 'needs-repair': '$(warning)', 'not-supported': '$(error)' } as const;
+        const ICON = { ready: '$(pass)', modified: '$(info)', 'not-installed': '$(warning)', working: '$(sync)', 'needs-repair': '$(warning)', problem: '$(error)', 'not-connected': '$(circle-outline)', 'not-checked': '$(circle-outline)' } as const;
+        const BOARD_ICON = { installed: '$(pass)', modified: '$(info)', 'not-installed': '$(circle-outline)', installing: '$(sync)', incomplete: '$(warning)', 'needs-repair': '$(warning)', 'not-supported': '$(error)' } as const;
         const items: Item[] = [
             { label: `MIX-FPGA ${extensionVersion} — Board Support`, kind: vscode.QuickPickItemKind.Separator },
             ...view.boards.map((b): Item => {
@@ -1022,7 +1027,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         else nexysConsole.fail('Environment', 'FAIL — see the lines above');
         nexysConsole.endAction();
         await service.refreshEnvironment();
-        if (v.ok) void vscode.window.showInformationMessage('MIX-FPGA: the environment is ready.');
+        if (v.ok && v.modified) void vscode.window.showWarningMessage(`MIX-FPGA: ${MODIFIED_HINT}`, 'Repair').then((c) => (c === 'Repair' ? vscode.commands.executeCommand('nexysvhdl.setup.repair') : undefined));
+        else if (v.ok) void vscode.window.showInformationMessage('MIX-FPGA: the environment is ready.');
         else void vscode.window.showWarningMessage('MIX-FPGA: some parts of the environment need attention.', 'Show Console').then((c) => c && output.show());
         return v;
     });
@@ -1115,6 +1121,7 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
             });
         });
         if (r.ok) void vscode.window.showInformationMessage(`MIX-FPGA toolchain verified: all ${r.files?.toLocaleString('en-US') ?? ''} files are unchanged.`);
+        else if (r.diagnostics[0]?.code === 'TOOLCHAIN_MODIFIED') void vscode.window.showWarningMessage(r.diagnostics[0].message, 'Repair').then((c) => (c === 'Repair' ? vscode.commands.executeCommand('nexysvhdl.setup.repair') : undefined));
         else void vscode.window.showErrorMessage(r.diagnostics[0]?.message ?? 'The toolchain could not be verified.');
         return r;
     });

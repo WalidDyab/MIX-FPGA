@@ -152,6 +152,25 @@ export async function installNexysFromArchive(d: NexysSupportDeps, archive: Nexy
     return { ok: true, detail: r.status === 'already-installed' ? 'already installed' : 'installed' };
 }
 
+/**
+ * Is a Nexys A7 toolchain whose content hash differs still usable, i.e. changed rather than damaged? True when the toolchain's own
+ * manifest is there and parses, every program it names exists, and no file is missing (the folder has at least as many files as the
+ * validated toolchain). A deleted file that was replaced by another one is not detectable here; if the tools cannot then run, the
+ * run itself fails and Repair is offered.
+ */
+export async function nexysModifiedButUsable(versionDir: string, fileCount: number, expectedFiles: number | undefined): Promise<boolean> {
+    if (expectedFiles !== undefined && fileCount < expectedFiles) return false;
+    try {
+        const m = JSON.parse(await readFile(join(versionDir, 'toolchain-manifest.json'), 'utf8')) as { executables?: Record<string, { path?: string }> };
+        for (const e of Object.values(m.executables ?? {})) {
+            if (!e?.path || !(await stat(join(versionDir, ...e.path.split('/'))).then((x) => x.isFile(), () => false))) return false;
+        }
+        return Object.keys(m.executables ?? {}).length > 0;
+    } catch {
+        return false;
+    }
+}
+
 /** The Setup component for the Nexys A7 support. */
 export function nexysDefinition(d: NexysSupportDeps, depth: 'quick' | 'full' = 'quick'): ComponentDefinition {
     return {
@@ -162,7 +181,12 @@ export function nexysDefinition(d: NexysSupportDeps, depth: 'quick' | 'full' = '
             if (mine.status === 'installed') {
                 if (depth === 'full') {
                     const inv = await inventoryDirectory(mine.paths.versionDir, { exclude: [INSTALLED_MARKER] });
-                    if (inv.treeSha256 !== d.requirement.targets[NEXYS_TARGET]?.treeSha256) return { state: 'repairable', ownership: 'managed', code: 'NEXYS_MODIFIED', detail: 'files of the Nexys A7 tools were changed' };
+                    if (inv.treeSha256 !== d.requirement.targets[NEXYS_TARGET]?.treeSha256) {
+                        // Changed content with everything still there (same or more files, the recorded programs present): the user modified it.
+                        // Something missing or unreadable is damage and stays repairable.
+                        if (await nexysModifiedButUsable(mine.paths.versionDir, inv.entries.length, d.requirement.targets[NEXYS_TARGET]?.files)) return { state: 'modified', ownership: 'managed', code: 'NEXYS_MODIFIED', detail: 'files of the Nexys A7 tools were changed', version: `Toolchain ${d.requirement.bundleVersion}` };
+                        return { state: 'repairable', ownership: 'managed', code: 'NEXYS_DAMAGED', detail: 'files of the Nexys A7 tools are missing or damaged' };
+                    }
                 }
                 return { state: 'ready', ownership: 'managed', version: `Toolchain ${d.requirement.bundleVersion}` };
             }

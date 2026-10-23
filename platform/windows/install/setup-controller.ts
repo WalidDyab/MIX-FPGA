@@ -160,6 +160,11 @@ export class WindowsSetupController {
         return windowsBoardState(await this.sengine().inspectAll(), entry) === 'installed';
     }
 
+    /** Windows keeps its own strict check; the modified-but-usable state is a macOS Setup state. */
+    async isBoardModified(_board: string): Promise<boolean> {
+        return false;
+    }
+
     /**
      * Upgrade from NexysVHDL: the Nexys A7 tools already on this computer, verified file by file and taken over into the MIX-FPGA
      * store as a real copy (no links to the original). `dryRun` only reports.

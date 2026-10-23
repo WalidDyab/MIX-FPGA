@@ -1,11 +1,11 @@
 # SHA-256 of every evidence file referenced by the counsel review package
-# Regenerated 2026-10-23T07:13Z on branch phase5d/legal-clearance (documentation update; base 58a59f4). Paths are relative to the repository root.
+# Regenerated 2026-10-23T07:56Z on branch phase5d/legal-clearance (Phase 5D engineering closure: Icarus pinned-source check, modified-toolchain change; base 1494e14). Paths are relative to the repository root.
 
 ## A. Files of this folder (this list excluded)
-4091fa4064a9742e6e3add2de4a476eac6043ca4ac0b5a110c55274cf3d13d3b  docs/phase5d-counsel-review/L3-yosys-readline.md
+03ff76863d9de57fddb27d7349ab802e5e2ed2adc934b2a62cfb7c01ff711f63  docs/phase5d-counsel-review/L3-yosys-readline.md
 f4b9925aeccd7d652b2b041f1582d28962dd18e97ae85b9a100f59a89804a487  docs/phase5d-counsel-review/L4-yosys-provenance.md
-c4be7ee2a8bdd3dc2c1591d61478926e3e3d3c26ae209b1ddf7e395df5cc69b5  docs/phase5d-counsel-review/L9-replacement-rights.md
-71c2f1ed8e5ce9fab7bbb176de41b793deee3ebb786c188b13f235f776670e23  docs/phase5d-counsel-review/README.md
+d0d48e57ff5dd06ebeb947fadb934ae3a9d9ad5110527d0c4f0a06298902e6ea  docs/phase5d-counsel-review/L9-replacement-rights.md
+01b9d39dcef545e2dd0d524154d843df42c89f747a6b38dd70f70d589c4a263e  docs/phase5d-counsel-review/README.md
 a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518  docs/phase5d-counsel-review/evidence/de10-archive-THIRD_PARTY_NOTICES.txt
 cee2fd063588e8659bff49a2e93360a9c7a95ca7d965bf78ba1d7acdb99228eb  docs/phase5d-counsel-review/evidence/nexys-archive-THIRD_PARTY_NOTICES.md
 94f771ed7383f43d1275d4c26e0f757aed1c212cc19b5e3888da3c04dfd95414  docs/phase5d-counsel-review/evidence/yosys-help-all-rebuilt.txt
@@ -37,10 +37,22 @@ a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518  toolchains/mix
 ae0271e884a72d0fc29cf9d90247df0097a36de07f4b3de1f8f364252b60d0d3  toolchains/compliance/toolchain-1.1.json
 aaa7f0ec2187ec5b7128dfb1027f9aa161c3b9abac75102914b9c16e65aa60c4  scripts/toolchain/ghdl-prune.mjs
 3f46702d94741653304ea61acd9312f1ec8124c1fa76f0a92d2654fb5843fa69  platform/macos/programmer.ts
-19d423a7c01485d791ecef7615929a5d8ee4b4ea851cd4c1b2158a687427b47d  platform/macos/install/setup-view.ts
-9ecb3791b1addc4cafe1c50abe33d95400ae53b6558e1c3ced5f0cce10bd8657  platform/macos/install/setup-controller.ts
-efd8692eb8e0a4e0318df68c0e7770ceada961993da2a444ac6344ece46b693e  platform/macos/install/toolchain-installer.ts
-af6d9a6ca7bfa95c718919756bf04a651f890df160f8de3349e0c30acf49cef9  extension/commands/commands.ts
+86c82132e2b4063a387c3e526ca6ae17ab8de0420cc36baa3b22311d6270d915  platform/macos/install/setup-view.ts
+9fa86dbea5aa921956086d54550913fe8a097139c8b3314493ca2c554136dac9  platform/macos/install/setup-controller.ts
+67bf2a8f8a468df0860cf22fa260e6f38bec28faad2fcaf509b86a1863e7867c  platform/macos/install/toolchain-installer.ts
+5ee8f4cf8c02586025c82c567f1e9d5e9909894f05245b1ff5aadb9ecf4bb9cf  extension/commands/commands.ts
+
+
+00c47c4b70eef18b104bdbf65e331ca66c7bc12a5740056103dd4ad9dff2b484  core/install/model.ts
+d8a68a6ab9c1987738c7cd0dc63aa5e43ce76466a36906cb144b9d84273aef47  core/install/engine.ts
+5080ff03452ec8f11ed2b5e613ce0a90dadb699028479857491f9e432d333987  core/toolchain/store.ts
+f359b28046262483e94e87a50ae0403ac249995915e520b942dd164c2e174e97  platform/macos/install/boards.ts
+d31519b61227364fd12c15bab3e576caec7e750554227eeaf8085abd1463a8cd  platform/macos/install/nexys-support.ts
+c07359de5c586d4a8fe6b7ea51532b1e7300b7c95bd69121b9b2a90b0aaa7318  platform/macos/install/toolchain-components.ts
+0c840cce2b1bb53691be11e8c73f607261a0f75e29b8dde5f3cdd22bfff38353  platform/macos/de10/runtime.ts
+4a7b1d7ad47545f84dc0d02564334a96448c7efe2fc78f3588959b2ed4e652d6  tests/install/modified-toolchain.test.ts
+ee10f27b924bf0db4f12561b042a29df282f1eb743546007b28ef4f090405857  tests/install/toolchain-installer.test.ts
+7d2b23019ddd97051c10ea90f8abd61e536a9f52fa517ef9715c9f49465a042f  tests/install/setup.test.ts
 
 ## C. Build artifacts referenced (git-ignored; the candidate hashes are unchanged since 58a59f4)
 6fc1f3ad3f0343fc04b2e270f669824db30f84bf71b91bd38640482f20433f0f  .artifacts/candidates-1.1/nexys/nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz
@@ -86,3 +98,6 @@ c37c4f4ad72d7c209cbfe9c399c982260c4313d28735875c72643f8ba406679d  sources/oss-iv
 9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2  bison-3.8.2.tar.xz
 e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995  flex-2.6.4.tar.gz
 95d412bbd31e7a21c260a73163308f6350106beb34a9004a04c5ca978d1b5994  rebuilt yosys binary (scratch, deleted after the comparison)
+
+## E. Icarus Verilog pinned source (L3 section 3.1), inside MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip
+c37c4f4ad72d7c209cbfe9c399c982260c4313d28735875c72643f8ba406679d  sources/oss-iverilog.tar.gz

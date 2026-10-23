@@ -35,6 +35,11 @@ export interface RunOptions {
     readonly inputs?: Readonly<Record<ComponentId, unknown>>;
     /** Limit the run to these steps (and what they require). Default: everything that is not ready. */
     readonly only?: readonly ComponentId[];
+    /**
+     * Repair: parts the user modified (present and usable) are restored too. Off by default: an install or any other
+     * run never touches a modified part, it is only restored when the user explicitly asks for Repair.
+     */
+    readonly repairModified?: boolean;
     readonly signal?: AbortSignal;
     readonly onProgress?: (p: InstallProgress) => void;
 }
@@ -42,7 +47,7 @@ export interface RunOptions {
 /** Combine what the machine shows with what was recorded about operations and failures. */
 export function combine(inspected: ComponentStatus, recorded: PersistedComponent | undefined, isAlive: (op: { id: string; pid: number }) => boolean): ComponentStatus {
     if (recorded?.operation && isAlive(recorded.operation)) return { ...inspected, state: 'installing', detail: 'installation in progress' };
-    if (inspected.state === 'ready' || inspected.state === 'incompatible') return inspected;
+    if (inspected.state === 'ready' || inspected.state === 'modified' || inspected.state === 'incompatible') return inspected;
     if (recorded?.failure) return { ...inspected, state: 'failed', code: recorded.failure.code, detail: recorded.failure.message };
     if (recorded?.interrupted || recorded?.operation) {
         const state: ComponentState = inspected.state === 'not-installed' ? 'not-installed' : 'repairable';
@@ -108,7 +113,7 @@ export class SetupEngine {
     }
 
     /** What would run now, in dependency order. Pure: no side effects. */
-    plan(statuses: readonly ComponentStatus[], only?: readonly ComponentId[]): PlanStep[] {
+    plan(statuses: readonly ComponentStatus[], only?: readonly ComponentId[], opts: { readonly repairModified?: boolean } = {}): PlanStep[] {
         const status = new Map(statuses.map((s) => [s.id, s]));
         const steps = [...this.byId.values()].filter((d) => d.install);
         const wanted = new Set<ComponentId>();
@@ -132,11 +137,12 @@ export class SetupEngine {
             if (!def.install || !wanted.has(id)) continue;
             const covers = def.install.covers ?? [];
             const members = [id, ...covers].map((m) => status.get(m)).filter((s): s is ComponentStatus => !!s);
-            const pending = members.filter((s) => s.state !== 'ready' && s.state !== 'installing');
+            // A modified part is usable: it is left alone unless the user asked for Repair.
+            const pending = members.filter((s) => s.state !== 'ready' && s.state !== 'installing' && (s.state !== 'modified' || opts.repairModified === true));
             if (pending.length === 0) continue;
             // Never "fix" something MIX-FPGA cannot use: an incompatible component needs the student's attention.
             if (pending.every((s) => s.state === 'incompatible')) continue;
-            const repair = members.some((s) => s.state === 'repairable' || s.state === 'failed') && !members.every((s) => s.state === 'not-installed' || s.state === 'failed');
+            const repair = members.some((s) => s.state === 'repairable' || s.state === 'failed' || (s.state === 'modified' && opts.repairModified === true)) && !members.every((s) => s.state === 'not-installed' || s.state === 'failed');
             out.push({
                 id,
                 mode: repair ? 'repair' : 'install',
@@ -156,7 +162,7 @@ export class SetupEngine {
         try {
             await this.store.markDeadOperationsInterrupted();
             const unmet = new Set<ComponentId>();
-            const plan = this.plan(await this.inspectAll(options.signal), options.only);
+            const plan = this.plan(await this.inspectAll(options.signal), options.only, { repairModified: options.repairModified === true });
             for (const step of plan) {
                 const def = this.byId.get(step.id)!.install!;
                 if (options.signal?.aborted) {
@@ -183,6 +189,7 @@ export class SetupEngine {
                 try {
                     result = await def.run({
                         mode: step.mode,
+                        ...(options.repairModified === true ? { repairModified: true } : {}),
                         ...(input !== undefined ? { input } : {}),
                         ...(options.signal ? { signal: options.signal } : {}),
                         progress: (p) => options.onProgress?.({ component: step.id, ...p }),
@@ -199,7 +206,8 @@ export class SetupEngine {
                     await this.store.succeed(mine, opId);
                     reports.push({ id: step.id, outcome: 'done', ...(result.detail ? { message: result.detail } : {}) });
                     // Truth check: a step only counts when the machine now shows its parts ready.
-                    const after = (await this.inspectAll(options.signal)).filter((s) => mine.includes(s.id) && s.state !== 'ready');
+                    // A part the user modified and that Repair was not asked to restore is allowed to stay modified.
+                    const after = (await this.inspectAll(options.signal)).filter((s) => mine.includes(s.id) && s.state !== 'ready' && !(s.state === 'modified' && options.repairModified !== true));
                     if (after.length > 0) {
                         mine.forEach((m) => unmet.add(m));
                         reports[reports.length - 1] = { id: step.id, outcome: 'failed', code: 'VERIFY_FAILED', message: `${label} was installed but is not ready: ${after.map((s) => `${s.id} ${s.state}`).join(', ')}` };

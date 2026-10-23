@@ -13,7 +13,7 @@ import type { LoadedExpected } from './expected';
 import type { PayloadSource } from './payload';
 import { type LicenseOffer, QUARTUS_SPEC, QuartusInstaller, type QuartusFiles, type QuartusSpec, verifyQuartus, acceptanceFor } from './quartus-install';
 import { type RosettaCommandRunner, type RosettaConsent, type RosettaHost, rosettaDefinition } from './rosetta';
-import { buildSetupView, type HardwareView, type SetupView, studentFailure } from './setup-view';
+import { buildSetupView, type HardwareView, MODIFIED_HINT, type SetupView, studentFailure } from './setup-view';
 import { ArchivePayload } from './archive-payload';
 import { type PayloadPin, PickedArchivePayload, supportFileMessage } from './de10-support-file';
 import { BOARD_SUPPORT, BoardSelectionStore, type BoardSupportId, boardEntry, boardState } from './boards';
@@ -51,6 +51,8 @@ export interface InstallSummary {
     readonly storageGB: number;
     readonly requiredFreeGB: number;
     readonly askedForAltera: boolean;
+    /** Repair will replace files the student changed with the supported release copy. */
+    readonly replacesChanges?: boolean;
     /** Windows: the installation will ask Windows for permission once. */
     readonly needsAdministrator?: boolean;
 }
@@ -73,6 +75,8 @@ export interface VerifyStep {
 export interface VerifyResult {
     readonly ok: boolean;
     readonly steps: readonly VerifyStep[];
+    /** Some installed files differ from the supported release (the student changed them). Usable, but not the verified configuration. */
+    readonly modified?: boolean;
     readonly view: SetupView;
 }
 
@@ -189,7 +193,17 @@ export class SetupController {
         const entry = boardEntry(board);
         if (!entry) return true; // a board without managed support (none today) needs nothing here
         if (entry.id === 'nexys-a7-100t' && !this.deps.nexys) return true; // this computer's Nexys flow is not managed by this Setup
-        return boardState(await this.engine().inspectAll(), entry) === 'installed';
+        // A board whose files the student changed is still usable: only a missing or damaged one asks for installation.
+        const state = boardState(await this.engine().inspectAll(), entry);
+        return state === 'installed' || state === 'modified';
+    }
+
+    /** Is this board's support complete and usable, but no longer the verified MIX-FPGA configuration? */
+    async isBoardModified(board: string): Promise<boolean> {
+        const entry = boardEntry(board);
+        if (!entry) return false;
+        if (entry.id === 'nexys-a7-100t' && !this.deps.nexys) return false;
+        return boardState(await this.engine().inspectAll(), entry) === 'modified';
     }
 
     /**
@@ -225,6 +239,7 @@ export class SetupController {
             storageGB: need.has('linux-vm') || need.has('quartus') ? EXPECTED_STORAGE.vmAfterQuartusGB + EXPECTED_STORAGE.imageDownloadGB : 0.3,
             requiredFreeGB: need.has('linux-vm') || need.has('quartus') ? EXPECTED_STORAGE.requiredFreeGB : 1,
             askedForAltera: need.has('quartus') && !ready('quartus'),
+            replacesChanges: plan.some((p) => statuses.find((s) => s.id === p.id)?.state === 'modified'),
         };
     }
 
@@ -290,7 +305,7 @@ export class SetupController {
         // Repair looks at every byte (a changed file is invisible to the quick check); Install only needs the quick one.
         const depth = repairOnly ? 'full' : 'quick';
         const first = await this.engine(depth).inspectAll(signal);
-        const plan = this.engine(depth).plan(first, steps).filter((p) => !repairOnly || p.mode === 'repair' || first.find((s) => s.id === p.id)?.state === 'failed');
+        const plan = this.engine(depth).plan(first, steps, { repairModified: repairOnly }).filter((p) => !repairOnly || p.mode === 'repair' || first.find((s) => s.id === p.id)?.state === 'failed');
         if (plan.length === 0) {
             if (!repairOnly) await this.selection.add(boards);
             return { outcome: 'complete', message: 'Everything is already set up.', view: await this.view() };
@@ -301,7 +316,7 @@ export class SetupController {
         const inputs: Record<string, unknown> = {};
         const only = repairOnly ? plan.map((p) => p.id) : steps;
         for (let round = 0; round < 10; round++) {
-            const run: RunResult = await this.engine(depth).run({ inputs, ...(only ? { only } : {}), ...(signal ? { signal } : {}), onProgress: (p) => ui.progress(p.message) });
+            const run: RunResult = await this.engine(depth).run({ inputs, repairModified: repairOnly, ...(only ? { only } : {}), ...(signal ? { signal } : {}), onProgress: (p) => ui.progress(p.message) });
             for (const s of run.steps) ui.log(`${s.id}: ${s.outcome}${s.code ? ` ${s.code}` : ''}${s.message ? ` — ${s.message}` : ''}`);
             if (run.outcome === 'busy') return { outcome: 'busy', message: 'Setup is already running.', view: await this.view() };
             if (run.outcome === 'cancelled') return { outcome: 'cancelled', message: studentFailure('CANCELLED'), view: await this.view() };
@@ -345,7 +360,9 @@ export class SetupController {
         const boards = await this.presentBoards();
         const wanted = new Set(boards.flatMap((b) => boardEntry(b)?.components ?? []));
         const statuses = (await this.engine('full').inspectAll(signal)).filter((s) => wanted.has(s.id));
-        for (const s of statuses) steps.push({ label: MACOS_CATALOG.find((c) => c.id === s.id)?.label ?? s.id, ok: s.state === 'ready', detail: s.state === 'ready' ? (s.version ?? '') : (s.detail ?? s.state) });
+        // A modified part is usable: it is reported (not hidden) but does not fail the check.
+        for (const s of statuses) steps.push({ label: MACOS_CATALOG.find((c) => c.id === s.id)?.label ?? s.id, ok: s.state === 'ready' || s.state === 'modified', detail: s.state === 'ready' ? (s.version ?? '') : s.state === 'modified' ? `modified: ${MODIFIED_HINT}` : (s.detail ?? s.state) });
+        const modified = statuses.some((s) => s.state === 'modified');
         const vm = statuses.find((s) => s.id === 'linux-vm')?.state;
         const quartus = statuses.find((s) => s.id === 'quartus');
         if (vm === 'ready' || (vm === 'repairable' && quartus?.state !== 'not-installed')) {
@@ -361,6 +378,6 @@ export class SetupController {
             }
             if (!wasRunning) await this.deps.runner.run({ executable: paths.limactl, args: ['stop', LIMA_INSTANCE], env: { LIMA_HOME: paths.limaHome }, timeoutMs: 120_000 });
         }
-        return { ok: steps.length > 0 && steps.every((s) => s.ok), steps, view: await this.view() };
+        return { ok: steps.length > 0 && steps.every((s) => s.ok), steps, ...(modified ? { modified } : {}), view: await this.view() };
     }
 }

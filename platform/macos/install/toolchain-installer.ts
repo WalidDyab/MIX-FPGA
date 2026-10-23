@@ -59,9 +59,17 @@ export type CheckDepth = 'quick' | 'full';
 
 export interface UnitCheck {
     readonly unit: ToolchainUnit;
-    readonly state: 'ok' | 'missing' | 'damaged';
+    /**
+     * `modified`: every recorded file is present with the recorded type, permissions and links, but the content of some differs
+     * (or extra files were added): the user changed it. It is usable; it is not "damaged" and not "not installed".
+     * `damaged`: something is missing, unreadable, lost its executable permission or is a different kind of entry.
+     */
+    readonly state: 'ok' | 'missing' | 'modified' | 'damaged';
     readonly difference?: TreeDifference;
 }
+
+/** Modified but usable: only changed content and/or added files; nothing missing, no permission or link change. */
+export const isModifiedOnly = (d: TreeDifference): boolean => d.missing.length === 0 && d.modeChanged.length === 0 && d.linkChanged.length === 0 && d.modified.length + d.extra.length > 0;
 
 export function hostSupported(host: HostFacts = { platform: process.platform, arch: process.arch }): boolean {
     return host.platform === 'darwin' && host.arch === 'arm64';
@@ -82,7 +90,8 @@ export async function checkUnit(layout: ToolchainLayout, unit: ToolchainUnit, de
             ? actual
             : { ...actual, files: await Promise.all(actual.files.map(async (f) => (hashPaths.has(f.path) ? { ...f, sha256: await sha256File(join(path, f.path)) } : f))) };
         const difference = compareTree(unit, checked, { quick: !full, hashPaths });
-        return treeIsIdentical(difference) ? { unit, state: 'ok' } : { unit, state: 'damaged', difference };
+        if (treeIsIdentical(difference)) return { unit, state: 'ok' };
+        return { unit, state: isModifiedOnly(difference) ? 'modified' : 'damaged', difference };
     } catch (err) {
         return { unit, state: 'damaged', difference: { missing: [], extra: [], modified: [err instanceof Error ? err.message : String(err)], modeChanged: [], linkChanged: [] } };
     }
@@ -138,7 +147,7 @@ const gb = (n: number): string => `${(n / 1e9).toFixed(1)} GB`;
  *  - Running it again on a good install changes nothing; running it after any interruption continues from what is there.
  *  - Nothing outside this MIX-FPGA root is touched (in particular not NexysVHDL Toolchain 1.0).
  */
-export async function installToolchain<L extends ToolchainLayout = RuntimeLayout>(ctx: ToolchainContext<L>, request: Pick<InstallRequest, 'signal' | 'progress'>): Promise<SetupStepResult> {
+export async function installToolchain<L extends ToolchainLayout = RuntimeLayout>(ctx: ToolchainContext<L>, request: Pick<InstallRequest, 'signal' | 'progress' | 'repairModified'>): Promise<SetupStepResult> {
     const { layout, expected, payload } = ctx;
     const hooks = ctx.hooks ?? {};
     const cancelled = (): boolean => request.signal?.aborted === true;
@@ -160,7 +169,9 @@ export async function installToolchain<L extends ToolchainLayout = RuntimeLayout
         const checks = await Promise.all(expected.toolchain.units.map((u) => checkUnit(layout, u, 'full')));
         const manifestOk = await manifestFileMatches(layout, expected);
         const versionDirExists = await lstat(layout.toolchainDir).then((s) => s.isDirectory(), () => false);
-        const need = checks.filter((c) => c.state !== 'ok').map((c) => c.unit);
+        // A unit the user modified (present, usable) is replaced only when the user chose Repair; installing something else never touches it.
+        const restoreModified = request.repairModified === true;
+        const need = checks.filter((c) => c.state === 'missing' || c.state === 'damaged' || (c.state === 'modified' && restoreModified)).map((c) => c.unit);
         const wholeInstall = !versionDirExists;
         const toCopy = wholeInstall ? [...expected.toolchain.units] : need;
 
@@ -209,13 +220,20 @@ export async function installToolchain<L extends ToolchainLayout = RuntimeLayout
                 }
             }
             await hooks.afterActivate?.();
-            await makeReadOnly(layout.toolchainDir);
+            if (wholeInstall) await makeReadOnly(layout.toolchainDir);
+            else {
+                // Seal only what was copied: a unit the user modified keeps the permissions the user gave it.
+                for (const u of toCopy) await makeReadOnly(layout.unit(u.path));
+                if (!manifestOk) await chmod(layout.manifestFile, 0o444);
+                await chmod(layout.toolchainDir, 0o555);
+            }
         }
 
         // 3. Prove the installed folder, then and only then mark the install complete.
         request.progress({ message: 'Verifying installation…' });
         const after = await Promise.all(expected.toolchain.units.map((u) => checkUnit(layout, u, 'full')));
-        const bad = after.filter((c) => c.state !== 'ok');
+        // A modified unit that was not restored stays as the user left it; everything else must verify.
+        const bad = after.filter((c) => c.state !== 'ok' && !(c.state === 'modified' && !toCopy.some((u) => u.id === c.unit.id)));
         if (bad.length > 0 || !(await manifestFileMatches(layout, expected))) {
             return fail('POST_VERIFY_FAILED', `After installing, ${bad.map((c) => `${c.unit.name} (${unitProblem(c)})`).join(', ') || 'the manifest'} did not verify.`);
         }

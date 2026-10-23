@@ -8,7 +8,7 @@ import { EXPECTED_STORAGE } from './engine-config';
  * Nothing technical appears here (no tool names, no Linux, no paths): that belongs under Details.
  */
 export type SetupRowId = 'vhdl-tools' | 'fpga-engine' | 'programmer' | 'hardware';
-export type RowState = 'ready' | 'not-installed' | 'working' | 'needs-repair' | 'problem' | 'not-connected' | 'not-checked';
+export type RowState = 'ready' | 'modified' | 'not-installed' | 'working' | 'needs-repair' | 'problem' | 'not-connected' | 'not-checked';
 
 export interface SetupRowView {
     readonly id: SetupRowId;
@@ -70,18 +70,25 @@ export interface SetupView {
 
 const WORD: Record<ComponentState, string> = {
     ready: 'Ready',
+    modified: 'Modified',
     'not-installed': 'Not installed',
     installing: 'Installing…',
     repairable: 'Needs repair',
     incompatible: 'Not supported',
     failed: 'Needs attention',
 };
-const ROW_STATE: Record<ComponentState, RowState> = { ready: 'ready', 'not-installed': 'not-installed', installing: 'working', repairable: 'needs-repair', incompatible: 'problem', failed: 'problem' };
+const ROW_STATE: Record<ComponentState, RowState> = { ready: 'ready', modified: 'modified', 'not-installed': 'not-installed', installing: 'working', repairable: 'needs-repair', incompatible: 'problem', failed: 'problem' };
 
-const BOARD_WORD: Record<BoardState, string> = { installed: 'Installed', 'not-installed': 'Not installed', installing: 'Installing…', incomplete: 'Setup not finished', 'needs-repair': 'Needs repair', 'not-supported': 'Not supported' };
+const BOARD_WORD: Record<BoardState, string> = { installed: 'Installed', modified: 'Installed (modified)', 'not-installed': 'Not installed', installing: 'Installing…', incomplete: 'Setup not finished', 'needs-repair': 'Needs repair', 'not-supported': 'Not supported' };
+
+/** Shown wherever a component has been changed by the student after installing. Not a failure: the files still work. */
+export const MODIFIED_HINT = 'This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version.';
 
 const HINT: Partial<Record<`${Exclude<SetupRowId, 'hardware'>}:${ComponentState}`, string>> = {
     'vhdl-tools:not-installed': 'Check, Simulate and the schematics need these.',
+    'vhdl-tools:modified': MODIFIED_HINT,
+    'fpga-engine:modified': MODIFIED_HINT,
+    'programmer:modified': MODIFIED_HINT,
     'vhdl-tools:repairable': 'Some files are missing or changed. Repair puts them back.',
     'vhdl-tools:incompatible': 'This computer cannot run MIX-FPGA\'s tools.',
     'fpga-engine:not-installed': 'Needed to build for the DE10-Lite. Setup asks for the DE10-Lite support file from your course and for Altera\'s free download.',
@@ -97,7 +104,7 @@ const OWNER: Record<Ownership, string> = { managed: 'Installed by MIX-FPGA', ext
 /** The words of the student-facing view must never include these (they are shown only under Details). */
 export const TECHNICAL_TERMS = /limactl|\blima\b|ubuntu|mixfpga-q|rosettad|namespace|\/opt\/|\/mnt\/|\/usr\/|sudo|\bbash\b|\blinux\b|\.sh\b|\bapio\b|openxc7|nextpnr|\bbsp\b/i;
 
-const SEVERITY: ComponentState[] = ['incompatible', 'failed', 'installing', 'repairable', 'not-installed', 'ready'];
+const SEVERITY: ComponentState[] = ['incompatible', 'failed', 'installing', 'repairable', 'not-installed', 'modified', 'ready'];
 
 function worst(statuses: ReadonlyMap<string, ComponentStatus>, ids: readonly string[]): ComponentState {
     const states = ids.map((id) => statuses.get(id)?.state ?? 'not-installed');
@@ -133,7 +140,7 @@ export function buildSetupView(statuses: readonly ComponentStatus[], hardware: H
     const by = new Map(statuses.map((s) => [s.id, s]));
     const boards: BoardRowView[] = profile.boards.map((b) => {
         const state = (profile.boardState ?? boardState)(statuses, b);
-        const action = state === 'not-installed' || state === 'incomplete' ? 'install' : state === 'needs-repair' ? 'repair' : undefined;
+        const action = state === 'not-installed' || state === 'incomplete' ? 'install' : state === 'needs-repair' || state === 'modified' ? 'repair' : undefined;
         return { id: b.id, name: b.name, state, word: BOARD_WORD[state], ...(action ? { action } : {}) };
     });
     const relevant: BoardSupportEntry[] = profile.boards.filter((b) => selected.includes(b.id) || boards.find((x) => x.id === b.id)!.state !== 'not-installed');
@@ -157,16 +164,20 @@ export function buildSetupView(statuses: readonly ComponentStatus[], hardware: H
     if (fresh) actions.push({ id: 'install', label: 'Install FPGA Toolchain', detail: 'Choose the boards you will use; only what they need is installed.', primary: true });
     for (const b of boards) {
         if (b.action === 'install') actions.push({ id: 'install', board: b.id, label: `Install ${b.name} Support`, detail: profile.installDetail(b.id), primary: !fresh && relevant.some((r) => r.id === b.id) });
-        if (b.action === 'repair') actions.push({ id: 'repair', board: b.id, label: `Repair ${b.name} Support`, detail: 'Continues an interrupted setup or puts back anything missing or changed.', primary: true });
+        if (b.action === 'repair') actions.push(b.state === 'modified'
+            ? { id: 'repair', board: b.id, label: `Repair ${b.name} Support`, detail: MODIFIED_HINT, primary: false }
+            : { id: 'repair', board: b.id, label: `Repair ${b.name} Support`, detail: 'Continues an interrupted setup or puts back anything missing or changed.', primary: true });
     }
     const installedBoards = boards.filter((b) => b.state === 'installed');
+    const verifiable = boards.filter((b) => b.state === 'installed' || b.state === 'modified');
     // The page itself only does a quick look, so a file changed inside an installed board cannot show here. Repair checks every file.
     if (installedBoards.length > 0 && !actions.some((a) => a.id === 'repair' && !a.board)) actions.push({ id: 'repair', label: 'Repair', detail: 'Checks every file of the installed boards and puts back anything missing or changed.', primary: false });
-    if (installedBoards.length > 0) actions.push({ id: 'verify', label: 'Verify Environment', detail: 'Checks every installed part and proves it really works.', primary: false });
+    if (verifiable.length > 0) actions.push({ id: 'verify', label: 'Verify Environment', detail: 'Checks every installed part and proves it really works.', primary: false });
 
     const relevantRows = relevant.map((b) => boards.find((x) => x.id === b.id)!);
     const allReady = !fresh && relevantRows.every((b) => b.state === 'installed');
-    const headline = fresh ? 'Setup required' : allReady ? 'Ready' : relevantRows.some((b) => b.state === 'not-supported') ? 'Needs attention' : relevantRows.some((b) => b.state === 'installing') ? 'Installing…' : relevantRows.some((b) => b.state === 'needs-repair') ? 'Needs repair' : 'Setup not finished';
+    const usable = !fresh && relevantRows.every((b) => b.state === 'installed' || b.state === 'modified');
+    const headline = fresh ? 'Setup required' : allReady ? 'Ready' : usable ? 'Ready (modified toolchain)' : relevantRows.some((b) => b.state === 'not-supported') ? 'Needs attention' : relevantRows.some((b) => b.state === 'installing') ? 'Installing…' : relevantRows.some((b) => b.state === 'needs-repair') ? 'Needs repair' : 'Setup not finished';
 
     const details: DetailRow[] = profile.catalog.map((c) => {
         const st = by.get(c.id);

@@ -35,6 +35,7 @@ export class VsCodeSetupInteraction implements SetupInteraction {
 
     async confirmInstall(s: InstallSummary): Promise<boolean> {
         const lines = [`This will set up: ${s.items.join('; ')}.`, s.storageGB >= 1 ? `It uses about ${s.storageGB.toFixed(1)} GB on this computer once finished (have about ${s.requiredFreeGB} GB free).` : 'It needs very little space.'];
+        if (s.replacesChanges) lines.push('Files you changed in the installed toolchain will be replaced by the supported version. Nothing else of yours is touched.');
         if (s.needsInternet) lines.push('It needs an internet connection.');
         if (s.askedForAltera) lines.push('Later it asks you for two free files from Altera and to accept Altera\'s licence.');
         if (s.needsAdministrator) lines.push('Windows will ask for your permission once while Altera\'s software is installed.');

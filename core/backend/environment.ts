@@ -72,4 +72,6 @@ export interface EnvironmentVerification {
     readonly ok: boolean;
     readonly steps: readonly { readonly label: string; readonly ok: boolean; readonly detail?: string }[];
     readonly engine?: EngineStatus;
+    /** A covered file differs from the supported release because the user changed it: usable, not the verified configuration. */
+    readonly modified?: boolean;
 }

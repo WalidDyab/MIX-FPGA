@@ -35,6 +35,7 @@ export const MACOS_CATALOG: readonly CatalogEntry[] = [
 
 const WORD: Record<ComponentState, string> = {
     ready: 'Ready',
+    modified: 'Modified',
     'not-installed': 'Not installed',
     installing: 'Installing…',
     repairable: 'Needs repair',
@@ -42,7 +43,7 @@ const WORD: Record<ComponentState, string> = {
     failed: 'Failed',
 };
 
-const SEVERITY: ComponentState[] = ['incompatible', 'failed', 'installing', 'repairable', 'not-installed', 'ready'];
+const SEVERITY: ComponentState[] = ['incompatible', 'failed', 'installing', 'repairable', 'not-installed', 'modified', 'ready'];
 
 export interface StudentRow {
     readonly group: StudentGroup;

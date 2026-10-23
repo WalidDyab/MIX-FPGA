@@ -25,6 +25,7 @@ import type { ComponentStatus } from '../core/install/model';
 // What the extension's Setup screens need, re-exported so extension/ reaches platform code only through runtime/.
 export type { LicenseOffer, QuartusFiles } from '../platform/macos/install/quartus-install';
 export type { RosettaCommand, RosettaConsent } from '../platform/macos/install/rosetta';
+export { MODIFIED_HINT } from '../platform/macos/install/setup-view';
 export type { InstallSummary, SetupInteraction, SetupResult, VerifyResult } from '../platform/macos/install/setup-controller';
 export type { HardwareView, SetupView, BoardRowView } from '../platform/macos/install/setup-view';
 export type { BoardSupportId } from '../platform/macos/install/boards';
@@ -38,6 +39,8 @@ export interface SetupController {
     /** What the Setup page shows. Never starts a build or a long-running engine. */
     status(): Promise<{ statuses: ComponentStatus[]; view: SetupView }>;
     isBoardReady(board: string): Promise<boolean>;
+    /** Installed and usable, but a file differs from the supported release because the user changed it. */
+    isBoardModified(board: string): Promise<boolean>;
     adoptNexysVhdl(opts: { dryRun: boolean; progress?: (m: string) => void; signal?: AbortSignal }): Promise<{ plan: NexysAdoptionPlan; result?: { ok: boolean; message: string } }>;
     install(ui: SetupInteraction, signal?: AbortSignal, boards?: readonly BoardSupportId[]): Promise<SetupResult>;
     repair(ui: SetupInteraction, signal?: AbortSignal, boards?: readonly BoardSupportId[]): Promise<SetupResult>;

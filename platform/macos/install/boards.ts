@@ -36,13 +36,16 @@ export const BOARD_SUPPORT: readonly BoardSupportEntry[] = [
 export const boardEntry = (id: string): BoardSupportEntry | undefined => BOARD_SUPPORT.find((b) => b.id === id);
 export const isBoardSupportId = (id: unknown): id is BoardSupportId => typeof id === 'string' && BOARD_SUPPORT.some((b) => b.id === id);
 
-export type BoardState = 'installed' | 'not-installed' | 'installing' | 'incomplete' | 'needs-repair' | 'not-supported';
+export type BoardState = 'installed' | 'not-installed' | 'installing' | 'incomplete' | 'needs-repair' | 'not-supported'
+    /** Every part is present and usable, but the student changed at least one file after installing. */
+    | 'modified';
 
 /** One board's support, derived from its components (never stored). */
 export function boardState(statuses: readonly ComponentStatus[], board: BoardSupportEntry): BoardState {
     const by = new Map(statuses.map((s) => [s.id, s.state]));
     const states: ComponentState[] = board.components.map((c) => by.get(c) ?? 'not-installed');
     if (states.every((s) => s === 'ready')) return 'installed';
+    if (states.every((s) => s === 'ready' || s === 'modified')) return 'modified';
     if (states.includes('installing')) return 'installing';
     if (states.includes('incompatible')) return 'not-supported';
     // A board whose own steps are all untouched is not installed, even if a system part (Rosetta) happens to be there.
