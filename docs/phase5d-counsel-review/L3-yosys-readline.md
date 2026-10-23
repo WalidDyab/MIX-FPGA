@@ -25,20 +25,38 @@ Files (SHA-256 in the evidence list): DE10-Lite archive `yosys/libexec/yosys` `b
 
 MIX-FPGA itself runs `yosys` (RTL schematic; in the Nexys flow through Apio, together with `yosys-abc`). Yosys is built with readline for its interactive shell.
 
-## 3. Scope: what else links Readline
+## 3. The entire observed Readline-linked footprint
 
-- **DE10-Lite archive:** only `yosys/libexec/yosys` links `libreadline.8.2.dylib`.
-- **Nexys A7 archive** (the unmodified Apio / YosysHQ oss-cad-suite package): `libreadline.8.2.dylib` is linked by `yosys`, `yosys-abc`, `yosys-filterlib`, Icarus Verilog's `vvp` and `vhdlpp` and five of its `lib/ivl/*.vpi` modules, and by the Python 3.11 `readline` extension module. A Python 3.12 `readline` module in the openXC7 package references `libreadline.8.dylib` but the library is not in that package (the module cannot load). MIX-FPGA runs `yosys` and `yosys-abc`; it does not run `vvp`, `vhdlpp` or the Python readline module.
-- Icarus Verilog is recorded as GPL-2.0 in our inventory (its `license/LICENSE.iverilog`, upstream revision `6767a079560f4528f4beeae82fb33361eb4bc92a`); we have not established whether it is "GPL-2.0-only" or "or later". **Please advise whether this combination (GPLv3 library with a GPLv2 program) matters for a classroom redistribution of programs MIX-FPGA never runs, or whether you want those programs removed in a later toolchain version.**
+We scanned both archives (`otool -L` on every Mach-O file that mentions `libreadline`). Result:
+
+**DE10-Lite candidate:** only `yosys/libexec/yosys` links `libreadline.8.2.dylib`.
+
+**Nexys A7 candidate** (the unmodified Apio / YosysHQ oss-cad-suite and openXC7 packages) contains, under `apio/packages/oss-cad-suite/`, these Readline-linked files, all loading `lib/libreadline.8.2.dylib` (GPL-3.0-or-later):
+
+| # | Component (file) | Licence as recorded in our inventory | Invoked by MIX-FPGA? |
+|---|---|---|---|
+| 1 | `yosys` (`libexec/yosys`) | ISC | **Yes**, directly (RTL schematic in both boards' flows) and through Apio's synthesis for the Nexys A7 |
+| 2 | `yosys-abc` (`libexec/yosys-abc`) | Berkeley licence (ABC) | **Yes, indirectly**: started by Yosys' `abc` pass; observed in the process trace of the validated Nexys workflow (`docs/toolchain-1.0-redistribution.md` section 13.1) |
+| 3 | `yosys-filterlib` (`libexec/yosys-filterlib`) | ISC (Yosys) | **No.** Present only; not seen in the process trace of the validated workflows (we believe it serves liberty-file flows that MIX-FPGA does not run; not verified) |
+| 4 | Icarus Verilog `vvp` (`libexec/vvp`) | GPL-2.0 (see below) | **No.** Present only |
+| 5 | Icarus Verilog `vhdlpp` (`libexec/vhdlpp`) | GPL-2.0 (see below) | **No.** Present only |
+| 6-10 | five Icarus plugin modules: `lib/ivl/system.vpi`, `v2009.vpi`, `vhdl_sys.vpi`, `vhdl_textio.vpi`, `vpi_debug.vpi` | GPL-2.0 (see below) | **No.** Present only |
+| 11 | Python 3.11 `readline` extension module (`lib/python3.11/lib-dynload/readline.cpython-311-darwin.so`) | PSF-2.0 (Python) | **No.** Present only; it is loaded only if Python code imports `readline` (an interactive Python session), which no MIX-FPGA flow does; on macOS the traced Python is openXC7's 3.12, not this one |
+
+Additionally a Python 3.12 `readline` module in the openXC7 package references `libreadline.8.dylib`, but that library is not in the openXC7 package (the module cannot load); it is inert and listed only for completeness.
+
+**Icarus Verilog licence status.** Our material identifies Icarus Verilog only as "GPL-2.0": the file `license/LICENSE.iverilog` shipped by YosysHQ (copy: `licence-texts/iverilog-LICENSE.iverilog-as-shipped-by-YosysHQ.txt`) is YosysHQ's provenance note (upstream `https://github.com/steveicarus/iverilog`, revision `6767a079560f4528f4beeae82fb33361eb4bc92a`) followed by the GPL version 2 text. **We have not established whether this means `GPL-2.0-only` or `GPL-2.0-or-later`.** The source is in the Nexys source package (`sources/oss-iverilog.tar.gz`), but we have not examined its file headers.
 
 ## 4. Proposed treatment (conservative)
 
-Treat the distributed `yosys` (and `yosys-abc`, `yosys-filterlib`) together with `libreadline.8.2.dylib` as a combined work distributed under the obligations of the GNU GPL version 3:
+For the **Yosys-linked components** (rows 1-3: `yosys`, `yosys-abc`, `yosys-filterlib`, and `yosys` in the DE10-Lite archive), treat each program together with `libreadline.8.2.dylib` as a combined work distributed under the obligations of the GNU GPL version 3:
 
-- ship the GPLv3 text with the archive (`licenses/GPL-3.0.txt` in the Nexys archive; `LICENSES/gcc-runtime/GPL-3.0.txt` and `LICENSES/readline/COPYING` in the DE10 archive);
-- ship the complete corresponding source of both (below) next to the archive, and the build scripts;
+- ship the GPLv3 text with the archive (`licenses/GPL-3.0.txt` in the Nexys archive; `LICENSES/gcc-runtime/GPL-3.0.txt` and `LICENSES/readline/COPYING` in the DE10-Lite archive);
+- ship the complete corresponding source of both (section 5) next to the archive, and the build scripts;
 - keep Readline a separate, replaceable file (see L9);
-- keep Yosys' ISC and the other embedded-library notices (`LICENSES/yosys-libs/` in the DE10 archive).
+- keep Yosys' ISC and the other embedded-library notices (`LICENSES/yosys-libs/` in the DE10-Lite archive).
+
+For rows 4-11 (Icarus Verilog, the Python module) we have **no proposed treatment yet**: they are not run by MIX-FPGA, and whether they may be distributed with GPLv3 Readline depends on facts we have not established (the Icarus licence version, row 4-10) and on your view (row 11). Because the release candidate is frozen we have not removed them; they could be removed in the next toolchain version.
 
 ## 5. Corresponding source we intend to ship (all in the source packages, hash-pinned)
 
@@ -58,8 +76,13 @@ The complete mapping (every binary file to its source archives, with full hashes
 
 ## 6. Evidence files
 
-`licence-texts/GPL-3.0.txt`, `readline-8.2-COPYING-GPL-3.0.txt`, `Yosys-ISC-COPYING.txt`; `evidence/de10-archive-THIRD_PARTY_NOTICES.txt` and `evidence/nexys-archive-THIRD_PARTY_NOTICES.md` (exactly what ships in the archives); `toolchains/mixfpga/compliance/macos-arm64-1.1.inventory.json`; [L4-yosys-provenance.md](L4-yosys-provenance.md).
+`licence-texts/GPL-3.0.txt`, `readline-8.2-COPYING-GPL-3.0.txt`, `Yosys-ISC-COPYING.txt`, `GPL-2.0.txt`, `iverilog-LICENSE.iverilog-as-shipped-by-YosysHQ.txt`; the process trace statement: `docs/toolchain-1.0-redistribution.md` section 13.1; `evidence/de10-archive-THIRD_PARTY_NOTICES.txt` and `evidence/nexys-archive-THIRD_PARTY_NOTICES.md` (exactly what ships in the archives); `toolchains/mixfpga/compliance/macos-arm64-1.1.inventory.json`; [L4-yosys-provenance.md](L4-yosys-provenance.md).
 
-## 7. Question for counsel
+## 7. Questions for counsel (Q1 covers the whole footprint above)
 
-**Q1. Is distributing Yosys (and `yosys-abc`, `yosys-filterlib`) combined with GNU Readline under the obligations applicable to GPLv3, as described in section 4 with the source material in section 5, sufficient? If not, what else is required?** Please include your view on section 3 (Icarus Verilog and Python modules in the Nexys archive that also link Readline).
+**Q1. Please answer each part (yes/no, and what is needed if no):**
+
+1. **Yosys-linked components.** Is our proposed GPLv3 treatment (section 4, with the source material of section 5) sufficient for `yosys`, `yosys-abc` and `yosys-filterlib` combined with GNU Readline 8.2, in the Nexys A7 archive, and for `yosys` in the DE10-Lite archive?
+2. **Icarus Verilog.** May the Icarus Verilog components (`vvp`, `vhdlpp` and the five `.vpi` modules) legally be distributed together with GPLv3 Readline, given that the available material identifies Icarus only as GPL-2.0 and we have not established whether that is `GPL-2.0-only` or `GPL-2.0-or-later`? (If you want it established first, we will examine the upstream source headers and report.)
+3. **Removal.** If their compatibility cannot be established, should the unused Readline-linked binaries (rows 3-11, as you see fit) be removed from the release candidate before distribution?
+4. **Python.** Does the Python 3.11 `readline` extension module, which links GPLv3 Readline and is not used by MIX-FPGA, create any separate redistribution issue?

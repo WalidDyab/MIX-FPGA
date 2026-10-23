@@ -1,11 +1,11 @@
 # SHA-256 of every evidence file referenced by the counsel review package
-# Generated 2026-10-23T06:59Z on branch phase5d/legal-clearance (base 58a59f4). Paths are relative to the repository root.
+# Regenerated 2026-10-23T07:13Z on branch phase5d/legal-clearance (documentation update; base 58a59f4). Paths are relative to the repository root.
 
 ## A. Files of this folder (this list excluded)
-32a62826a32cd8471cedc3d867b4b58517ed7f197434f7a31f71d212ef4b5555  docs/phase5d-counsel-review/L3-yosys-readline.md
+4091fa4064a9742e6e3add2de4a476eac6043ca4ac0b5a110c55274cf3d13d3b  docs/phase5d-counsel-review/L3-yosys-readline.md
 f4b9925aeccd7d652b2b041f1582d28962dd18e97ae85b9a100f59a89804a487  docs/phase5d-counsel-review/L4-yosys-provenance.md
-31c1f0b014a758099fd84c5e05c1fa6e0af5777b037c05b1050993e82d63b8fa  docs/phase5d-counsel-review/L9-replacement-rights.md
-41c5ac5482dac9c33dfd8a47e132f50043ad7836fd86efefdb1b3363e7555789  docs/phase5d-counsel-review/README.md
+c4be7ee2a8bdd3dc2c1591d61478926e3e3d3c26ae209b1ddf7e395df5cc69b5  docs/phase5d-counsel-review/L9-replacement-rights.md
+71c2f1ed8e5ce9fab7bbb176de41b793deee3ebb786c188b13f235f776670e23  docs/phase5d-counsel-review/README.md
 a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518  docs/phase5d-counsel-review/evidence/de10-archive-THIRD_PARTY_NOTICES.txt
 cee2fd063588e8659bff49a2e93360a9c7a95ca7d965bf78ba1d7acdb99228eb  docs/phase5d-counsel-review/evidence/nexys-archive-THIRD_PARTY_NOTICES.md
 94f771ed7383f43d1275d4c26e0f757aed1c212cc19b5e3888da3c04dfd95414  docs/phase5d-counsel-review/evidence/yosys-help-all-rebuilt.txt
@@ -18,6 +18,7 @@ edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6  docs/phase5d-c
 e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118  docs/phase5d-counsel-review/licence-texts/LGPL-3.0.txt
 6998b5724d4cb3f459d1c12b6bd0cdbfa9c949ef14d0fb6d7d97d97404e5b5f3  docs/phase5d-counsel-review/licence-texts/Yosys-ISC-COPYING.txt
 28ca54ff46a27183631aa262673d13e3c829d909059f5c861da835fe1783fbec  docs/phase5d-counsel-review/licence-texts/hashicorp-hcl-v2.24.0-LICENSE-MPL-2.0.txt
+a9770d8ed3b39be3af1dea995d8139d21678dbb90789c01181ad751f8956b7b6  docs/phase5d-counsel-review/licence-texts/iverilog-LICENSE.iverilog-as-shipped-by-YosysHQ.txt
 b7993225104d90ddd8024fd838faf300bea5e83d91203eab98e29512acebd69c  docs/phase5d-counsel-review/licence-texts/libftdi1-COPYING.LIB-LGPL-2.0.txt
 5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a  docs/phase5d-counsel-review/licence-texts/libusb-COPYING-LGPL-2.1.txt
 8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903  docs/phase5d-counsel-review/licence-texts/readline-8.2-COPYING-GPL-3.0.txt
@@ -26,6 +27,7 @@ b7993225104d90ddd8024fd838faf300bea5e83d91203eab98e29512acebd69c  docs/phase5d-c
 ## B. Repository files referenced
 7c78b151f589e3b2bc7057b89e6afd55a93330c9597b7531ddd9e62e6efec0fd  docs/phase5c-l4-yosys-rebuild.md
 2ec456278ebe7a4068a584db2ac9a9cb77985235477d4bbaef9f20406b5e27ce  docs/phase5c-toolchain-1.1-report.md
+47b54f975d8407398542e3aae000162d36c6372203ef17d74db624e5715c8d16  docs/toolchain-1.0-redistribution.md
 a70678520f6a1c9d4fed26864c8bee9dda20f4178cc58f5151f0d075c8bf0518  toolchains/mixfpga/notices/macos-arm64-1.1/THIRD_PARTY_NOTICES.txt
 25846c5ba6b741967d040a9772e24f13e49feb3ba26cdcc74c96002927c8ae04  toolchains/mixfpga/compliance/macos-arm64-1.1.inventory.json
 0a09419c44d277acd5d39f513dadd079ee594f063a27fccf480616c225e2bb80  toolchains/mixfpga/payloads-1.1.json
@@ -40,7 +42,7 @@ aaa7f0ec2187ec5b7128dfb1027f9aa161c3b9abac75102914b9c16e65aa60c4  scripts/toolch
 efd8692eb8e0a4e0318df68c0e7770ceada961993da2a444ac6344ece46b693e  platform/macos/install/toolchain-installer.ts
 af6d9a6ca7bfa95c718919756bf04a651f890df160f8de3349e0c30acf49cef9  extension/commands/commands.ts
 
-## C. Build artifacts referenced (git-ignored; reproducible hashes recorded in the Phase 5C report)
+## C. Build artifacts referenced (git-ignored; the candidate hashes are unchanged since 58a59f4)
 6fc1f3ad3f0343fc04b2e270f669824db30f84bf71b91bd38640482f20433f0f  .artifacts/candidates-1.1/nexys/nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz
 25317169b9bab2a636cf5cf420238eab43ad2c955dd82acddcf566244b3f6aa2  .artifacts/candidates-1.1/payloads/mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz
 5ccdc8f3f9389945fc9500a0dd24e871aa9d36d568567b140e229db5d867c2e1  .artifacts/candidates-1.1/sources/MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip
@@ -52,7 +54,15 @@ cf9809bd3bf66c1c081a9a8ed6ca48c3a1ae729050df6b7860759e8270f31e9d  toolchain/darw
 1c3712cc9f51988d8bd3c282797a3f74cbc654a07edea7c80279a5563526490f  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/libexec/yosys-filterlib
 5cc5810e8cc2e66b269761790e7e4fdcea31b9a979ef7ed4ddd4bb6988d3a247  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/libexec/vvp
 122610942f2d246a055b6a652fa25764c33c8c6ee03f212a256fae089a95b43c  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/libexec/vhdlpp
+99e57e54c974f4f05dfd3c97fec7584fae704c4e72adb80bf02d1707d20ed623  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/ivl/system.vpi
+66210f83b4079276451f44b050871232a4778bebe629ce148be54e94e45b9e0d  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/ivl/v2009.vpi
+5661055ded4d64928bcd4656c40e25da5b4b27410272a8f8b7f9f4772c1f7dca  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/ivl/vhdl_sys.vpi
+d353fc0bc87630eb4871d6ccab9c41d76918cf7fdde84607f4ca43187157e02f  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/ivl/vhdl_textio.vpi
+5ec423ab54477d4e7be1bd4e0c834f09fc4c76c6e3fb0674df0c42b19066d3dd  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/ivl/vpi_debug.vpi
+dcf19c05333ae5c25f9f584ad1a0260688fc38e9b741a6d00e8f2432a2b13d37  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/python3.11/lib-dynload/readline.cpython-311-darwin.so
 be7552f0f9ce7cda5731faba2018b0e62db6af6a712ebe1ceeb7c400d9ac183a  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/lib/libreadline.8.2.dylib
+a9770d8ed3b39be3af1dea995d8139d21678dbb90789c01181ad751f8956b7b6  toolchain/darwin-arm64-1.1/apio/packages/oss-cad-suite/license/LICENSE.iverilog
+f57c33d9a35b1fdc9979ac23d9c4d199f3e7da1b181726acbd9a33071313cd0a  toolchain/darwin-arm64-1.1/apio/packages/openxc7/lib/python3.12/lib-dynload/readline.cpython-312-darwin.so
 cee2fd063588e8659bff49a2e93360a9c7a95ca7d965bf78ba1d7acdb99228eb  toolchain/darwin-arm64-1.1/THIRD_PARTY_NOTICES.md
 
 ## D. Source archives named in L3 and L4 (inside MIX-FPGA-DE10-Lite-Support-1.1-Sources.zip, from its manifest.json)
@@ -69,6 +79,8 @@ bbf97f1ec40a929edab5aa81998c1e2ef435436c597754916e6a5868f273aff7  sources/readli
 b9bda1476317d87d9ed79889aec48de43b10808b682d3f5f8b278542007d58fc  sources/oss-yosys--libs-cxxopts.tar.gz
 94093aadb7b0deb0f254198e9a2c240e36668d4d4b3bf0b303beb330e4c01529  sources/yosyshq-oss-cad-suite-build-2026-03-24.tar.gz
 53fd4e96ac9c190e192759daf49b63397865214d337ab5f6dbf6e68c1b0f4810  sources/github.com_hashicorp_hcl_v2@v2.24.0.zip
+(Icarus Verilog source, inside MIX-FPGA-Nexys-A7-Support-1.1-Sources.zip:)
+c37c4f4ad72d7c209cbfe9c399c982260c4313d28735875c72643f8ba406679d  sources/oss-iverilog.tar.gz
 
 ## E. Build tools used for the L4 rebuild (downloaded once, not redistributed)
 9bba0214ccf7f1079c5d59210045227bcf619519840ebfa80cd3849cff5a5bf2  bison-3.8.2.tar.xz
