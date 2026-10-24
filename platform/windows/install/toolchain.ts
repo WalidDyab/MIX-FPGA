@@ -12,7 +12,7 @@ export function windowsHostSupported(host: HostFacts = { platform: process.platf
 }
 
 /** Passed to the shared installer so it installs this toolchain, for this host. */
-export const WINDOWS_TOOLCHAIN_TARGET = { version: TOOLCHAIN_VERSION, target: TOOLCHAIN_TARGET, supported: windowsHostSupported, unsupportedMessage: 'MIX-FPGA Toolchain 1.0 needs 64-bit Windows.' } as const;
+export const WINDOWS_TOOLCHAIN_TARGET = { version: TOOLCHAIN_VERSION, target: TOOLCHAIN_TARGET, supported: windowsHostSupported, unsupportedMessage: 'MIX-FPGA Toolchain 1.1 needs 64-bit Windows.' } as const;
 
 const TOOL_LABEL: Record<string, string> = { ghdl: 'GHDL', yosys: 'Yosys' };
 

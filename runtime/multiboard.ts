@@ -87,7 +87,7 @@ export function createBoardFlows(opts: BoardFlowOptions): BoardFlows {
         de10 = new WindowsDe10Runtime({
             repoRoot: opts.repoRoot ?? packageRoot(__dirname),
             boards: ctx.boards,
-            installed: { layout: resolveWindowsLayout(), manifestFile: join(opts.repoRoot ?? packageRoot(__dirname), 'toolchains', 'mixfpga', 'toolchain-1.0-windows-x64.json') },
+            installed: { layout: resolveWindowsLayout(), manifestFile: join(opts.repoRoot ?? packageRoot(__dirname), 'toolchains', 'mixfpga', 'toolchain-1.1-windows-x64.json') },
             ...(opts.onToolOutput ? { onToolOutput: opts.onToolOutput } : {}),
         });
     }

@@ -57,7 +57,7 @@ export const ALTERA_DOWNLOADS = (
 /** The Nexys A7 support file a student without a NexysVHDL installation is asked for, for this computer. */
 /** The DE10-Lite support file the course provides (macOS). */
 export const DE10_SUPPORT_FILE = 'mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz';
-export const NEXYS_SUPPORT_FILE = process.platform === 'win32' ? 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz' : 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz';
+export const NEXYS_SUPPORT_FILE = process.platform === 'win32' ? 'nexysvhdl-toolchain-1.1-win32-x64.tar.gz' : 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz';
 
 export interface SetupOptions {
     readonly extensionPath: string;
@@ -120,10 +120,10 @@ async function createMacController(opts: SetupOptions & { runRosettaCommand: Ros
 
 async function createWindowsController(opts: SetupOptions): Promise<SetupController | undefined> {
     try {
-        const expected = await loadExpectedToolchain(join(opts.extensionPath, 'toolchains', 'mixfpga', 'toolchain-1.0-windows-x64.json'));
+        const expected = await loadExpectedToolchain(join(opts.extensionPath, 'toolchains', 'mixfpga', 'toolchain-1.1-windows-x64.json'));
         const { requirement } = loadRequirement(opts.extensionPath);
         const nexysRoot = windowsUserDataRoot(process.env);
-        const pins = readPins(join(opts.extensionPath, 'toolchains', 'mixfpga', 'payloads-1.0-windows-x64.json'));
+        const pins = readPins(join(opts.extensionPath, 'toolchains', 'mixfpga', 'payloads-1.1-windows-x64.json'));
         // Installer development only (a release carries its own payload folder).
         const payloadDir = windowsDevPayloadDirFromEnv(process.env);
         return new WindowsSetupController({

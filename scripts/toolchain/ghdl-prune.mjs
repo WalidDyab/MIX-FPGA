@@ -24,7 +24,7 @@
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 const argv = process.argv.slice(2);
 const opt = (k) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
@@ -45,7 +45,9 @@ const SYNOPSYS08 = ['synopsys/std_logic_arith.vhdl', 'synopsys/std_logic_unsigne
 const LIBS = { 8: { sources: IEEE08, synopsys: SYNOPSYS08 }, 19: { sources: IEEE08, synopsys: [] } };
 
 function run(args, cwd) {
-    const r = spawnSync(ghdl, args, { cwd, encoding: 'utf8', env: { ...process.env, PATH: '/usr/bin:/bin' } });
+    // Only the operating system's folders (and, on Windows, the folder of ghdl itself for its own DLLs): no developer tools.
+    const PATH = process.platform === 'win32' ? [dirname(ghdl), join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')].join(';') : '/usr/bin:/bin';
+    const r = spawnSync(ghdl, args, { cwd, encoding: 'utf8', env: { ...process.env, PATH } });
     if (r.status !== 0) fail(`ghdl ${args.join(' ')} (in ${cwd}) failed:\n${r.stdout}${r.stderr}`);
 }
 
@@ -71,10 +73,10 @@ function regenerate(root, std) {
     for (const s of LIBS[std].synopsys) run(['-a', flag, '-P../..', '--work=ieee', '-fsynopsys', `../../src/${s}`], dir);
     // Keep the upstream release's analysis timestamps (same source bytes), so the index does not depend on the build time.
     const out = readFileSync(cf, 'latin1').split('\n').map((l) => {
-        const x = /^(file \. "([^"]+)" "([0-9a-f]{40})" ")([0-9.]+)(":)$/.exec(l);
+        const x = /^(file \. "([^"]+)" "([0-9a-f]{40})" ")([0-9.]+)(":)(\r?)$/.exec(l);
         if (!x) return l;
         const t = keep.get(`${x[2]} ${x[3]}`);
-        return t ? `${x[1]}${t}${x[5]}` : l;
+        return t ? `${x[1]}${t}${x[5]}${x[6]}` : l;
     }).join('\n');
     writeFileSync(cf, out, 'latin1');
 }
@@ -89,11 +91,11 @@ function adoptIndex(root, std) {
     const reference = readFileSync(join(indexFrom, 'ieee', `v${v}`, `ieee-obj${v}.cf`), 'latin1');
     // Every source named by the reference index must be the same bytes (same sha1) as the one this tree's index recorded.
     const out = reference.split('\n').map((l) => {
-        const x = /^(file \. "([^"]+)" "([0-9a-f]{40})" ")([0-9.]+)(":)$/.exec(l);
+        const x = /^(file \. "([^"]+)" "([0-9a-f]{40})" ")([0-9.]+)(":)(\r?)$/.exec(l);
         if (!x) return l;
         const t = keep.get(`${x[2]} ${x[3]}`);
         if (!t) fail(`${x[2]} (sha1 ${x[3]}) is not in this tree's original index: the two GHDL libraries are not from the same sources`);
-        return `${x[1]}${t}${x[5]}`;
+        return `${x[1]}${t}${x[5]}${x[6]}`;
     }).join('\n');
     writeFileSync(cf, out, 'latin1');
     for (const n of REMOVED_OBJECTS) rmSync(join(root, 'ieee', `v${v}`, `${n}.o`), { force: true });

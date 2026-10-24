@@ -8,6 +8,13 @@
       "files": 31541,
       "bytes": 2744215896,
       "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz"
+    },
+    "win32-x64": {
+      "status": "validated",
+      "treeSha256": "4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d",
+      "files": 21145,
+      "bytes": 3125637670,
+      "archive": "nexysvhdl-toolchain-1.1-win32-x64.tar.gz"
     }
   }
 }

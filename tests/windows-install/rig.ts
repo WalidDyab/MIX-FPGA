@@ -62,7 +62,7 @@ async function expectedFor(sources: Record<string, string>): Promise<LoadedExpec
     await add({ id: 'scripts', kind: 'support', name: 'Support scripts', path: 'scripts' }, sources['scripts']!);
     await add({ id: 'licenses', kind: 'support', name: 'Licences', path: 'LICENSES' }, sources['licenses']!);
     await add({ id: 'notices', kind: 'support', name: 'Notices', path: 'THIRD_PARTY_NOTICES.txt' }, sources['notices']!);
-    const toolchain: ExpectedToolchain = { schemaVersion: 1, product: 'MIX-FPGA', toolchainVersion: '1.0', target: 'windows-x64', units };
+    const toolchain: ExpectedToolchain = { schemaVersion: 1, product: 'MIX-FPGA', toolchainVersion: '1.1', target: 'windows-x64', units };
     const text = `${JSON.stringify(toolchain, null, 1)}\n`;
     return { toolchain, text, sha256: sha(text) };
 }
@@ -263,23 +263,23 @@ export async function rig(t: TestContext, opts: Partial<RigOptions> = {}): Promi
         devicePackage: { name: WINDOWS_QUARTUS_SPEC.devicePackage.name, sha256: sha(pkg), bytes: pkg.length },
     };
 
-    // Nexys A7 support: a small stand-in for the NexysVHDL Toolchain 1.0 bundle, as an archive.
+    // Nexys A7 support: a small stand-in for the Nexys A7 support bundle, as an archive.
     const bundle = join(dir, 'nexys-bundle');
     await writeFakeBundle(bundle, { target: 'win32-x64' });
     const made = await fakeArchive(dir, bundle, { target: 'win32-x64' });
     const payloadDir = join(dir, 'payloads');
     await mkdir(payloadDir);
-    const nexysArchive = join(payloadDir, 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz');
+    const nexysArchive = join(payloadDir, 'nexysvhdl-toolchain-1.1-win32-x64.tar.gz');
     await cp(made.archive, nexysArchive);
     const pins: Record<string, { file: string; sha256: string }> = {};
-    if (o.pinnedNexys) pins['nexys-a7-100t'] = { file: 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz', sha256: sha(await readFile(nexysArchive)) };
+    if (o.pinnedNexys) pins['nexys-a7-100t'] = { file: 'nexysvhdl-toolchain-1.1-win32-x64.tar.gz', sha256: sha(await readFile(nexysArchive)) };
     // DE10 support archive (the release form).
     const tree = join(dir, 'de10-tree');
     for (const u of expected.toolchain.units) await copyTree(sources[u.id]!, join(tree, u.path));
     await writeFile(join(tree, 'manifest.json'), expected.text);
-    const de10Archive = join(payloadDir, 'mixfpga-de10-lite-support-1.0-windows-x64.tar.gz');
+    const de10Archive = join(payloadDir, 'mixfpga-de10-lite-support-1.1-windows-x64.tar.gz');
     await writeTarGz(tree, de10Archive);
-    if (o.de10Archive) pins['de10-lite'] = { file: 'mixfpga-de10-lite-support-1.0-windows-x64.tar.gz', sha256: sha(await readFile(de10Archive)) };
+    if (o.de10Archive) pins['de10-lite'] = { file: 'mixfpga-de10-lite-support-1.1-windows-x64.tar.gz', sha256: sha(await readFile(de10Archive)) };
     const legacyRoot = join(dir, 'LocalAppData', 'NexysVHDL');
     if (o.legacyNexys) await installToolchainArchive({ archive: nexysArchive, dataRoot: legacyRoot, target: 'win32-x64', requirement: made.requirement });
 

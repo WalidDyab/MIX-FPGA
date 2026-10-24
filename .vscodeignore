@@ -26,8 +26,8 @@
 !toolchains/mixfpga/payloads-1.1.json
 
 # MIX-FPGA board support on Windows: the recorded DE10-Lite toolchain manifest and the pinned support payloads (hashes only, no binaries)
-!toolchains/mixfpga/toolchain-1.0-windows-x64.json
-!toolchains/mixfpga/payloads-1.0-windows-x64.json
+!toolchains/mixfpga/toolchain-1.1-windows-x64.json
+!toolchains/mixfpga/payloads-1.1-windows-x64.json
 
 # License of NexysVHDL itself (Apache-2.0) and its notice
 !LICENSE

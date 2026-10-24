@@ -1,0 +1,297 @@
+MIX-FPGA Toolchain 1.1 for Windows (x64): third-party notices
+
+MIX-FPGA Toolchain is an aggregation of separate programs and data. Each part is under its own licence,
+listed below; the licence texts are in the LICENSES folder next to this file, unchanged from their sources.
+MIX-FPGA's own code (Apache-2.0) covers only the MIX-FPGA-authored parts (the support scripts in scripts/).
+
+Not part of this toolchain and not redistributed by MIX-FPGA (section 3): Altera Quartus Prime Lite, the MAX 10 package and
+Altera's USB-Blaster driver, Digilent Adept, Windows. They belong to their owners and are used under the student's own acceptance of their licences.
+
+CHANGES MADE BY MIX-FPGA TO UPSTREAM CONTENT
+
+MIX-FPGA patches and rebuilds no third-party program. The only changes to the official release content are:
+
+  - Removed the VHDL-87 and VHDL-93 IEEE libraries (lib/ghdl/ieee/v87, lib/ghdl/ieee/v93 and lib/ghdl/src/ieee): they contain the IEEE 1076.3-1995 numeric_bit and numeric_std sources, which may be distributed only unchanged and not sold or distributed for profit.
+  - Removed the VITAL-95 and VITAL-2000 packages (lib/ghdl/src/vital95, lib/ghdl/src/vital2000) and the UPF package (lib/ghdl/src/upf), whose licence is not established.
+  - Regenerated the GHDL 2008 and 2019 IEEE library indexes (lib/ghdl/ieee/v08/ieee-obj08.cf, lib/ghdl/ieee/v19/ieee-obj19.cf) with GHDL itself, using the upstream rules of libraries/Makefile.inc without the removed packages (scripts/toolchain/ghdl-prune.mjs); the analysis timestamps of the upstream release are kept.
+  - Removed the GHDL plugin-development headers include/ghdl/vpi_user.h, synth_gates.h and synth.h: vpi_user.h and synth_gates.h carry no licence statement, nothing uses them at run time (they are only needed to compile a GHDL plugin), and synth.h includes synth_gates.h.
+  - Added the licence texts of the libraries compiled into the yosys executable, and the licence texts that the Toolchain 1.0 notices marked MISSING (libffi, libwinpthread) or described wrongly (termcap is GPL-2.0-or-later, not MIT-style).
+  - MIX-FPGA always runs GHDL with --std=08. A design that uses the removed packages gets a normal "unit not found" error.
+
+YOUR RIGHT TO MODIFY AND REPLACE COMPONENTS
+
+The GPL and LGPL components (GNU Readline, GNU termcap, libghw) are separate DLL files, loaded at run time. You may replace them with your own builds made from the corresponding source, which is in the source package, for your own use, and reverse-engineer them for debugging. The installed files are ordinary files in your own user folder: replace a file and keep using the toolchain; nothing has to be signed on Windows. The tools keep working with replaced files.
+If you change a file of the installed toolchain, MIX-FPGA reports the toolchain as modified and unverified: "This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version."
+  - MIX-FPGA does not silently overwrite or delete your changes; it only reads the files to report their state (Setup, Verify).
+  - You may continue using the modified toolchain: creating projects, checking, simulating, building and programming all keep working.
+  - Repair is optional and explicit: it asks first, and then restores the supported MIX-FPGA release copy of the files that differ.
+  - A missing or unusable part is reported as needing repair, not as modified.
+The integrity check is a support aid, not a technical restriction. A configuration with changed files is not the verified one and is not supported.
+
+LICENCE NOTES
+
+Yosys and GNU Readline (with GNU termcap)
+  yosys.exe (Yosys, ISC licence) loads GNU Readline 8.2 (yosys/bin/libreadline8.dll, GPL-3.0-or-later) at run time, and Readline loads GNU termcap 1.3.1 (yosys/bin/libtermcap-0.dll, GPL-2.0-or-later). MIX-FPGA distributes each of these together under the terms of the GNU General Public License version 3 (the GPL-3.0 text is in LICENSES/gcc-runtime/); Yosys' own licence is in LICENSES/yosys/. Readline and termcap are separate DLL files that you can replace.
+  Yosys 0.63+173 (commit 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2, with its abc and cxxopts submodules), the Fedora source packages of mingw64-readline 8.2-3.fc39 and mingw64-termcap 1.3.1-34.fc39 and the YosysHQ build recipe are in the source package. Libraries compiled into Yosys keep their own licences (ISC, MIT, public domain, Berkeley), which are in LICENSES/yosys-libs/.
+
+1. COMPONENTS WE REDISTRIBUTE
+
+--- ghdl/ ---
+
+GHDL (ghdl, ghwdump) 6.0.0 (mcode backend, MSYS2 UCRT64 build, GNAT 15.2.0)
+  licence:    GPL-2.0-or-later
+  files:      bin/ghdl.exe, bin/ghwdump.exe
+  use:        Run by MIX-FPGA (Check, Simulate, Design/RTL Schematic).
+  texts:      LICENSES/ghdl/GHDL-COPYING.md, LICENSES/ghdl/GPL-2.0.txt
+  source:     corresponding-source
+    - ghdl-6.0.0  https://github.com/ghdl/ghdl  @e589c698c351369ac5bcfe7abe1f1152ac5d4727  sha256 3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719
+  status:     verified
+
+GNAT / GCC runtime libraries GCC runtime (see evidence)
+  licence:    GPL-3.0-or-later WITH GCC-exception-3.1
+  files:      lib/libgnat-15.dll, lib/libgcc_s_seh-1.dll, bin/libgcc_s_seh-1.dll
+  use:        libgcc_s_seh-1.dll is loaded by ghdl.exe; libgnat-15.dll only by libghdl, which MIX-FPGA does not use.
+  texts:      LICENSES/gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt, LICENSES/gcc-runtime/GPL-3.0.txt
+  source:     none-required-by-exception - Section 1 of the GCC Runtime Library Exception permits propagating the Target Code under terms of our choice when combined with Independent Modules; the runtime's own source is not required by the exception text.
+  status:     verified
+
+mingw-w64 winpthreads (libwinpthread-1) MSYS2 UCRT64 build shipped in the GHDL zip
+  licence:    MIT AND BSD-3-Clause
+  files:      bin/libwinpthread-1.dll, lib/libwinpthread-1.dll
+  use:        Loaded by libgcc_s_seh-1.dll.
+  texts:      LICENSES/winpthreads/COPYING, LICENSES/winpthreads/winpthreads-COPYING
+  source:     none
+  status:     verified
+
+zlib (zlib1.dll) MSYS2 UCRT64 build shipped in the GHDL zip
+  licence:    Zlib
+  files:      bin/zlib1.dll
+  use:        Loaded by ghdl.exe.
+  texts:      LICENSES/zlib/ghdl-zlib-LICENSE.txt
+  source:     none
+  status:     verified
+
+libghdl, libghdlvpi, libghdl.a 6.0.0
+  licence:    GPL-2.0-or-later
+  files:      lib/libghdl-6_0_0.dll, lib/libghdlvpi.dll, lib/libghdl.a, lib/libghdl.link
+  use:        Shipped; not used by MIX-FPGA (it runs the ghdl executable).
+  source:     corresponding-source
+    - ghdl-6.0.0
+  status:     inherited
+
+libghw (GHDL waveform library) and its header 6.0.0
+  licence:    LGPL-2.1-or-later
+  files:      lib/libghw.dll, include/ghdl/libghw.h
+  use:        Shipped; not used by MIX-FPGA.
+  texts:      LICENSES/ghdl/LGPL-2.1.txt
+  source:     library-source-and-replaceability
+    - ghdl-6.0.0
+  status:     verified
+
+vhpi_user.h (IEEE P1076 WG) 2019
+  licence:    Apache-2.0
+  files:      include/ghdl/vhpi_user.h
+  texts:      LICENSES/ieee-p1076/Apache-2.0.txt
+  source:     none
+  status:     verified
+
+VHDL STD library (standard, textio, env) and its compiled form 6.0.0
+  licence:    GPL-2.0-or-later
+  files:      lib/ghdl/src/std/**, lib/ghdl/std/**
+  use:        Read by ghdl on every Check/Simulate.
+  source:     corresponding-source
+    - ghdl-6.0.0
+  status:     verified
+
+IEEE 1076-2008 packages and the Apache-licensed math packages (IEEE P1076 WG) 2019 files
+  licence:    Apache-2.0
+  files:      lib/ghdl/src/ieee2008/**
+  use:        Read by ghdl on every Check/Simulate.
+  texts:      LICENSES/ieee-p1076/Apache-2.0.txt
+  source:     none
+  status:     verified
+
+Synopsys std_logic_arith / unsigned / signed / misc packages 1990-1992
+  licence:    LicenseRef-Synopsys-permissive
+  files:      lib/ghdl/src/synopsys/**
+  use:        Used by designs that use std_logic_arith / std_logic_unsigned.
+  texts:      LICENSES/synopsys/std_logic_arith-header.txt
+  source:     none - Keep the copyright statement in the files (they are shipped unchanged).
+  status:     verified
+
+Compiled IEEE 2008 and 2019 library indexes (GHDL .cf files) 6.0.0
+  licence:    derived from ieee-2008-library and synopsys-libraries (same terms apply)
+  files:      lib/ghdl/ieee/**
+  source:     none
+  status:     verified
+
+GHDL vendor-library compile scripts and ansi_color.sh 6.0.0
+  licence:    GPL-2.0-or-later
+  files:      lib/ghdl/vendors/**, lib/ghdl/ansi_color.sh
+  use:        Shipped; not used by MIX-FPGA.
+  source:     corresponding-source
+    - ghdl-6.0.0
+  status:     verified
+
+--- yosys/ ---
+
+Yosys 0.63+173 (git 66306a8ca-dirty, x86_64-w64-mingw32-g++ 13.2.1)
+  licence:    ISC
+  files:      bin/yosys.exe, share/yosys/**
+  use:        Run by MIX-FPGA (RTL Schematic).
+  texts:      LICENSES/yosys/LICENSE.yosys
+  source:     corresponding-source - Permissive itself, but the program is distributed linked with GPL-3.0-or-later Readline (see L3), so the complete corresponding source of the combined program is provided.
+    - oss-yosys  https://github.com/YosysHQ/yosys  @66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2  sha256 649a106a04cf19e5688993707694a8e855636d60b5d8a90310c4ec208cf54e5d
+    - yosyshq-oss-cad-suite-build-2026-03-24  https://github.com/YosysHQ/oss-cad-suite-build  @ac8c7dba
+  status:     verified
+
+Libraries compiled into the yosys executable per Yosys source tree
+  licence:    ISC (ezSAT, subcircuit); MIT (MiniSat, json11, fstapi, cxxopts); public domain (sha1, BigInteger); Berkeley (ABC)
+  compiled into: yosys-program
+  texts:      LICENSES/yosys-libs/minisat-LICENSE.txt, LICENSES/yosys-libs/cxxopts-LICENSE.txt, LICENSES/yosys-libs/abc-copyright.txt, LICENSES/yosys-libs/json11-license-header.txt, LICENSES/yosys-libs/fstapi-license-header.txt, LICENSES/yosys-libs/ezsat-license-header.txt, LICENSES/yosys-libs/subcircuit-license-header.txt
+  source:     corresponding-source (part of the Yosys source archives)
+    - oss-yosys
+  status:     inherited
+
+GNU Readline 8.2 (mingw64-readline 8.2-3.fc39)
+  licence:    GPL-3.0-or-later
+  files:      bin/libreadline8.dll
+  use:        Loaded by yosys.exe at start-up (and, in the Nexys package, by vvp.exe).
+  texts:      LICENSES/readline/COPYING
+  source:     corresponding-source - GPLv3 applies to the combined yosys program as distributed; Yosys's ISC licence is GPL-compatible.
+    - fedora-srpm-mingw-readline-8.2-3.fc39  https://kojipkgs.fedoraproject.org/packages/mingw-readline/8.2/3.fc39/src/mingw-readline-8.2-3.fc39.src.rpm
+  status:     inherited
+
+GNU termcap 1.3.1 (mingw64-termcap 1.3.1-34.fc39)
+  licence:    GPL-2.0-or-later
+  files:      bin/libtermcap-0.dll
+  use:        Loaded by libreadline8.dll.
+  texts:      LICENSES/termcap/COPYING
+  source:     corresponding-source - GPL-2.0-or-later combines with GPL-3.0-or-later Readline under GPL version 3; the Toolchain 1.0 notices called it "MIT-style" (wrong); the licence text is shipped now.
+    - fedora-srpm-mingw-termcap-1.3.1-34.fc39  https://kojipkgs.fedoraproject.org/packages/mingw-termcap/1.3.1/34.fc39/src/mingw-termcap-1.3.1-34.fc39.src.rpm
+  status:     verified
+
+libffi 3.4.4 (mingw64-libffi 3.4.4-3.fc39)
+  licence:    MIT
+  files:      bin/libffi-8.dll
+  use:        Loaded by yosys.exe at start-up.
+  texts:      LICENSES/libffi/LICENSE
+  source:     none
+  status:     inherited
+
+Tcl (tcl86.dll) 8.6.12 (mingw64-tcl 8.6.12-6.fc39)
+  licence:    TCL (Tcl/Tk licence)
+  files:      bin/tcl86.dll
+  use:        Loaded by yosys.exe at start-up.
+  texts:      LICENSES/tcl/license.terms
+  source:     none
+  status:     inherited
+
+zlib (bundled copy) 1.2.13 (mingw64-zlib 1.2.13-3.fc39)
+  licence:    Zlib
+  files:      bin/zlib1.dll
+  use:        Loaded by yosys.exe at start-up.
+  texts:      LICENSES/zlib/LICENSE
+  source:     none
+  status:     inherited
+
+mingw-w64 winpthreads (libwinpthread-1) 11.0.0 (mingw64-winpthreads 11.0.0-2.fc39)
+  licence:    MIT AND BSD-3-Clause
+  files:      bin/libwinpthread-1.dll
+  use:        Loaded by yosys.exe and libgcc_s_seh-1.dll.
+  texts:      LICENSES/winpthreads/COPYING, LICENSES/winpthreads/winpthreads-COPYING
+  source:     none
+  status:     inherited
+
+GCC C++ and GCC runtime libraries (libstdc++-6, libgcc_s_seh-1) 13.2.1 (mingw64-gcc 13.2.1-5.fc39)
+  licence:    GPL-3.0-or-later WITH GCC-exception-3.1
+  files:      bin/libstdc++-6.dll, bin/libgcc_s_seh-1.dll
+  use:        Loaded by yosys.exe.
+  texts:      LICENSES/gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt, LICENSES/gcc-runtime/GPL-3.0.txt, LICENSES/gcc-runtime/libstdcxx-COPYING.RUNTIME
+  source:     none-required-by-exception - Section 1 of the GCC Runtime Library Exception permits propagating the Target Code under terms of our choice when combined with Independent Modules; the runtime's own source is not required by the exception text.
+  status:     verified
+
+--- scripts/ ---
+
+MIX-FPGA support scripts (part-check.tcl)
+  licence:    Apache-2.0 (MIX-FPGA)
+  texts:      LICENSES/mix-fpga/LICENSE
+
+2. LICENCE TEXTS (sha256 of the shipped file)
+
+  LICENSES/gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt  9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74
+  LICENSES/gcc-runtime/GPL-3.0.txt  3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986
+  LICENSES/gcc-runtime/libstdcxx-COPYING.RUNTIME  9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74
+  LICENSES/ghdl/GHDL-COPYING.md  aef8b4222b79d0dbf6bf17cfff71c90a6a6bb8917a4162abe417b469ed22da2e
+  LICENSES/ghdl/GPL-2.0.txt  edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6
+  LICENSES/ghdl/LGPL-2.1.txt  20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95
+  LICENSES/ieee-p1076/Apache-2.0.txt  99d7bfa7fbf02e91cc2ca388579926de4303c89a39635a36ea9a40e16b155ac5
+  LICENSES/libffi/LICENSE  2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388
+  LICENSES/mix-fpga/LICENSE  cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+  LICENSES/readline/COPYING  8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903
+  LICENSES/synopsys/std_logic_arith-header.txt  e9dbfdc4602dd7f9f7048f6bf4b0f0a9758785bb5e0691b56c237827b2d9b3fb
+  LICENSES/tcl/license.terms  c0a69a2bfd757361ec7e6143973b103c90409316b49e9c88db26ad6388e79f16
+  LICENSES/termcap/COPYING  32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670
+  LICENSES/winpthreads/COPYING  99a69660981156c21336fdb5661f89341b013c94e4bf9e1c7467b4745718397f
+  LICENSES/winpthreads/winpthreads-COPYING  63263614cdd29f2f93cba85e992f041b31f9fc7b4033692f31269489a8a1b177
+  LICENSES/yosys-libs/abc-copyright.txt  819151b8f059a48f806c75732ef62b1f873b49b6a04fb128aed28bf87d3dcd6c
+  LICENSES/yosys-libs/cxxopts-LICENSE.txt  aa324fbe633a96546bebca975fbbab65caa175894bd00cfa13d7335e7363400c
+  LICENSES/yosys-libs/ezsat-license-header.txt  2159f33266279afeba033711c5043d3e6bdbbde9d9609e4f303560fbc82b1cf7
+  LICENSES/yosys-libs/fstapi-license-header.txt  3fdcf06977114381c868b40fd94c98bc6efb1c125c96d12d6aa70cfe38a7f05b
+  LICENSES/yosys-libs/json11-license-header.txt  58b531e2b9868431df48a7cf47415dfbed4b903235b829491b2ea2eb86342174
+  LICENSES/yosys-libs/minisat-LICENSE.txt  c75f5063560674728fcfa7b9b291d26a3a8b9436a0d9940eadc81aab7779d62b
+  LICENSES/yosys-libs/subcircuit-license-header.txt  2296e2e17158a12a8470b9d89490ab6225971c4c4fbba0a451c2a4f9806e83d6
+  LICENSES/yosys/LICENSE.yosys  6998b5724d4cb3f459d1c12b6bd0cdbfa9c949ef14d0fb6d7d97d97404e5b5f3
+  LICENSES/zlib/LICENSE  845efc77857d485d91fb3e0b884aaa929368c717ae8186b66fe1ed2495753243
+  LICENSES/zlib/ghdl-zlib-LICENSE.txt  e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2
+
+3. NOT REDISTRIBUTED
+
+Altera Quartus Prime Lite Edition 25.1std.0 Build 1129 and the MAX 10 device package (max10-25.1std.0.1129.qdz), and Altera's USB-Blaster driver
+  owner: Altera
+  Supplied by the student from Altera's official download; MIX-FPGA copies the student's files, requires the student's explicit acceptance of Altera's licence before passing --accept_eula, and installs them only on that student's own computer (Windows asks for permission once). Never part of any MIX-FPGA download. The USB-Blaster driver is Altera's and Windows'; MIX-FPGA never installs or changes a driver.
+
+Digilent Adept Runtime and Utilities
+  owner: Digilent
+  Only needed for the Nexys A7. Installed by the student from Digilent's own download page under Digilent's licence; MIX-FPGA neither bundles nor redistributes it. MIX-FPGA only looks for djtgcfg.exe.
+
+Windows system libraries (kernel32, msvcrt, ucrt, dbghelp, advapi32, user32, ws2_32, shlwapi …)
+  owner: Microsoft
+  Present on every Windows computer; referenced by the shipped programs, not shipped.
+
+4. SOURCE CODE
+
+Status: No written offer: the complete corresponding-source package MIX-FPGA-DE10-Lite-Support-1.1-Windows-x64-Sources accompanies the binaries at the same place and time, and the notices say where it is. The source package is offered at the same place and time as the binary archive, so access to the source is equivalent to access to the binary.
+
+The corresponding-source package contains, for this toolchain:
+  - GHDL 6.0.0 source at e589c698c351369ac5bcfe7abe1f1152ac5d4727 (ghdl-6.0.0.tar.gz) with its libraries and scripts.
+  - Yosys source at 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 with its abc and cxxopts submodules, and the YosysHQ build recipe (oss-cad-suite-build ac8c7dba).
+  - The Fedora source packages of mingw64-readline 8.2-3.fc39 (GNU Readline 8.2) and mingw64-termcap 1.3.1-34.fc39 (GNU termcap 1.3.1), so the GPL libraries can be rebuilt and replaced.
+
+No source is required for: libffi, Tcl, zlib, winpthreads (permissive), the GCC runtime libraries and libgnat (GCC Runtime Library Exception), the IEEE 2008 packages (Apache-2.0).
+
+5. COMPLIANCE DECISIONS (all resolved)
+
+L1 [resolved] IEEE 1076.3-1995 packages: 'may not be sold or distributed for profit'
+    RESOLUTION: Removed in Toolchain 1.1: the VHDL-87/93 IEEE libraries (with the IEEE 1076.3-1995 numeric_bit/numeric_std packages) are no longer shipped. MIX-FPGA runs only --std=08 (core/vhdl/ghdl/ghdl-provider.ts, the same code on Windows and macOS).
+
+L2 [resolved] VITAL and UPF packages have no licence statement in their files
+    RESOLUTION: Removed in Toolchain 1.1; the 2008/2019 library indexes were regenerated by GHDL itself.
+
+L3 [resolved] Yosys is distributed linked with GPL-3.0-or-later Readline (and GPL-2.0-or-later termcap)
+    RESOLUTION: Technically resolved (Phase 5H, Windows): each program that loads Readline is distributed with it under GPL version 3 with the GPLv3 text, the complete Corresponding Source of both (the pinned Yosys source and the Fedora source packages of mingw64-readline 8.2-3.fc39 and mingw64-termcap 1.3.1-34.fc39) and the build recipe in the source package; Readline and termcap stay separate, replaceable DLL files. The Windows footprint was established from the import tables of all 571 PE files of the toolchain (only yosys.exe and vvp.exe load Readline; none loads it through Python).
+
+L4 [resolved] Yosys source of the exact binary, and notices of libraries compiled into it
+    RESOLUTION: Technically resolved: the same pinned commit as macOS (66306a8c with the abc and cxxopts submodules), the YosysHQ recipe that explains the -dirty suffix, and the licence texts of the libraries compiled into Yosys are in the source package and notices. The Windows binary is the unmodified YosysHQ release file; a bit-identical rebuild is not claimed.
+
+L6 [resolved] GHDL build recipe and GCC/GNAT runtime origin
+    RESOLUTION: Recorded: the official GHDL release ghdl-mcode-6.0.0-ucrt64.zip, built by GHDL's CI from tag v6.0.0 on MSYS2 UCRT64 with GNAT 15.2.0 (the GCC Runtime Library Exception applies to libgnat and libgcc_s).
+
+L7 [resolved] Does GHDL's GPL reach students' simulation output?
+    RESOLUTION: MIX-FPGA runs simulations in memory and distributes no student executables; the notices tell students that an executable produced with GHDL needs its VHDL sources if distributed.
+
+L8 [resolved] Headers without a licence statement (vpi_user.h, synth_gates.h)
+    RESOLUTION: Removed in Toolchain 1.1 together with synth.h, which includes one of them; nothing uses them.
+
+L9 [resolved] Integrity enforcement versus the right to replace LGPL/GPL libraries
+    RESOLUTION: Resolved by behaviour (Phase 5D, implemented for Windows in Phase 5H): a changed but complete toolchain is reported as installed but modified and stays fully usable; nothing is restored unless the student chooses Repair; missing or broken files are a repair case.

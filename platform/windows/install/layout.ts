@@ -1,7 +1,7 @@
 import { win32 } from 'node:path';
 
 /** The toolchain MIX-FPGA installs on Windows x64, and the folder name of its target. */
-export const TOOLCHAIN_VERSION = '1.0';
+export const TOOLCHAIN_VERSION = '1.1';
 export const TOOLCHAIN_TARGET = 'windows-x64';
 
 /** The one runtime path override. Relocates the whole MIX-FPGA root (tests, lab images). Students never set it. */
@@ -12,9 +12,9 @@ type Env = Readonly<Record<string, string | undefined>>;
 /**
  * Every location MIX-FPGA uses on Windows, resolved once. Nothing here depends on where the extension or a repository lives.
  *
- *   <root>\support\nexys-a7\toolchains\win32-x64\1.0\   the Nexys A7 support: NexysVHDL Toolchain 1.0, unchanged and immutable
- *   <root>\state\nexys-a7\win32-x64-1.0\                 writable state of those tools (Apio's home): never inside the toolchain
- *   <root>\toolchains\1.0\windows-x64\                   DE10-Lite managed tools (GHDL, Yosys) and their support scripts
+ *   <root>\support\nexys-a7\toolchains\win32-x64\1.1\   the Nexys A7 support: MIX-FPGA Nexys A7 support (Toolchain 1.1), immutable
+ *   <root>\state\nexys-a7\win32-x64-1.1\                 writable state of those tools (Apio's home): never inside the toolchain
+ *   <root>\toolchains\1.1\windows-x64\                   DE10-Lite managed tools (GHDL, Yosys) and their support scripts
  *   <root>\toolchains\.staging\                          installs in progress (renamed into place when verified)
  *   <root>\staging\jobs\                                 one private folder per DE10-Lite build
  *   <root>\staging\installers\                           verified temporary copies of the student's Altera files
@@ -89,7 +89,7 @@ export function isInsideForeignProduct(path: string): boolean {
 /** Windows' classic limit for a full path (MAX_PATH), counting the terminating NUL. */
 export const MAX_PATH = 260;
 
-/** The longest path, relative to the Nexys toolchain folder, inside NexysVHDL Toolchain 1.0 for Windows (measured, 160 characters). */
+/** The longest path, relative to the Nexys toolchain folder, inside the Nexys A7 support of Toolchain 1.0 (160 characters) and 1.1 (159), measured. */
 export const NEXYS_LONGEST_RELATIVE_PATH = 160;
 /** The longest relative path in the DE10-Lite managed tools (measured; Yosys' share folder). */
 export const DE10_LONGEST_RELATIVE_PATH = 120;

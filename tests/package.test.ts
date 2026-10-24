@@ -164,11 +164,16 @@ describe('VSIX content control (.vscodeignore)', () => {
 });
 
 describe('toolchain requirement and recipes', () => {
-    it('this macOS release requires toolchain 1.1 (validated); the 1.0 requirement is kept in requirement-1.0.json', async () => {
+    it('this release requires toolchain 1.1 (validated) for macOS ARM64 and Windows x64, each with its own record; the 1.0 requirement is kept in requirement-1.0.json', async () => {
         const req = JSON.parse(await readFile(join(REPO, 'toolchains', 'bundle', 'requirement.json'), 'utf8'));
         assert.deepEqual(validateRequirement(req), []);
         assert.equal(req.bundleVersion, '1.1');
-        assert.deepEqual(Object.keys(req.targets), ['darwin-arm64'], 'the macOS release; the Windows 1.0 record is requirement-1.0.json');
+        assert.deepEqual(Object.keys(req.targets), ['darwin-arm64', 'win32-x64'], 'one record per platform: neither overwrites the other');
+        assert.equal(req.targets['win32-x64'].status, 'validated');
+        assert.equal(req.targets['win32-x64'].archive, 'nexysvhdl-toolchain-1.1-win32-x64.tar.gz');
+        assert.match(req.targets['win32-x64'].treeSha256, /^[0-9a-f]{64}$/);
+        assert.notEqual(req.targets['win32-x64'].treeSha256, '57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b', 'not the 1.0 tree');
+        assert.equal(req.targets['darwin-arm64'].treeSha256, '0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28', 'the validated macOS 1.1 record is unchanged');
         assert.equal(req.targets['darwin-arm64'].status, 'validated');
         assert.equal(req.targets['darwin-arm64'].archive, 'nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz');
         assert.match(req.targets['darwin-arm64'].treeSha256, /^[0-9a-f]{64}$/);

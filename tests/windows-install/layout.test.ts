@@ -19,8 +19,9 @@ import { tmpdir } from 'node:os';
 
 const run = promisify(execFile);
 const LOCAL = 'C:\\Users\\student\\AppData\\Local';
-const MANIFEST = join(REPO, 'toolchains', 'mixfpga', 'toolchain-1.0-windows-x64.json');
-const EXPERIMENTAL = join(REPO, 'toolchains', 'experimental');
+const MANIFEST = join(REPO, 'toolchains', 'mixfpga', 'toolchain-1.1-windows-x64.json');
+// The tools of Toolchain 1.1 as scripts/mixfpga/assemble-windows-1.1.mjs builds them (outside git).
+const EXPERIMENTAL = join(REPO, '.artifacts', 'tools-1.1-windows');
 const code = async (f: string) => (await readFile(join(REPO, f), 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 describe('Windows runtime layout', () => {
@@ -29,7 +30,7 @@ describe('Windows runtime layout', () => {
         assert.equal(l.root, win32.join(LOCAL, 'MIX-FPGA'));
         assert.equal(l.nexysRoot, win32.join(l.root, 'support', 'nexys-a7'));
         assert.equal(l.nexysStateRoot, win32.join(l.root, 'state', 'nexys-a7'));
-        assert.equal(l.toolchainDir, win32.join(l.root, 'toolchains', '1.0', 'windows-x64'));
+        assert.equal(l.toolchainDir, win32.join(l.root, 'toolchains', '1.1', 'windows-x64'));
         assert.equal(l.jobsRoot, win32.join(l.root, 'staging', 'jobs'));
         assert.equal(l.installersDir, win32.join(l.root, 'staging', 'installers'));
         assert.equal(l.installStateFile, win32.join(l.root, 'state', 'install-state.json'));
@@ -76,7 +77,7 @@ describe('Windows runtime layout', () => {
 
 describe('Windows path-length preflight arithmetic', () => {
     it('the normal account root fits Windows\' limit for the Nexys tools with room to spare', () => {
-        const root = win32.join(LOCAL, 'MIX-FPGA', 'support', 'nexys-a7', 'toolchains', 'win32-x64', '1.0');
+        const root = win32.join(LOCAL, 'MIX-FPGA', 'support', 'nexys-a7', 'toolchains', 'win32-x64', '1.1');
         const c = checkPathLength(root, NEXYS_LONGEST_RELATIVE_PATH, false);
         assert.equal(c.ok, true);
         assert.equal(c.over, 0);
@@ -84,7 +85,7 @@ describe('Windows path-length preflight arithmetic', () => {
     });
 
     it('a deep root is detected, with the exact overshoot, and allowed when long paths are on', () => {
-        const root = `C:\\${'folder-name-that-is-long\\'.repeat(6)}MIX-FPGA\\support\\nexys-a7\\toolchains\\win32-x64\\1.0`;
+        const root = `C:\\${'folder-name-that-is-long\\'.repeat(6)}MIX-FPGA\\support\\nexys-a7\\toolchains\\win32-x64\\1.1`;
         const off = checkPathLength(root, NEXYS_LONGEST_RELATIVE_PATH, false);
         assert.equal(off.ok, false);
         assert.equal(off.over, root.length + 1 + NEXYS_LONGEST_RELATIVE_PATH - (MAX_PATH - 1));
@@ -113,10 +114,10 @@ describe('Windows installer independence', () => {
     });
 });
 
-describe('Windows Toolchain 1.0 manifest', () => {
+describe('Windows Toolchain 1.1 manifest', () => {
     it('the committed manifest is well formed and lists the two validated tools', async () => {
         const { toolchain } = await loadExpectedToolchain(MANIFEST);
-        assert.equal(toolchain.toolchainVersion, '1.0');
+        assert.equal(toolchain.toolchainVersion, '1.1');
         assert.equal(toolchain.target, 'windows-x64');
         assert.deepEqual(toolchain.units.filter((u) => u.kind === 'tool').map((u) => `${u.id} ${u.version}`), ['ghdl 6.0.0', 'yosys 0.63+173']);
         assert.deepEqual(toolchain.units.filter((u) => u.kind === 'support').map((u) => u.id), ['scripts', 'licenses', 'notices']);
@@ -132,18 +133,20 @@ describe('Windows Toolchain 1.0 manifest', () => {
             assert.ok(treeIsIdentical(d), `${id} differs from the recorded manifest: re-run scripts/mixfpga/record-toolchain-windows.mjs (${JSON.stringify(d)})`);
         };
         await check('scripts', join(REPO, 'platform', 'windows', 'scripts'));
-        const notices = join(REPO, 'toolchains', 'mixfpga', 'notices', 'windows-x64');
+        const notices = join(REPO, 'toolchains', 'mixfpga', 'notices', 'windows-x64-1.1');
         await check('licenses', join(notices, 'LICENSES'));
         await check('notices', join(notices, 'THIRD_PARTY_NOTICES.txt'));
     });
 
-    it('the notices stay marked DRAFT while the legal questions are open', async () => {
-        const text = await readFile(join(REPO, 'toolchains', 'mixfpga', 'notices', 'windows-x64', 'THIRD_PARTY_NOTICES.txt'), 'utf8');
-        assert.match(text.split('\n')[1]!, /DRAFT - NOT FOR REDISTRIBUTION/);
+    it('the Toolchain 1.1 notices are final: no DRAFT banner, every licence text present, no MISSING marker, termcap named GPL-2.0-or-later', async () => {
+        const text = await readFile(join(REPO, 'toolchains', 'mixfpga', 'notices', 'windows-x64-1.1', 'THIRD_PARTY_NOTICES.txt'), 'utf8');
+        assert.doesNotMatch(text, /DRAFT|NOT FOR REDISTRIBUTION|^\s*MISSING:|CANDIDATE/m);
+        assert.match(text, /GNU termcap[^\n]*\n  licence:    GPL-2\.0-or-later/);
+        assert.match(text, /5\. COMPLIANCE DECISIONS \(all resolved\)/);
     });
 });
 
-describe('real validated tools (skipped when toolchains/experimental is absent)', { skip: ONLY_WINDOWS }, () => {
+describe('real Toolchain 1.1 tools (skipped when .artifacts/tools-1.1-windows is absent)', { skip: ONLY_WINDOWS }, () => {
     it('install into an isolated root, then run from the installed location only, with nothing but the Windows folders on PATH', async (t) => {
         if (!(await stat(EXPERIMENTAL).then(() => true, () => false))) return t.skip('no development payload on this machine');
         const dir = await mkdtemp(join(tmpdir(), 'mixfpga real '));
@@ -153,7 +156,7 @@ describe('real validated tools (skipped when toolchains/experimental is absent)'
         });
         const expected = await loadExpectedToolchain(MANIFEST);
         const layout = resolveWindowsLayout({ env: { MIXFPGA_HOME: join(dir, 'MIX-FPGA') } });
-        const payload = windowsDevPayload({ toolsRoot: EXPERIMENTAL, scriptsDir: join(REPO, 'platform', 'windows', 'scripts'), noticesDir: join(REPO, 'toolchains', 'mixfpga', 'notices', 'windows-x64') });
+        const payload = windowsDevPayload({ toolsRoot: EXPERIMENTAL, scriptsDir: join(REPO, 'platform', 'windows', 'scripts'), noticesDir: join(REPO, 'toolchains', 'mixfpga', 'notices', 'windows-x64-1.1') });
         const ctx = { layout, expected, payload, host: { platform: 'win32', arch: 'x64' }, freeBytes: async () => 1e12 };
         const engine = new SetupEngine(windowsToolchainDefinitions(ctx, 'full'), new InstallStateStore(layout.installStateFile, layout.lockFile));
         const r = await engine.run();

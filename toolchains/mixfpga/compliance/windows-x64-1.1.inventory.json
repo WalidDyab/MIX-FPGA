@@ -1,0 +1,872 @@
+{
+  "schemaVersion": 1,
+  "product": "MIX-FPGA",
+  "toolchainVersion": "1.1",
+  "target": "windows-x64",
+  "status": "FINAL",
+  "statusReason": "Toolchain 1.1 for Windows: final redistribution notices (Phase 5H). The technical review is complete; this is not a legal opinion.",
+  "howToRead": {
+    "status": {
+      "verified": "Checked directly against the files of this payload (hashes, file headers, PE import tables, embedded strings).",
+      "inherited": "Taken from the NexysVHDL Toolchain 1.0 compliance review for Windows (toolchains/compliance/toolchain-1.0.json, win32-x64). The payload files are byte-identical (sha256) to that toolchain's files, so the review applies to them.",
+      "pending": "Known to be required, not collected yet.",
+      "unclear": "A legal or provenance question we cannot answer from the files; reported, not guessed."
+    },
+    "licenseTexts.from": "payload:<unit>/<path> = verbatim copy of a file inside the payload; repo:<path> = verbatim copy of a text curated by the compliance review (toolchains/compliance, toolchains/bundle, hashes in SOURCES.md); extract:<unit>/<path>#<first>-<last> = those lines of a payload file, verbatim (the licence is the file's own header)."
+  },
+  "provenance": {
+    "ghdl": "The GHDL tree of the validated Windows Toolchain 1.0 (official ghdl-mcode-6.0.0-ucrt64.zip) with the Toolchain 1.1 omissions (the same GHDL as in the Nexys A7 support 1.1 archive).",
+    "yosys": "yosys.exe and its DLL closure copied from apio/packages/oss-cad-suite (bin/yosys.exe, lib/*.dll, share/yosys) of the Nexys A7 support 1.1 archive; every file is byte-identical to the file of that archive."
+  },
+  "components": [
+    {
+      "id": "ghdl-program",
+      "unit": "ghdl",
+      "name": "GHDL (ghdl, ghwdump)",
+      "version": "6.0.0 (mcode backend, MSYS2 UCRT64 build, GNAT 15.2.0)",
+      "kind": "program",
+      "role": "VHDL check, simulation, VHDL-to-netlist synthesis",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "bin/ghdl.exe",
+        "bin/ghwdump.exe"
+      ],
+      "usage": "Run by MIX-FPGA (Check, Simulate, Design/RTL Schematic).",
+      "linking": "Executable. Statically contains the mcode code generator and the GNAT Ada runtime; imports libgcc_s_seh-1.dll and zlib1.dll from its own folder and Windows system DLLs only.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ghdl/GHDL-COPYING.md",
+          "from": "repo:toolchains/bundle/licenses-1.1/GHDL-COPYING.md"
+        },
+        {
+          "dest": "ghdl/GPL-2.0.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/GPL-2.0.txt"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0",
+          "url": "https://github.com/ghdl/ghdl",
+          "revision": "e589c698c351369ac5bcfe7abe1f1152ac5d4727",
+          "archive": "ghdl-6.0.0.tar.gz",
+          "sha256": "3a4eb9515602e9c499a71630417ff805b3818e81e8a4e042ded5648c1db53719",
+          "note": "The revision matches the version string of the shipped binary (…ge589c698c). Archive as pinned by the NexysVHDL source lock."
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": [],
+      "evidence": "Official release asset ghdl-mcode-6.0.0-ucrt64.zip (sha256 76e160ce…0e41), unmodified apart from the omissions listed under \"modifications\". The release is built by GHDL's own CI from tag v6.0.0 on MSYS2 UCRT64 with GNAT 15.2.0 (see the file ghdl/ucrt64.requirements in the Nexys archive: mingw-w64-ucrt-x86_64-gcc-ada)."
+    },
+    {
+      "id": "gnat-gcc-runtime",
+      "unit": "ghdl",
+      "name": "GNAT / GCC runtime libraries",
+      "version": "GCC runtime (see evidence)",
+      "kind": "library",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "claims": [
+        "lib/libgnat-15.dll",
+        "lib/libgcc_s_seh-1.dll",
+        "bin/libgcc_s_seh-1.dll"
+      ],
+      "usage": "libgcc_s_seh-1.dll is loaded by ghdl.exe; libgnat-15.dll only by libghdl, which MIX-FPGA does not use.",
+      "linking": "DLLs beside the programs (replaceable files).",
+      "obligation": {
+        "class": "runtime-exception",
+        "licenseText": true,
+        "notice": true,
+        "source": "none-required-by-exception",
+        "note": "Section 1 of the GCC Runtime Library Exception permits propagating the Target Code under terms of our choice when combined with Independent Modules; the runtime's own source is not required by the exception text."
+      },
+      "licenseTexts": [
+        {
+          "dest": "gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/GCC-RUNTIME-EXCEPTION-3.1.txt"
+        },
+        {
+          "dest": "gcc-runtime/GPL-3.0.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/GPL-3.0.txt"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "winpthreads-ghdl",
+      "unit": "ghdl",
+      "name": "mingw-w64 winpthreads (libwinpthread-1)",
+      "version": "MSYS2 UCRT64 build shipped in the GHDL zip",
+      "kind": "library",
+      "license": "MIT AND BSD-3-Clause",
+      "claims": [
+        "bin/libwinpthread-1.dll",
+        "lib/libwinpthread-1.dll"
+      ],
+      "usage": "Loaded by libgcc_s_seh-1.dll.",
+      "linking": "DLL beside the program.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "winpthreads/COPYING",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-winpthreads/COPYING",
+          "note": "mingw-w64 licence text as shipped by the mingw64-winpthreads package (same project and licence terms as the MSYS2 build in the GHDL zip)"
+        },
+        {
+          "dest": "winpthreads/winpthreads-COPYING",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-winpthreads/winpthreads-COPYING"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": [],
+      "evidence": "The text was missing from the Toolchain 1.0 notices (open item of Phase 4C); it is shipped now."
+    },
+    {
+      "id": "zlib-ghdl",
+      "unit": "ghdl",
+      "name": "zlib (zlib1.dll)",
+      "version": "MSYS2 UCRT64 build shipped in the GHDL zip",
+      "kind": "library",
+      "license": "Zlib",
+      "claims": [
+        "bin/zlib1.dll"
+      ],
+      "usage": "Loaded by ghdl.exe.",
+      "linking": "DLL beside the program.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "zlib/ghdl-zlib-LICENSE.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/zlib-LICENSE.txt"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ghdl-libs",
+      "unit": "ghdl",
+      "name": "libghdl, libghdlvpi, libghdl.a",
+      "version": "6.0.0",
+      "kind": "library",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "lib/libghdl-6_0_0.dll",
+        "lib/libghdlvpi.dll",
+        "lib/libghdl.a",
+        "lib/libghdl.link"
+      ],
+      "usage": "Shipped; not used by MIX-FPGA (it runs the ghdl executable).",
+      "linking": "DLL files.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0",
+          "note": "same source as ghdl-program"
+        }
+      ],
+      "status": "inherited",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "libghw",
+      "unit": "ghdl",
+      "name": "libghw (GHDL waveform library) and its header",
+      "version": "6.0.0",
+      "kind": "library",
+      "license": "LGPL-2.1-or-later",
+      "claims": [
+        "lib/libghw.dll",
+        "include/ghdl/libghw.h"
+      ],
+      "evidence": "libghw.h states LGPL 2.1 or later.",
+      "usage": "Shipped; not used by MIX-FPGA.",
+      "obligation": {
+        "class": "weak-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "library-source-and-replaceability"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ghdl/LGPL-2.1.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/LGPL-2.1.txt"
+        }
+      ],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0",
+          "note": "same source as ghdl-program"
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": [
+        "L9"
+      ]
+    },
+    {
+      "id": "vhpi-header",
+      "unit": "ghdl",
+      "name": "vhpi_user.h (IEEE P1076 WG)",
+      "version": "2019",
+      "kind": "documentation",
+      "license": "Apache-2.0",
+      "claims": [
+        "include/ghdl/vhpi_user.h"
+      ],
+      "evidence": "Header: Copyright 2019 IEEE P1076 WG Authors, Apache License, Version 2.0. The headers vpi_user.h, synth_gates.h and synth.h (no licence statement) are removed in Toolchain 1.1.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ieee-p1076/Apache-2.0.txt",
+          "from": "payload:ghdl/lib/ghdl/src/ieee2008/LICENSE",
+          "note": "Apache-2.0 text distributed by the IEEE P1076 WG with its libraries"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ghdl-std-library",
+      "unit": "ghdl",
+      "name": "VHDL STD library (standard, textio, env) and its compiled form",
+      "version": "6.0.0",
+      "kind": "data",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "lib/ghdl/src/std/**",
+        "lib/ghdl/std/**"
+      ],
+      "evidence": "textio and env sources carry GHDL's GPL (2 or later) header; standard.vhdl carries no header. GHDL's documentation for v6.0.0 (doc/licenses.rst) states that std.textio and the runtime library GRT are GPLv2 and that an executable produced by GHDL may not be distributed without the VHDL sources; MIX-FPGA runs simulations in memory and distributes no student executables. The notices tell students.",
+      "usage": "Read by ghdl on every Check/Simulate.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0"
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ieee-2008-library",
+      "unit": "ghdl",
+      "name": "IEEE 1076-2008 packages and the Apache-licensed math packages (IEEE P1076 WG)",
+      "version": "2019 files",
+      "kind": "data",
+      "license": "Apache-2.0",
+      "claims": [
+        "lib/ghdl/src/ieee2008/**"
+      ],
+      "evidence": "Every file carries Copyright 2019 IEEE P1076 WG Authors, Apache License, Version 2.0; the Apache text is shipped as src/ieee2008/LICENSE. The 1.1 payload keeps only the 2008 packages (the 1995 sets that GHDL builds for VHDL-87/93, VITAL and UPF are removed).",
+      "usage": "Read by ghdl on every Check/Simulate.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "ieee-p1076/Apache-2.0.txt",
+          "from": "payload:ghdl/lib/ghdl/src/ieee2008/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "synopsys-libraries",
+      "unit": "ghdl",
+      "name": "Synopsys std_logic_arith / unsigned / signed / misc packages",
+      "version": "1990-1992",
+      "kind": "data",
+      "license": "LicenseRef-Synopsys-permissive",
+      "claims": [
+        "lib/ghdl/src/synopsys/**"
+      ],
+      "evidence": "Header: Copyright (c) 1990, 1991, 1992 by Synopsys, Inc. … may be used and distributed without restriction provided that this copyright statement is not removed from the file and that any derivative work contains this copyright notice.",
+      "usage": "Used by designs that use std_logic_arith / std_logic_unsigned.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none",
+        "note": "Keep the copyright statement in the files (they are shipped unchanged)."
+      },
+      "licenseTexts": [
+        {
+          "dest": "synopsys/std_logic_arith-header.txt",
+          "from": "extract:ghdl/lib/ghdl/src/synopsys/std_logic_arith.vhdl#1-12"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ieee-compiled",
+      "unit": "ghdl",
+      "name": "Compiled IEEE 2008 and 2019 library indexes (GHDL .cf files)",
+      "version": "6.0.0",
+      "kind": "data",
+      "license": "derived from ieee-2008-library and synopsys-libraries (same terms apply)",
+      "claims": [
+        "lib/ghdl/ieee/**"
+      ],
+      "evidence": "Regenerated by GHDL itself from the remaining sources with the upstream rules of libraries/Makefile.inc (scripts/toolchain/ghdl-prune.mjs --check reproduces them); they contain no 1995, VITAL or UPF unit.",
+      "obligation": {
+        "class": "unclear",
+        "licenseText": false,
+        "notice": false,
+        "source": "none"
+      },
+      "licenseTexts": [],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "ghdl-vendor-scripts",
+      "unit": "ghdl",
+      "name": "GHDL vendor-library compile scripts and ansi_color.sh",
+      "version": "6.0.0",
+      "kind": "scripts",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "lib/ghdl/vendors/**",
+        "lib/ghdl/ansi_color.sh"
+      ],
+      "evidence": "Headers: Copyright (C) 2015-2026 Patrick Lehmann … GNU General Public License, either version 2 of the License, or (at your option) any later version. vendors/README.md and config files carry no header.",
+      "usage": "Shipped; not used by MIX-FPGA.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source"
+      },
+      "licenseTexts": [],
+      "sources": [
+        {
+          "id": "ghdl-6.0.0"
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "yosys-program",
+      "unit": "yosys",
+      "name": "Yosys",
+      "version": "0.63+173 (git 66306a8ca-dirty, x86_64-w64-mingw32-g++ 13.2.1)",
+      "kind": "program",
+      "role": "RTL Schematic (read GHDL netlist, proc, write JSON)",
+      "license": "ISC",
+      "claims": [
+        "bin/yosys.exe",
+        "share/yosys/**"
+      ],
+      "usage": "Run by MIX-FPGA (RTL Schematic).",
+      "linking": "Executable, dynamically linked to readline (and through it termcap), libffi, Tcl, zlib, libstdc++ and libgcc shipped in the same folder; statically contains several third-party libraries (see yosys-embedded-libs).",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source",
+        "note": "Permissive itself, but the program is distributed linked with GPL-3.0-or-later Readline (see L3), so the complete corresponding source of the combined program is provided."
+      },
+      "licenseTexts": [
+        {
+          "dest": "yosys/LICENSE.yosys",
+          "from": "repo:toolchains/bundle/licenses-1.1/yosys-COPYING.txt"
+        }
+      ],
+      "sources": [
+        {
+          "id": "oss-yosys",
+          "url": "https://github.com/YosysHQ/yosys",
+          "revision": "66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2",
+          "archive": "oss-yosys.tar.gz",
+          "sha256": "649a106a04cf19e5688993707694a8e855636d60b5d8a90310c4ec208cf54e5d",
+          "note": "As pinned by the NexysVHDL source lock; includes the abc and cxxopts submodules."
+        },
+        {
+          "id": "yosyshq-oss-cad-suite-build-2026-03-24",
+          "url": "https://github.com/YosysHQ/oss-cad-suite-build",
+          "revision": "ac8c7dba",
+          "note": "The YosysHQ build recipe of the release the Windows package was built from (windows-x64 build in the image yosyshq/cross-windows-x64:2.3)."
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": [
+        "L3"
+      ],
+      "evidence": "The \"-dirty\" suffix is the recipe's compiler-name sed on the tracked Makefile (docs/phase5c-l4-yosys-rebuild.md): reproduced on the pinned commit; the Windows binary is the unmodified YosysHQ release file (oss-cad-suite 2026-03-24 build via FPGAwars tools-oss-cad-suite 2026-09-15), not rebuilt by MIX-FPGA. The same pinned source commit as the macOS binary."
+    },
+    {
+      "id": "yosys-embedded-libs",
+      "unit": "yosys",
+      "name": "Libraries compiled into the yosys executable",
+      "version": "per Yosys source tree",
+      "kind": "embedded",
+      "embeddedIn": [
+        "yosys-program"
+      ],
+      "license": "ISC (ezSAT, subcircuit); MIT (MiniSat, json11, fstapi, cxxopts); public domain (sha1, BigInteger); Berkeley (ABC)",
+      "evidence": "Identified from the Yosys source tree at 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 (libs/ and the abc submodule b4a657e75b16b68c514a7326642ea074f8460939); the licence texts and headers are shipped.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source (part of the Yosys source archives)"
+      },
+      "licenseTexts": [
+        {
+          "dest": "yosys-libs/minisat-LICENSE.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/minisat-LICENSE.txt"
+        },
+        {
+          "dest": "yosys-libs/cxxopts-LICENSE.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/cxxopts-LICENSE.txt"
+        },
+        {
+          "dest": "yosys-libs/abc-copyright.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/abc-copyright.txt"
+        },
+        {
+          "dest": "yosys-libs/json11-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/json11-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/fstapi-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/fstapi-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/ezsat-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/ezsat-license-header.txt"
+        },
+        {
+          "dest": "yosys-libs/subcircuit-license-header.txt",
+          "from": "repo:toolchains/mixfpga/compliance/yosys-libs/subcircuit-license-header.txt"
+        }
+      ],
+      "sources": [
+        {
+          "id": "oss-yosys"
+        }
+      ],
+      "status": "inherited",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "readline",
+      "unit": "yosys",
+      "name": "GNU Readline",
+      "version": "8.2 (mingw64-readline 8.2-3.fc39)",
+      "kind": "library",
+      "license": "GPL-3.0-or-later",
+      "claims": [
+        "bin/libreadline8.dll"
+      ],
+      "usage": "Loaded by yosys.exe at start-up (and, in the Nexys package, by vvp.exe).",
+      "linking": "DLL beside the program.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source",
+        "note": "GPLv3 applies to the combined yosys program as distributed; Yosys's ISC licence is GPL-compatible."
+      },
+      "licenseTexts": [
+        {
+          "dest": "readline/COPYING",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-readline/COPYING",
+          "note": "GPL-3.0 text from the mingw64-readline package"
+        }
+      ],
+      "sources": [
+        {
+          "id": "fedora-srpm-mingw-readline-8.2-3.fc39",
+          "url": "https://kojipkgs.fedoraproject.org/packages/mingw-readline/8.2/3.fc39/src/mingw-readline-8.2-3.fc39.src.rpm",
+          "note": "Fedora source package of mingw64-readline 8.2-3.fc39 (GNU Readline 8.2 with Fedora's patches): the DLL libreadline8.dll is its binary."
+        }
+      ],
+      "status": "inherited",
+      "openItems": [],
+      "flags": [
+        "L3",
+        "L9"
+      ],
+      "evidence": "The SHA-256 of libreadline8.dll equals the file digest in the RPM header of mingw64-readline 8.2-3.fc39 (compliance manifest, group ocs-fedora-readline); the copy in this payload is byte-identical to that file of the Nexys package."
+    },
+    {
+      "id": "termcap",
+      "unit": "yosys",
+      "name": "GNU termcap",
+      "version": "1.3.1 (mingw64-termcap 1.3.1-34.fc39)",
+      "kind": "library",
+      "license": "GPL-2.0-or-later",
+      "claims": [
+        "bin/libtermcap-0.dll"
+      ],
+      "usage": "Loaded by libreadline8.dll.",
+      "linking": "DLL beside the program.",
+      "obligation": {
+        "class": "strong-copyleft",
+        "licenseText": true,
+        "notice": true,
+        "source": "corresponding-source",
+        "note": "GPL-2.0-or-later combines with GPL-3.0-or-later Readline under GPL version 3; the Toolchain 1.0 notices called it \"MIT-style\" (wrong); the licence text is shipped now."
+      },
+      "licenseTexts": [
+        {
+          "dest": "termcap/COPYING",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-termcap/COPYING"
+        }
+      ],
+      "sources": [
+        {
+          "id": "fedora-srpm-mingw-termcap-1.3.1-34.fc39",
+          "url": "https://kojipkgs.fedoraproject.org/packages/mingw-termcap/1.3.1/34.fc39/src/mingw-termcap-1.3.1-34.fc39.src.rpm",
+          "note": "Fedora source package of mingw64-termcap 1.3.1-34.fc39: libtermcap-0.dll is its binary."
+        }
+      ],
+      "status": "verified",
+      "openItems": [],
+      "flags": [
+        "L3"
+      ],
+      "evidence": "The SHA-256 of libtermcap-0.dll equals the file digest in the RPM header of mingw64-termcap 1.3.1-34.fc39 (compliance manifest, group ocs-fedora-termcap)."
+    },
+    {
+      "id": "libffi",
+      "unit": "yosys",
+      "name": "libffi",
+      "version": "3.4.4 (mingw64-libffi 3.4.4-3.fc39)",
+      "kind": "library",
+      "license": "MIT",
+      "claims": [
+        "bin/libffi-8.dll"
+      ],
+      "usage": "Loaded by yosys.exe at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "libffi/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-libffi/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "openItems": [],
+      "flags": [],
+      "evidence": "The libffi text was missing from the Toolchain 1.0 notices (open item of Phase 4C); it is shipped now."
+    },
+    {
+      "id": "tcl",
+      "unit": "yosys",
+      "name": "Tcl (tcl86.dll)",
+      "version": "8.6.12 (mingw64-tcl 8.6.12-6.fc39)",
+      "kind": "library",
+      "license": "TCL (Tcl/Tk licence)",
+      "claims": [
+        "bin/tcl86.dll"
+      ],
+      "usage": "Loaded by yosys.exe at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "tcl/license.terms",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-tcl/license.terms"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "zlib-yosys",
+      "unit": "yosys",
+      "name": "zlib (bundled copy)",
+      "version": "1.2.13 (mingw64-zlib 1.2.13-3.fc39)",
+      "kind": "library",
+      "license": "Zlib",
+      "claims": [
+        "bin/zlib1.dll"
+      ],
+      "usage": "Loaded by yosys.exe at start-up.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "zlib/LICENSE",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-zlib/LICENSE"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "winpthreads-yosys",
+      "unit": "yosys",
+      "name": "mingw-w64 winpthreads (libwinpthread-1)",
+      "version": "11.0.0 (mingw64-winpthreads 11.0.0-2.fc39)",
+      "kind": "library",
+      "license": "MIT AND BSD-3-Clause",
+      "claims": [
+        "bin/libwinpthread-1.dll"
+      ],
+      "usage": "Loaded by yosys.exe and libgcc_s_seh-1.dll.",
+      "obligation": {
+        "class": "permissive",
+        "licenseText": true,
+        "notice": true,
+        "source": "none"
+      },
+      "licenseTexts": [
+        {
+          "dest": "winpthreads/COPYING",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-winpthreads/COPYING"
+        },
+        {
+          "dest": "winpthreads/winpthreads-COPYING",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-winpthreads/winpthreads-COPYING"
+        }
+      ],
+      "sources": [],
+      "status": "inherited",
+      "openItems": [],
+      "flags": []
+    },
+    {
+      "id": "gcc-runtime-yosys",
+      "unit": "yosys",
+      "name": "GCC C++ and GCC runtime libraries (libstdc++-6, libgcc_s_seh-1)",
+      "version": "13.2.1 (mingw64-gcc 13.2.1-5.fc39)",
+      "kind": "library",
+      "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+      "claims": [
+        "bin/libstdc++-6.dll",
+        "bin/libgcc_s_seh-1.dll"
+      ],
+      "usage": "Loaded by yosys.exe.",
+      "linking": "DLLs beside the programs (replaceable files).",
+      "obligation": {
+        "class": "runtime-exception",
+        "licenseText": true,
+        "notice": true,
+        "source": "none-required-by-exception",
+        "note": "Section 1 of the GCC Runtime Library Exception permits propagating the Target Code under terms of our choice when combined with Independent Modules; the runtime's own source is not required by the exception text."
+      },
+      "licenseTexts": [
+        {
+          "dest": "gcc-runtime/GCC-RUNTIME-EXCEPTION-3.1.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/GCC-RUNTIME-EXCEPTION-3.1.txt"
+        },
+        {
+          "dest": "gcc-runtime/GPL-3.0.txt",
+          "from": "repo:toolchains/bundle/licenses-1.1/GPL-3.0.txt"
+        },
+        {
+          "dest": "gcc-runtime/libstdcxx-COPYING.RUNTIME",
+          "from": "repo:toolchains/compliance/licenses/win32-x64/ocs-fedora-libstdcxx/COPYING.RUNTIME"
+        }
+      ],
+      "sources": [],
+      "status": "verified",
+      "openItems": [],
+      "flags": []
+    }
+  ],
+  "notRedistributed": [
+    {
+      "id": "altera-quartus",
+      "name": "Altera Quartus Prime Lite Edition 25.1std.0 Build 1129 and the MAX 10 device package (max10-25.1std.0.1129.qdz), and Altera's USB-Blaster driver",
+      "owner": "Altera",
+      "treatment": "Supplied by the student from Altera's official download; MIX-FPGA copies the student's files, requires the student's explicit acceptance of Altera's licence before passing --accept_eula, and installs them only on that student's own computer (Windows asks for permission once). Never part of any MIX-FPGA download. The USB-Blaster driver is Altera's and Windows'; MIX-FPGA never installs or changes a driver."
+    },
+    {
+      "id": "digilent-adept",
+      "name": "Digilent Adept Runtime and Utilities",
+      "owner": "Digilent",
+      "treatment": "Only needed for the Nexys A7. Installed by the student from Digilent's own download page under Digilent's licence; MIX-FPGA neither bundles nor redistributes it. MIX-FPGA only looks for djtgcfg.exe."
+    },
+    {
+      "id": "windows-system",
+      "name": "Windows system libraries (kernel32, msvcrt, ucrt, dbghelp, advapi32, user32, ws2_32, shlwapi …)",
+      "owner": "Microsoft",
+      "treatment": "Present on every Windows computer; referenced by the shipped programs, not shipped."
+    }
+  ],
+  "legalFlags": [
+    {
+      "id": "L1",
+      "severity": "needs-decision",
+      "title": "IEEE 1076.3-1995 packages: 'may not be sold or distributed for profit'",
+      "detail": "GHDL ships the VHDL-87/93 numeric_bit and numeric_std sources (and their compiled form) under IEEE's 1995 terms: distributable unchanged, not for profit.",
+      "status": "resolved",
+      "resolution": "Removed in Toolchain 1.1: the VHDL-87/93 IEEE libraries (with the IEEE 1076.3-1995 numeric_bit/numeric_std packages) are no longer shipped. MIX-FPGA runs only --std=08 (core/vhdl/ghdl/ghdl-provider.ts, the same code on Windows and macOS)."
+    },
+    {
+      "id": "L2",
+      "severity": "needs-decision",
+      "title": "VITAL and UPF packages have no licence statement in their files",
+      "detail": "The VITAL-95, VITAL-2000 and UPF sources carry no licence statement.",
+      "status": "resolved",
+      "resolution": "Removed in Toolchain 1.1; the 2008/2019 library indexes were regenerated by GHDL itself."
+    },
+    {
+      "id": "L3",
+      "severity": "blocking-release",
+      "title": "Yosys is distributed linked with GPL-3.0-or-later Readline (and GPL-2.0-or-later termcap)",
+      "detail": "yosys.exe imports libreadline8.dll, which imports libtermcap-0.dll.",
+      "status": "resolved",
+      "resolution": "Technically resolved (Phase 5H, Windows): each program that loads Readline is distributed with it under GPL version 3 with the GPLv3 text, the complete Corresponding Source of both (the pinned Yosys source and the Fedora source packages of mingw64-readline 8.2-3.fc39 and mingw64-termcap 1.3.1-34.fc39) and the build recipe in the source package; Readline and termcap stay separate, replaceable DLL files. The Windows footprint was established from the import tables of all 571 PE files of the toolchain (only yosys.exe and vvp.exe load Readline; none loads it through Python)."
+    },
+    {
+      "id": "L4",
+      "severity": "needs-decision",
+      "title": "Yosys source of the exact binary, and notices of libraries compiled into it",
+      "detail": "The Windows binary reports 66306a8ca-dirty.",
+      "status": "resolved",
+      "resolution": "Technically resolved: the same pinned commit as macOS (66306a8c with the abc and cxxopts submodules), the YosysHQ recipe that explains the -dirty suffix, and the licence texts of the libraries compiled into Yosys are in the source package and notices. The Windows binary is the unmodified YosysHQ release file; a bit-identical rebuild is not claimed."
+    },
+    {
+      "id": "L6",
+      "severity": "minor",
+      "title": "GHDL build recipe and GCC/GNAT runtime origin",
+      "detail": "Where do the GHDL runtime DLLs come from?",
+      "status": "resolved",
+      "resolution": "Recorded: the official GHDL release ghdl-mcode-6.0.0-ucrt64.zip, built by GHDL's CI from tag v6.0.0 on MSYS2 UCRT64 with GNAT 15.2.0 (the GCC Runtime Library Exception applies to libgnat and libgcc_s)."
+    },
+    {
+      "id": "L7",
+      "severity": "minor",
+      "title": "Does GHDL's GPL reach students' simulation output?",
+      "detail": "GRT and std.textio are GPLv2.",
+      "status": "resolved",
+      "resolution": "MIX-FPGA runs simulations in memory and distributes no student executables; the notices tell students that an executable produced with GHDL needs its VHDL sources if distributed."
+    },
+    {
+      "id": "L8",
+      "severity": "minor",
+      "title": "Headers without a licence statement (vpi_user.h, synth_gates.h)",
+      "detail": "Two GHDL plugin-development headers carry no licence statement.",
+      "status": "resolved",
+      "resolution": "Removed in Toolchain 1.1 together with synth.h, which includes one of them; nothing uses them."
+    },
+    {
+      "id": "L9",
+      "severity": "needs-decision",
+      "title": "Integrity enforcement versus the right to replace LGPL/GPL libraries",
+      "detail": "MIX-FPGA verifies the installed files against recorded hashes.",
+      "status": "resolved",
+      "resolution": "Resolved by behaviour (Phase 5D, implemented for Windows in Phase 5H): a changed but complete toolchain is reported as installed but modified and stays fully usable; nothing is restored unless the student chooses Repair; missing or broken files are a repair case."
+    }
+  ],
+  "sourceOffer": {
+    "status": "No written offer: the complete corresponding-source package MIX-FPGA-DE10-Lite-Support-1.1-Windows-x64-Sources accompanies the binaries at the same place and time, and the notices say where it is. The source package is offered at the same place and time as the binary archive, so access to the source is equivalent to access to the binary.",
+    "mustProvideForRelease": [
+      "GHDL 6.0.0 source at e589c698c351369ac5bcfe7abe1f1152ac5d4727 (ghdl-6.0.0.tar.gz) with its libraries and scripts.",
+      "Yosys source at 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2 with its abc and cxxopts submodules, and the YosysHQ build recipe (oss-cad-suite-build ac8c7dba).",
+      "The Fedora source packages of mingw64-readline 8.2-3.fc39 (GNU Readline 8.2) and mingw64-termcap 1.3.1-34.fc39 (GNU termcap 1.3.1), so the GPL libraries can be rebuilt and replaced."
+    ],
+    "notRequired": [
+      "libffi, Tcl, zlib, winpthreads (permissive), the GCC runtime libraries and libgnat (GCC Runtime Library Exception), the IEEE 2008 packages (Apache-2.0)."
+    ]
+  },
+  "modifications": [
+    "Removed the VHDL-87 and VHDL-93 IEEE libraries (lib/ghdl/ieee/v87, lib/ghdl/ieee/v93 and lib/ghdl/src/ieee): they contain the IEEE 1076.3-1995 numeric_bit and numeric_std sources, which may be distributed only unchanged and not sold or distributed for profit.",
+    "Removed the VITAL-95 and VITAL-2000 packages (lib/ghdl/src/vital95, lib/ghdl/src/vital2000) and the UPF package (lib/ghdl/src/upf), whose licence is not established.",
+    "Regenerated the GHDL 2008 and 2019 IEEE library indexes (lib/ghdl/ieee/v08/ieee-obj08.cf, lib/ghdl/ieee/v19/ieee-obj19.cf) with GHDL itself, using the upstream rules of libraries/Makefile.inc without the removed packages (scripts/toolchain/ghdl-prune.mjs); the analysis timestamps of the upstream release are kept.",
+    "Removed the GHDL plugin-development headers include/ghdl/vpi_user.h, synth_gates.h and synth.h: vpi_user.h and synth_gates.h carry no licence statement, nothing uses them at run time (they are only needed to compile a GHDL plugin), and synth.h includes synth_gates.h.",
+    "Added the licence texts of the libraries compiled into the yosys executable, and the licence texts that the Toolchain 1.0 notices marked MISSING (libffi, libwinpthread) or described wrongly (termcap is GPL-2.0-or-later, not MIT-style).",
+    "MIX-FPGA always runs GHDL with --std=08. A design that uses the removed packages gets a normal \"unit not found\" error."
+  ],
+  "licenceNotes": [
+    {
+      "title": "Yosys and GNU Readline (with GNU termcap)",
+      "text": [
+        "yosys.exe (Yosys, ISC licence) loads GNU Readline 8.2 (yosys/bin/libreadline8.dll, GPL-3.0-or-later) at run time, and Readline loads GNU termcap 1.3.1 (yosys/bin/libtermcap-0.dll, GPL-2.0-or-later). MIX-FPGA distributes each of these together under the terms of the GNU General Public License version 3 (the GPL-3.0 text is in LICENSES/gcc-runtime/); Yosys' own licence is in LICENSES/yosys/. Readline and termcap are separate DLL files that you can replace.",
+        "Yosys 0.63+173 (commit 66306a8ca34cb1dcdafe12a5838fa8f0c1a7f4c2, with its abc and cxxopts submodules), the Fedora source packages of mingw64-readline 8.2-3.fc39 and mingw64-termcap 1.3.1-34.fc39 and the YosysHQ build recipe are in the source package. Libraries compiled into Yosys keep their own licences (ISC, MIT, public domain, Berkeley), which are in LICENSES/yosys-libs/."
+      ]
+    }
+  ],
+  "replacementNotice": [
+    "The GPL and LGPL components (GNU Readline, GNU termcap, libghw) are separate DLL files, loaded at run time. You may replace them with your own builds made from the corresponding source, which is in the source package, for your own use, and reverse-engineer them for debugging. The installed files are ordinary files in your own user folder: replace a file and keep using the toolchain; nothing has to be signed on Windows. The tools keep working with replaced files.",
+    "If you change a file of the installed toolchain, MIX-FPGA reports the toolchain as modified and unverified: \"This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version.\"",
+    "  - MIX-FPGA does not silently overwrite or delete your changes; it only reads the files to report their state (Setup, Verify).",
+    "  - You may continue using the modified toolchain: creating projects, checking, simulating, building and programming all keep working.",
+    "  - Repair is optional and explicit: it asks first, and then restores the supported MIX-FPGA release copy of the files that differ.",
+    "  - A missing or unusable part is reported as needing repair, not as modified.",
+    "The integrity check is a support aid, not a technical restriction. A configuration with changed files is not the verified one and is not supported."
+  ]
+}

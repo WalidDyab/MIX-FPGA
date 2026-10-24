@@ -6,6 +6,7 @@ import type { ComponentDefinition, ComponentStatus, Inspection } from '../../../
 import type { ToolRunner } from '../../../core/process/tool-runner';
 import type { ToolchainRequirement } from '../../../core/toolchain/store';
 import { ArchivePayload } from '../../shared/install/archive-payload';
+import { type PayloadPin, PickedArchivePayload, type SupportFileProblem, checkSupportFile, supportFileMessage } from '../../macos/install/de10-support-file';
 import type { LoadedExpected } from '../../shared/install/expected';
 import type { PayloadSource } from '../../shared/install/payload';
 import { acceptanceFor } from '../../shared/install/quartus-vendor';
@@ -27,9 +28,9 @@ export interface WindowsSetupDeps {
     readonly expected: LoadedExpected;
     /** Folder source of the DE10-Lite tools (installer development). Used when no payload archive is available. */
     readonly payload: PayloadSource | undefined;
-    /** Folder holding the support archives (see toolchains/mixfpga/payloads-1.0-windows-x64.json); each is checked against its pinned sha256. */
+    /** Folder holding the support archives (see toolchains/mixfpga/payloads-1.1-windows-x64.json); each is checked against its pinned sha256. */
     readonly payloadDir?: string;
-    readonly payloadPins?: Readonly<Record<string, { readonly file: string; readonly sha256: string }>>;
+    readonly payloadPins?: Readonly<Record<string, PayloadPin>>;
     /** Nexys A7 support: the validated toolchain requirement, its MIX-FPGA store, and NexysVHDL stores it may reuse or take over. */
     readonly nexys?: { readonly requirement: ToolchainRequirement; readonly dataRoot: string; readonly legacyRoots: readonly string[] };
     readonly runner: ToolRunner;
@@ -66,7 +67,10 @@ export class WindowsSetupController {
     private readonly engine: NativeQuartusEngine;
     private readonly quartus: WindowsQuartusSetup;
     private askNexys: (() => Promise<string | undefined>) | undefined;
-    private de10Archive: ArchivePayload | undefined;
+    private de10Archive: ArchivePayload | PickedArchivePayload | undefined;
+    private de10Picked: PickedArchivePayload | undefined;
+    /** Why the Nexys A7 support file the student chose was not used (cancelled, wrong file, damaged), for the message. */
+    private nexysProblem: SupportFileProblem | undefined;
 
     constructor(private readonly deps: WindowsSetupDeps) {
         this.spec = deps.quartusSpec ?? WINDOWS_QUARTUS_SPEC;
@@ -93,8 +97,21 @@ export class WindowsSetupController {
             archive: async (): Promise<NexysArchive | undefined> => {
                 const pinned = await this.pinnedArchive('nexys-a7-100t');
                 if (pinned) return pinned;
+                this.nexysProblem = undefined;
                 const chosen = await this.askNexys?.();
-                return chosen ? { path: chosen } : undefined;
+                if (!chosen) {
+                    this.nexysProblem = 'cancelled';
+                    return undefined;
+                }
+                // The file's identity is its pinned sha256; a wrong or damaged file is refused before anything is extracted.
+                const pin = this.deps.payloadPins?.['nexys-a7-100t'];
+                if (!pin) return { path: chosen };
+                const check = await checkSupportFile(chosen, pin);
+                if (!check.ok) {
+                    this.nexysProblem = check.problem;
+                    return undefined;
+                }
+                return { path: chosen, sha256: pin.sha256 };
             },
         };
     }
@@ -218,7 +235,7 @@ export class WindowsSetupController {
             const c = checkPathLength(folder, longest, longPaths === true);
             if (!c.ok) problems.push(`${what}: its longest file would need ${c.worstLength} characters; Windows allows ${c.limit} (long paths are ${longPaths === false ? 'off' : 'unknown'}). The folder is ${folder}`);
         };
-        if (boards.includes('nexys-a7-100t') && this.deps.nexys) check(join(this.deps.nexys.dataRoot, 'toolchains', 'win32-x64', '1.0'), NEXYS_LONGEST_RELATIVE_PATH, 'Nexys A7 tools');
+        if (boards.includes('nexys-a7-100t') && this.deps.nexys) check(join(this.deps.nexys.dataRoot, 'toolchains', 'win32-x64', this.deps.nexys.requirement.bundleVersion), NEXYS_LONGEST_RELATIVE_PATH, 'Nexys A7 tools');
         if (boards.includes('de10-lite')) check(this.deps.layout.toolchainDir, DE10_LONGEST_RELATIVE_PATH, 'DE10-Lite tools');
         return { ok: problems.length === 0, problems };
     }
@@ -260,12 +277,19 @@ export class WindowsSetupController {
         this.askNexys = () => ui.askNexysArchive();
         try {
             const pinned = boards.includes('de10-lite') ? await this.pinnedArchive('de10-lite') : undefined;
-            if (pinned) this.de10Archive = new ArchivePayload(pinned.path, pinned.sha256, join(this.deps.layout.root, '.payload'));
+            const work = join(this.deps.layout.root, '.payload');
+            if (pinned) this.de10Archive = new ArchivePayload(pinned.path, pinned.sha256, work);
+            else if (boards.includes('de10-lite') && !this.deps.payload && this.deps.payloadPins?.['de10-lite']) {
+                // Release: the student supplies the support file (like the Nexys one); only asked if a tool from it is actually needed.
+                this.de10Picked = new PickedArchivePayload(this.deps.payloadPins['de10-lite'], () => ui.askDe10Archive(), work);
+                this.de10Archive = this.de10Picked;
+            }
             return await this.driveSteps(ui, signal, repairOnly, boards, steps);
         } finally {
             this.askNexys = undefined;
             await this.de10Archive?.dispose().catch(() => undefined);
             this.de10Archive = undefined;
+            this.de10Picked = undefined;
             // Whatever happened, administrator rights and the temporary Altera copies do not outlive Setup.
             await this.quartus.abandon();
         }
@@ -298,6 +322,17 @@ export class WindowsSetupController {
             if (run.outcome === 'complete') return { outcome: 'complete', message: 'Setup finished.', view: await this.view() };
 
             const failed = run.steps.find((s) => s.outcome === 'failed');
+            const de10Problem = this.de10Picked?.problem;
+            if (failed && de10Problem && failed.code === 'PAYLOAD_INCOMPLETE') {
+                ui.log(`toolchain: DE10-Lite support file ${de10Problem}`);
+                return { outcome: de10Problem === 'cancelled' ? 'stopped' : 'failed', message: supportFileMessage(de10Problem, this.deps.payloadPins!['de10-lite']!, 'DE10-Lite'), view: await this.view() };
+            }
+            if (failed && this.nexysProblem && failed.code === 'NEXYS_SOURCE_MISSING') {
+                ui.log(`nexys-toolchain: Nexys A7 support file ${this.nexysProblem}`);
+                const pin = this.deps.payloadPins?.['nexys-a7-100t'];
+                const message = pin ? supportFileMessage(this.nexysProblem, pin, 'Nexys A7') : windowsStudentFailure('NEXYS_SOURCE_MISSING');
+                return { outcome: this.nexysProblem === 'cancelled' ? 'stopped' : 'failed', message, view: await this.view() };
+            }
             if (failed) return { outcome: 'failed', message: windowsStudentFailure(failed.code ?? ''), view: await this.view() };
             const awaiting = run.steps.find((s) => s.outcome === 'awaiting-input');
             if (!awaiting) return { outcome: 'failed', message: windowsStudentFailure(''), view: await this.view() };

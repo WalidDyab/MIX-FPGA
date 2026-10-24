@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "note": "Toolchain 1.1 support archives for Windows (Phase 5H), built outside git by scripts/mixfpga/build-payloads-windows.mjs --bundle 1.1: unsigned classroom release, not published.",
+  "payloads": {
+    "nexys-a7-100t": {
+      "file": "nexysvhdl-toolchain-1.1-win32-x64.tar.gz",
+      "bytes": 741586531,
+      "sha256": "f118e8a1440c651073e074986a2f4ed31eb5c4fbf9a91bf89f833b5db7c1e1d8",
+      "content": "MIX-FPGA Nexys A7 support, Toolchain 1.1 (win32-x64)"
+    },
+    "de10-lite": {
+      "file": "mixfpga-de10-lite-support-1.1-windows-x64.tar.gz",
+      "bytes": 47950151,
+      "sha256": "fca00cb3e81db111fd66ae0a937374acca7c28329224301f1cfba40478725c07",
+      "content": "MIX-FPGA Toolchain 1.1 (windows-x64): GHDL, Yosys, support scripts, notices"
+    }
+  }
+}

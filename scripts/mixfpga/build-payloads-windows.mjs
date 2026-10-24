@@ -18,10 +18,13 @@ const require = createRequire(import.meta.url);
 const { writeTarEntriesGz } = require(join(repo, 'dist', 'core', 'toolchain', 'tar.js'));
 const { WINDOWS_DEV_TOOL_FOLDERS } = require(join(repo, 'dist', 'platform', 'windows', 'install', 'dev-payload.js'));
 const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? resolve(process.argv[i + 1]) : undefined; };
-const toolsRoot = arg('--tools') ?? join(repo, 'toolchains', 'experimental');
-const nexys = arg('--nexys') ?? 'D:\\WSClaude\\NexysVHDL\\.artifacts\\dist\\nexysvhdl-toolchain-1.0-win32-x64.tar.gz';
-const out = join(repo, '.artifacts', 'payloads');
-const manifestText = await readFile(join(repo, 'toolchains', 'mixfpga', 'toolchain-1.0-windows-x64.json'), 'utf8');
+const bundle = process.argv.includes('--bundle') ? process.argv[process.argv.indexOf('--bundle') + 1] : '1.0';
+const is10 = bundle === '1.0';
+const suffix = is10 ? '' : `-${bundle}`;
+const toolsRoot = arg('--tools') ?? (is10 ? join(repo, 'toolchains', 'experimental') : join(repo, '.artifacts', `tools-${bundle}-windows`));
+const nexys = arg('--nexys') ?? (is10 ? 'D:\\WSClaude\\NexysVHDL\\.artifacts\\dist\\nexysvhdl-toolchain-1.0-win32-x64.tar.gz' : join(repo, '.artifacts', 'dist', `nexysvhdl-toolchain-${bundle}-win32-x64.tar.gz`));
+const out = arg('--out') ?? (is10 ? join(repo, '.artifacts', 'payloads') : join(repo, '.artifacts', `windows-${bundle}`, 'payloads'));
+const manifestText = await readFile(join(repo, 'toolchains', 'mixfpga', `toolchain-${bundle}-windows-x64.json`), 'utf8');
 const manifest = JSON.parse(manifestText);
 const sha = (b) => createHash('sha256').update(b).digest('hex');
 
@@ -29,8 +32,8 @@ const sha = (b) => createHash('sha256').update(b).digest('hex');
 const source = {
   ...Object.fromEntries(Object.entries(WINDOWS_DEV_TOOL_FOLDERS).map(([id, folder]) => [id, join(toolsRoot, folder)])),
   scripts: join(repo, 'platform', 'windows', 'scripts'),
-  licenses: join(repo, 'toolchains', 'mixfpga', 'notices', 'windows-x64', 'LICENSES'),
-  notices: join(repo, 'toolchains', 'mixfpga', 'notices', 'windows-x64', 'THIRD_PARTY_NOTICES.txt'),
+  licenses: join(repo, 'toolchains', 'mixfpga', 'notices', `windows-x64${suffix}`, 'LICENSES'),
+  notices: join(repo, 'toolchains', 'mixfpga', 'notices', `windows-x64${suffix}`, 'THIRD_PARTY_NOTICES.txt'),
 };
 
 const entries = [];
@@ -49,23 +52,23 @@ for (const u of manifest.units) {
 entries.push({ name: 'manifest.json', type: 'file', mode: 0o644, data: Buffer.from(manifestText) });
 for (const d of dirs) entries.push({ name: d, type: 'directory', mode: 0o755 });
 await mkdir(out, { recursive: true });
-const de10 = join(out, 'mixfpga-de10-lite-support-1.0-windows-x64.tar.gz');
-await writeTarEntriesGz(entries, de10, { mtime: Date.UTC(2026, 9, 1) / 1000, comment: 'MIX-FPGA DE10-Lite support 1.0 (Windows x64): internal Phase 4 validation payload' });
+const de10 = join(out, `mixfpga-de10-lite-support-${bundle}-windows-x64.tar.gz`);
+await writeTarEntriesGz(entries, de10, { mtime: Date.UTC(2026, 9, 1) / 1000, comment: is10 ? 'MIX-FPGA DE10-Lite support 1.0 (Windows x64): internal Phase 4 validation payload' : `MIX-FPGA DE10-Lite support ${bundle} (Windows x64)` });
 
 // Nexys A7 support: the validated archive itself (hard link when the volume allows it, else a copy; the original is never modified).
-const nexysOut = join(out, 'nexysvhdl-toolchain-1.0-win32-x64.tar.gz');
+const nexysOut = join(out, `nexysvhdl-toolchain-${bundle}-win32-x64.tar.gz`);
 await rm(nexysOut, { force: true });
 await link(nexys, nexysOut).catch(() => copyFile(nexys, nexysOut));
 
 const describe = async (p, extra) => ({ file: p.split(/[\\/]/).pop(), bytes: (await stat(p)).size, sha256: sha(await readFile(p)), ...extra });
 const payloads = [
-  await describe(nexysOut, { id: 'nexys-a7-100t', target: 'win32-x64', content: 'NexysVHDL Toolchain 1.0 (win32-x64), unchanged' }),
-  await describe(de10, { id: 'de10-lite', target: 'windows-x64', content: 'MIX-FPGA Toolchain 1.0 (windows-x64): GHDL, Yosys, support scripts, notices', units: manifest.units.length }),
+  await describe(nexysOut, { id: 'nexys-a7-100t', target: 'win32-x64', content: is10 ? 'NexysVHDL Toolchain 1.0 (win32-x64), unchanged' : `MIX-FPGA Nexys A7 support, Toolchain ${bundle} (win32-x64)` }),
+  await describe(de10, { id: 'de10-lite', target: 'windows-x64', content: `MIX-FPGA Toolchain ${bundle} (windows-x64): GHDL, Yosys, support scripts, notices`, units: manifest.units.length }),
 ];
-await writeFile(join(out, 'payloads.json'), `${JSON.stringify({ schemaVersion: 1, note: 'Internal Phase 4 validation payloads. Not for public distribution while L1, L3 and L9 are unresolved.', payloads }, null, 2)}\n`);
+await writeFile(join(out, 'payloads.json'), `${JSON.stringify({ schemaVersion: 1, note: is10 ? 'Internal Phase 4 validation payloads. Not for public distribution while L1, L3 and L9 are unresolved.' : `Toolchain ${bundle} support archives for Windows (Phase 5H): unsigned classroom release, not published.`, payloads }, null, 2)}\n`);
 for (const p of payloads) console.log(`${p.file.padEnd(52)} ${(p.bytes / 1e6).toFixed(1).padStart(8)} MB  ${p.sha256}`);
 if (process.argv.includes('--pins')) {
-  const pins = { schemaVersion: 1, note: 'Internal Phase 4 validation payloads for Windows (built outside git into .artifacts/payloads by scripts/mixfpga/build-payloads-windows.mjs). Not for public distribution while L1, L3 and L9 are unresolved.', payloads: Object.fromEntries(payloads.map((p) => [p.id, { file: p.file, bytes: p.bytes, sha256: p.sha256, content: p.content }])) };
-  await writeFile(join(repo, 'toolchains', 'mixfpga', 'payloads-1.0-windows-x64.json'), `${JSON.stringify(pins, null, 2)}\n`);
+  const pins = { schemaVersion: 1, note: is10 ? 'Internal Phase 4 validation payloads for Windows (built outside git into .artifacts/payloads by scripts/mixfpga/build-payloads-windows.mjs). Not for public distribution while L1, L3 and L9 are unresolved.' : `Toolchain ${bundle} support archives for Windows (Phase 5H), built outside git by scripts/mixfpga/build-payloads-windows.mjs --bundle ${bundle}: unsigned classroom release, not published.`, payloads: Object.fromEntries(payloads.map((p) => [p.id, { file: p.file, bytes: p.bytes, sha256: p.sha256, content: p.content }])) };
+  await writeFile(join(repo, 'toolchains', 'mixfpga', `payloads-${bundle}-windows-x64.json`), `${JSON.stringify(pins, null, 2)}\n`);
   console.log('pins written');
 }

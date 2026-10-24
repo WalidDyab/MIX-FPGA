@@ -125,6 +125,7 @@ function renderComplianceNotices(manifest) {
 function renderModifiedNotices(manifest) {
     const k = manifest.compliance ?? {};
     const prod = k.productName ?? 'MIX-FPGA';
+    const isWindows = manifest.platform === 'win32';
     const shipped = manifest.components.filter((c) => !c.placeholder);
     const lines = [
         `# Third-party software in the ${prod} Nexys A7 support (${manifest.displayPlatform})`,
@@ -156,7 +157,9 @@ function renderModifiedNotices(manifest) {
         '',
         '## Your right to modify and replace components',
         '',
-        'The GPL and LGPL components are separate files, loaded at run time, which you may replace with your own builds made from the corresponding source, for your own use, and reverse-engineer for debugging. The installed folder is read-only by default; make a file writable, replace it, and on Apple silicon re-sign it (`codesign -f -s - <file>`). The tools keep working with replaced files.',
+        isWindows
+            ? 'The GPL and LGPL components (for example GNU Readline and GNU termcap) are separate DLL files, loaded at run time from this folder, which you may replace with your own builds made from the corresponding source, for your own use, and reverse-engineer for debugging. The installed files are ordinary files in your own user folder: replace a file and keep using the toolchain; nothing has to be signed on Windows. The tools keep working with replaced files.'
+            : 'The GPL and LGPL components are separate files, loaded at run time, which you may replace with your own builds made from the corresponding source, for your own use, and reverse-engineer for debugging. The installed folder is read-only by default; make a file writable, replace it, and on Apple silicon re-sign it (`codesign -f -s - <file>`). The tools keep working with replaced files.',
         '',
         'A toolchain whose files you changed is reported by MIX-FPGA as modified: "This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version." MIX-FPGA does not restore, delete or overwrite your files on its own, does not stop you from creating projects or from building, simulating or programming with a modified toolchain, and only reads the files to report their state (Setup, Verify). Repair is optional and explicit: it asks first and then restores the supported MIX-FPGA release copy of the files that differ. The integrity check is a support aid, not a technical restriction. A configuration with changed files is not the verified one and is not supported.',
         '',
@@ -180,7 +183,10 @@ function renderModifiedNotices(manifest) {
             '',
         );
     }
-    lines.push('## Not included', '', 'Digilent Adept Runtime, Adept Utilities and drivers (not needed on macOS: the board programmer in this toolchain talks to the board over USB), Vivado and other Xilinx/AMD software, Apple Xcode and Command Line Tools.', '');
+    const notIncluded = isWindows
+        ? "Digilent Adept Runtime, Adept Utilities and drivers (proprietary; not redistributed: the Nexys A7 is programmed with Digilent's own djtgcfg, which the student installs from Digilent), Altera Quartus Prime Lite (the DE10-Lite is a separate board support), Vivado and other Xilinx/AMD software, and the USB drivers of any vendor."
+        : 'Digilent Adept Runtime, Adept Utilities and drivers (not needed on macOS: the board programmer in this toolchain talks to the board over USB), Vivado and other Xilinx/AMD software, Apple Xcode and Command Line Tools.';
+    lines.push('## Not included', '', notIncluded, '');
     lines.push(...programmerSection(manifest));
     return collapse(lines);
 }
