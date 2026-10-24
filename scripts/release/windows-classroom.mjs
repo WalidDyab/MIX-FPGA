@@ -100,6 +100,25 @@ put(de10Notices, join(out, NOTICES_DE10));
 put(join(root, 'LICENSE'), join(out, 'LICENSE'));
 
 // ---- the two ZIPs
+// writeZip zips a whole folder tree, so each package is staged under its own parent (stored entries, fixed timestamps, one top folder).
+async function zipOne(name, folder, binaries, guide, notices) {
+    const parent = join(outParent, 'zip-one', folder);
+    rmSync(parent, { recursive: true, force: true });
+    const stage = join(parent, folder);
+    mkdirSync(stage, { recursive: true });
+    for (const n of binaries) put(src[n], join(stage, n));
+    put(join(docs, guide), join(stage, guide));
+    put(join(root, 'THIRD_PARTY_NOTICES.md'), join(stage, NOTICES_ROOT));
+    const nn = [];
+    for (const [from, to] of notices) { put(from, join(stage, to)); nn.push(to); }
+    put(join(root, 'LICENSE'), join(stage, 'LICENSE'));
+    const names = [...binaries, guide, NOTICES_ROOT, ...nn, 'LICENSE'];
+    const rows = await sums(stage, names);
+    writeFileSync(join(stage, 'SHA256SUMS'), rows.map((r) => `${r.sha256}  ${r.file}`).join('\n') + '\n');
+    writeFileSync(join(stage, 'RELEASE-MANIFEST.json'), manifest(rows, { package: name }));
+    await writeZip(parent, join(out, name));
+    return rows;
+}
 const FRESH = `MIX-FPGA-${V}-Windows-x64-Fresh.zip`, UPGRADE = `MIX-FPGA-${V}-Windows-x64-Upgrade-from-NexysVHDL.zip`;
 const freshRows = await zipOne(FRESH, `MIX-FPGA-${V}-Windows-x64-Fresh`, [VSIX, NEXYS, DE10, NEXYS_SRC, DE10_SRC], 'INSTALL-FRESH-Windows.md', [[nexysNotices, NOTICES_NEXYS], [de10Notices, NOTICES_DE10]]);
 const upgradeRows = await zipOne(UPGRADE, `MIX-FPGA-${V}-Windows-x64-Upgrade-from-NexysVHDL`, [VSIX, NEXYS, NEXYS_SRC], 'INSTALL-UPGRADE-from-NexysVHDL.md', [[nexysNotices, NOTICES_NEXYS]]);
