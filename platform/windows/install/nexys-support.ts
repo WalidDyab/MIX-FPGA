@@ -5,6 +5,7 @@ import type { ComponentDefinition, Inspection, SetupStepResult } from '../../../
 import { INSTALLED_MARKER, type InstalledMarker, installedToolchain, installToolchainArchive, storePaths, type ToolchainRequirement } from '../../../core/toolchain/store';
 import { inventoryDirectory } from '../../../core/toolchain/tar';
 import { sha256File } from '../../../core/util/hash';
+import { nexysModifiedButUsable } from '../../macos/install/nexys-support';
 
 /**
  * Nexys A7-100T support on Windows: the NexysVHDL Toolchain 1.0 bundle (GHDL, Apio with oss-cad-suite, Verible, openXC7 and the
@@ -159,7 +160,12 @@ export function nexysDefinition(d: NexysSupportDeps, depth: 'quick' | 'full' = '
             if (mine.status === 'installed') {
                 if (depth === 'full') {
                     const inv = await inventoryDirectory(mine.paths.versionDir, { exclude: [INSTALLED_MARKER] });
-                    if (inv.treeSha256 !== d.requirement.targets[NEXYS_TARGET]?.treeSha256) return { state: 'repairable', ownership: 'managed', code: 'NEXYS_MODIFIED', detail: 'files of the Nexys A7 tools were changed' };
+                    if (inv.treeSha256 !== d.requirement.targets[NEXYS_TARGET]?.treeSha256) {
+                        // Changed content with everything still there (same or more files, the recorded programs present): the user modified it.
+                        // Something missing or unreadable is damage and stays repairable.
+                        if (await nexysModifiedButUsable(mine.paths.versionDir, inv.entries.length, d.requirement.targets[NEXYS_TARGET]?.files)) return { state: 'modified', ownership: 'managed', code: 'NEXYS_MODIFIED', detail: 'files of the Nexys A7 tools were changed', version: `Toolchain ${d.requirement.bundleVersion}` };
+                        return { state: 'repairable', ownership: 'managed', code: 'NEXYS_DAMAGED', detail: 'files of the Nexys A7 tools are missing or damaged' };
+                    }
                 }
                 return { state: 'ready', ownership: 'managed', version: `Toolchain ${d.requirement.bundleVersion}` };
             }

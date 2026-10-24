@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ONLY_WINDOWS } from '../platform';
 import { describe, it } from 'node:test';
@@ -319,14 +319,22 @@ describe('Windows Setup: Repair, Verify, interruption, cancellation', { skip: ON
         assert.ok(!v.steps.some((s) => /Nexys/.test(s.label)), 'a board nobody installed is not a failure');
     });
 
-    it('Verify finds a changed file that the quick check cannot see', async (t) => {
+    it('Verify finds a changed file that the quick check cannot see, and reports it as modified (usable), not as a failure', async (t) => {
         const r = await rig(t, { quartusPresent: true });
         assert.equal((await r.ctl.install(r.ui)).outcome, 'complete');
         await makeWritable(r.layout.toolchainDir);
-        await writeFile(join(r.layout.unit('yosys'), 'share', 'deep', 'data.txt'), 'changed');
+        const file = join(r.layout.unit('yosys'), 'share', 'deep', 'data.txt');
+        await writeFile(file, 'changed');
         const v = await r.ctl.verify();
-        assert.equal(v.ok, false);
-        assert.ok(v.steps.some((s) => !s.ok));
+        assert.equal(v.ok, true, JSON.stringify(v.steps.filter((s) => !s.ok)));
+        assert.equal(v.modified, true);
+        assert.ok(v.steps.some((s) => /modified/.test(s.detail ?? '')));
+        assert.equal(await readFile(file, 'utf8'), 'changed', 'Verify never writes');
+        // A missing file is still a failure.
+        await rm(file);
+        const missing = await r.ctl.verify();
+        assert.equal(missing.ok, false);
+        assert.ok(missing.steps.some((s) => !s.ok));
     });
 
     it('a cancelled install stops cleanly and can be continued', async (t) => {

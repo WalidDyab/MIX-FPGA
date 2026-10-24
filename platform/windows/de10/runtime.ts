@@ -112,13 +112,16 @@ export class WindowsDe10Runtime {
     /** Hash-checks the owned tools, then proves Quartus runs and knows the exact MAX 10 part. */
     async verify(signal?: AbortSignal): Promise<EnvironmentVerification> {
         const steps: { label: string; ok: boolean; detail?: string }[] = [];
+        let modified = false;
         if (this.installed) {
             const expected = await loadExpectedToolchain(this.installed.manifestFile).catch(() => undefined);
             if (!expected) steps.push({ label: 'Toolchain manifest', ok: false, detail: 'the recorded manifest is missing or unreadable' });
             else {
                 for (const u of expected.toolchain.units) {
                     const c = await checkUnit(this.installed.layout, u, 'full');
-                    steps.push({ label: `${u.name}${u.version ? ` ${u.version}` : ''}`, ok: c.state === 'ok', ...(c.state === 'ok' ? {} : { detail: unitProblem(c) }) });
+                    // A file the user changed is reported but is not a failure; missing or damaged files still fail.
+                    steps.push({ label: `${u.name}${u.version ? ` ${u.version}` : ''}`, ok: c.state === 'ok' || c.state === 'modified', ...(c.state === 'ok' ? {} : { detail: c.state === 'modified' ? `modified: ${unitProblem(c)}. This is no longer the verified MIX-FPGA configuration; choose Repair to restore the supported version.` : unitProblem(c) }) });
+                    if (c.state === 'modified') modified = true;
                 }
                 const marker = await readMarker(this.installed.layout);
                 steps.push({ label: 'Installation record', ok: marker?.manifestSha256 === expected.sha256, ...(marker?.manifestSha256 === expected.sha256 ? {} : { detail: 'the installation was not completed or is for another toolchain' }) });
@@ -135,6 +138,6 @@ export class WindowsDe10Runtime {
         const engine = await this.engine.ensureReady(signal);
         const detail = engine.state === 'running' ? engine.toolVersion : engine.problems[0]?.message;
         steps.push({ label: 'Quartus and MAX 10 support', ok: engine.state === 'running', ...(detail ? { detail } : {}) });
-        return { ok: steps.every((s) => s.ok), steps, engine };
+        return { ok: steps.every((s) => s.ok), steps, engine, ...(modified ? { modified } : {}) };
     }
 }
