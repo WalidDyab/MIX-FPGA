@@ -1003,7 +1003,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
                 return { label: `${BOARD_ICON[b.state]} ${b.name}`, description: b.word, ...(b.action ? { detail: `${act?.label ?? (b.action === 'install' ? 'Install' : 'Repair')} — ${act?.detail ?? ''}`, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${b.action}`, b.id) } : {}) };
             }),
             { label: 'Environment', kind: vscode.QuickPickItemKind.Separator },
-            ...view.rows.map((r) => ({ label: `${ICON[r.state]} ${r.label}`, description: r.word, ...(r.hint ? { detail: r.hint } : {}) })),
+            ...view.rows.map((r): Item => ({ label: `${ICON[r.state]} ${r.label}`, description: r.word, ...(r.hint ? { detail: r.hint } : {}), ...(r.link ? { action: () => vscode.env.openExternal(vscode.Uri.parse(r.link!.url)) } : {}) })),
+            ...view.rows.filter((r) => r.link).map((r): Item => ({ label: `$(link-external) ${r.link!.label}`, detail: r.link!.url, action: () => vscode.env.openExternal(vscode.Uri.parse(r.link!.url)) })),
             { label: 'Actions', kind: vscode.QuickPickItemKind.Separator },
             ...view.actions.filter((a) => !a.board).map((a): Item => ({ label: `${a.id === 'install' ? '$(desktop-download)' : a.id === 'repair' ? '$(tools)' : '$(verified)'} ${a.label}`, detail: a.detail, action: () => vscode.commands.executeCommand(`nexysvhdl.setup.${a.id}`, a.board) })),
             { label: '$(book) Getting Started', action: () => vscode.commands.executeCommand('nexysvhdl.gettingStarted') },

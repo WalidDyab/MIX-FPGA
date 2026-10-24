@@ -118,6 +118,39 @@ describe('Windows Setup: fresh installation, Nexys / DE10 / both', { skip: ONLY_
     });
 });
 
+describe('Windows Setup: the Digilent software a fresh student needs only to program the Nexys A7', { skip: ONLY_WINDOWS }, () => {
+    it('without Digilent Adept the Nexys A7 is installed and usable, Programmer says what to get and links to Digilent; nothing of Digilent is installed or changed', async (t) => {
+        const r = await rig(t);
+        r.digilent = false;
+        r.ui.boards = ['nexys-a7-100t'];
+        const res = await r.ctl.install(r.ui);
+        assert.equal(res.outcome, 'complete', res.message);
+        assert.equal(boardWord(res.view, 'nexys-a7-100t'), 'Installed', 'building does not need Digilent');
+        const programmer = res.view.rows.find((x) => x.id === 'programmer')!;
+        assert.equal(programmer.word, 'Not installed');
+        assert.match(programmer.hint ?? '', /Digilent's free Adept Runtime and Adept Utilities/);
+        assert.deepEqual(programmer.link, { label: 'Get Digilent Adept (free) from Digilent', url: 'https://digilent.com/reference/software/adept/start' });
+        assert.doesNotMatch(textOf(res.view), TECHNICAL_TERMS_WINDOWS);
+        assert.ok(!r.runner.calls.some((c) => /digilent|djtgcfg|adept/i.test(c.executable)), 'no Digilent program was started');
+        assert.deepEqual(r.helper.events, [], 'no administrator prompt');
+        // Once the student has installed Digilent's software the row is ready and the link disappears.
+        r.digilent = true;
+        const after = (await r.ctl.status()).view.rows.find((x) => x.id === 'programmer')!;
+        assert.equal(after.word, 'Ready');
+        assert.equal(after.link, undefined);
+    });
+
+    it('the DE10-Lite never mentions Digilent: it programs through Quartus', async (t) => {
+        const r = await rig(t, { quartusPresent: true });
+        r.digilent = false;
+        const res = await r.ctl.install(r.ui);
+        assert.equal(res.outcome, 'complete', res.message);
+        const programmer = res.view.rows.find((x) => x.id === 'programmer')!;
+        assert.equal(programmer.link, undefined);
+        assert.doesNotMatch(JSON.stringify(res.view.rows), /Digilent/, 'the Setup rows of a DE10-Lite-only computer never mention Digilent');
+    });
+});
+
 describe('Windows Setup: Altera Quartus, licence and administrator rights', { skip: ONLY_WINDOWS }, () => {
     it('declining the licence installs nothing from Altera, never asks the installer to accept, and ends the helper', async (t) => {
         const r = await rig(t);

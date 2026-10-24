@@ -61,11 +61,16 @@ export function windowsBoardState(statuses: readonly ComponentStatus[], board: B
     return boardState(statuses, board);
 }
 
+/** Digilent's page for the free Adept Runtime and Utilities (the Nexys A7 programmer MIX-FPGA uses on Windows). */
+export const DIGILENT_ADEPT_URL = 'https://digilent.com/reference/software/adept/start';
+
 export const WINDOWS_VIEW_PROFILE: SetupViewProfile = {
     boardState: windowsBoardState,
     boards: WINDOWS_BOARD_SUPPORT,
     catalog: WINDOWS_CATALOG,
     owner: { managed: 'Installed by MIX-FPGA', external: 'Supplied by you (Altera, Digilent)', system: 'Provided by Windows' },
+    hints: { 'programmer:not-installed': "Needed only to program the Nexys A7: install Digilent's free Adept Runtime and Adept Utilities (the link is in this page). Everything else works without it." },
+    links: { 'programmer:not-installed': { label: 'Get Digilent Adept (free) from Digilent', url: DIGILENT_ADEPT_URL } },
     installDetail: (id) => (id === 'de10-lite' ? "Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once." : 'Installs the Nexys A7 tools (about 3 GB).'),
 };
 

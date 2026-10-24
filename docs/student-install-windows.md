@@ -1,75 +1,76 @@
-# Installing NexysVHDL on Windows
+# Installing MIX-FPGA on Windows
 
-NexysVHDL — **Classroom Preview** — for the Digilent Nexys A7-100T.
-Supported: **Windows 10/11, x64** (not Windows on ARM).
+MIX-FPGA — **Classroom Preview** (an EMXplore project) — for the Digilent **Nexys A7-100T** and the Terasic **DE10-Lite**.
+Supported: **Windows 10/11, 64-bit Intel/AMD (x64)**, not Windows on ARM. Visual Studio Code **1.120 or newer**.
 
-You need three things. Everything else (the VHDL simulator, the FPGA synthesis, place-and-route and bitstream tools, and the Python they use) comes with NexysVHDL. **Do not install GHDL, Apio, Yosys, nextpnr, openXC7 or Python for NexysVHDL**; if you already have them, NexysVHDL ignores them and never changes them.
+Two ways to install; both give the same result:
 
-| # | What | Why |
+* **The installer** (`MIX-FPGA-<version>-Windows-x64-Setup.exe`): detects Visual Studio Code and any NexysVHDL you already have, installs the extension, and installs the board support you choose.
+* **By hand** (the *Fresh* or *Upgrade* ZIP): the same files and a step-by-step guide inside the ZIP (`INSTALL-FRESH-Windows.md` or `INSTALL-UPGRADE-from-NexysVHDL.md`).
+
+You choose **Nexys A7**, **DE10-Lite** or **both**; only what the boards you chose need is installed.
+
+## What you need
+
+| What | For | Where from |
 |---|---|---|
-| 1 | Visual Studio Code **1.120 or newer** | the editor NexysVHDL runs in |
-| 2 | **NexysVHDL** (extension + FPGA toolchain) | design, check, simulate, build |
-| 3 | **Digilent USB/JTAG support** — only if NexysVHDL says it is missing | programming the board over USB |
+| Visual Studio Code 1.120+ | the editor MIX-FPGA runs in | <https://code.visualstudio.com> (the *User Installer* is fine) |
+| The MIX-FPGA files from your course | the extension and the board support | your instructor |
+| Nexys A7 only, to program the board: **Digilent Adept Runtime 2.30+ and Adept Utilities** | programming over USB (nothing else needs them) | Digilent's free download: <https://digilent.com/reference/software/adept/start> |
+| DE10-Lite only: **Altera Quartus Prime Lite 25.1std (Build 1129)** and the **MAX 10 device package** | building and programming the DE10-Lite | Altera's free download; MIX-FPGA asks for the two files and installs them (see below) |
+
+Free disk space: about **3 GB** for the Nexys A7 support, **0.2 GB** plus about **13 GB** (while installing; about 9 GB afterwards) for the DE10-Lite. **Do not install GHDL, Apio, Yosys, nextpnr, openXC7 or Python for MIX-FPGA**: it brings its own and ignores any you have.
 
 ## 1. Visual Studio Code
 
-Install VS Code from <https://code.visualstudio.com/>. If you already have it, check **Help → About**: the version must be 1.120 or newer.
+Install it from the link above. If you already have it, check **Help → About**: the version must be 1.120 or newer.
 
-## 2. NexysVHDL
+## 2. MIX-FPGA with the installer (recommended)
 
-Your course provides the NexysVHDL classroom download `NexysVHDL-<version>-win32-x64.zip`. Unzip it. It contains:
+1. Keep the whole MIX-FPGA folder together: `Setup.exe` finds its files (the extension and the support archives) **next to itself** and refuses anything that is not exactly the file of this release.
+2. Double-click `MIX-FPGA-<version>-Windows-x64-Setup.exe`. Windows may show a blue **"Windows protected your PC"** window because this classroom release is **not signed**: choose **More info**, check that the name is `MIX-FPGA-…-Setup.exe` and that the file came from your instructor, then choose **Run anyway**. Do not turn Windows security off; nothing in MIX-FPGA asks you to.
+3. The installer tells you what it found: **Fresh install**, **Upgrade from NexysVHDL** or **Repair/Reinstall**. Choose **Nexys A7-100T**, **DE10-Lite** or **Both boards** and press **Install**. It checks every file first (nothing is changed if one is damaged), installs the extension **over** any NexysVHDL (no uninstall first), then installs the board support. Keep the window open until it says the work is done.
+4. Press **Open MIX-FPGA Setup**, or open Visual Studio Code, click the **MIX-FPGA** icon and choose **Show Environment**.
 
-| File | What it is |
-|---|---|
-| `NexysVHDL-Setup-<version>-win32-x64.exe` | the Windows installer (optional; includes the extension) |
-| `nexysvhdl-<version>-win32-x64.vsix` | the NexysVHDL extension (small) |
-| `nexysvhdl-toolchain-<toolchain version>-win32-x64.tar.gz` | the NexysVHDL FPGA toolchain (about 725 MB; about 3 GB once installed) |
-| `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.md` | checksums and licenses |
+If you already use **NexysVHDL 0.6.0**: your projects, `.nvproj` and `nexysvhdl.json` files and settings are not touched, nothing is uninstalled, and the old **Toolchain 1.0** stays where it is (`%LOCALAPPDATA%\NexysVHDL`). MIX-FPGA needs the new **Toolchain 1.1**, which is installed separately (`%LOCALAPPDATA%\MIX-FPGA`). You can delete the old folder yourself later to free about 3 GB.
 
-**a. Install the extension.** Either run the installer `NexysVHDL-Setup-<version>-win32-x64.exe` (for your Windows account only, no administrator needed; it adds a Start Menu entry, an optional Desktop shortcut, makes `.nvproj` project files open with NexysVHDL, and installs the extension into VS Code), or install the extension by hand: in VS Code open the Extensions view (Ctrl+Shift+X), click **…** (top right) → **Install from VSIX…**, and choose the `.vsix` file.
+## 3. By hand (the ZIP)
 
-**b. Install the FPGA toolchain.** Click the **NexysVHDL** icon in the Activity Bar. NexysVHDL tells you that it needs its FPGA toolchain: click **Install FPGA Toolchain…** and choose the `nexysvhdl-toolchain-…tar.gz` file. Installation takes about a minute. The toolchain is installed for your Windows user account in `%LOCALAPPDATA%\NexysVHDL` and is reused by later NexysVHDL updates, so you install it only once per toolchain version. NexysVHDL checks every file against the validated toolchain before using it.
+Unzip the *Fresh* or *Upgrade* ZIP and follow its `INSTALL-…-Windows.md`. In short: install the `.vsix` (Extensions view → **…** → **Install from VSIX…**), then in MIX-FPGA run **Show Environment → Install FPGA Toolchain**, tick your board(s) and choose the matching support file from the folder when asked. MIX-FPGA checks the file against the one this release expects.
 
-**c. Check.** Run **NexysVHDL: Show Environment** (Ctrl+Shift+P). You should see:
+## 4. Check
 
-```
-Extension                   Ready
-Bundled FPGA Toolchain      Ready — 1.0 (Windows x64)
-Digilent USB/JTAG Support   Ready   or   Setup Required
-Board                       Not Connected   (fine until you program)
-Status: Ready for design and build
-```
+Run **MIX-FPGA: Show Environment**. For a Nexys A7 you should see *Installed* for the board and *VHDL Tools — Ready*. Then **New Project**, **Check**, **Simulate**, **RTL Schematic** and **Build** work.
 
-You can now create projects, check, simulate and build without anything else.
+## 5. Programming the Nexys A7: Digilent software
 
-## 3. Digilent USB/JTAG support (for programming only)
+The Nexys A7 is programmed with Digilent's own USB/JTAG software. Digilent does not allow MIX-FPGA to include it, so you install it once from Digilent's page (link above): **Adept Runtime** (2.30 or newer) **and Adept Utilities**. Until then everything except **Program** works, and the Setup page shows *Programmer — Not installed* with the link. MIX-FPGA never installs or changes a USB driver, and a Vivado driver is not enough on its own (the *Utilities* are the part MIX-FPGA uses). Run **Show Environment** again afterwards.
 
-Programming the board uses Digilent's own USB/JTAG software. Digilent does not allow NexysVHDL to include it, so NexysVHDL uses the copy installed on your computer.
+## 6. The DE10-Lite: Altera's software (one-time)
 
-- If Show Environment says **Digilent USB/JTAG Support — Ready**, do nothing.
-- A Vivado installation already installs Digilent's USB **driver**, but not the **Adept Utilities** that NexysVHDL uses, so a Vivado computer may still say *Setup Required*. NexysVHDL never changes a working Vivado or driver setup.
-- If it says **Setup Required**, install the official **Digilent Adept Runtime** and **Digilent Adept Utilities** from Digilent: <https://digilent.com/reference/software/adept/start>. NexysVHDL was validated with Adept Runtime 2.30.4 and Adept Utilities 2.7.1; the Runtime must be 2.30 or newer.
-- Then run **NexysVHDL: Show Environment** again.
+MIX-FPGA installs its own small tools for the DE10-Lite, and builds and programs through Altera's **Quartus Prime Lite** (the free edition). If Quartus 25.1 with MAX 10 support is already on this computer, MIX-FPGA only checks it. Otherwise, in **Show Environment → Install DE10-Lite Support**:
 
-"Setup Required" for Digilent support only blocks **Program FPGA**; everything else works.
+1. Download Altera's two files: `QuartusLiteSetup-25.1std.0.1129-windows.exe` and `max10-25.1std.0.1129.qdz` (Altera's website; free). Choose them when asked. MIX-FPGA checks both before anything runs.
+2. **Windows asks for your permission once** (a blue/yellow box naming *Windows PowerShell*). This is the only time administrator rights are used; MIX-FPGA never sees a password, and everything you do afterwards (Check, Simulate, Build, Program) runs as a normal user. If you say *No*, nothing is installed.
+3. MIX-FPGA shows **Altera's own licence agreement** exactly as Altera's installer provides it. Nothing is installed unless you tick *"I have reviewed and accept the Altera Quartus Prime Software License Agreement."*
+4. Altera's installer runs (several minutes), then MIX-FPGA proves Quartus works by building a tiny test design.
+
+The DE10-Lite's USB-Blaster uses Altera's standard driver, which Quartus' own installer provides. MIX-FPGA does not install, change or replace USB drivers.
+
+## Long folder names
+
+Windows limits path lengths. MIX-FPGA checks before it installs and says so if the folder it would use is too deeply nested; a normal account has room to spare. Do not move the `MIX-FPGA` folder into a deeply nested place.
 
 ## If something is wrong
 
 | Message | What to do |
 |---|---|
-| *FPGA toolchain not installed* | Install it from the `nexysvhdl-toolchain-…` file (step 2b). |
-| *The archive content does not match the validated toolchain* | The file is damaged or the wrong one; download the classroom package again. |
-| *Could not create a plain-ASCII path …* | Your Windows user name contains a space or a non-English letter and the computer does not allow NexysVHDL to create its small link folder in `C:\ProgramData\NexysVHDL`. Ask your instructor/IT. Check and Simulate still work. |
-| *GHDL cannot use the file name …* | Rename that VHDL file using only English letters, digits, `_` and `-` (folder names may contain any characters). |
-| *No Nexys A7 detected* | USB cable in the **PROG/UART** port, board switched **ON**, Digilent support Ready. |
-| *connected by USB but the FPGA/JTAG chain is unavailable* | The board power switch is off. |
+| *Visual Studio Code was not found* (installer) | Install it (section 1), then **Check again**. |
+| *… is damaged or is not the file of this release* | The download is incomplete or is another version. Download the MIX-FPGA folder again. Nothing was changed. |
+| *Needs repair* in Setup | **Repair** in the Setup page restores MIX-FPGA's own files. It asks first. |
+| *Installed (modified)* | You changed a file of the installed tools. Everything keeps working; **Repair** restores the supported copy if you want. Nothing is restored on its own. |
+| *Programmer — Not installed* (Nexys A7) | Install Digilent Adept Runtime and Utilities (section 5). |
+| *No board found* when programming | Connect the board by USB, switch it on, press **Detect**. The Nexys A7 uses its PROG/UART port; the DE10-Lite its USB-Blaster. |
+| Windows says the file is from the internet / unrecognised | See step 2 of section 2. Only run files from your instructor; compare the SHA-256 in `SHA256SUMS` with `Get-FileHash <file>` in PowerShell if you want to be sure. |
 
-**NexysVHDL: Verify FPGA Toolchain** re-checks every installed file. **NexysVHDL: Third-Party Notices** shows the licenses of the included tools.
-
-## User names and folders with spaces or non-English letters
-
-They are fully supported: user names like "José García" or "王小明", and project folders like "Documents\Mis Proyectos" work. Some of the FPGA build tools only accept plain English paths, so for such accounts NexysVHDL creates a small link (a directory junction, no administrator rights needed) in `C:\ProgramData\NexysVHDL\links` that points to its own folder in your profile. The tools use that plain path; your files stay in your profile. VHDL *file* names should still use English letters (VHDL itself only allows English letters in names).
-
-## Uninstalling
-
-Uninstall the extension in the Extensions view. The FPGA toolchain stays in `%LOCALAPPDATA%\NexysVHDL` (so a reinstall or update does not need it again); delete that folder (and, if present, `C:\ProgramData\NexysVHDL\links`) to remove it.
+The installer writes a log to `%TEMP%\MIX-FPGA-Setup.log`; send it to your instructor if the installer stops.

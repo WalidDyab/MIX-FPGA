@@ -1,0 +1,98 @@
+{
+ "method": "Import tables (normal and delay-load) of every file whose first bytes are a PE image, any extension.",
+ "label": "Windows Toolchain 1.1 Nexys A7 support tree (toolchain/win32-x64-1.1)",
+ "files": 21145,
+ "peImages": 571,
+ "byExtension": {
+  ".dll": 379,
+  ".exe": 152,
+  ".pyd": 21,
+  ".so": 4,
+  ".tgt": 8,
+  ".vpi": 7
+ },
+ "importersOfReadlineFamily": [
+  {
+   "file": "apio/packages/oss-cad-suite/bin/vvp.exe",
+   "sha256": "1391039690a8dc535fb0f541ac50d1f1e52ac13161472e4abd597225c505b41e",
+   "imports": [
+    "libreadline8.dll"
+   ]
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/bin/yosys.exe",
+   "sha256": "1d5532cd6bae5259b83857c4a25e2a9648df241b4a3e2b018353e5206dd92573",
+   "imports": [
+    "libreadline8.dll"
+   ]
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/libgettextsrc-0-22.dll",
+   "sha256": "0cb9202257deebb2a82fe4bc64bc1c212713250ce942a9bff44238d88270c1c4",
+   "imports": [
+    "libtextstyle-0.dll"
+   ]
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/libreadline8.dll",
+   "sha256": "c31a2ea3aebb8be0d4f50916ae133364a14b92db0bb428ec7f08945bfbf8de15",
+   "imports": [
+    "libtermcap-0.dll"
+   ]
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/libtextstyle-0.dll",
+   "sha256": "a99e649b9fc4b8e747e6dd6732f7aa101c1ee9257c657c3f91c778954bf974b4",
+   "imports": [
+    "libtermcap-0.dll"
+   ]
+  }
+ ],
+ "filesNamedReadlineHistoryOrTermcap": [
+  {
+   "file": "apio/packages/oss-cad-suite/lib/libhistory8.dll",
+   "sha256": "95c393876992a79c62df4df989d878d620d6c111ab4b1c5c3422f48da24450bf"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/libreadline8.dll",
+   "sha256": "c31a2ea3aebb8be0d4f50916ae133364a14b92db0bb428ec7f08945bfbf8de15"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/libtermcap-0.dll",
+   "sha256": "e089146ae4ef58fccf2f1bf010241e2dcd2b10d1b9b327a8b455155ffdd6cc9c"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/lib2to3/fixes/__pycache__/fix_xreadlines.cpython-311.opt-1.pyc",
+   "sha256": "f6052fb8f99b274fdc22063d512cb559a38a9fd3341557a1113de0c735c9b2f7"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/lib2to3/fixes/__pycache__/fix_xreadlines.cpython-311.opt-2.pyc",
+   "sha256": "2d8d7cafd5f03500357f968f1503dec4817f93df7657904c644055acbf39147d"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/lib2to3/fixes/__pycache__/fix_xreadlines.cpython-311.pyc",
+   "sha256": "f6052fb8f99b274fdc22063d512cb559a38a9fd3341557a1113de0c735c9b2f7"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/lib2to3/fixes/fix_xreadlines.py",
+   "sha256": "e8c2f19f7047bfc7539fd78839929004d8fe0efba1fbcbd9d712d285e43834ba"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/test/__pycache__/test_readline.cpython-311.opt-1.pyc",
+   "sha256": "62299ce66c1a455312808d30d9604ea93199906c1c12e00c75ccbe56480d7237"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/test/__pycache__/test_readline.cpython-311.opt-2.pyc",
+   "sha256": "9b0d11bad641e28681f9aab998a4f2b1d14c46d23c5e2ddff4d05a01922e8119"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/test/__pycache__/test_readline.cpython-311.pyc",
+   "sha256": "62299ce66c1a455312808d30d9604ea93199906c1c12e00c75ccbe56480d7237"
+  },
+  {
+   "file": "apio/packages/oss-cad-suite/lib/python3.11/test/test_readline.py",
+   "sha256": "8c4c9b7ffec5c52b654c81f6461b55d68747f3f7c65e562fcd31618ec008c457"
+  }
+ ],
+ "conclusion": "See docs/phase5h-windows-compliance.md."
+}

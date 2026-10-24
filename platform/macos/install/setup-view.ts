@@ -17,6 +17,8 @@ export interface SetupRowView {
     /** `Ready`, `Not installed`, `Installing…`, … */
     readonly word: string;
     readonly hint?: string;
+    /** A web page that helps with this row (opened by the extension on request), e.g. where to get a vendor's software. */
+    readonly link?: { readonly label: string; readonly url: string };
 }
 
 export type SetupActionId = 'install' | 'verify' | 'repair';
@@ -127,6 +129,10 @@ export interface SetupViewProfile {
     readonly installDetail: (boardId: BoardSupportId) => string;
     /** How a board's state is derived from its components (default: the macOS rule in boards.ts). */
     readonly boardState?: (statuses: readonly ComponentStatus[], board: BoardSupportEntry) => BoardState;
+    /** Host-specific sentences for a row in a state (key `<row>:<state>`), replacing the default one. */
+    readonly hints?: Readonly<Record<string, string>>;
+    /** Host-specific help page for a row in a state (key `<row>:<state>`). */
+    readonly links?: Readonly<Record<string, { readonly label: string; readonly url: string }>>;
 }
 
 export const MACOS_VIEW_PROFILE: SetupViewProfile = {
@@ -148,8 +154,9 @@ export function buildSetupView(statuses: readonly ComponentStatus[], hardware: H
 
     const row = (id: Exclude<SetupRowId, 'hardware'>, label: string, ids: readonly string[]): SetupRowView => {
         const st = worst(by, ids);
-        const hint = HINT[`${id}:${st}`];
-        return { id, label, state: ROW_STATE[st], word: WORD[st], ...(hint ? { hint } : {}) };
+        const hint = profile.hints?.[`${id}:${st}`] ?? HINT[`${id}:${st}`];
+        const link = profile.links?.[`${id}:${st}`];
+        return { id, label, state: ROW_STATE[st], word: WORD[st], ...(hint ? { hint } : {}), ...(link ? { link } : {}) };
     };
     const rows: SetupRowView[] = [];
     if (!fresh) {
