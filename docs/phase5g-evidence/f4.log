@@ -1,0 +1,16 @@
+vscode: /Applications/Visual Studio Code.app
+extension: 0.6.0
+mode: Upgrade from NexysVHDL 0.6.0
+legacy toolchain store: true
+Checking nexysvhdl-0.7.0-darwin-arm64.vsix…
+Checking nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz…
+Installing MIX-FPGA 0.7.0 in Visual Studio Code…
+MIX-FPGA 0.7.0 is installed in Visual Studio Code.
+Installing the board support (this checks every file and can take several minutes)…
+Installing Nexys A7 support…
+  nexys-toolchain: cancelled
+RESULT: FAILED — Board support did not finish
+  Setup was cancelled. Choose Repair to continue.
+  Nothing that was already working was removed. Press Retry.
+  Nexys A7-100T — Not installed
+  DE10-Lite — Not installed
