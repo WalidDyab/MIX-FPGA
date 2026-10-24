@@ -1,0 +1,108 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0"
+    },
+    "project": {
+      "stage": "nexys",
+      "name": "NexysClean",
+      "board": "nexys-a7-100t",
+      "boardName": "Nexys A7-100T",
+      "constraintFormat": "xdc",
+      "constraintFiles": [
+        "constraints/nexys-a7-100t.xdc"
+      ],
+      "groupExtensions": ".xdc",
+      "errors": [],
+      "legacyDefault": false
+    },
+    "addFileKinds": [
+      "Source",
+      "Simulation Testbench",
+      "Constraint"
+    ],
+    "vmBeforeEnvironment": "missing",
+    "environment": {
+      "headline": "Ready",
+      "level": "ready",
+      "rows": [
+        "Bundled FPGA Toolchain=Ready",
+        "Board programmer (openFPGALoader)=Ready (bundled)"
+      ],
+      "details": [
+        "GHDL: 6.0.0",
+        "Apio: 1.7.0",
+        "openXC7: 2026-09-25",
+        "Yosys: 0.63+173",
+        "nextpnr-xilinx: e860c9c8",
+        "Board programmer (openFPGALoader): openFPGALoader: openFPGALoader 1.1.1 — NexysVHDL bundled toolchain, native arm64"
+      ],
+      "hasToolchainPrompt": true
+    },
+    "vmAfterEnvironment": "missing",
+    "check": {
+      "state": "passed",
+      "summary": "No VHDL errors"
+    },
+    "simulate": {
+      "state": "passed",
+      "summary": "Passed · stopped at 660 ns"
+    },
+    "rtl": {
+      "status": "ready"
+    },
+    "vmAfterCheckSimulateSchematics": "missing",
+    "build.build": {
+      "seconds": 13,
+      "success": true,
+      "summary": "BUILD COMPLETE",
+      "statusLines": [
+        "Building…",
+        "BUILD COMPLETE"
+      ],
+      "stageOrder": [
+        "synthesis",
+        "implementation",
+        "bitstream"
+      ],
+      "stageSummaries": {
+        "synthesis": "passed: 57 LUTs · 27 FFs",
+        "implementation": "passed: Timing PASS · 372.58 MHz",
+        "bitstream": "passed: hardware.bit · 3.6 MB"
+      },
+      "boardId": "nexys-a7-100t",
+      "resourceRows": [
+        "LUTs=57 / 63,400",
+        "Flip-Flops=27 / 126,800",
+        "BRAM (36 Kb)=0 / 135",
+        "DSP=0 / 240",
+        "I/O pins=4 / 210"
+      ],
+      "timingRows": [
+        "Timing=PASS",
+        "Target=100 MHz",
+        "Fmax=372.58 MHz",
+        "Setup slack=+7.3 ns"
+      ],
+      "artifactRow": "Bitstream=hardware.bit"
+    },
+    "verifyEnvironmentOnNexys": "ran",
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\"}",
+    "project: {\"stage\":\"nexys\",\"name\":\"NexysClean\",\"board\":\"nexys-a7-100t\",\"boardName\":\"Nexys A7-100T\",\"constraintFormat\":\"xdc\",\"constraintFiles\":[\"constraints/nexys-a7-100t.xdc\"],\"groupExtensions\":\".xdc\",\"errors\":[],\"legacyDefault\":false}",
+    "addFileKinds: [\"Source\",\"Simulation Testbench\",\"Constraint\"]",
+    "vmBeforeEnvironment: \"missing\"",
+    "environment: {\"headline\":\"Ready\",\"level\":\"ready\",\"rows\":[\"Bundled FPGA Toolchain=Ready\",\"Board programmer (openFPGALoader)=Ready (bundled)\"],\"details\":[\"GHDL: 6.0.0\",\"Apio: 1.7.0\",\"openXC7: 2026-09-25\",\"Yosys: 0.63+173\",\"nextpnr-xilinx: e860c9c8\",\"Board programmer (openFPGALoader): openFPGALoader: openFPGALoader 1.1.1 — NexysVHDL bundled toolchain, native arm64\"],\"hasToolchainPrompt\":true}",
+    "vmAfterEnvironment: \"missing\"",
+    "check: {\"state\":\"passed\",\"summary\":\"No VHDL errors\"}",
+    "simulate: {\"state\":\"passed\",\"summary\":\"Passed · stopped at 660 ns\"}",
+    "rtl: {\"status\":\"ready\"}",
+    "vmAfterCheckSimulateSchematics: \"missing\"",
+    "build.build: {\"seconds\":13,\"success\":true,\"summary\":\"BUILD COMPLETE\",\"statusLines\":[\"Building…\",\"BUILD COMPLETE\"],\"stageOrder\":[\"synthesis\",\"implementation\",\"bitstream\"],\"stageSummaries\":{\"synthesis\":\"passed: 57 LUTs · 27 FFs\",\"implementation\":\"passed: Timing PASS · 372.58 MHz\",\"bitstream\":\"passed: hardware.bit · 3.6 MB\"},\"boardId\":\"nexys-a7-100t\",\"resourceRows\":[\"LUTs=57 / 63,400\",\"Flip-Flops=27 / 126,800\",\"BRAM (36 Kb)=0 / 135\",\"DSP=0 / 240\",\"I/O pins=4 / 210\"],\"timingRows\":[\"Timing=PASS\",\"Target=100 MHz\",\"Fmax=372.58 MHz\",\"Setup slack=+7.3 ns\"],\"artifactRow\":\"Bitstream=hardware.bit\"}",
+    "verifyEnvironmentOnNexys: \"ran\"",
+    "result: \"PASS\""
+  ]
+}

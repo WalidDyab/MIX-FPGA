@@ -1,0 +1,200 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0",
+      "extensionPath": "/Users/nohafahmy/MFU5F-F/vs/ext/emxplore.nexysvhdl-0.7.0",
+      "mixfpgaHome": null,
+      "home": "/Users/nohafahmy/MFU5F-F",
+      "scenario": "add-de10"
+    },
+    "requiredToolchain": {
+      "version": "1.1",
+      "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz",
+      "tree": "0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28"
+    },
+    "apiBinding": {
+      "sameObject": false
+    },
+    "setupPage.addDe10": {
+      "headline": "Needs repair",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(warning) DE10-Lite  [Needs repair]  — Repair DE10-Lite Support — Continues an interrupted setup or puts back anything missing or changed.",
+        "$(error) VHDL Tools  [Needs attention]",
+        "$(error) FPGA Engine  [Needs attention]  — The last attempt did not finish. Repair tries again; Details says why.",
+        "$(error) Programmer  [Needs attention]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "$(warning) DE10-Lite"
+    },
+    "setupPage.afterAdd": {
+      "headline": "Needs repair",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(warning) DE10-Lite  [Needs repair]  — Repair DE10-Lite Support — Continues an interrupted setup or puts back anything missing or changed.",
+        "$(error) VHDL Tools  [Needs attention]",
+        "$(error) FPGA Engine  [Needs attention]  — The last attempt did not finish. Repair tries again; Details says why.",
+        "$(error) Programmer  [Needs attention]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "newProject.De10After": {
+      "boardsOffered": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "gate": {
+        "message": "DE10-Lite support is not installed.",
+        "detail": "MIX-FPGA can install it now; the new project is created afterwards.",
+        "answered": "undefined"
+      }
+    },
+    "newProject.De10After.created": false,
+    "unansweredPrompts": [],
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\",\"extensionPath\":\"/Users/nohafahmy/MFU5F-F/vs/ext/emxplore.nexysvhdl-0.7.0\",\"mixfpgaHome\":null,\"home\":\"/Users/nohafahmy/MFU5F-F\",\"scenario\":\"add-de10\"}",
+    "requiredToolchain: {\"version\":\"1.1\",\"archive\":\"nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz\",\"tree\":\"0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28\"}",
+    "apiBinding: {\"sameObject\":false}",
+    "setupPage.addDe10: {\"headline\":\"Needs repair\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(warning) DE10-Lite  [Needs repair]  — Repair DE10-Lite Support — Continues an interrupted setup or puts back anything missing or changed.\",\"$(error) VHDL Tools  [Needs attention]\",\"$(error) FPGA Engine  [Needs attention]  — The last attempt did not finish. Repair tries again; Details says why.\",\"$(error) Programmer  [Needs attention]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"$(warning) DE10-Lite\"}",
+    "setupPage.afterAdd: {\"headline\":\"Needs repair\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(warning) DE10-Lite  [Needs repair]  — Repair DE10-Lite Support — Continues an interrupted setup or puts back anything missing or changed.\",\"$(error) VHDL Tools  [Needs attention]\",\"$(error) FPGA Engine  [Needs attention]  — The last attempt did not finish. Repair tries again; Details says why.\",\"$(error) Programmer  [Needs attention]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "newProject.De10After: {\"boardsOffered\":[\"DE10-Lite  [10M50DAF484C7G]\",\"Nexys A7-100T  [XC7A100T-1CSG324C]\"],\"gate\":{\"message\":\"DE10-Lite support is not installed.\",\"detail\":\"MIX-FPGA can install it now; the new project is created afterwards.\",\"answered\":\"undefined\"}}",
+    "newProject.De10After.created: false",
+    "unansweredPrompts: []",
+    "result: \"PASS\""
+  ],
+  "prompts": [
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Needs repair",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(warning) DE10-Lite  [Needs repair]  — Repair DE10-Lite Support — Continues an interrupted setup or puts back anything missing or changed.",
+        "$(error) VHDL Tools  [Needs attention]",
+        "$(error) FPGA Engine  [Needs attention]  — The last attempt did not finish. Repair tries again; Details says why.",
+        "$(error) Programmer  [Needs attention]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "$(warning) DE10-Lite"
+    },
+    {
+      "kind": "info",
+      "title": "Install board support",
+      "text": "This will set up: VHDL tools and the programmer.\nIt needs very little space.",
+      "items": [],
+      "modal": true,
+      "answered": "Continue"
+    },
+    {
+      "kind": "info",
+      "title": "DE10-Lite support file",
+      "text": "Choose the DE10-Lite support file your course provides (mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz). MIX-FPGA checks it before using it.",
+      "items": [],
+      "modal": true,
+      "answered": "Choose File…"
+    },
+    {
+      "kind": "opendialog",
+      "title": "Choose the DE10-Lite support file",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "file:///Users/nohafahmy/WSClaude/MIX-FPGA/.artifacts/release-rc/MIX-FPGA-0.7.0-macOS-arm64-RC/nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz"
+    },
+    {
+      "kind": "warning",
+      "title": "MIX-FPGA: That is not the DE10-Lite support file. Choose mixfpga-de10-lite-support-1.1-macos-arm64.tar.gz, which your course provides.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Needs repair",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(warning) DE10-Lite  [Needs repair]  — Repair DE10-Lite Support — Continues an interrupted setup or puts back anything missing or changed.",
+        "$(error) VHDL Tools  [Needs attention]",
+        "$(error) FPGA Engine  [Needs attention]  — The last attempt did not finish. Repair tries again; Details says why.",
+        "$(error) Programmer  [Needs attention]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "opendialog",
+      "title": "MIX-FPGA: choose the folder that will contain the new project folder",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "file:///Users/nohafahmy/MFU5F-F/MF/ws"
+    },
+    {
+      "kind": "inputbox",
+      "title": "MIX-FPGA: project name",
+      "text": "A new folder with this name is created in /Users/nohafahmy/MFU5F-F/MF/ws",
+      "items": [],
+      "modal": false,
+      "answered": "De10After"
+    },
+    {
+      "kind": "quickpick",
+      "title": "New MIX-FPGA Project: board",
+      "text": "Choose the FPGA board",
+      "items": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "modal": false,
+      "answered": "DE10-Lite"
+    },
+    {
+      "kind": "warning",
+      "title": "DE10-Lite support is not installed.",
+      "text": "MIX-FPGA can install it now; the new project is created afterwards.",
+      "items": [],
+      "modal": true,
+      "answered": "undefined"
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0",
+      "extensionPath": "/Users/nohafahmy/MFU5F-F/vs/ext/emxplore.nexysvhdl-0.7.0",
+      "mixfpgaHome": null,
+      "home": "/Users/nohafahmy/MFU5F-F",
+      "scenario": "add-nexys"
+    },
+    "requiredToolchain": {
+      "version": "1.1",
+      "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz",
+      "tree": "0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28"
+    },
+    "apiBinding": {
+      "sameObject": false
+    },
+    "setupPage.addNexys": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "$(pass) Nexys A7-100T"
+    },
+    "setupPage.afterAdd": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "openFolder.requested": "/Users/nohafahmy/MFU5F-F/MF/ws/NexysAfter",
+    "newProject.NexysAfter": {
+      "boardsOffered": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "gate": null
+    },
+    "newProject.NexysAfter.created": {
+      "board": "nexys-a7-100t",
+      "root": "/Users/nohafahmy/MFU5F-F/MF/ws/NexysAfter"
+    },
+    "unansweredPrompts": [],
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\",\"extensionPath\":\"/Users/nohafahmy/MFU5F-F/vs/ext/emxplore.nexysvhdl-0.7.0\",\"mixfpgaHome\":null,\"home\":\"/Users/nohafahmy/MFU5F-F\",\"scenario\":\"add-nexys\"}",
+    "requiredToolchain: {\"version\":\"1.1\",\"archive\":\"nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz\",\"tree\":\"0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28\"}",
+    "apiBinding: {\"sameObject\":false}",
+    "setupPage.addNexys: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"$(pass) Nexys A7-100T\"}",
+    "setupPage.afterAdd: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "openFolder.requested: \"/Users/nohafahmy/MFU5F-F/MF/ws/NexysAfter\"",
+    "newProject.NexysAfter: {\"boardsOffered\":[\"DE10-Lite  [10M50DAF484C7G]\",\"Nexys A7-100T  [XC7A100T-1CSG324C]\"],\"gate\":null}",
+    "newProject.NexysAfter.created: {\"board\":\"nexys-a7-100t\",\"root\":\"/Users/nohafahmy/MFU5F-F/MF/ws/NexysAfter\"}",
+    "unansweredPrompts: []",
+    "result: \"PASS\""
+  ],
+  "prompts": [
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "$(pass) Nexys A7-100T"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "opendialog",
+      "title": "MIX-FPGA: choose the folder that will contain the new project folder",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "file:///Users/nohafahmy/MFU5F-F/MF/ws"
+    },
+    {
+      "kind": "inputbox",
+      "title": "MIX-FPGA: project name",
+      "text": "A new folder with this name is created in /Users/nohafahmy/MFU5F-F/MF/ws",
+      "items": [],
+      "modal": false,
+      "answered": "NexysAfter"
+    },
+    {
+      "kind": "quickpick",
+      "title": "New MIX-FPGA Project: board",
+      "text": "Choose the FPGA board",
+      "items": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "modal": false,
+      "answered": "Nexys A7-100T"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA: what should the new project contain?",
+      "text": "Empty project or starter example",
+      "items": [
+        "$(file-directory) Empty project (recommended)  [empty src/ and sim/ folders: add your own files with Add File]",
+        "$(lightbulb) Starter project  [a blinking-LED example with its testbench and pin constraints]"
+      ],
+      "modal": false,
+      "answered": "$(lightbulb) Starter project"
+    }
+  ]
+}

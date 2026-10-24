@@ -1,0 +1,79 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0"
+    },
+    "project": {
+      "stage": "hardware",
+      "name": "De10After",
+      "board": "de10-lite",
+      "boardName": "DE10-Lite",
+      "constraintFormat": "qsf-sdc",
+      "constraintFiles": [
+        "constraints/de10-lite.qsf",
+        "constraints/de10-lite.sdc"
+      ],
+      "groupExtensions": ".qsf and .sdc",
+      "errors": [],
+      "legacyDefault": false
+    },
+    "artifactBefore": {
+      "builtAt": "2026-10-24T08:12:38.879Z",
+      "svfFile": "top.svf",
+      "svfSha256": "3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327",
+      "recordedSha256": "3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327",
+      "hashMatches": true,
+      "builtAtOlderThanNow": "2026-10-24T08:12:38.879Z",
+      "inputsUnchangedSinceBuild": true
+    },
+    "vmBefore": "Running",
+    "detectBefore": {
+      "status": "one",
+      "count": 1,
+      "boards": [
+        "DE10-Lite 91d28408"
+      ],
+      "diagnostics": []
+    },
+    "program": {
+      "state": "passed",
+      "summary": "FPGA programmed"
+    },
+    "programResult": {
+      "status": "succeeded",
+      "destination": "volatile",
+      "durationMs": 3880,
+      "target": {
+        "selector": "de10-lite",
+        "productName": "DE10-Lite",
+        "boardId": "de10-lite"
+      },
+      "diagnostics": [
+        "info:PROGRAMMED_SRAM:Configuration loaded into SRAM (temporary; lost at power-off). Check the board to confirm behaviour."
+      ]
+    },
+    "detectAfter": {
+      "status": "one",
+      "count": 1,
+      "boards": [
+        "DE10-Lite 91d28408"
+      ],
+      "diagnostics": []
+    },
+    "vmAfter": "Running",
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\"}",
+    "project: {\"stage\":\"hardware\",\"name\":\"De10After\",\"board\":\"de10-lite\",\"boardName\":\"DE10-Lite\",\"constraintFormat\":\"qsf-sdc\",\"constraintFiles\":[\"constraints/de10-lite.qsf\",\"constraints/de10-lite.sdc\"],\"groupExtensions\":\".qsf and .sdc\",\"errors\":[],\"legacyDefault\":false}",
+    "artifactBefore: {\"builtAt\":\"2026-10-24T08:12:38.879Z\",\"svfFile\":\"top.svf\",\"svfSha256\":\"3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327\",\"recordedSha256\":\"3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327\",\"hashMatches\":true,\"builtAtOlderThanNow\":\"2026-10-24T08:12:38.879Z\",\"inputsUnchangedSinceBuild\":true}",
+    "vmBefore: \"Running\"",
+    "detectBefore: {\"status\":\"one\",\"count\":1,\"boards\":[\"DE10-Lite 91d28408\"],\"diagnostics\":[]}",
+    "program: {\"state\":\"passed\",\"summary\":\"FPGA programmed\"}",
+    "programResult: {\"status\":\"succeeded\",\"destination\":\"volatile\",\"durationMs\":3880,\"target\":{\"selector\":\"de10-lite\",\"productName\":\"DE10-Lite\",\"boardId\":\"de10-lite\"},\"diagnostics\":[\"info:PROGRAMMED_SRAM:Configuration loaded into SRAM (temporary; lost at power-off). Check the board to confirm behaviour.\"]}",
+    "detectAfter: {\"status\":\"one\",\"count\":1,\"boards\":[\"DE10-Lite 91d28408\"],\"diagnostics\":[]}",
+    "vmAfter: \"Running\"",
+    "result: \"PASS\""
+  ]
+}

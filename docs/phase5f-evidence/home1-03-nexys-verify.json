@@ -1,0 +1,81 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0",
+      "extensionPath": "/Users/nohafahmy/MFU5F-1/vs/ext/emxplore.nexysvhdl-0.7.0",
+      "mixfpgaHome": null,
+      "home": "/Users/nohafahmy/MFU5F-1",
+      "scenario": "verify"
+    },
+    "requiredToolchain": {
+      "version": "1.1",
+      "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz",
+      "tree": "0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28"
+    },
+    "apiBinding": {
+      "sameObject": false
+    },
+    "setupPage.before": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "unansweredPrompts": [],
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\",\"extensionPath\":\"/Users/nohafahmy/MFU5F-1/vs/ext/emxplore.nexysvhdl-0.7.0\",\"mixfpgaHome\":null,\"home\":\"/Users/nohafahmy/MFU5F-1\",\"scenario\":\"verify\"}",
+    "requiredToolchain: {\"version\":\"1.1\",\"archive\":\"nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz\",\"tree\":\"0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28\"}",
+    "apiBinding: {\"sameObject\":false}",
+    "setupPage.before: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "unansweredPrompts: []",
+    "result: \"PASS\""
+  ],
+  "prompts": [
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "info",
+      "title": "MIX-FPGA: the environment is ready.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    }
+  ]
+}

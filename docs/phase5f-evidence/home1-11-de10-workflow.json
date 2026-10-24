@@ -1,0 +1,187 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0"
+    },
+    "project": {
+      "stage": "de10",
+      "name": "De10After",
+      "board": "de10-lite",
+      "boardName": "DE10-Lite",
+      "constraintFormat": "qsf-sdc",
+      "constraintFiles": [
+        "constraints/de10-lite.qsf",
+        "constraints/de10-lite.sdc"
+      ],
+      "groupExtensions": ".qsf and .sdc",
+      "errors": [],
+      "legacyDefault": false
+    },
+    "addFileKinds": [
+      "Source",
+      "Simulation Testbench",
+      "Constraint: Pins (QSF)",
+      "Constraint: Clock (SDC)"
+    ],
+    "vmBeforeEnvironment": "Stopped",
+    "environment": {
+      "headline": "Ready",
+      "level": "ready",
+      "rows": [
+        "Board=DE10-Lite",
+        "VHDL Tools=Ready",
+        "FPGA Engine=Ready",
+        "Programmer=Ready"
+      ],
+      "details": [
+        "GHDL: 6.0.0",
+        "Yosys: 0.63+173",
+        "Quartus Prime Lite: checked when the FPGA engine starts",
+        "MAX 10 device support: checked when the FPGA engine starts",
+        "Lima: 2.2.1",
+        "Rosetta 2: installed",
+        "openFPGALoader: 1.1.1"
+      ],
+      "hasToolchainPrompt": false
+    },
+    "vmAfterEnvironment": "Stopped",
+    "vmStoppedForTest": "Stopped",
+    "check": {
+      "state": "passed",
+      "summary": "No VHDL errors"
+    },
+    "simulate": {
+      "state": "passed",
+      "summary": "Passed · stopped at 1320 ns"
+    },
+    "rtl": {
+      "status": "ready"
+    },
+    "vmAfterCheckSimulateSchematics": "Stopped",
+    "build.cold": {
+      "seconds": 35.6,
+      "success": true,
+      "summary": "BUILD COMPLETE",
+      "statusLines": [
+        "Building…",
+        "Preparing FPGA engine…",
+        "Preparing the project…",
+        "Synthesis…",
+        "Fitting…",
+        "Timing…",
+        "Generating programming file…",
+        "Collecting results…",
+        "BUILD COMPLETE"
+      ],
+      "stageOrder": [
+        "synthesis",
+        "implementation",
+        "bitstream"
+      ],
+      "stageSummaries": {
+        "synthesis": "passed: 28 Logic Elements · 26 Registers",
+        "implementation": "passed: Timing PASS · 311.53 MHz",
+        "bitstream": "passed: top.svf · 1.7 MB"
+      },
+      "boardId": "de10-lite",
+      "resourceRows": [
+        "Logic Elements=28 / 49,760",
+        "Registers=26",
+        "Memory Bits=0 / 1,677,312",
+        "DSP Blocks=0 / 288",
+        "I/O pins=4 / 360"
+      ],
+      "timingRows": [
+        "Timing=PASS",
+        "Target=50 MHz",
+        "Fmax=311.53 MHz",
+        "Setup slack=+16.8 ns",
+        "Hold slack=+0.17 ns"
+      ],
+      "artifactRow": "Programming file=top.svf"
+    },
+    "vmAfterBuild": "Running",
+    "build.warm": {
+      "seconds": 27.3,
+      "success": true,
+      "summary": "BUILD COMPLETE",
+      "statusLines": [
+        "Building…",
+        "Preparing FPGA engine…",
+        "Preparing the project…",
+        "Synthesis…",
+        "Fitting…",
+        "Timing…",
+        "Generating programming file…",
+        "Collecting results…",
+        "BUILD COMPLETE"
+      ],
+      "stageOrder": [
+        "synthesis",
+        "implementation",
+        "bitstream"
+      ],
+      "stageSummaries": {
+        "synthesis": "passed: 28 Logic Elements · 26 Registers",
+        "implementation": "passed: Timing PASS · 311.53 MHz",
+        "bitstream": "passed: top.svf · 1.7 MB"
+      },
+      "boardId": "de10-lite",
+      "resourceRows": [
+        "Logic Elements=28 / 49,760",
+        "Registers=26",
+        "Memory Bits=0 / 1,677,312",
+        "DSP Blocks=0 / 288",
+        "I/O pins=4 / 360"
+      ],
+      "timingRows": [
+        "Timing=PASS",
+        "Target=50 MHz",
+        "Fmax=311.53 MHz",
+        "Setup slack=+16.8 ns",
+        "Hold slack=+0.17 ns"
+      ],
+      "artifactRow": "Programming file=top.svf"
+    },
+    "verifyEnvironment": {
+      "ok": true,
+      "steps": [
+        "OK GHDL 6.0.0",
+        "OK Yosys 0.63",
+        "OK openFPGALoader 1.1.1",
+        "OK Lima 2.2.1",
+        "OK FPGA engine scripts",
+        "OK Licence texts",
+        "OK Third-party notices",
+        "OK Installation record",
+        "OK Rosetta 2",
+        "OK FPGA engine and Quartus"
+      ]
+    },
+    "restartFpgaEngine": {
+      "state": "running",
+      "vm": "Running"
+    },
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\"}",
+    "project: {\"stage\":\"de10\",\"name\":\"De10After\",\"board\":\"de10-lite\",\"boardName\":\"DE10-Lite\",\"constraintFormat\":\"qsf-sdc\",\"constraintFiles\":[\"constraints/de10-lite.qsf\",\"constraints/de10-lite.sdc\"],\"groupExtensions\":\".qsf and .sdc\",\"errors\":[],\"legacyDefault\":false}",
+    "addFileKinds: [\"Source\",\"Simulation Testbench\",\"Constraint: Pins (QSF)\",\"Constraint: Clock (SDC)\"]",
+    "vmBeforeEnvironment: \"Stopped\"",
+    "environment: {\"headline\":\"Ready\",\"level\":\"ready\",\"rows\":[\"Board=DE10-Lite\",\"VHDL Tools=Ready\",\"FPGA Engine=Ready\",\"Programmer=Ready\"],\"details\":[\"GHDL: 6.0.0\",\"Yosys: 0.63+173\",\"Quartus Prime Lite: checked when the FPGA engine starts\",\"MAX 10 device support: checked when the FPGA engine starts\",\"Lima: 2.2.1\",\"Rosetta 2: installed\",\"openFPGALoader: 1.1.1\"],\"hasToolchainPrompt\":false}",
+    "vmAfterEnvironment: \"Stopped\"",
+    "vmStoppedForTest: \"Stopped\"",
+    "check: {\"state\":\"passed\",\"summary\":\"No VHDL errors\"}",
+    "simulate: {\"state\":\"passed\",\"summary\":\"Passed · stopped at 1320 ns\"}",
+    "rtl: {\"status\":\"ready\"}",
+    "vmAfterCheckSimulateSchematics: \"Stopped\"",
+    "build.cold: {\"seconds\":35.6,\"success\":true,\"summary\":\"BUILD COMPLETE\",\"statusLines\":[\"Building…\",\"Preparing FPGA engine…\",\"Preparing the project…\",\"Synthesis…\",\"Fitting…\",\"Timing…\",\"Generating programming file…\",\"Collecting results…\",\"BUILD COMPLETE\"],\"stageOrder\":[\"synthesis\",\"implementation\",\"bitstream\"],\"stageSummaries\":{\"synthesis\":\"passed: 28 Logic Elements · 26 Registers\",\"implementation\":\"passed: Timing PASS · 311.53 MHz\",\"bitstream\":\"passed: top.svf · 1.7 MB\"},\"boardId\":\"de10-lite\",\"resourceRows\":[\"Logic Elements=28 / 49,760\",\"Registers=26\",\"Memory Bits=0 / 1,677,312\",\"DSP Blocks=0 / 288\",\"I/O pins=4 / 360\"],\"timingRows\":[\"Timing=PASS\",\"Target=50 MHz\",\"Fmax=311.53 MHz\",\"Setup slack=+16.8 ns\",\"Hold slack=+0.17 ns\"],\"artifactRow\":\"Programming file=top.svf\"}",
+    "vmAfterBuild: \"Running\"",
+    "build.warm: {\"seconds\":27.3,\"success\":true,\"summary\":\"BUILD COMPLETE\",\"statusLines\":[\"Building…\",\"Preparing FPGA engine…\",\"Preparing the project…\",\"Synthesis…\",\"Fitting…\",\"Timing…\",\"Generating programming file…\",\"Collecting results…\",\"BUILD COMPLETE\"],\"stageOrder\":[\"synthesis\",\"implementation\",\"bitstream\"],\"stageSummaries\":{\"synthesis\":\"passed: 28 Logic Elements · 26 Registers\",\"implementation\":\"passed: Timing PASS · 311.53 MHz\",\"bitstream\":\"passed: top.svf · 1.7 MB\"},\"boardId\":\"de10-lite\",\"resourceRows\":[\"Logic Elements=28 / 49,760\",\"Registers=26\",\"Memory Bits=0 / 1,677,312\",\"DSP Blocks=0 / 288\",\"I/O pins=4 / 360\"],\"timingRows\":[\"Timing=PASS\",\"Target=50 MHz\",\"Fmax=311.53 MHz\",\"Setup slack=+16.8 ns\",\"Hold slack=+0.17 ns\"],\"artifactRow\":\"Programming file=top.svf\"}",
+    "verifyEnvironment: {\"ok\":true,\"steps\":[\"OK GHDL 6.0.0\",\"OK Yosys 0.63\",\"OK openFPGALoader 1.1.1\",\"OK Lima 2.2.1\",\"OK FPGA engine scripts\",\"OK Licence texts\",\"OK Third-party notices\",\"OK Installation record\",\"OK Rosetta 2\",\"OK FPGA engine and Quartus\"]}",
+    "restartFpgaEngine: {\"state\":\"running\",\"vm\":\"Running\"}",
+    "result: \"PASS\""
+  ]
+}

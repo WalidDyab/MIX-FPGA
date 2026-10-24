@@ -1,0 +1,50 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0"
+    },
+    "project": {
+      "stage": "hardware",
+      "name": "De10After",
+      "board": "de10-lite",
+      "boardName": "DE10-Lite",
+      "constraintFormat": "qsf-sdc",
+      "constraintFiles": [
+        "constraints/de10-lite.qsf",
+        "constraints/de10-lite.sdc"
+      ],
+      "groupExtensions": ".qsf and .sdc",
+      "errors": [],
+      "legacyDefault": false
+    },
+    "artifactBefore": {
+      "builtAt": "2026-10-24T08:12:38.879Z",
+      "svfFile": "top.svf",
+      "svfSha256": "3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327",
+      "recordedSha256": "3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327",
+      "hashMatches": true,
+      "builtAtOlderThanNow": "2026-10-24T08:12:38.879Z",
+      "inputsUnchangedSinceBuild": true
+    },
+    "vmBefore": "Running",
+    "detectBefore": {
+      "status": "many",
+      "count": 2,
+      "boards": [
+        "DE10-Lite 91d28408",
+        "DE10-Lite 210292BCFFE4"
+      ],
+      "diagnostics": []
+    },
+    "result": "FAILED: Error: timed out waiting for program done\n\tat waitFor (/Users/nohafahmy/WSClaude/MIX-FPGA/dist/tests/integration/edh-suite.js:84:19)\n\tat async Object.run_ (/Users/nohafahmy/WSClaude/MIX-FPGA/dist/tests/integration/multiboard-suite.js:127:13)"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\"}",
+    "project: {\"stage\":\"hardware\",\"name\":\"De10After\",\"board\":\"de10-lite\",\"boardName\":\"DE10-Lite\",\"constraintFormat\":\"qsf-sdc\",\"constraintFiles\":[\"constraints/de10-lite.qsf\",\"constraints/de10-lite.sdc\"],\"groupExtensions\":\".qsf and .sdc\",\"errors\":[],\"legacyDefault\":false}",
+    "artifactBefore: {\"builtAt\":\"2026-10-24T08:12:38.879Z\",\"svfFile\":\"top.svf\",\"svfSha256\":\"3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327\",\"recordedSha256\":\"3b2c8ebc0d91e6d2c4b28166d43a05caf0638e921bf7b349c0caca5781a6f327\",\"hashMatches\":true,\"builtAtOlderThanNow\":\"2026-10-24T08:12:38.879Z\",\"inputsUnchangedSinceBuild\":true}",
+    "vmBefore: \"Running\"",
+    "detectBefore: {\"status\":\"many\",\"count\":2,\"boards\":[\"DE10-Lite 91d28408\",\"DE10-Lite 210292BCFFE4\"],\"diagnostics\":[]}",
+    "result: \"FAILED: Error: timed out waiting for program done\\n\\tat waitFor (/Users/nohafahmy/WSClaude/MIX-FPGA/dist/tests/integration/edh-suite.js:84:19)\\n\\tat async Object.run_ (/Users/nohafahmy/WSClaude/MIX-FPGA/dist/tests/integration/multiboard-suite.js:127:13)\""
+  ]
+}

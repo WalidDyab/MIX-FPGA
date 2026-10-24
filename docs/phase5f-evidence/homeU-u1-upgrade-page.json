@@ -1,0 +1,75 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0",
+      "extensionPath": "/Users/nohafahmy/MFU5F-U/vs/ext/emxplore.nexysvhdl-0.7.0",
+      "mixfpgaHome": null,
+      "home": "/Users/nohafahmy/MFU5F-U",
+      "scenario": "page"
+    },
+    "requiredToolchain": {
+      "version": "1.1",
+      "archive": "nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz",
+      "tree": "0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28"
+    },
+    "apiBinding": {
+      "sameObject": false
+    },
+    "setupPage.now": {
+      "headline": "Setup required",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(circle-outline) Nexys A7-100T  [Not installed]  — Install Nexys A7-100T Support — Installs the Nexys A7 tools.",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(desktop-download) Install FPGA Toolchain  — Choose the boards you will use; only what they need is installed.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "unansweredPrompts": [],
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\",\"extensionPath\":\"/Users/nohafahmy/MFU5F-U/vs/ext/emxplore.nexysvhdl-0.7.0\",\"mixfpgaHome\":null,\"home\":\"/Users/nohafahmy/MFU5F-U\",\"scenario\":\"page\"}",
+    "requiredToolchain: {\"version\":\"1.1\",\"archive\":\"nexysvhdl-toolchain-1.1-darwin-arm64.tar.gz\",\"tree\":\"0d0035d3b43ed81cdb3275bd230c5d29d2f1c43c112e2f75fc22550898743b28\"}",
+    "apiBinding: {\"sameObject\":false}",
+    "setupPage.now: {\"headline\":\"Setup required\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(circle-outline) Nexys A7-100T  [Not installed]  — Install Nexys A7-100T Support — Installs the Nexys A7 tools.\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.\",\"$(circle-outline) Hardware  [Not checked]\",\"$(desktop-download) Install FPGA Toolchain  — Choose the boards you will use; only what they need is installed.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "unansweredPrompts: []",
+    "result: \"PASS\""
+  ],
+  "prompts": [
+    {
+      "kind": "info",
+      "title": "Welcome to MIX-FPGA. Choose the FPGA boards you will use to finish setting up.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Setup required",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(circle-outline) Nexys A7-100T  [Not installed]  — Install Nexys A7-100T Support — Installs the Nexys A7 tools.",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 12 GB once finished, needs an internet connection and Altera's free download.",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(desktop-download) Install FPGA Toolchain  — Choose the boards you will use; only what they need is installed.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0"
+    },
+    "project": {
+      "stage": "hardware",
+      "name": "NexysClean",
+      "board": "nexys-a7-100t",
+      "boardName": "Nexys A7-100T",
+      "constraintFormat": "xdc",
+      "constraintFiles": [
+        "constraints/nexys-a7-100t.xdc"
+      ],
+      "groupExtensions": ".xdc",
+      "errors": [],
+      "legacyDefault": false
+    },
+    "artifactBefore": {
+      "bitstream": "/Users/nohafahmy/MFU5F-1/MF/ws/NexysClean/.nexysvhdl/impl/_build/default/hardware.bit",
+      "sizeBytes": 3825910,
+      "modified": "2026-10-24T06:57:29.528Z",
+      "sha256": "e5077f06a818c629189046a63d90a178f887fc3114d4f4a24c64f00c8ba1abec"
+    },
+    "vmBefore": "Running",
+    "detectBefore": {
+      "status": "one",
+      "count": 1,
+      "boards": [
+        "Digilent USB Device 210292BCFFE4"
+      ],
+      "diagnostics": []
+    },
+    "program": {
+      "state": "passed",
+      "summary": "FPGA programmed"
+    },
+    "programResult": {
+      "status": "succeeded",
+      "destination": "volatile",
+      "durationMs": 5287,
+      "target": {
+        "selector": "ftdi-serial=210292BCFFE4",
+        "serialNumber": "210292BCFFE4",
+        "productName": "Digilent USB Device",
+        "boardId": "nexys-a7-100t",
+        "transport": "USB JTAG FTDI2232 0403:6010, FPGA xc7a100 idcode 0x3631093"
+      },
+      "diagnostics": [
+        "info:MACOS_PROGRAMMED_SRAM:FPGA configured (DONE=1). Volatile SRAM configuration: it is lost when the board is powered off."
+      ]
+    },
+    "detectAfter": {
+      "status": "one",
+      "count": 1,
+      "boards": [
+        "Digilent USB Device 210292BCFFE4"
+      ],
+      "diagnostics": []
+    },
+    "vmAfter": "Running",
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\"}",
+    "project: {\"stage\":\"hardware\",\"name\":\"NexysClean\",\"board\":\"nexys-a7-100t\",\"boardName\":\"Nexys A7-100T\",\"constraintFormat\":\"xdc\",\"constraintFiles\":[\"constraints/nexys-a7-100t.xdc\"],\"groupExtensions\":\".xdc\",\"errors\":[],\"legacyDefault\":false}",
+    "artifactBefore: {\"bitstream\":\"/Users/nohafahmy/MFU5F-1/MF/ws/NexysClean/.nexysvhdl/impl/_build/default/hardware.bit\",\"sizeBytes\":3825910,\"modified\":\"2026-10-24T06:57:29.528Z\",\"sha256\":\"e5077f06a818c629189046a63d90a178f887fc3114d4f4a24c64f00c8ba1abec\"}",
+    "vmBefore: \"Running\"",
+    "detectBefore: {\"status\":\"one\",\"count\":1,\"boards\":[\"Digilent USB Device 210292BCFFE4\"],\"diagnostics\":[]}",
+    "program: {\"state\":\"passed\",\"summary\":\"FPGA programmed\"}",
+    "programResult: {\"status\":\"succeeded\",\"destination\":\"volatile\",\"durationMs\":5287,\"target\":{\"selector\":\"ftdi-serial=210292BCFFE4\",\"serialNumber\":\"210292BCFFE4\",\"productName\":\"Digilent USB Device\",\"boardId\":\"nexys-a7-100t\",\"transport\":\"USB JTAG FTDI2232 0403:6010, FPGA xc7a100 idcode 0x3631093\"},\"diagnostics\":[\"info:MACOS_PROGRAMMED_SRAM:FPGA configured (DONE=1). Volatile SRAM configuration: it is lost when the board is powered off.\"]}",
+    "detectAfter: {\"status\":\"one\",\"count\":1,\"boards\":[\"Digilent USB Device 210292BCFFE4\"],\"diagnostics\":[]}",
+    "vmAfter: \"Running\"",
+    "result: \"PASS\""
+  ]
+}

@@ -14,9 +14,14 @@
  *   P4B_SCENARIO=add-nexys   from Board Support: add the Nexys A7 later; create a Nexys project.
  *   P4B_SCENARIO=upgrade     after updating NexysVHDL 0.6.0: Nexys A7 Installed (reused), DE10-Lite offered; install it; both New Project choices.
  *   P4B_SCENARIO=page        only show the Setup page and record it.
+ *   P4B_SCENARIO=modified-nexys | modified-de10   (Phase 5F) change an installed file, then Setup page, New Project, Verify, declined and accepted
+ *                            Repair, and a genuinely missing file, all through the real commands.
+ *   P4B_NEXYS_ARCHIVE / P4B_DE10_ARCHIVE   the support files the student picks in the file dialogs (release artifacts).
  *   P4B_WORK=<folder for created projects>   P4B_MARKERS=<folder for marker files>
  */
-import { chmod, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { appendFile, chmod, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
@@ -28,7 +33,16 @@ const ALTERA_INSTALLER = process.platform === 'win32' ? 'QuartusLiteSetup-25.1st
 const ALTERA_PACKAGE = 'max10-25.1std.0.1129.qdz';
 const work = process.env['P4B_WORK'] ?? join(homedir(), 'MF', 'projects');
 const markers = process.env['P4B_MARKERS'] ?? join(work, '.markers');
-const w = vscode.window as unknown as Record<string, unknown>;
+/**
+ * The installed extension gets its OWN `vscode` API object (VS Code 1.143 gives every extension one), so prompts are answered on that
+ * object: a require() issued from a file inside the extension folder returns it. The extension's code is not changed in any way.
+ */
+let extApi: typeof vscode = vscode;
+let w = vscode.window as unknown as Record<string, unknown>;
+function bindToExtension(extensionPath: string): void {
+    extApi = createRequire(join(extensionPath, 'dist', 'extension', 'extension.js'))('vscode') as typeof vscode;
+    w = extApi.window as unknown as Record<string, unknown>;
+}
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface Prompt {
@@ -84,8 +98,8 @@ function installPrompts(): void {
     w['showOpenDialog'] = async (o?: { title?: string }) => dispatch('opendialog', o?.title ?? '', '', [], [], false);
     w['showInputBox'] = async (o?: { title?: string; prompt?: string }) => dispatch('inputbox', o?.title ?? '', o?.prompt ?? '', [], [], false);
     // Creating a project asks VS Code to switch this window to it; the test keeps this window (the next session opens the project).
-    const exec = vscode.commands.executeCommand.bind(vscode.commands);
-    (vscode.commands as unknown as Record<string, unknown>)['executeCommand'] = (command: string, ...args: unknown[]) => {
+    const exec = extApi.commands.executeCommand.bind(extApi.commands);
+    (extApi.commands as unknown as Record<string, unknown>)['executeCommand'] = (command: string, ...args: unknown[]) => {
         if (command === 'vscode.openFolder') {
             step('openFolder.requested', String((args[0] as vscode.Uri | undefined)?.fsPath));
             return Promise.resolve(undefined);
@@ -127,6 +141,11 @@ async function showPage(choice: RegExp | undefined, label2: string): Promise<voi
 /** Answers shared by every install: the confirmation, the Altera files from Downloads, and result messages. */
 function commonAnswers(): void {
     on(/Install board support/, ({ buttons }) => buttons.find((b) => b === 'Continue'));
+    // The support files a course hands out: the student chooses them in the file dialog.
+    on(/^Nexys A7 support file/, ({ buttons }) => buttons.find((b) => /Choose File/.test(b)), 'info');
+    on(/^DE10-Lite support file/, ({ buttons }) => buttons.find((b) => /Choose File/.test(b)), 'info');
+    on(/^Choose the Nexys A7 support file/, () => (process.env['P4B_NEXYS_ARCHIVE'] === 'cancel' ? undefined : [vscode.Uri.file(process.env['P4B_NEXYS_ARCHIVE'] ?? '')]), 'opendialog');
+    on(/^Choose the DE10-Lite support file/, () => (process.env['P4B_DE10_ARCHIVE'] === 'cancel' ? undefined : [vscode.Uri.file(process.env['P4B_DE10_ARCHIVE'] ?? '')]), 'opendialog');
     on(/Altera's files found/, ({ buttons }) => buttons.find((b) => /Use These Files/.test(b)));
     // Windows (and a Mac whose Downloads folder does not hold them): the student chooses the two files.
     on(/Altera's free software is needed/, ({ buttons }) => buttons.find((b) => /Choose Files/.test(b)));
@@ -161,6 +180,65 @@ async function newProject(boardPattern: RegExp, name: string, expectGate: boolea
     return made ? root : undefined;
 }
 
+const sha = async (f: string): Promise<string> => createHash('sha256').update(await readFile(f)).digest('hex');
+const writable = async (f: string): Promise<void> => {
+    // sealed (read-only) tree: make the folders on the way and the file writable, as a student who replaces a library does
+    const parts = f.split('/');
+    for (let i = 3; i < parts.length; i++) await chmod(parts.slice(0, i).join('/') || '/', 0o755).catch(() => undefined);
+    await chmod(f, 0o644).catch(() => undefined);
+};
+
+/** Phase 5F: the modified-toolchain behaviour through the real commands and the real Setup page. */
+async function modifiedScenario(nexys: boolean): Promise<void> {
+    const home = process.env['HOME'] ?? '';
+    const root = nexys ? join(home, 'Library', 'MIX-FPGA', 'support', 'nexys-a7', 'toolchains', 'darwin-arm64', '1.1') : join(home, 'Library', 'MIX-FPGA', 'toolchains', '1.1', 'macos-arm64');
+    const victim = nexys ? join(root, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libreadline.8.2.dylib') : join(root, 'openfpgaloader', 'lib', 'libftdi1.2.5.0.dylib');
+    const board = nexys ? /Nexys A7-100T/ : /DE10-Lite/;
+    const required = nexys ? join(root, 'ghdl', 'bin', 'ghdl') : join(root, 'yosys', 'libexec', 'yosys');
+    const shipped = await sha(victim);
+    step('modified.shippedSha256', { file: victim.replace(home, '~'), sha256: shipped });
+    const exec = (c: string, ...a: unknown[]) => vscode.commands.executeCommand(c, ...a);
+    await showPage(undefined, 'cleanBefore');
+    // 1. modify without deleting
+    await writable(victim);
+    await appendFile(victim, Buffer.from('a library the student replaced'));
+    const changed = await sha(victim);
+    step('modified.changedSha256', changed);
+    // 2. refresh state
+    await showPage(undefined, 'modified');
+    // 3. New Project continues (the note is non-blocking; here it is dismissed)
+    const before = transcript.length;
+    const created = await newProject(board, nexys ? 'NexysModified' : 'De10Modified', false);
+    step('modified.newProject', { created: created !== undefined, prompts: transcript.slice(before).map((p) => `${p.kind}: ${p.title}${p.text ? ` — ${p.text}` : ''} [answered: ${p.answered}]`) });
+    // 4. Verify reports the modification
+    const warned = transcript.length;
+    const v = (await exec('nexysvhdl.setup.verify')) as { ok?: boolean; modified?: boolean; steps?: { label: string; ok: boolean; detail?: string }[] } | undefined;
+    await sleep(300);
+    step('modified.verify', { ok: v?.ok, modified: v?.modified, modifiedSteps: (v?.steps ?? []).filter((x) => /modified/.test(x.detail ?? '')).map((x) => `${x.label}: ${x.detail}`), failedSteps: (v?.steps ?? []).filter((x) => !x.ok).map((x) => x.label), messages: transcript.slice(warned).map((p) => `${p.kind}: ${p.title} [${p.answered}]`) });
+    step('modified.afterVerifySha256Unchanged', (await sha(victim)) === changed);
+    // 5. decline Repair: the confirmation dialog is answered with Cancel
+    handlers = handlers.filter((h) => !/Install board support/.test(h.when.source));
+    on(/Install board support/, () => undefined);
+    const declinePrompt = transcript.length;
+    await exec('nexysvhdl.setup.repair', nexys ? 'nexys-a7-100t' : 'de10-lite');
+    step('modified.declinedRepair', { prompts: transcript.slice(declinePrompt).map((p) => `${p.title} — ${p.text} [answered: ${p.answered}]`), fileUnchanged: (await sha(victim)) === changed });
+    // 6. choose Repair
+    handlers = handlers.filter((h) => !/Install board support/.test(h.when.source));
+    on(/Install board support/, ({ buttons }) => buttons.find((b) => b === 'Continue'));
+    await exec('nexysvhdl.setup.repair', nexys ? 'nexys-a7-100t' : 'de10-lite');
+    step('modified.repairedSha256', { restored: (await sha(victim)) === shipped });
+    await showPage(undefined, 'afterRepair');
+    // 7. a genuinely required file is missing: Needs repair, not modified
+    await writable(required);
+    await chmod(join(required, '..'), 0o755);
+    await rm(required);
+    await showPage(undefined, 'missingRequiredFile');
+    const mv = (await exec('nexysvhdl.setup.verify')) as { ok?: boolean; modified?: boolean } | undefined;
+    step('modified.missingVerify', { ok: mv?.ok, modified: mv?.modified });
+    await exec('nexysvhdl.setup.repair', nexys ? 'nexys-a7-100t' : 'de10-lite');
+    await showPage(undefined, 'afterMissingRepair');
+}
+
 export async function run(): Promise<void> {
     const out = process.env['NEXYS_EDH_REPORT']!;
     try {
@@ -169,8 +247,12 @@ export async function run(): Promise<void> {
         const ext = vscode.extensions.getExtension<NexysVhdlApi>(EXTENSION_ID)!;
         const pkg = ext.packageJSON as { version: string; displayName: string };
         step('product', { displayName: pkg.displayName, version: pkg.version, extensionPath: ext.extensionPath, mixfpgaHome: process.env['MIXFPGA_HOME'] ?? null, home: process.env['HOME'], scenario });
-        await ext.activate();
+        const requirement = JSON.parse(await readFile(join(ext.extensionPath, 'toolchains', 'bundle', 'requirement.json'), 'utf8')) as { bundleVersion: string; targets: Record<string, { treeSha256: string; archive: string }> };
+        step('requiredToolchain', { version: requirement.bundleVersion, archive: requirement.targets['darwin-arm64']?.archive, tree: requirement.targets['darwin-arm64']?.treeSha256 });
+        bindToExtension(ext.extensionPath);
+        step('apiBinding', { sameObject: extApi.window === vscode.window });
         installPrompts();
+        await ext.activate();
         const stopWatching = watchLicensePanel();
         commonAnswers();
         try {
@@ -211,6 +293,8 @@ export async function run(): Promise<void> {
                 await showPage(/^\$\(tools\) Repair$|Repair$/, 'repair');
                 await vscode.commands.executeCommand('nexysvhdl.setup.verify');
                 await showPage(undefined, 'afterRepair');
+            } else if (scenario === 'modified-nexys' || scenario === 'modified-de10') {
+                await modifiedScenario(scenario === 'modified-nexys');
             } else if (scenario === 'de10-resume') {
                 // An interrupted DE10-Lite setup: the board row offers to continue it.
                 await showPage(/DE10-Lite/, 'resume');
