@@ -1,0 +1,411 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0",
+      "extensionPath": "D:\\MFW\\5h\\n2\\ext\\emxplore.nexysvhdl-0.7.0",
+      "mixfpgaHome": "D:\\MFW\\5h\\n2\\home",
+      "scenario": "modified-nexys"
+    },
+    "requiredToolchain": {
+      "version": "1.1",
+      "archive": "nexysvhdl-toolchain-1.1-win32-x64.tar.gz",
+      "tree": "4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d"
+    },
+    "apiBinding": {
+      "sameObject": false
+    },
+    "modified.shippedSha256": {
+      "file": "~\\support\\nexys-a7\\toolchains\\win32-x64\\1.1\\apio\\packages\\oss-cad-suite\\lib\\libreadline8.dll",
+      "sha256": "c31a2ea3aebb8be0d4f50916ae133364a14b92db0bb428ec7f08945bfbf8de15"
+    },
+    "setupPage.cleanBefore": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "modified.changedSha256": "c623761ff589bc9e791dee2809b1bdd3b88c03a77d303108f5798593c9e6cd88",
+    "setupPage.modified": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "newProject.NexysModified": {
+      "boardsOffered": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "gate": null
+    },
+    "newProject.NexysModified.created": {
+      "board": "nexys-a7-100t",
+      "root": "D:\\MFW\\5h\\n2\\work\\ws\\NexysModified"
+    },
+    "modified.newProject": {
+      "created": true,
+      "prompts": [
+        "opendialog: MIX-FPGA: choose the folder that will contain the new project folder [answered: file:///d%3A/MFW/5h/n2/work/ws]",
+        "inputbox: MIX-FPGA: project name — A new folder with this name is created in d:\\MFW\\5h\\n2\\work\\ws [answered: NexysModified]",
+        "quickpick: New MIX-FPGA Project: board — Choose the FPGA board [answered: Nexys A7-100T]",
+        "quickpick: MIX-FPGA: what should the new project contain? — Empty project or starter example [answered: $(lightbulb) Starter project]",
+        "error: d:\\MFW\\5h\\n2\\work\\ws\\NexysModified already exists. Choose another project name or folder. [answered: NexysModified]"
+      ]
+    },
+    "modified.verify": {
+      "ok": true,
+      "modified": true,
+      "modifiedSteps": [
+        "Nexys A7 tools (GHDL, Yosys, openXC7): modified: This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version."
+      ],
+      "failedSteps": [],
+      "messages": [
+        "warning: MIX-FPGA: This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version. [undefined]"
+      ]
+    },
+    "modified.afterVerifySha256Unchanged": true,
+    "modified.declinedRepair": {
+      "prompts": [
+        "Install board support — This will set up: the Nexys A7 tools.\nIt uses about 3.0 GB on this computer once finished (have about 4 GB free).\nFiles you changed in the installed toolchain will be replaced by the supported version. Nothing else of yours is touched. [answered: undefined]",
+        "MIX-FPGA: Nothing was changed. —  [answered: undefined]"
+      ],
+      "fileUnchanged": true
+    },
+    "modified.repairedSha256": {
+      "restored": true
+    },
+    "setupPage.afterRepair": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "setupPage.missingRequiredFile": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "modified.missingVerify": {
+      "ok": false
+    },
+    "setupPage.afterMissingRepair": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "unansweredPrompts": [],
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\",\"extensionPath\":\"D:\\\\MFW\\\\5h\\\\n2\\\\ext\\\\emxplore.nexysvhdl-0.7.0\",\"mixfpgaHome\":\"D:\\\\MFW\\\\5h\\\\n2\\\\home\",\"scenario\":\"modified-nexys\"}",
+    "requiredToolchain: {\"version\":\"1.1\",\"archive\":\"nexysvhdl-toolchain-1.1-win32-x64.tar.gz\",\"tree\":\"4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d\"}",
+    "apiBinding: {\"sameObject\":false}",
+    "modified.shippedSha256: {\"file\":\"~\\\\support\\\\nexys-a7\\\\toolchains\\\\win32-x64\\\\1.1\\\\apio\\\\packages\\\\oss-cad-suite\\\\lib\\\\libreadline8.dll\",\"sha256\":\"c31a2ea3aebb8be0d4f50916ae133364a14b92db0bb428ec7f08945bfbf8de15\"}",
+    "setupPage.cleanBefore: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "modified.changedSha256: \"c623761ff589bc9e791dee2809b1bdd3b88c03a77d303108f5798593c9e6cd88\"",
+    "setupPage.modified: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "newProject.NexysModified: {\"boardsOffered\":[\"DE10-Lite  [10M50DAF484C7G]\",\"Nexys A7-100T  [XC7A100T-1CSG324C]\"],\"gate\":null}",
+    "newProject.NexysModified.created: {\"board\":\"nexys-a7-100t\",\"root\":\"D:\\\\MFW\\\\5h\\\\n2\\\\work\\\\ws\\\\NexysModified\"}",
+    "modified.newProject: {\"created\":true,\"prompts\":[\"opendialog: MIX-FPGA: choose the folder that will contain the new project folder [answered: file:///d%3A/MFW/5h/n2/work/ws]\",\"inputbox: MIX-FPGA: project name — A new folder with this name is created in d:\\\\MFW\\\\5h\\\\n2\\\\work\\\\ws [answered: NexysModified]\",\"quickpick: New MIX-FPGA Project: board — Choose the FPGA board [answered: Nexys A7-100T]\",\"quickpick: MIX-FPGA: what should the new project contain? — Empty project or starter example [answered: $(lightbulb) Starter project]\",\"error: d:\\\\MFW\\\\5h\\\\n2\\\\work\\\\ws\\\\NexysModified already exists. Choose another project name or folder. [answered: NexysModified]\"]}",
+    "modified.verify: {\"ok\":true,\"modified\":true,\"modifiedSteps\":[\"Nexys A7 tools (GHDL, Yosys, openXC7): modified: This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version.\"],\"failedSteps\":[],\"messages\":[\"warning: MIX-FPGA: This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version. [undefined]\"]}",
+    "modified.afterVerifySha256Unchanged: true",
+    "modified.declinedRepair: {\"prompts\":[\"Install board support — This will set up: the Nexys A7 tools.\\nIt uses about 3.0 GB on this computer once finished (have about 4 GB free).\\nFiles you changed in the installed toolchain will be replaced by the supported version. Nothing else of yours is touched. [answered: undefined]\",\"MIX-FPGA: Nothing was changed. —  [answered: undefined]\"],\"fileUnchanged\":true}",
+    "modified.repairedSha256: {\"restored\":true}",
+    "setupPage.afterRepair: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "setupPage.missingRequiredFile: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "modified.missingVerify: {\"ok\":false}",
+    "setupPage.afterMissingRepair: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(pass) Nexys A7-100T  [Installed]\",\"$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "unansweredPrompts: []",
+    "result: \"PASS\""
+  ],
+  "prompts": [
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "opendialog",
+      "title": "MIX-FPGA: choose the folder that will contain the new project folder",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "file:///d%3A/MFW/5h/n2/work/ws"
+    },
+    {
+      "kind": "inputbox",
+      "title": "MIX-FPGA: project name",
+      "text": "A new folder with this name is created in d:\\MFW\\5h\\n2\\work\\ws",
+      "items": [],
+      "modal": false,
+      "answered": "NexysModified"
+    },
+    {
+      "kind": "quickpick",
+      "title": "New MIX-FPGA Project: board",
+      "text": "Choose the FPGA board",
+      "items": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "modal": false,
+      "answered": "Nexys A7-100T"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA: what should the new project contain?",
+      "text": "Empty project or starter example",
+      "items": [
+        "$(file-directory) Empty project (recommended)  [empty src/ and sim/ folders: add your own files with Add File]",
+        "$(lightbulb) Starter project  [a blinking-LED example with its testbench and pin constraints]"
+      ],
+      "modal": false,
+      "answered": "$(lightbulb) Starter project"
+    },
+    {
+      "kind": "error",
+      "title": "d:\\MFW\\5h\\n2\\work\\ws\\NexysModified already exists. Choose another project name or folder.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "NexysModified"
+    },
+    {
+      "kind": "warning",
+      "title": "MIX-FPGA: This toolchain has been modified and is no longer the verified MIX-FPGA configuration. You can continue using it, or choose Repair to restore the supported version.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "info",
+      "title": "Install board support",
+      "text": "This will set up: the Nexys A7 tools.\nIt uses about 3.0 GB on this computer once finished (have about 4 GB free).\nFiles you changed in the installed toolchain will be replaced by the supported version. Nothing else of yours is touched.",
+      "items": [],
+      "modal": true,
+      "answered": "undefined"
+    },
+    {
+      "kind": "warning",
+      "title": "MIX-FPGA: Nothing was changed.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "info",
+      "title": "Install board support",
+      "text": "This will set up: the Nexys A7 tools.\nIt uses about 3.0 GB on this computer once finished (have about 4 GB free).\nFiles you changed in the installed toolchain will be replaced by the supported version. Nothing else of yours is touched.",
+      "items": [],
+      "modal": true,
+      "answered": "Continue"
+    },
+    {
+      "kind": "info",
+      "title": "MIX-FPGA: Setup finished.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "warning",
+      "title": "MIX-FPGA: some parts of the environment need attention.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "info",
+      "title": "Install board support",
+      "text": "This will set up: the Nexys A7 tools.\nIt uses about 3.0 GB on this computer once finished (have about 4 GB free).",
+      "items": [],
+      "modal": true,
+      "answered": "Continue"
+    },
+    {
+      "kind": "info",
+      "title": "MIX-FPGA: Setup finished.",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(pass) Nexys A7-100T  [Installed]",
+        "$(circle-outline) DE10-Lite  [Not installed]  — Install DE10-Lite Support — Uses about 9 GB for Altera's free software (it may already be on this computer) and asks Windows for permission once.",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    }
+  ]
+}

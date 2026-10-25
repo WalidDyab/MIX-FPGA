@@ -37,6 +37,15 @@ export const log: string[] = [];
 export const step = (name: string, value: unknown) => {
     report[name] = value;
     log.push(`${name}: ${JSON.stringify(value)}`);
+    // Diagnosis aid: with NEXYS_EDH_PROGRESS set, every step is also appended (with a time stamp) to that file as it happens.
+    const progress = process.env['NEXYS_EDH_PROGRESS'];
+    if (progress) {
+        try {
+            require('node:fs').appendFileSync(progress, `${new Date().toISOString()} ${name}\n`);
+        } catch {
+            /* diagnosis only */
+        }
+    }
 };
 
 export async function waitFor<T>(what: string, get: () => T | undefined | false, timeoutMs = 20_000): Promise<T> {
