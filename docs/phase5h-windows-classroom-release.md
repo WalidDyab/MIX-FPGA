@@ -4,7 +4,11 @@ Branch `phase5h/windows-classroom-release` (from the macOS release state `da79df
 
 ## Classification
 
-**NOT YET CLASSIFIED AS "READY FOR DIRECT CLASSROOM DISTRIBUTION — UNSIGNED".** Three release gates are open (section 9): (A) a Windows computer with no Quartus has not been taken through the whole Altera flow, (B) a Windows computer with no Digilent software has not been taken through the whole Digilent flow, (C) the SmartScreen behaviour of the unsigned installer has not been observed. Everything else below passed. The classification is the project owner's to decide once those are closed or waived.
+**READY FOR DIRECT CLASSROOM DISTRIBUTION — UNSIGNED, with three release gates WAIVED by the project owner.**
+
+The owner waived gates A (no-Quartus Windows), B (no-Digilent Windows) and C (SmartScreen observation) on 2026-10-25, for now. A waiver is not a pass: those three were **not tested** (section 9), and this classification says exactly that. Everything else passed: the artifacts are consistent and built from one clean commit (section 1), the automated suite has 0 failures, both boards were programmed and confirmed physically, the upgrade from NexysVHDL 0.6.0 preserves everything, the installer's failure paths leave an existing installation untouched, and the hardened elevated helper was exercised once against Altera's real installer. Not published, not merged, not signed.
+
+Conditions that travel with the classification: distribute only the files of the classroom folder, unchanged, with their `SHA256SUMS`; tell students about the unsigned installer (`README-FIRST.txt`); a student with neither Quartus nor Digilent software yet is the first real run of those two flows, so the instructor should expect to support them and report problems; revisit the waived gates before any wider or public distribution.
 
 ## 1. Artifacts
 
@@ -95,9 +99,9 @@ Digilent's software is proprietary and not redistributable. The supported path i
 
 `README-FIRST.txt` and both guides tell the student: if a blue "Windows protected your PC" window appears, choose **More info**, check the name and that the file came from the instructor (compare `Get-FileHash` with `SHA256SUMS`), then **Run anyway**; "Unblock" in the file's Properties if present. They say not to turn SmartScreen or Defender off; the installer and MIX-FPGA change no security setting. **Not observed here:** files created on this PC carry no internet marker.
 
-## 9. Open release gates (not resolved)
+## 9. Release gates WAIVED by the project owner (2026-10-25), not tested
 
-- **A. Fresh no-Quartus Windows:** vendor-file verification, licence display, explicit acceptance, the elevated unattended install with the MAX 10 package, the USB-Blaster driver outcome, return to non-administrator operation, and DE10-Lite Build/Program on that computer were **not** tested end to end. A virtual machine for this was started and then stopped and deleted at the owner's request. Covered only in parts: licence extraction with the real installer and the hardened helper (section 4), the unattended-install code path and the acceptance gate by tests with a fake installer, the Quartus "already installed" path with the real Quartus 25.1.
-- **B. Fresh no-Digilent Windows:** see section 7.
-- **C. SmartScreen:** see section 8.
+- **A. Fresh no-Quartus Windows (waived):** vendor-file verification, licence display, explicit acceptance, the elevated unattended install with the MAX 10 package, the USB-Blaster driver outcome, return to non-administrator operation, and DE10-Lite Build/Program on that computer were **not** tested end to end. A virtual machine for this was started and then stopped and deleted at the owner's request. Covered only in parts: licence extraction with the real installer and the hardened helper (section 4), the unattended-install code path and the acceptance gate by tests with a fake installer, the Quartus "already installed" path with the real Quartus 25.1.
+- **B. Fresh no-Digilent Windows (waived):** see section 7.
+- **C. SmartScreen (waived):** see section 8.
 - Not blocking by themselves: native Quartus builds take about 40–70 s; Nexys full Verify/Repair are slow inside the extension (section 5); the installer must be run from the folder that holds the release files; the helper prompt names Windows PowerShell; the legal conclusions are technical findings only (`docs/phase5h-windows-compliance.md`); no signing was started.
