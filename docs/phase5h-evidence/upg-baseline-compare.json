@@ -1,0 +1,13 @@
+{
+ "projectIdentical": true,
+ "projectFiles": 6,
+ "nvprojPresent": true,
+ "nexysvhdlJsonPresent": true,
+ "studentNotesPresent": true,
+ "settingsIdentical": true,
+ "toolchain10Untouched": true,
+ "toolchain10": {
+  "files": 21208,
+  "treeSha256": "57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b"
+ }
+}

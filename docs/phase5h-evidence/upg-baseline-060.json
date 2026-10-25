@@ -1,0 +1,34 @@
+{
+  "extension": {
+    "folder": [
+      "emxplore.nexysvhdl-0.6.0"
+    ],
+    "version": "0.6.0"
+  },
+  "toolchain10": {
+    "files": 21208,
+    "treeSha256": "57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b"
+  },
+  "project": {
+    "nexys-a7-counter.nvproj": "826067571041c39d300dba000d25ecac9bfac7afdb0909633ad0e333cff67b0f",
+    "nexysvhdl.json": "148d0f80e104c4199975612acba9acecc809a86b38c4d069c06c84516585ff1a",
+    "notes-from-the-student.txt": "b6b7233ca6d6041a0185585840eb1bb348b08fe089d268c38e8f558ed7a70ebd",
+    "sim/counter_tb.vhd": "8252d17777de431796a033967910199171656f285907f7ff4182a19c6d540e76",
+    "src/counter.vhd": "0264219d1f01be58de143b290f2808fe3539fe2c12aa443e6dfde6cc961ee2ea",
+    "src/top.vhd": "055b0276ab3aaf8df306b66bb9730a1f12490c85b3561f83f7e99f699ff38d4a",
+    ".nexysvhdl/check/work-obj08.cf": "6a4168791aa24d477bfe3b2a2b012cacaefbf4d22ffe6b665f02ec01026a18ba",
+    ".nexysvhdl/logs/ghdl-check-analyze.log": "fca34b296eefc338dc0bd2d77ff4103505b5ab696ab253e1af100e24e3407b50",
+    ".nexysvhdl/logs/ghdl-elaborate-counter_tb.log": "70cb1ed2d902ce9e0d19c7dd3265377244be98b7b17242b69d185afe11e327a2",
+    ".nexysvhdl/logs/ghdl-elaborate-top.log": "eb915042281995bb548fe3acbb3dc677dd362f8c44f406438cdfbd0d7b7522ec",
+    ".nexysvhdl/logs/ghdl-rtl-synth.log": "b8ac7601dc187a5410ef69528df595c14dd291cd9f249c8fc461c8726f7b532d",
+    ".nexysvhdl/logs/ghdl-run-counter_tb.log": "b4450cdcde64ccd63ddc67deef72e83d975c23b1d88b37e5cac2e5df625be628",
+    ".nexysvhdl/logs/ghdl-sim-analyze.log": "fca34b296eefc338dc0bd2d77ff4103505b5ab696ab253e1af100e24e3407b50",
+    ".nexysvhdl/logs/yosys-rtl.log": "e6c9df4a8da0b169ffbb898e8c4b8e10d42db5025d08c84316d0d37a64581a42",
+    ".nexysvhdl/rtl/generated.v": "9d9fb87a8b77c354d89f32f869bbc819206539b1ae2fb127da7ce020897325ee",
+    ".nexysvhdl/rtl/rtl.json": "66be7fbaf4e9798ab9a2a86a76231cdf4c698d34121e9f85767e63293b8e7969",
+    ".nexysvhdl/sim/counter_tb.ghw": "10e8d24f28835a4816739b6ce7522a99d75fa89d9332c7aa5d0852623fe0792e",
+    ".nexysvhdl/sim/waveform.vcd": "e823e04fde4c272426212fc93f7cce2121999bfda97f7bc607a0a352391f9c3a",
+    ".nexysvhdl/sim/work-obj08.cf": "60b3177ab31ab4c1c6fa2c286afdb7fd2f1250e30cd228e4ef83e21d7749f6f8"
+  },
+  "settings": "70cab0095b99833c48eab61f666b74c8e54f11f67adf2d98fe88dca53ec04903"
+}

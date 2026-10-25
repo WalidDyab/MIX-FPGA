@@ -1,0 +1,5 @@
+Transcribed from the console of the Setup.exe run "--auto --boards de10" on an installation that already had the Nexys A7 support (isolated root, files since deleted):
+Nexys A7 1.1 tree before: 21145 files 3125637670 bytes tree 4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d
+Installer mode: Reinstall (extension 0.7.0 present); only the DE10-Lite parts were installed (ghdl, yosys, scripts, licenses, notices; 147 MB).
+Result: Nexys A7-100T - Installed, DE10-Lite - Installed.
+Nexys A7 1.1 tree after:  21145 files 3125637670 bytes tree 4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d (identical)

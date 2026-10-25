@@ -1,0 +1,7 @@
+Hardened elevated helper against Altera's real installer (QuartusLiteSetup-25.1std.0.1129-windows.exe), licence extraction only (--mode win32 --install_lic), one Windows permission prompt answered by the user.
+Transcribed from the output of scripts/validation/probe-altera-license.mjs (result file removed with its scratch folder):
+request: ok=true exitCode=0 message="licence written" seconds=44.533
+raw sha256        3cf19164cfc099dfecdd98c07f5a7e2a50241fdc99c9c00205afa3925496b63b  == pinned raw        (matchesRaw true)
+normalized sha256 0b1173f88d318001f865ae71d8fb46ad3cb08fc36598fff52325d1f10ddc62ab  == pinned normalized (matchesNormalized true)
+title: QUARTUS PRIME AND INTEL FPGA IP LICENSE AGREEMENT, VERSION 25.1std
+Nothing was installed and no licence was accepted. The helper copied the two Altera files into a SYSTEM/Administrators-only folder under the Windows temp folder, ran the installer from there, and removed that folder when it ended.

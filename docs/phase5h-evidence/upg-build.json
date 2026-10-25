@@ -1,0 +1,112 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0"
+    },
+    "project": {
+      "stage": "nexys",
+      "name": "nexys-a7-counter",
+      "board": "nexys-a7-100t",
+      "boardName": "Nexys A7-100T",
+      "constraintFormat": "xdc",
+      "constraintFiles": [],
+      "groupExtensions": ".xdc",
+      "errors": [],
+      "legacyDefault": false
+    },
+    "addFileKinds": [
+      "Source",
+      "Simulation Testbench",
+      "Constraint"
+    ],
+    "vmBeforeEnvironment": "not-applicable",
+    "environment": {
+      "headline": "Ready",
+      "level": "ready",
+      "rows": [
+        "Bundled FPGA Toolchain=Ready",
+        "Digilent USB/JTAG Support=Ready"
+      ],
+      "details": [
+        "GHDL: 6.0.0",
+        "Apio: 1.6.0",
+        "openXC7: 2026-09-24",
+        "Yosys: 0.63+173",
+        "nextpnr-xilinx: 0eae9fb",
+        "Digilent USB/JTAG Support: Digilent Adept (djtgcfg): djtgcfg 2.6.1 (Adept Utilities 2.7.1), Adept Runtime 2.30.4, at C:\\Program Files (x86)\\Digilent\\AdeptUtilities\\djtgcfg.exe [Digilent Adept Utilities (official install)]"
+      ],
+      "hasToolchainPrompt": true
+    },
+    "vmAfterEnvironment": "not-applicable",
+    "check": {
+      "state": "passed",
+      "summary": "No VHDL errors"
+    },
+    "simulate": {
+      "state": "passed",
+      "summary": "Passed · stopped at 280 ns"
+    },
+    "rtl": {
+      "status": "ready"
+    },
+    "vmAfterCheckSimulateSchematics": "not-applicable",
+    "build.build": {
+      "seconds": 63.3,
+      "success": true,
+      "summary": "BUILD COMPLETE",
+      "statusLines": [
+        "Building…",
+        "BUILD COMPLETE"
+      ],
+      "stageOrder": [
+        "synthesis",
+        "implementation",
+        "bitstream"
+      ],
+      "stageSummaries": {
+        "synthesis": "passed: 56 LUTs · 27 FFs",
+        "implementation": "passed: Timing PASS · 409.67 MHz",
+        "bitstream": "passed: hardware.bit · 3.6 MB"
+      },
+      "boardId": "nexys-a7-100t",
+      "resourceRows": [
+        "LUTs=56 / 63,400",
+        "Flip-Flops=27 / 126,800",
+        "BRAM (36 Kb)=0 / 135",
+        "DSP=0 / 240",
+        "I/O pins=3 / 210"
+      ],
+      "timingRows": [
+        "Timing=PASS",
+        "Target=100 MHz",
+        "Fmax=409.67 MHz",
+        "Setup slack=+7.6 ns"
+      ],
+      "artifactRow": "Bitstream=hardware.bit"
+    },
+    "hardware": {
+      "status": "none",
+      "boards": [],
+      "diagnostics": []
+    },
+    "verifyEnvironmentOnNexys": "ran",
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\"}",
+    "project: {\"stage\":\"nexys\",\"name\":\"nexys-a7-counter\",\"board\":\"nexys-a7-100t\",\"boardName\":\"Nexys A7-100T\",\"constraintFormat\":\"xdc\",\"constraintFiles\":[],\"groupExtensions\":\".xdc\",\"errors\":[],\"legacyDefault\":false}",
+    "addFileKinds: [\"Source\",\"Simulation Testbench\",\"Constraint\"]",
+    "vmBeforeEnvironment: \"not-applicable\"",
+    "environment: {\"headline\":\"Ready\",\"level\":\"ready\",\"rows\":[\"Bundled FPGA Toolchain=Ready\",\"Digilent USB/JTAG Support=Ready\"],\"details\":[\"GHDL: 6.0.0\",\"Apio: 1.6.0\",\"openXC7: 2026-09-24\",\"Yosys: 0.63+173\",\"nextpnr-xilinx: 0eae9fb\",\"Digilent USB/JTAG Support: Digilent Adept (djtgcfg): djtgcfg 2.6.1 (Adept Utilities 2.7.1), Adept Runtime 2.30.4, at C:\\\\Program Files (x86)\\\\Digilent\\\\AdeptUtilities\\\\djtgcfg.exe [Digilent Adept Utilities (official install)]\"],\"hasToolchainPrompt\":true}",
+    "vmAfterEnvironment: \"not-applicable\"",
+    "check: {\"state\":\"passed\",\"summary\":\"No VHDL errors\"}",
+    "simulate: {\"state\":\"passed\",\"summary\":\"Passed · stopped at 280 ns\"}",
+    "rtl: {\"status\":\"ready\"}",
+    "vmAfterCheckSimulateSchematics: \"not-applicable\"",
+    "build.build: {\"seconds\":63.3,\"success\":true,\"summary\":\"BUILD COMPLETE\",\"statusLines\":[\"Building…\",\"BUILD COMPLETE\"],\"stageOrder\":[\"synthesis\",\"implementation\",\"bitstream\"],\"stageSummaries\":{\"synthesis\":\"passed: 56 LUTs · 27 FFs\",\"implementation\":\"passed: Timing PASS · 409.67 MHz\",\"bitstream\":\"passed: hardware.bit · 3.6 MB\"},\"boardId\":\"nexys-a7-100t\",\"resourceRows\":[\"LUTs=56 / 63,400\",\"Flip-Flops=27 / 126,800\",\"BRAM (36 Kb)=0 / 135\",\"DSP=0 / 240\",\"I/O pins=3 / 210\"],\"timingRows\":[\"Timing=PASS\",\"Target=100 MHz\",\"Fmax=409.67 MHz\",\"Setup slack=+7.6 ns\"],\"artifactRow\":\"Bitstream=hardware.bit\"}",
+    "hardware: {\"status\":\"none\",\"boards\":[],\"diagnostics\":[]}",
+    "verifyEnvironmentOnNexys: \"ran\"",
+    "result: \"PASS\""
+  ]
+}

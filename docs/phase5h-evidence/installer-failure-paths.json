@@ -1,0 +1,135 @@
+{
+  "baseline": {
+    "extensionFolders": [
+      "emxplore.nexysvhdl-0.6.0"
+    ],
+    "mixfpgaRootExists": false,
+    "toolchain10": "57f0f0da89e6565d6e46d20780fa57af86f8ac36d45a78b750203fc8f381820b",
+    "settings": "70cab0095b99833c48eab61f666b74c8e54f11f67adf2d98fe88dca53ec04903"
+  },
+  "results": [
+    {
+      "case": "VS Code missing",
+      "exit": 3,
+      "ok": true,
+      "expected": "/Visual Studio Code: NOT FOUND/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\ok-support",
+        "Visual Studio Code: NOT FOUND",
+        "PROBLEM: Visual Studio Code was not found. Install it from https://code.visualstudio.com (the user installer is fine), then press Retry. Nothing is downloaded by this installer."
+      ]
+    },
+    {
+      "case": "corrupted Nexys A7 support archive",
+      "exit": 1,
+      "ok": true,
+      "expected": "/damaged or is not the file of this release/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\corrupt-nexys",
+        "RESULT FAILED: Nothing was changed",
+        "  nexysvhdl-toolchain-1.1-win32-x64.tar.gz is damaged or is not the file of this release (its checksum does not match). Nothing was changed. Download it again."
+      ]
+    },
+    {
+      "case": "wrong support archive (the DE10-Lite archive under the Nexys A7 name)",
+      "exit": 1,
+      "ok": true,
+      "expected": "/damaged or is not the file of this release/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\wrong-nexys",
+        "RESULT FAILED: Nothing was changed",
+        "  nexysvhdl-toolchain-1.1-win32-x64.tar.gz is damaged or is not the file of this release (its size is 47,950,151 bytes, expected 741,586,531). Nothing was changed. Download it again."
+      ]
+    },
+    {
+      "case": "wrong version (Toolchain 1.0 archive under the 1.1 name)",
+      "exit": 1,
+      "ok": true,
+      "expected": "/damaged or is not the file of this release/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\old-nexys",
+        "RESULT FAILED: Nothing was changed",
+        "  nexysvhdl-toolchain-1.1-win32-x64.tar.gz is damaged or is not the file of this release (its size is 744,121,124 bytes, expected 741,586,531). Nothing was changed. Download it again."
+      ]
+    },
+    {
+      "case": "missing support archive",
+      "exit": 1,
+      "ok": true,
+      "expected": "/is not next to the installer/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\missing-nexys",
+        "RESULT FAILED: Nothing was changed",
+        "  The file nexysvhdl-toolchain-1.1-win32-x64.tar.gz is not next to the installer (D:\\MFW\\5h\\failures\\missing-nexys). Keep the installer together with the other MIX-FPGA files, or download the MIX-FPGA folder again."
+      ]
+    },
+    {
+      "case": "corrupted extension (VSIX)",
+      "exit": 1,
+      "ok": true,
+      "expected": "/damaged or is not the file of this release/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\corrupt-vsix",
+        "RESULT FAILED: Nothing was changed",
+        "  nexysvhdl-0.7.0-win32-x64.vsix is damaged or is not the file of this release (its checksum does not match). Nothing was changed. Download it again."
+      ]
+    },
+    {
+      "case": "checksum list disagrees with a file",
+      "exit": 1,
+      "ok": true,
+      "expected": "/does not match the checksum list|damaged/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\bad-sums",
+        "RESULT FAILED: Nothing was changed",
+        "  nexysvhdl-0.7.0-win32-x64.vsix does not match the checksum list SHA256SUMS. Nothing was changed. Download the MIX-FPGA folder again."
+      ]
+    },
+    {
+      "case": "truncated Nexys A7 archive",
+      "exit": 1,
+      "ok": true,
+      "expected": "/damaged or is not the file of this release/",
+      "changedSomething": false,
+      "message": [
+        "support folder: D:\\MFW\\5h\\failures\\truncated",
+        "RESULT FAILED: Nothing was changed",
+        "  nexysvhdl-toolchain-1.1-win32-x64.tar.gz is damaged or is not the file of this release (its size is 602,046 bytes, expected 741,586,531). Nothing was changed. Download it again."
+      ]
+    },
+    {
+      "case": "interrupted install (Setup step killed midway)",
+      "killed": true,
+      "exit": 1,
+      "midState": {
+        "extensionFolders": [
+          "emxplore.nexysvhdl-0.6.0",
+          "emxplore.nexysvhdl-0.7.0"
+        ],
+        "nexys11Published": false,
+        "toolchain10Untouched": true,
+        "settingsUntouched": true
+      },
+      "ok": true
+    },
+    {
+      "case": "the next run finishes the interrupted install and verifies it",
+      "exit": 0,
+      "ok": true,
+      "tail": [
+        "Verifying the installed tools.",
+        "RESULT OK: MIX-FPGA is ready",
+        "  Nexys A7-100T - Installed",
+        "  DE10-Lite - Not installed",
+        "  Verify: every installed file checked: OK."
+      ]
+    }
+  ]
+}

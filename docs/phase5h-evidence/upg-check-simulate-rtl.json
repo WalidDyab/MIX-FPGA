@@ -1,0 +1,52 @@
+{
+  "phase": "after-installer",
+  "report": {
+    "identity": {
+      "id": "emxplore.nexysvhdl",
+      "version": "0.7.0",
+      "displayName": "MIX-FPGA",
+      "installedAt": "D:\\MFW\\5h\\upg\\ext\\emxplore.nexysvhdl-0.7.0"
+    },
+    "project": {
+      "name": "nexys-a7-counter",
+      "board": "nexys-a7-100t",
+      "files": 6
+    },
+    "commands": {
+      "nexysvhdl": 74,
+      "hasSetup": true,
+      "hasInstallToolchain": true
+    },
+    "environment": {
+      "headline": "Ready",
+      "rows": [
+        "Bundled FPGA Toolchain=Ready",
+        "Digilent USB/JTAG Support=Ready"
+      ]
+    },
+    "check": {
+      "state": "passed",
+      "summary": "No VHDL errors"
+    },
+    "simulate": {
+      "state": "passed",
+      "summary": "Passed · stopped at 280 ns"
+    },
+    "rtl": {
+      "status": "ready"
+    },
+    "studentFilesUnchangedByTheSession": true,
+    "result": "PASS"
+  },
+  "log": [
+    "identity: {\"id\":\"emxplore.nexysvhdl\",\"version\":\"0.7.0\",\"displayName\":\"MIX-FPGA\",\"installedAt\":\"D:\\\\MFW\\\\5h\\\\upg\\\\ext\\\\emxplore.nexysvhdl-0.7.0\"}",
+    "project: {\"name\":\"nexys-a7-counter\",\"board\":\"nexys-a7-100t\",\"files\":6}",
+    "commands: {\"nexysvhdl\":74,\"hasSetup\":true,\"hasInstallToolchain\":true}",
+    "environment: {\"headline\":\"Ready\",\"rows\":[\"Bundled FPGA Toolchain=Ready\",\"Digilent USB/JTAG Support=Ready\"]}",
+    "check: {\"state\":\"passed\",\"summary\":\"No VHDL errors\"}",
+    "simulate: {\"state\":\"passed\",\"summary\":\"Passed · stopped at 280 ns\"}",
+    "rtl: {\"status\":\"ready\"}",
+    "studentFilesUnchangedByTheSession: true",
+    "result: \"PASS\""
+  ]
+}

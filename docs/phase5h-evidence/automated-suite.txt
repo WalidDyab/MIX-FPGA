@@ -1,0 +1,15 @@
+Phase 5H automated suite (npm test) on Windows 11 x64, Node v24.13.0, source commit a0dabd2276b7c212bdfda9079c653c41feef60ca
+ℹ tests 1203
+ℹ suites 261
+ℹ pass 1147
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 56
+Windows-specific directories (tests/windows-install, windows-de10, windows): 140 tests, 140 pass, 0 fail, 0 skipped
+Skipped, by reason:
+     51 macOS-only
+      2 SKIP
+      1 no final payloads built here
+      1 no built package
+      1 no assembled candidate here
+      1 Altera files not present

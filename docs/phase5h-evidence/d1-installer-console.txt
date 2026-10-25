@@ -1,0 +1,16 @@
+support folder: <repo>\.artifacts\classroom-windows\MIX-FPGA-0.7.0-Windows-x64-Classroom
+Visual Studio Code: C:\Users\user\AppData\Local\Programs\Microsoft VS Code (1.143.1)
+MIX-FPGA extension: not installed => mode Fresh
+NexysVHDL Toolchain 1.0 store: present (left untouched)
+Checking nexysvhdl-0.7.0-win32-x64.vsix.
+Checking mixfpga-de10-lite-support-1.1-windows-x64.tar.gz.
+Installing MIX-FPGA 0.7.0 in Visual Studio Code.
+MIX-FPGA 0.7.0 is installed in Visual Studio Code.
+Installing the board support (this checks every file and can take several minutes).
+Checking the installed tools.
+Installing VHDL tools.
+Verifying installation.
+  toolchain: done - installed ghdl, yosys, scripts, licenses, notices (0.2 GB)
+RESULT OK: MIX-FPGA is ready
+  Nexys A7-100T - Not installed
+  DE10-Lite - Installed

@@ -1,0 +1,127 @@
+{
+  "report": {
+    "product": {
+      "displayName": "MIX-FPGA",
+      "version": "0.7.0",
+      "extensionPath": "D:\\MFW\\5h\\d1\\ext\\emxplore.nexysvhdl-0.7.0",
+      "mixfpgaHome": "D:\\MFW\\5h\\d1\\home",
+      "scenario": "de10-projects"
+    },
+    "requiredToolchain": {
+      "version": "1.1",
+      "archive": "nexysvhdl-toolchain-1.1-win32-x64.tar.gz",
+      "tree": "4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d"
+    },
+    "apiBinding": {
+      "sameObject": false
+    },
+    "setupPage.now": {
+      "headline": "Ready",
+      "shown": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(circle-outline) Nexys A7-100T  [Not installed]  — Install Nexys A7-100T Support — Installs the Nexys A7 tools (about 3 GB).",
+        "$(pass) DE10-Lite  [Installed]",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) FPGA Engine  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "chose": "undefined"
+    },
+    "openFolder.requested": "d:\\MFW\\5h\\d1\\work\\ws\\De10Clean",
+    "newProject.De10Clean": {
+      "boardsOffered": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "gate": null
+    },
+    "newProject.De10Clean.created": {
+      "board": "de10-lite",
+      "root": "D:\\MFW\\5h\\d1\\work\\ws\\De10Clean"
+    },
+    "unansweredPrompts": [],
+    "result": "PASS"
+  },
+  "log": [
+    "product: {\"displayName\":\"MIX-FPGA\",\"version\":\"0.7.0\",\"extensionPath\":\"D:\\\\MFW\\\\5h\\\\d1\\\\ext\\\\emxplore.nexysvhdl-0.7.0\",\"mixfpgaHome\":\"D:\\\\MFW\\\\5h\\\\d1\\\\home\",\"scenario\":\"de10-projects\"}",
+    "requiredToolchain: {\"version\":\"1.1\",\"archive\":\"nexysvhdl-toolchain-1.1-win32-x64.tar.gz\",\"tree\":\"4e584b73a9592b4746cab90c2cf76999b10cd5fdae018d6863c74a5c5a843a9d\"}",
+    "apiBinding: {\"sameObject\":false}",
+    "setupPage.now: {\"headline\":\"Ready\",\"shown\":[\"── MIX-FPGA 0.7.0 — Board Support ──\",\"── Environment ──\",\"── Actions ──\",\"$(circle-outline) Nexys A7-100T  [Not installed]  — Install Nexys A7-100T Support — Installs the Nexys A7 tools (about 3 GB).\",\"$(pass) DE10-Lite  [Installed]\",\"$(pass) VHDL Tools  [Ready]\",\"$(pass) FPGA Engine  [Ready]\",\"$(pass) Programmer  [Ready]\",\"$(circle-outline) Hardware  [Not checked]\",\"$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.\",\"$(verified) Verify Environment  — Checks every installed part and proves it really works.\",\"$(book) Getting Started\",\"$(law) Third-Party Notices\",\"$(output) Details in the Console  — Every part with its version and who supplies it.\"],\"chose\":\"undefined\"}",
+    "openFolder.requested: \"d:\\\\MFW\\\\5h\\\\d1\\\\work\\\\ws\\\\De10Clean\"",
+    "newProject.De10Clean: {\"boardsOffered\":[\"DE10-Lite  [10M50DAF484C7G]\",\"Nexys A7-100T  [XC7A100T-1CSG324C]\"],\"gate\":null}",
+    "newProject.De10Clean.created: {\"board\":\"de10-lite\",\"root\":\"D:\\\\MFW\\\\5h\\\\d1\\\\work\\\\ws\\\\De10Clean\"}",
+    "unansweredPrompts: []",
+    "result: \"PASS\""
+  ],
+  "prompts": [
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA Setup",
+      "text": "Ready",
+      "items": [
+        "── MIX-FPGA 0.7.0 — Board Support ──",
+        "── Environment ──",
+        "── Actions ──",
+        "$(circle-outline) Nexys A7-100T  [Not installed]  — Install Nexys A7-100T Support — Installs the Nexys A7 tools (about 3 GB).",
+        "$(pass) DE10-Lite  [Installed]",
+        "$(pass) VHDL Tools  [Ready]",
+        "$(pass) FPGA Engine  [Ready]",
+        "$(pass) Programmer  [Ready]",
+        "$(circle-outline) Hardware  [Not checked]",
+        "$(tools) Repair  — Checks every file of the installed boards and puts back anything missing or changed.",
+        "$(verified) Verify Environment  — Checks every installed part and proves it really works.",
+        "$(book) Getting Started",
+        "$(law) Third-Party Notices",
+        "$(output) Details in the Console  — Every part with its version and who supplies it."
+      ],
+      "modal": false,
+      "answered": "undefined"
+    },
+    {
+      "kind": "opendialog",
+      "title": "MIX-FPGA: choose the folder that will contain the new project folder",
+      "text": "",
+      "items": [],
+      "modal": false,
+      "answered": "file:///d%3A/MFW/5h/d1/work/ws"
+    },
+    {
+      "kind": "inputbox",
+      "title": "MIX-FPGA: project name",
+      "text": "A new folder with this name is created in d:\\MFW\\5h\\d1\\work\\ws",
+      "items": [],
+      "modal": false,
+      "answered": "De10Clean"
+    },
+    {
+      "kind": "quickpick",
+      "title": "New MIX-FPGA Project: board",
+      "text": "Choose the FPGA board",
+      "items": [
+        "DE10-Lite  [10M50DAF484C7G]",
+        "Nexys A7-100T  [XC7A100T-1CSG324C]"
+      ],
+      "modal": false,
+      "answered": "DE10-Lite"
+    },
+    {
+      "kind": "quickpick",
+      "title": "MIX-FPGA: what should the new project contain?",
+      "text": "Empty project or starter example",
+      "items": [
+        "$(file-directory) Empty project (recommended)  [empty src/ and sim/ folders: add your own files with Add File]",
+        "$(lightbulb) Starter project  [a blinking-LED example with its testbench and pin constraints]"
+      ],
+      "modal": false,
+      "answered": "$(lightbulb) Starter project"
+    }
+  ]
+}
