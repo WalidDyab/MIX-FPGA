@@ -441,21 +441,20 @@ namespace MixFpga.Setup
                 string outcome = r.Outcome ?? "";
                 if (outcome == "complete")
                 {
-                    if (boards.Count == 1 && boards[0] == "nexys")
+                    // Every installed file is checked, for every board (the DE10-Lite check also builds a tiny test design in Quartus).
+                    report("Verifying the installed tools…");
+                    BridgeResult v = RunBridge(d, boards, true, report);
+                    if (v.Ok != true)
                     {
-                        report("Verifying the installed tools…");
-                        BridgeResult v = RunBridge(d, boards, true, report);
-                        if (v.Ok == true) o.Details.Add("Verify: every installed file checked: OK.");
-                        else
-                        {
-                            o.Details.Add("Verify reported a problem: open MIX-FPGA Setup in Visual Studio Code and choose Repair.");
-                            o.Ok = false;
-                            o.Title = "Installed, but Verify found a problem";
-                            return o;
-                        }
+                        o.Details.Add("Verify reported a problem: open MIX-FPGA Setup in Visual Studio Code and choose Repair. Nothing was changed or removed.");
+                        o.Ok = false;
+                        o.Title = "Installed, but Verify found a problem";
+                        return o;
                     }
+                    if (v.Modified == true) o.Details.Add("Verify: everything is there and usable, but you have changed a file of the installed tools, so it is no longer the verified MIX-FPGA configuration. Nothing was replaced. Choose Repair in MIX-FPGA Setup if you want the supported copy back.");
+                    else o.Details.Add("Verify: every installed file checked: OK.");
                     o.Ok = true;
-                    o.Title = "MIX-FPGA is ready";
+                    o.Title = v.Modified == true ? "MIX-FPGA is ready (modified tools kept)" : "MIX-FPGA is ready";
                     return o;
                 }
                 if (outcome == "stopped" && altera && r.StoppedFor == "altera")

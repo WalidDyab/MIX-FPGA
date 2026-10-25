@@ -4,7 +4,10 @@
 # developer's VS Code profile, settings and extensions out of it. A process watcher records where every tool process ran from.
 param(
     [Parameter(Mandatory)] [string]$Suite,
-    [Parameter(Mandatory)] [string]$MfHome,
+    # The MIX-FPGA root under test. With -LocalAppData instead, the root is the product's default (<LocalAppData>\MIX-FPGA) and a NexysVHDL store
+    # under the same private LocalAppData is seen as a legacy store, exactly as on a student's PC (the upgrade case).
+    [string]$MfHome = '',
+    [string]$LocalAppData = '',
     [Parameter(Mandatory)] [string]$Workspace,
     [Parameter(Mandatory)] [string]$Out,
     [string]$Scenario = '',
@@ -13,6 +16,9 @@ param(
     [string]$Work = 'D:\MFW\work',
     [string]$Payloads = '',
     [string]$AlteraDir = '',
+    # Phase 5H: run the suite against an INSTALLED extension (the one the Setup installer put in this extensions folder), not the working tree.
+    [string]$ExtensionsDir = '',
+    [string]$HostDir = '',
     [switch]$NexysBuild,
     [switch]$Program,
     [int]$TimeoutSec = 1500,
@@ -20,6 +26,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+if (-not $MfHome -and -not $LocalAppData) { throw 'give -MfHome (an isolated root) or -LocalAppData (a private account folder)' }
+if ($LocalAppData -and ($LocalAppData -ieq $env:LOCALAPPDATA)) { throw 'refusing to run against the real LocalAppData' }
 if ($MfHome -match '\\AppData\\Local\\MIX-FPGA$') { throw 'refusing to run against the real MIX-FPGA root' }
 $code = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\Code.exe"
 $saved = @{}
@@ -27,12 +35,14 @@ function Set-Env($k, $v) { if (-not $saved.ContainsKey($k)) { $saved[$k] = [Envi
 try {
     Set-Env 'NEXYS_P6_SUITE' $Suite
     Set-Env 'MIXFPGA_HOME' $MfHome
+    if ($LocalAppData) { Set-Env 'LOCALAPPDATA' $LocalAppData }
     Set-Env 'NEXYS_P6_USER_DATA' $UserData
     Set-Env 'P4B_SCENARIO' $Scenario
     Set-Env 'MIXFPGA_STAGE' $Stage
     Set-Env 'P4B_WORK' $Work
     Set-Env 'MIXFPGA_DEV_PAYLOAD' $Payloads
     Set-Env 'P4B_ALTERA_DIR' $AlteraDir
+    if ($ExtensionsDir) { Set-Env 'NEXYSVHDL_P6_EXTENSIONS_DIR' $ExtensionsDir; Set-Env 'NEXYSVHDL_P6_HOST_DIR' $HostDir }
     if ($NexysBuild) { Set-Env 'MIXFPGA_NEXYS_BUILD' '1' }
     if ($Program) { Set-Env 'MIXFPGA_PROGRAM' '1' }
     $stop = "$Out.stop"

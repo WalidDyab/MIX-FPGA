@@ -13,6 +13,7 @@
  *   P4B_SCENARIO=de10-only   choose DE10-Lite only (engine, Quartus, licence page), then New Project for it.
  *   P4B_SCENARIO=add-nexys   from Board Support: add the Nexys A7 later; create a Nexys project.
  *   P4B_SCENARIO=upgrade     after updating NexysVHDL 0.6.0: Nexys A7 Installed (reused), DE10-Lite offered; install it; both New Project choices.
+ *   P4B_SCENARIO=de10-projects  (Phase 5H) after the installer: Setup page, then New Project for the DE10-Lite.
  *   P4B_SCENARIO=page        only show the Setup page and record it.
  *   P4B_SCENARIO=modified-nexys | modified-de10   (Phase 5F) change an installed file, then Setup page, New Project, Verify, declined and accepted
  *                            Repair, and a genuinely missing file, all through the real commands.
@@ -248,7 +249,8 @@ export async function run(): Promise<void> {
         const pkg = ext.packageJSON as { version: string; displayName: string };
         step('product', { displayName: pkg.displayName, version: pkg.version, extensionPath: ext.extensionPath, mixfpgaHome: process.env['MIXFPGA_HOME'] ?? null, home: process.env['HOME'], scenario });
         const requirement = JSON.parse(await readFile(join(ext.extensionPath, 'toolchains', 'bundle', 'requirement.json'), 'utf8')) as { bundleVersion: string; targets: Record<string, { treeSha256: string; archive: string }> };
-        step('requiredToolchain', { version: requirement.bundleVersion, archive: requirement.targets['darwin-arm64']?.archive, tree: requirement.targets['darwin-arm64']?.treeSha256 });
+        const want = requirement.targets[process.platform === 'win32' ? 'win32-x64' : 'darwin-arm64'];
+        step('requiredToolchain', { version: requirement.bundleVersion, archive: want?.archive, tree: want?.treeSha256 });
         bindToExtension(ext.extensionPath);
         step('apiBinding', { sameObject: extApi.window === vscode.window });
         installPrompts();
@@ -269,6 +271,9 @@ export async function run(): Promise<void> {
                 await showPage(undefined, 'now');
                 await newProject(/DE10/, 'GateOnly', true, false);
                 await newProject(/Nexys/, 'NexysClean', false);
+            } else if (scenario === 'de10-projects') {
+                await showPage(undefined, 'now');
+                await newProject(/DE10/, 'De10Clean', false);
             } else if (scenario === 'de10-only') {
                 await showPage(undefined, 'fresh');
                 boardsChoice(/DE10/);
@@ -281,7 +286,7 @@ export async function run(): Promise<void> {
             } else if (scenario === 'repair-nexys') {
                 // Damage one file of this root's Nexys A7 tools (a changed byte only a full check can see), then Verify, Repair, Verify.
                 const win = process.platform === 'win32';
-                const victim = join(process.env['MIXFPGA_HOME']!, 'support', 'nexys-a7', 'toolchains', win ? 'win32-x64' : 'darwin-arm64', '1.0', 'ghdl', 'bin', win ? 'ghdl.exe' : 'ghdl');
+                const victim = join(process.env['MIXFPGA_HOME']!, 'support', 'nexys-a7', 'toolchains', win ? 'win32-x64' : 'darwin-arm64', '1.1', 'ghdl', 'bin', win ? 'ghdl.exe' : 'ghdl');
                 await chmod(join(victim, '..'), 0o755);
                 await chmod(victim, 0o755);
                 // Same size is not needed: any change is found by a full check (the quick check compares sizes, so keep the length).
