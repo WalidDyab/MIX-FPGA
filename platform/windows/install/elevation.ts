@@ -105,7 +105,7 @@ try {
     if (-not $r -or [string]$r.id -notmatch '^\d{3}-[0-9a-f]{6}$') { Log 'ignored a malformed request'; continue }
     $id = [string]$r.id
     try {
-      if ($r.op -eq 'quit') { Respond $id $true 0 'bye'; Log 'quit'; break }
+      if ($r.op -eq 'quit') { Clean-Stage; Respond $id $true 0 'bye'; Log 'quit'; break }
       elseif ($r.op -eq 'license') {
         $bad = Stage-Files
         if ($bad) { Respond $id $false 3 $bad; continue }

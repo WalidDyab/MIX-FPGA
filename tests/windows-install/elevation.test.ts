@@ -251,6 +251,19 @@ describe('the real helper script, run for real (without the permission prompt)',
         }
     });
 
+    it('the protected staging folder is already gone when the helper reports that it is quitting (no race), every time', { skip: ONLY_WINDOWS }, async (t) => {
+        for (let i = 0; i < 4; i++) {
+            const { h, stageRoot } = await helperFor(t);
+            assert.deepEqual(await h.start(), { ok: true });
+            const lic = await h.request('license', 60_000);
+            assert.ok('exitCode' in lic && lic.ok, JSON.stringify(lic));
+            assert.equal((await readdir(stageRoot)).length, 1, 'the files are staged while the helper works');
+            const bye = await h.request('quit', 30_000);
+            assert.ok('exitCode' in bye && bye.ok, JSON.stringify(bye));
+            assert.deepEqual(await readdir(stageRoot), [], `round ${i}: gone before the answer was seen`);
+        }
+    });
+
     it('ends when asked, and a stopped helper leaves nothing running', { skip: ONLY_WINDOWS }, async (t) => {
         const { h, dir } = await helperFor(t);
         assert.deepEqual(await h.start(), { ok: true });
