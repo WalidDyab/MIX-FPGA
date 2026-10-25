@@ -191,11 +191,20 @@ const writable = async (f: string): Promise<void> => {
 
 /** Phase 5F: the modified-toolchain behaviour through the real commands and the real Setup page. */
 async function modifiedScenario(nexys: boolean): Promise<void> {
-    const home = process.env['HOME'] ?? '';
-    const root = nexys ? join(home, 'Library', 'MIX-FPGA', 'support', 'nexys-a7', 'toolchains', 'darwin-arm64', '1.1') : join(home, 'Library', 'MIX-FPGA', 'toolchains', '1.1', 'macos-arm64');
-    const victim = nexys ? join(root, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libreadline.8.2.dylib') : join(root, 'openfpgaloader', 'lib', 'libftdi1.2.5.0.dylib');
+    const win = process.platform === 'win32';
+    const home = win ? (process.env['MIXFPGA_HOME'] ?? '') : (process.env['HOME'] ?? '');
+    const mfRoot = win ? home : join(home, 'Library', 'MIX-FPGA');
+    const root = win
+        ? (nexys ? join(mfRoot, 'support', 'nexys-a7', 'toolchains', 'win32-x64', '1.1') : join(mfRoot, 'toolchains', '1.1', 'windows-x64'))
+        : (nexys ? join(mfRoot, 'support', 'nexys-a7', 'toolchains', 'darwin-arm64', '1.1') : join(mfRoot, 'toolchains', '1.1', 'macos-arm64'));
+    // A library the student replaces, as the GPL/LGPL notices allow: Readline (Nexys A7, loaded by yosys) or termcap/libftdi (DE10-Lite).
+    const victim = win
+        ? (nexys ? join(root, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libreadline8.dll') : join(root, 'yosys', 'bin', 'libtermcap-0.dll'))
+        : (nexys ? join(root, 'apio', 'packages', 'oss-cad-suite', 'lib', 'libreadline.8.2.dylib') : join(root, 'openfpgaloader', 'lib', 'libftdi1.2.5.0.dylib'));
     const board = nexys ? /Nexys A7-100T/ : /DE10-Lite/;
-    const required = nexys ? join(root, 'ghdl', 'bin', 'ghdl') : join(root, 'yosys', 'libexec', 'yosys');
+    const required = win
+        ? (nexys ? join(root, 'ghdl', 'bin', 'ghdl.exe') : join(root, 'yosys', 'bin', 'yosys.exe'))
+        : (nexys ? join(root, 'ghdl', 'bin', 'ghdl') : join(root, 'yosys', 'libexec', 'yosys'));
     const shipped = await sha(victim);
     step('modified.shippedSha256', { file: victim.replace(home, '~'), sha256: shipped });
     const exec = (c: string, ...a: unknown[]) => vscode.commands.executeCommand(c, ...a);
