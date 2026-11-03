@@ -256,7 +256,14 @@ export function renderWaveHtml(input: WavePageInput): string {
       const top = AXIS + r * ROW + 4, bot = top + ROW - 8, mid = (top + bot) / 2;
       const segs = W.traceSegments(tr.times, tr.values, t0, t1, w, 2, tr.raw);
       for (const g of segs) {
-        if (g.dense) { ctx.fillStyle = s.width > 1 ? bus : hi; ctx.globalAlpha = 0.35; ctx.fillRect(g.x0, top, g.x1 - g.x0, bot - top); ctx.globalAlpha = 1; continue; }
+        if (g.dense) {
+          // Several changes inside a few pixels: activity, never a level. It spans exactly those changes (at least 2 px wide),
+          // so the level before and after keeps its true value; a metavalue seen in the cluster is marked in red.
+          const gw = Math.max(2, g.x1 - g.x0), meta = g.states.some((v) => v !== '0' && v !== '1' && (s.width <= 1 || /[xz]/.test(v)));
+          ctx.fillStyle = s.width > 1 ? bus : hi; ctx.globalAlpha = 0.85; ctx.fillRect(g.x0, top, gw, bot - top);
+          if (meta) { ctx.fillStyle = bad; ctx.globalAlpha = 0.5; ctx.fillRect(g.x0, top, gw, bot - top); }
+          ctx.globalAlpha = 1; continue;
+        }
         const v = g.value;
         if (s.width <= 1) {
           if (v === '1' || v === '0') {

@@ -181,7 +181,11 @@ export function sanitizeSignalChoices(value: unknown): SignalChoices {
     return out;
 }
 
-/** One drawable stretch of a trace. `dense` = several changes inside less than `minPx` pixels. */
+/**
+ * One drawable stretch of a trace. A plain segment is a stretch where the value is constant.
+ * A `dense` segment is a pixel cluster that holds two or more changes: it is activity, not a
+ * value, and `value`/`raw` are only what the trace holds when the cluster ends.
+ */
 export interface Segment {
     readonly x0: number;
     readonly x1: number;
@@ -189,41 +193,74 @@ export interface Segment {
     /** The value with VHDL metavalues kept apart; only when `raws` was passed to traceSegments. */
     readonly raw?: string;
     readonly dense?: boolean;
+    /** Dense only: the value entering the cluster. */
+    readonly entry?: string;
+    /** Dense only: how many changes the cluster holds. */
+    readonly changes?: number;
+    /** Dense only: the distinct values seen in the cluster, entry value included (first {@link MAX_SCAN} changes). */
+    readonly states?: readonly string[];
 }
 
+/** Changes inspected per dense cluster when collecting its distinct values; keeps the cost per pixel bounded. */
+const MAX_SCAN = 32;
+
 /**
- * Reduces a trace to the segments visible between `t0` and `t1` on a
- * `width`-pixel canvas. Changes closer together than `minPx` merge into one
- * dense segment, so drawing cost depends on the canvas width, not on the
- * number of simulation events.
+ * Reduces a trace to the segments visible between `t0` and `t1` on a `width`-pixel canvas,
+ * preserving every transition. A change that has no neighbour within `minPx` pixels is kept
+ * exactly (its own x, its own value), so a zoomed-in trace is the plain step waveform. Changes
+ * closer together than `minPx` form one dense cluster that spans exactly those changes: it
+ * remembers the value entering and leaving and the values seen, so a pulse narrower than a
+ * pixel still shows as activity and the level either side of it keeps its true value. Cost is
+ * O(pixels x log changes), not O(simulation events).
  */
 export function traceSegments(times: readonly number[], values: readonly string[], t0: number, t1: number, width: number, minPx = 2, raws?: readonly string[]): Segment[] {
     const out: Segment[] = [];
     if (times.length === 0 || t1 <= t0 || width <= 0) return out;
     const scale = width / (t1 - t0);
     const px = (t: number) => (t - t0) * scale;
-    let i = Math.max(0, indexAt(times, t0));
-    if (times[i]! > t1) return out;
-    let x0 = Math.max(0, px(times[i]!));
-    let value = values[i]!;
-    let raw = raws?.[i];
-    let dense = false;
-    const seg = (x1: number): Segment => ({ x0, x1, value, ...(raw !== undefined ? { raw } : {}), ...(dense ? { dense: true } : {}) });
-    for (i = i + 1; i < times.length && times[i]! <= t1; i++) {
-        const x = px(times[i]!);
-        if (x - x0 < minPx) {
-            dense = true;
-            value = values[i]!;
-            raw = raws?.[i];
-            continue;
+    const first = Math.max(0, indexAt(times, t0));
+    if (times[first]! > t1) return out;
+    const bucket = (i: number) => Math.floor(px(times[i]!) / minPx);
+    /** First index after `from` whose change is in a later pixel bucket than `b` (or past t1). */
+    const bucketEnd = (from: number, b: number): number => {
+        let lo = from;
+        let hi = times.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (times[mid]! <= t1 && bucket(mid) <= b) lo = mid + 1;
+            else hi = mid;
         }
-        out.push(seg(x));
-        x0 = x;
-        value = values[i]!;
-        raw = raws?.[i];
-        dense = false;
+        return lo;
+    };
+    const level = (x0: number, x1: number, i: number): Segment => ({ x0, x1, value: values[i]!, ...(raws?.[i] !== undefined ? { raw: raws[i]! } : {}) });
+    // Pixel buckets that hold changes, merged into clusters when neighbours are closer than minPx.
+    let cur = first; // index of the value in force
+    let x0 = Math.max(0, px(times[first]!));
+    let j = first + 1;
+    while (j < times.length && times[j]! <= t1) {
+        const start = j;
+        let end = bucketEnd(j, bucket(j));
+        while (end < times.length && times[end]! <= t1 && px(times[end]!) - px(times[end - 1]!) < minPx) end = bucketEnd(end, bucket(end));
+        const xa = px(times[start]!);
+        if (end - start === 1) {
+            // An isolated change: the exact step.
+            out.push(level(x0, xa, cur));
+            cur = start;
+            x0 = xa;
+        } else {
+            const xb = px(times[end - 1]!);
+            const xe = Math.min(width, Math.max(xb, xa + minPx));
+            if (xa > x0) out.push(level(x0, xa, cur));
+            const states = new Set<string>([values[cur]!]);
+            for (let k = start; k < end && k < start + MAX_SCAN; k++) states.add(values[k]!);
+            const exit = end - 1;
+            out.push({ ...level(xa, xe, exit), dense: true, entry: values[cur]!, changes: end - start, states: [...states] });
+            cur = exit;
+            x0 = xe;
+        }
+        j = end;
     }
-    out.push(seg(width));
+    out.push(level(x0, width, cur));
     return out;
 }
 
